@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+
+html, body { height: 100%; }
+
+body {
+  @apply bg-black text-white antialiased;
+}
+
+/* Make defaults look intentional even before we restyle components */
+a {
+  @apply text-white/80 hover:text-white underline underline-offset-4;
+}
+
+p { @apply text-white/70; }
+h1, h2, h3 { @apply text-white; }
+
+/* Form controls: consistent baseline */
+input, select, textarea {
+  @apply w-full rounded-xl bg-black/30 border border-white/10 px-3 py-2 text-white
+         outline-none focus:border-white/40;
+}
+
+label { @apply text-sm text-white/70; }
+
+button {
+  @apply rounded-xl bg-white text-black font-semibold px-4 py-2;
+}

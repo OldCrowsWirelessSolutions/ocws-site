@@ -1,0 +1,60 @@
+<!-- public/netlify-forms.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>Netlify Forms Detection</title>
+  </head>
+  <body>
+    <!--
+      This file exists ONLY so Netlify can detect the form + fields at deploy time.
+      Keep field "name" attributes in sync with your real Request Quote page.
+    -->
+    <form name="ocws-quote" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+      <input type="hidden" name="form-name" value="ocws-quote" />
+
+      <p style="display:none;">
+        <label>Don’t fill this out: <input name="bot-field" /></label>
+      </p>
+
+      <input type="hidden" name="email_subject" value="New Quote Request – OCWS Website" />
+
+      <label>Full name <input name="name" type="text" /></label>
+      <label>Email <input name="email" type="email" /></label>
+      <label>Phone <input name="phone" type="tel" /></label>
+
+      <label>
+        Service
+        <select name="service">
+          <option value="premium-home-rf">Premium Home & Home Office RF Optimization</option>
+          <option value="rfi-hunting">RFI Hunting & Advanced Diagnostics</option>
+          <option value="p25-survey">Public Safety (P25) ERRC Survey (NFPA/IFC)</option>
+          <option value="cellular-das-design">Cellular / DAS Initial Survey & Design Blueprint</option>
+          <option value="post-install-validation">Post-Installation Validation & Acceptance Survey</option>
+          <option value="other">Other / Not Sure Yet</option>
+        </select>
+      </label>
+
+      <label>City <input name="city" type="text" /></label>
+      <label>State <input name="state" type="text" /></label>
+
+      <label>Details <textarea name="details"></textarea></label>
+
+      <label>
+        Call requested
+        <input name="call_requested" type="checkbox" value="Yes" />
+      </label>
+
+      <label>
+        Preferred call window
+        <select name="preferred_call_window">
+          <option value="">No preference</option>
+          <option value="Morning">Morning</option>
+          <option value="Afternoon">Afternoon</option>
+          <option value="Evening">Evening</option>
+        </select>
+      </label>
+    </form>
+  </body>
+</html>
