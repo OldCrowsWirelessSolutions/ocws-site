@@ -14,7 +14,7 @@ export default function HomePage() {
       <Hero />
 
       <div className="ocws-container py-12 md:py-16">
-        {/* INDUSTRIES FIRST */}
+        {/* INDUSTRIES FIRST (IndustryTiles renders its own heading/subheading/button) */}
         <IndustryTiles />
 
         {/* SERVICES UNDER INDUSTRIES */}
@@ -53,7 +53,10 @@ export default function HomePage() {
               <div className="mt-4 text-xs ocws-muted2">Most popular</div>
             </Link>
 
-            <Link href="/services/rfi-hunting" className="ocws-tile ocws-tile-hover p-6">
+            <Link
+              href="/services/rfi-hunting"
+              className="ocws-tile ocws-tile-hover p-6"
+            >
               <div className="flex items-start justify-between gap-4">
                 <h3 className="text-lg font-semibold text-white">
                   Radio Frequency Interference (RFI) Hunting
@@ -68,7 +71,10 @@ export default function HomePage() {
               <div className="mt-4 text-xs ocws-muted2">Advanced diagnostics</div>
             </Link>
 
-            <Link href="/services/p25-survey" className="ocws-tile ocws-tile-hover p-6">
+            <Link
+              href="/services/p25-survey"
+              className="ocws-tile ocws-tile-hover p-6"
+            >
               <div className="flex items-start justify-between gap-4">
                 <h3 className="text-lg font-semibold text-white">
                   Public Safety (P25) ERRC Survey
@@ -83,7 +89,10 @@ export default function HomePage() {
               <div className="mt-4 text-xs ocws-muted2">Compliance-ready evidence</div>
             </Link>
 
-            <Link href="/services/cellular-das-design" className="ocws-tile ocws-tile-hover p-6">
+            <Link
+              href="/services/cellular-das-design"
+              className="ocws-tile ocws-tile-hover p-6"
+            >
               <div className="flex items-start justify-between gap-4">
                 <h3 className="text-lg font-semibold text-white">
                   Cellular / DAS Survey & Design Blueprint
