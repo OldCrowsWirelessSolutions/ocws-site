@@ -1,152 +1,131 @@
+// app/learn/[service]/page.tsx
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getService, serviceKeys, type ServiceKey } from "@/app/data/catalog";
+import { getServiceDetailBySlug } from "@/app/data/serviceDetails";
 
 type PageProps = {
   params: { service: string };
 };
 
-export function generateStaticParams() {
-  return serviceKeys.map((service) => ({ service }));
-}
-
 export default function LearnServicePage({ params }: PageProps) {
-  const key = params.service as ServiceKey;
-  const service = getService(key);
+  const detail = getServiceDetailBySlug(params.service);
 
-  if (!service) return notFound();
-
-  // Force safe arrays for all list sections
-  const images: string[] = Array.isArray(service.images) ? service.images : [];
-  const whyYouNeedIt: string[] = Array.isArray(service.whyYouNeedIt) ? service.whyYouNeedIt : [];
-  const whatYouGet: string[] = Array.isArray(service.whatYouGet) ? service.whatYouGet : [];
-  const deliverables: string[] = Array.isArray(service.deliverables) ? service.deliverables : [];
-  const misconceptions: string[] = Array.isArray(service.commonMisconceptions) ? service.commonMisconceptions : [];
-  const goodFitIf: string[] = Array.isArray(service.goodFitIf) ? service.goodFitIf : [];
+  if (!detail) notFound();
 
   return (
-    <section className="px-4 sm:px-6 lg:px-8 py-10">
-      <div className="mx-auto max-w-5xl">
-        <div className="flex items-center justify-between gap-4">
-          <Link href="/services" className="text-sm text-white/70 hover:text-white">
-            ← Back to Services
-          </Link>
+    <main className="mx-auto max-w-6xl px-4 py-10">
+      {/* Top */}
+      <section className="mb-6">
+        <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
+          {detail.title}
+        </h1>
+        <p className="mt-3 text-base md:text-lg text-white/75 max-w-3xl">
+          {detail.short}
+        </p>
 
+        <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-5">
+          <p className="text-white/90 font-medium">{detail.tagline}</p>
+        </div>
+
+        <div className="mt-5 flex flex-wrap gap-3">
           <Link
             href="/request-quote"
-            className="rounded-xl bg-white/10 border border-white/10 px-3 py-2 hover:bg-white/15 text-sm"
+            className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold bg-white text-black hover:bg-white/90 transition"
           >
             Request a Quote
           </Link>
+
+          <Link
+            href={`/services/${detail.slug}`}
+            className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold border border-white/20 text-white hover:bg-white/10 transition"
+          >
+            View Service
+          </Link>
         </div>
+      </section>
 
-        <h1 className="mt-4 text-3xl sm:text-4xl font-semibold">{service.name}</h1>
-        <p className="mt-2 text-white/70">{service.short}</p>
-
-        {service.headline ? (
-          <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-5">
-            <p className="text-lg font-semibold">{service.headline}</p>
-          </div>
-        ) : null}
-
-        {/* Gallery */}
-        {images.length > 0 ? (
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            {images.map((src: string, idx: number) => (
-              <div
-                key={`${src}-${idx}`}
-                className="relative h-40 overflow-hidden rounded-2xl border border-white/10 bg-black/20"
-              >
+      {/* Visuals / Images */}
+      <section className="mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {detail.visuals.map((v, idx) => (
+            <div
+              key={`${detail.slug}-${idx}`}
+              className="rounded-2xl overflow-hidden border border-white/10 bg-white/5"
+            >
+              <div className="relative h-[220px] w-full">
                 <Image
-                  src={src}
-                  alt={`${service.name} image ${idx + 1}`}
+                  src={v.src} // ✅ THIS is the key fix (use the exact /services/... path)
+                  alt={v.alt}
                   fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
                   className="object-cover"
+                  priority={idx === 0}
                 />
+              </div>
+
+              <div className="p-4">
+                <div className="font-semibold">{v.title}</div>
+                <p className="mt-1 text-sm text-white/75">{v.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Quick Facts */}
+      {detail.quickFacts?.length ? (
+        <section className="mb-8 rounded-2xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-xl font-semibold">Quick facts</h2>
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+            {detail.quickFacts.map((f, i) => (
+              <div
+                key={`${detail.slug}-fact-${i}`}
+                className="rounded-xl border border-white/10 bg-black/20 p-4"
+              >
+                <div className="text-sm text-white/60">{f.label}</div>
+                <div className="mt-1 font-semibold">{f.value}</div>
               </div>
             ))}
           </div>
-        ) : null}
+        </section>
+      ) : null}
 
-        <div className="mt-8 grid gap-6">
-          <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-            <h2 className="text-xl font-semibold">What it is</h2>
-            <p className="mt-2 text-white/70">{service.whatItIs}</p>
-          </div>
+      {/* What it is */}
+      <section className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-6">
+        <h2 className="text-xl font-semibold">What it is</h2>
+        <p className="mt-2 text-white/75">{detail.whatItIs}</p>
+      </section>
 
-          {whyYouNeedIt.length > 0 ? (
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-              <h2 className="text-xl font-semibold">Why you need it</h2>
-              <ul className="mt-3 list-disc pl-5 text-white/70 space-y-2">
-                {whyYouNeedIt.map((t: string, i: number) => (
-                  <li key={`${t}-${i}`}>{t}</li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
+      {/* Why you need it */}
+      <section className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-6">
+        <h2 className="text-xl font-semibold">Why you need it</h2>
+        <ul className="mt-3 space-y-2 text-white/75 list-disc pl-5">
+          {detail.whyYouNeedIt.map((item, i) => (
+            <li key={`${detail.slug}-why-${i}`}>{item}</li>
+          ))}
+        </ul>
+      </section>
 
-          {whatYouGet.length > 0 ? (
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-              <h2 className="text-xl font-semibold">What you get</h2>
-              <ul className="mt-3 list-disc pl-5 text-white/70 space-y-2">
-                {whatYouGet.map((t: string, i: number) => (
-                  <li key={`${t}-${i}`}>{t}</li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
+      {/* What you get */}
+      <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <h2 className="text-xl font-semibold">What you get</h2>
+        <ul className="mt-3 space-y-2 text-white/75 list-disc pl-5">
+          {detail.whatYouGet.map((item, i) => (
+            <li key={`${detail.slug}-get-${i}`}>{item}</li>
+          ))}
+        </ul>
 
-          {deliverables.length > 0 ? (
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-              <h2 className="text-xl font-semibold">Deliverables</h2>
-              <ul className="mt-3 list-disc pl-5 text-white/70 space-y-2">
-                {deliverables.map((t: string, i: number) => (
-                  <li key={`${t}-${i}`}>{t}</li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-
-          {misconceptions.length > 0 ? (
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-              <h2 className="text-xl font-semibold">Common misconceptions</h2>
-              <ul className="mt-3 list-disc pl-5 text-white/70 space-y-2">
-                {misconceptions.map((t: string, i: number) => (
-                  <li key={`${t}-${i}`}>{t}</li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-
-          {goodFitIf.length > 0 ? (
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-5">
-              <h2 className="text-xl font-semibold">Good fit if</h2>
-              <ul className="mt-3 list-disc pl-5 text-white/70 space-y-2">
-                {goodFitIf.map((t: string, i: number) => (
-                  <li key={`${t}-${i}`}>{t}</li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-        </div>
-
-        <div className="mt-10 flex flex-col sm:flex-row gap-3">
+        <div className="mt-6">
           <Link
             href="/request-quote"
-            className="rounded-xl bg-white text-black font-semibold px-4 py-2 text-center"
+            className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold bg-white text-black hover:bg-white/90 transition"
           >
-            Request a Quote
-          </Link>
-          <Link
-            href="/contact"
-            className="rounded-xl bg-white/10 border border-white/10 px-4 py-2 hover:bg-white/15 text-center"
-          >
-            Contact
+            Get Pricing / Schedule
           </Link>
         </div>
-      </div>
-    </section>
+      </section>
+    </main>
   );
 }
