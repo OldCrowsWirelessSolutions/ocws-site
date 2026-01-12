@@ -1,81 +1,70 @@
 // app/components/IndustryTiles.tsx
-"use client";
-
 import Link from "next/link";
-import { useMemo } from "react";
-import { industries as defaultIndustries } from "@/app/data/catalog";
+import Image from "next/image";
+import { industries } from "../data/industries";
 
-type Industry = {
-  key: string;
-  name: string;
-  tagline: string;
-  image: string;
-};
-
-export default function IndustryTiles({ items }: { items?: Industry[] }) {
-  const list = items ?? (defaultIndustries as unknown as Industry[]);
-
+export default function IndustryTiles() {
   return (
-    <section className="mx-auto max-w-6xl px-6 pb-16">
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {list.map((industry) => (
-          <IndustryCard key={industry.key} industry={industry} />
+    <section className="mt-14">
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <h2 className="text-xl md:text-2xl font-semibold tracking-tight text-white">
+            Industries
+          </h2>
+          <p className="mt-2 ocws-muted text-sm md:text-base">
+            Industries we serve, supporting environments where reliable wireless performance matters.
+          </p>
+        </div>
+
+        <Link href="/industries" className="ocws-btn ocws-btn-ghost">
+          View all
+        </Link>
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {industries.map((ind) => (
+          <Link
+            key={ind.slug}
+            href={`/services?industry=${encodeURIComponent(ind.slug)}`}
+            className="ocws-tile ocws-tile-hover overflow-hidden group"
+          >
+            <div className="relative h-44 w-full">
+              <Image
+                src={ind.imageSrc}
+                alt={ind.imageAlt}
+                fill
+                sizes="(max-width: 1024px) 100vw, 33vw"
+                className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10" />
+
+              {ind.badge ? (
+                <div className="absolute left-3 top-3 rounded-full border border-white/15 bg-black/40 px-3 py-1 text-xs text-white/80 backdrop-blur">
+                  {ind.badge}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="p-5">
+              <div className="flex items-start justify-between gap-4">
+                <h3 className="text-base md:text-lg font-semibold text-white">
+                  {ind.name}
+                </h3>
+                <span
+                  className="text-white/35 group-hover:text-white/70 transition"
+                  aria-hidden="true"
+                >
+                  →
+                </span>
+              </div>
+
+              <p className="mt-2 text-sm ocws-muted leading-relaxed">
+                {ind.description}
+              </p>
+            </div>
+          </Link>
         ))}
       </div>
     </section>
-  );
-}
-
-function IndustryCard({ industry }: { industry: Industry }) {
-  const fallbackGradient = useMemo(() => {
-    const map: Record<string, string> = {
-      home: "from-white/10 to-white/0",
-      healthcare: "from-ocws-cyan/20 to-white/0",
-      education: "from-ocws-gold/20 to-white/0",
-      hospitality: "from-white/10 to-ocws-cyan/10",
-      "public-safety": "from-ocws-gold/20 to-white/0",
-      government: "from-white/10 to-ocws-gold/10",
-      enterprise: "from-ocws-cyan/15 to-white/0",
-      retail: "from-white/10 to-ocws-cyan/10",
-      industrial: "from-white/10 to-ocws-gold/10",
-    };
-    return map[industry.key] ?? "from-white/10 to-white/0";
-  }, [industry.key]);
-
-  return (
-    <Link
-      href={`/industries/${industry.key}`}
-      className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-soft transition hover:border-white/20"
-    >
-      {/* Image area: fixed height so it can’t blow up */}
-      <div className="relative h-48 w-full overflow-hidden">
-        {/* Premium fallback always present */}
-        <div className={`absolute inset-0 bg-gradient-to-b ${fallbackGradient}`} />
-
-        {/* PNG industry image */}
-        <img
-          src={industry.image}
-          alt={industry.name}
-          className="absolute inset-0 h-full w-full object-cover opacity-90 transition duration-300 group-hover:opacity-100"
-          onError={(e) => {
-            // Hide broken image icon while keeping the premium gradient fallback
-            (e.currentTarget as HTMLImageElement).style.display = "none";
-          }}
-        />
-
-        {/* Readability overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-ocws-midnight/85 via-ocws-midnight/35 to-transparent" />
-      </div>
-
-      <div className="p-6">
-        <h3 className="text-lg font-semibold tracking-tight">{industry.name}</h3>
-        <p className="mt-2 text-sm text-white/70">{industry.tagline}</p>
-
-        <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white/85">
-          <span className="h-2 w-2 rounded-full bg-ocws-cyan transition group-hover:bg-ocws-gold" />
-          Explore
-        </div>
-      </div>
-    </Link>
   );
 }
