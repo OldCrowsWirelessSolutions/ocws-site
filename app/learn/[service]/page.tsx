@@ -11,13 +11,12 @@ type PageProps = {
 
 export default function LearnServicePage({ params }: PageProps) {
   const detail = getServiceDetailBySlug(params.service);
-
   if (!detail) notFound();
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10">
+    <main className="mx-auto max-w-6xl px-4 py-8 md:py-10">
       {/* Top */}
-      <section className="mb-6">
+      <section className="mb-5 md:mb-6">
         <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
           {detail.title}
         </h1>
@@ -25,11 +24,11 @@ export default function LearnServicePage({ params }: PageProps) {
           {detail.short}
         </p>
 
-        <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-5">
+        <div className="mt-4 md:mt-5 rounded-2xl border border-white/10 bg-white/5 p-5">
           <p className="text-white/90 font-medium">{detail.tagline}</p>
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-3">
+        <div className="mt-4 md:mt-5 flex flex-wrap gap-3">
           <Link
             href="/request-quote"
             className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold bg-white text-black hover:bg-white/90 transition"
@@ -46,15 +45,20 @@ export default function LearnServicePage({ params }: PageProps) {
         </div>
       </section>
 
-      {/* Visuals / Images */}
-      <section className="mb-10">
+      {/* Visuals */}
+      <section className="mb-8 md:mb-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {detail.visuals.map((v, idx) => (
             <div
               key={`${detail.slug}-${idx}`}
-              className="rounded-2xl overflow-hidden border border-white/10 bg-white/5"
+              className="
+                rounded-2xl overflow-hidden border border-white/10 bg-white/5
+                transition
+                hover:bg-white/7 hover:border-white/20
+                hover:-translate-y-[1px]
+              "
             >
-              <div className="relative h-[220px] w-full">
+              <div className="relative h-[220px] md:h-[210px] lg:h-[220px] w-full">
                 <Image
                   src={v.src}
                   alt={v.alt}
@@ -65,7 +69,6 @@ export default function LearnServicePage({ params }: PageProps) {
                 />
               </div>
 
-              {/* ✅ Title removed — keeping only the caption/desc */}
               <div className="p-4">
                 <p className="text-sm text-white/75">{v.desc}</p>
               </div>
@@ -76,7 +79,7 @@ export default function LearnServicePage({ params }: PageProps) {
 
       {/* Quick Facts */}
       {detail.quickFacts?.length ? (
-        <section className="mb-8 rounded-2xl border border-white/10 bg-white/5 p-6">
+        <section className="mb-6 md:mb-8 rounded-2xl border border-white/10 bg-white/5 p-5 md:p-6">
           <h2 className="text-xl font-semibold">Quick facts</h2>
           <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
             {detail.quickFacts.map((f, i) => (
@@ -93,13 +96,13 @@ export default function LearnServicePage({ params }: PageProps) {
       ) : null}
 
       {/* What it is */}
-      <section className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-6">
+      <section className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-5 md:p-6">
         <h2 className="text-xl font-semibold">What it is</h2>
         <p className="mt-2 text-white/75">{detail.whatItIs}</p>
       </section>
 
       {/* Why you need it */}
-      <section className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-6">
+      <section className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-5 md:p-6">
         <h2 className="text-xl font-semibold">Why you need it</h2>
         <ul className="mt-3 space-y-2 text-white/75 list-disc pl-5">
           {detail.whyYouNeedIt.map((item, i) => (
@@ -109,7 +112,7 @@ export default function LearnServicePage({ params }: PageProps) {
       </section>
 
       {/* What you get */}
-      <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+      <section className="rounded-2xl border border-white/10 bg-white/5 p-5 md:p-6">
         <h2 className="text-xl font-semibold">What you get</h2>
         <ul className="mt-3 space-y-2 text-white/75 list-disc pl-5">
           {detail.whatYouGet.map((item, i) => (

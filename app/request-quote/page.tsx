@@ -55,11 +55,11 @@ export default function RequestQuotePage() {
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
 
-  // Preselect when coming from tiles (optional, supports future linking)
+  // Preselect when coming from tiles
   const [serviceHref, setServiceHref] = useState<string>(sp.get("service") || "");
   const [industrySlug, setIndustrySlug] = useState<string>(sp.get("industry") || "");
 
-  // Trigger questions (only used to compute addendums)
+  // Trigger questions
   const [acreage, setAcreage] = useState<string>("");
   const [hasDetachedStructures, setHasDetachedStructures] = useState(false);
 
@@ -152,7 +152,7 @@ export default function RequestQuotePage() {
   const canSubmit = name.trim() && email.trim() && message.trim();
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10">
+    <main className="mx-auto max-w-6xl px-4 py-8 md:py-10">
       <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
         Request a Quote
       </h1>
@@ -163,15 +163,13 @@ export default function RequestQuotePage() {
       </p>
 
       <form
-        className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6"
+        className="mt-7 md:mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6"
         onSubmit={(e) => {
           e.preventDefault();
           if (!canSubmit) return;
 
           setIsSubmitting(true);
 
-          // ✅ This is the payload you want your backend/email handler to receive.
-          // For now, we just log it so you can verify.
           const payload = {
             name,
             email,
@@ -193,7 +191,7 @@ export default function RequestQuotePage() {
         }}
       >
         {/* LEFT: FORM */}
-        <div className="lg:col-span-2 rounded-2xl border border-white/10 bg-white/5 p-6 space-y-6">
+        <div className="lg:col-span-2 rounded-2xl border border-white/10 bg-white/5 p-5 md:p-6 space-y-6">
           {/* Service + Industry */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -279,7 +277,7 @@ export default function RequestQuotePage() {
             />
           </div>
 
-          {/* Trigger Questions (only show what matters) */}
+          {/* Trigger Questions */}
           {showHomeTriggers ? (
             <div className="rounded-2xl border border-white/10 bg-black/20 p-5 space-y-3">
               <div className="font-semibold">Home / estate scope checks</div>
@@ -296,7 +294,7 @@ export default function RequestQuotePage() {
                     className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-white/20"
                   />
                 </div>
-                <label className="inline-flex items-center gap-2 text-sm mt-7">
+                <label className="inline-flex items-center gap-2 text-sm md:mt-7">
                   <input
                     type="checkbox"
                     checked={hasDetachedStructures}
@@ -430,6 +428,9 @@ export default function RequestQuotePage() {
               />
               Site is outside the standard service region (over 50 miles from Pensacola, FL)
             </label>
+            <p className="text-xs text-white/60">
+              If travel applies, we’ll confirm mobilization expectations before scheduling.
+            </p>
           </div>
 
           <p className="text-xs text-white/60">
@@ -469,34 +470,75 @@ export default function RequestQuotePage() {
         </div>
 
         {/* RIGHT: ADDENDUMS + NOTES */}
-        <aside className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
-          <h2 className="font-semibold">Applicable addendums</h2>
+        <aside className="rounded-2xl border border-white/10 bg-white/5 p-5 md:p-6 space-y-4">
+          {/* Desktop title */}
+          <h2 className="hidden lg:block font-semibold">Applicable addendums</h2>
 
-          {recommendedAddendums.length ? (
-            <div className="space-y-3">
-              {recommendedAddendums.map((a) => (
-                <div
-                  key={a.key}
-                  className="rounded-xl border border-white/10 bg-black/30 p-4"
-                >
-                  <div className="font-semibold">{a.title}</div>
-                  <p className="mt-1 text-sm text-white/70">{a.description}</p>
+          {/* ✅ Mobile accordion */}
+          <details className="lg:hidden rounded-xl border border-white/10 bg-black/25">
+            <summary className="cursor-pointer select-none px-4 py-3 font-semibold">
+              Applicable addendums
+              <span className="ml-2 text-xs text-white/60">
+                ({recommendedAddendums.length || 0})
+              </span>
+            </summary>
+
+            <div className="px-4 pb-4 pt-1 space-y-3">
+              {recommendedAddendums.length ? (
+                <>
+                  {recommendedAddendums.map((a) => (
+                    <div
+                      key={a.key}
+                      className="rounded-xl border border-white/10 bg-black/30 p-4"
+                    >
+                      <div className="font-semibold">{a.title}</div>
+                      <p className="mt-1 text-sm text-white/70">{a.description}</p>
+                    </div>
+                  ))}
+                  <p className="text-xs text-white/60">
+                    Recommendations based on current inputs. Final scope confirmed before scheduling.
+                  </p>
+                </>
+              ) : (
+                <div className="text-sm text-white/70">
+                  No addendums indicated based on current inputs.
                 </div>
-              ))}
-              <p className="text-xs text-white/60">
-                These are recommendations based on your selections and scope checks.
-                We’ll confirm final scope before scheduling.
-              </p>
+              )}
             </div>
-          ) : (
-            <div className="text-sm text-white/70">
-              No addendums indicated based on current inputs.
-            </div>
-          )}
+          </details>
 
-          <div className="mt-2 rounded-xl border border-white/10 bg-black/30 p-4 text-sm text-white/70">
-            Tip: Include building size (sq ft), number of floors, and any critical
-            areas (IDFs, stairwells, server rooms).
+          {/* ✅ Desktop block stays always visible */}
+          <div className="hidden lg:block">
+            {recommendedAddendums.length ? (
+              <div className="space-y-3">
+                {recommendedAddendums.map((a) => (
+                  <div
+                    key={a.key}
+                    className="rounded-xl border border-white/10 bg-black/30 p-4"
+                  >
+                    <div className="font-semibold">{a.title}</div>
+                    <p className="mt-1 text-sm text-white/70">{a.description}</p>
+                  </div>
+                ))}
+                <p className="text-xs text-white/60">
+                  Recommendations based on current inputs. Final scope confirmed before scheduling.
+                </p>
+              </div>
+            ) : (
+              <div className="text-sm text-white/70">
+                No addendums indicated based on current inputs.
+              </div>
+            )}
+
+            <div className="mt-4 rounded-xl border border-white/10 bg-black/30 p-4 text-sm text-white/70">
+              Tip: Include building size (sq ft), number of floors, and any critical
+              areas (IDFs, stairwells, server rooms).
+            </div>
+          </div>
+
+          {/* Mobile tip (always visible, compact) */}
+          <div className="lg:hidden rounded-xl border border-white/10 bg-black/30 p-4 text-sm text-white/70">
+            Tip: Include building size (sq ft), floors, and critical areas (IDFs, server rooms).
           </div>
         </aside>
       </form>
