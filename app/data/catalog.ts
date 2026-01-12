@@ -4,6 +4,7 @@
 
 export type ServiceKey =
   | "premium-home-rf-optimization"
+  | "commercial-connectivity-rf-baseline-survey"
   | "p25-network-survey"
   | "das-design-sow"
   | "rfi-hunting"
@@ -150,6 +151,59 @@ export const services: Service[] = [
     ],
     startingPrice: "$750 (typical)",
     typicalDuration: "Single site visit (approx. 3–4 hours) + report delivery",
+  },
+
+  // NEW — Baseline Survey (small business and above)
+  {
+    key: "commercial-connectivity-rf-baseline-survey",
+    name: "Commercial Connectivity & RF Baseline Survey",
+    short:
+      "Establish a defensible baseline across cellular, Wi-Fi, and RF conditions—then receive prioritized recommendations and next-step options.",
+    headline:
+      "Get a defensible baseline first—then invest with confidence using evidence-driven recommendations.",
+    whatItIs:
+      "A baseline survey for small business and larger commercial environments that documents real-world connectivity performance (Wi-Fi + cellular) and the surrounding RF environment, producing a prioritized action plan and clear next-step paths.",
+    whyYouNeedIt: [
+      "Most “fixes” fail because the real constraint wasn’t measured first (coverage, airtime, noise, or carrier limitations).",
+      "A baseline gives stakeholders a shared, objective picture—reducing churn between IT, vendors, and end users.",
+      "Clear findings and prioritized recommendations prevent wasted spend on random hardware swaps.",
+    ],
+    verticals: ["commercial"],
+    forVerticals: ["commercial"],
+    forIndustries: ["small-business", "healthcare", "hospitality", "education", "industrial"],
+    bullets: [
+      "Baseline Wi-Fi performance + problem-zone identification",
+      "Cellular snapshot (multi-carrier where available) + indoor gap notes",
+      "RF environment observations with risk notes and interference indicators",
+      "Prioritized recommendations (quick wins → larger lifts)",
+    ],
+    deliverables: [
+      "Baseline findings summary (plain-English + technical notes as applicable)",
+      "Coverage/performance observations by key areas and use-cases",
+      "Prioritized recommendations + next-step options (validation, RFI hunt, DAS design, etc.)",
+    ],
+    networksCovered: ["Wi-Fi", "Cellular", "RF Environment (observed)"],
+    commonMisconceptions: [
+      "“If speed tests are fine, Wi-Fi is fine.” (Roaming, airtime, retries, and noise can still break real use.)",
+      "“More APs always fixes it.” (Poor channel planning and interference can worsen performance.)",
+      "“Cell signal boosters solve everything.” (Without a baseline, boosters can amplify problems.)",
+    ],
+    whatYouGet: [
+      "A defensible baseline you can share with IT, vendors, and stakeholders",
+      "Clear prioritization (what to fix first and why)",
+      "Decision-ready next steps based on what the data shows (not guesses)",
+    ],
+    goodFitIf: [
+      "Users report dropouts, dead zones, or unreliable VoIP/video",
+      "Performance varies by area/time of day",
+      "You’re planning upgrades and want evidence before buying hardware",
+      "You need a neutral, third-party baseline to align stakeholders",
+    ],
+    href: "/learn/commercial-connectivity-rf-baseline-survey",
+    image: "/services/baseline-1.jpg",
+    images: ["/services/baseline-1.jpg", "/services/baseline-2.jpg", "/services/baseline-3.jpg"],
+    startingPrice: "Quoted per site",
+    typicalDuration: "On-site survey + report delivery (typical 3–7 business days)",
   },
 
   {
@@ -368,7 +422,12 @@ export const industries: Industry[] = [
     description:
       "Coverage and performance diagnostics to stabilize Wi-Fi and cellular-dependent operations.",
     verticals: ["commercial"],
-    recommendedServices: ["rfi-hunting", "post-install-validation", "das-design-sow"],
+    recommendedServices: [
+      "commercial-connectivity-rf-baseline-survey",
+      "rfi-hunting",
+      "post-install-validation",
+      "das-design-sow",
+    ],
     href: "/industries/small-business",
     image: "/industries/small-business.jpg",
   },
@@ -380,7 +439,12 @@ export const industries: Industry[] = [
     description:
       "RF-focused assessments designed to improve reliability without accessing sensitive data.",
     verticals: ["commercial", "public-safety"],
-    recommendedServices: ["post-install-validation", "rfi-hunting", "p25-network-survey"],
+    recommendedServices: [
+      "commercial-connectivity-rf-baseline-survey",
+      "post-install-validation",
+      "rfi-hunting",
+      "p25-network-survey",
+    ],
     href: "/industries/healthcare",
     image: "/industries/healthcare.jpg",
   },
@@ -392,7 +456,12 @@ export const industries: Industry[] = [
     description:
       "Survey and validation support for reliable guest experience and staff operations.",
     verticals: ["commercial"],
-    recommendedServices: ["post-install-validation", "rfi-hunting", "das-design-sow"],
+    recommendedServices: [
+      "commercial-connectivity-rf-baseline-survey",
+      "post-install-validation",
+      "rfi-hunting",
+      "das-design-sow",
+    ],
     href: "/industries/hospitality",
     image: "/industries/hospitality.jpg",
   },
@@ -404,7 +473,12 @@ export const industries: Industry[] = [
     description:
       "Coverage assessment and performance validation across classrooms and common areas.",
     verticals: ["commercial", "public-safety"],
-    recommendedServices: ["post-install-validation", "rfi-hunting", "p25-network-survey"],
+    recommendedServices: [
+      "commercial-connectivity-rf-baseline-survey",
+      "post-install-validation",
+      "rfi-hunting",
+      "p25-network-survey",
+    ],
     href: "/industries/education",
     image: "/industries/education.jpg",
   },
@@ -416,7 +490,12 @@ export const industries: Industry[] = [
     description:
       "Interference identification and coverage diagnostics in environments where downtime is expensive.",
     verticals: ["commercial"],
-    recommendedServices: ["rfi-hunting", "post-install-validation", "das-design-sow"],
+    recommendedServices: [
+      "commercial-connectivity-rf-baseline-survey",
+      "rfi-hunting",
+      "post-install-validation",
+      "das-design-sow",
+    ],
     href: "/industries/industrial",
     image: "/industries/industrial.jpg",
   },

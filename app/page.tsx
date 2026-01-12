@@ -49,7 +49,8 @@ export default function HomePage() {
                 </span>
               </div>
               <p className="mt-3 text-sm ocws-muted leading-relaxed">
-                Diagnose interference and performance bottlenecks with a clear, evidence-driven action plan.
+                Diagnose interference and performance bottlenecks with a clear,
+                evidence-driven action plan.
               </p>
               <div className="mt-4 text-xs ocws-muted2">Most popular</div>
             </Link>
@@ -68,9 +69,32 @@ export default function HomePage() {
                 </span>
               </div>
               <p className="mt-3 text-sm ocws-muted leading-relaxed">
-                Improve reliability for staff, customers, and critical devices with evidence-driven findings.
+                Improve reliability for staff, customers, and critical devices
+                with evidence-driven findings.
               </p>
               <div className="mt-4 text-xs ocws-muted2">Small business-ready</div>
+            </Link>
+
+            {/* NEW — Baseline Survey (small business and above) */}
+            <Link
+              href="/services/commercial-connectivity-rf-baseline-survey"
+              className="ocws-tile ocws-tile-hover p-6"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <h3 className="text-lg font-semibold text-white">
+                  Commercial Connectivity & RF Baseline Survey
+                </h3>
+                <span className="text-white/40" aria-hidden="true">
+                  →
+                </span>
+              </div>
+              <p className="mt-3 text-sm ocws-muted leading-relaxed">
+                Establish a defensible baseline across cellular, Wi-Fi, and RF
+                conditions—then get prioritized recommendations and next steps.
+              </p>
+              <div className="mt-4 text-xs ocws-muted2">
+                Recommended first step (B2B)
+              </div>
             </Link>
 
             <Link href="/services/rfi-hunting" className="ocws-tile ocws-tile-hover p-6">
@@ -83,7 +107,8 @@ export default function HomePage() {
                 </span>
               </div>
               <p className="mt-3 text-sm ocws-muted leading-relaxed">
-                Locate and characterize disruptive RF sources impacting critical wireless systems or electronics.
+                Locate and characterize disruptive RF sources impacting critical
+                wireless systems or electronics.
               </p>
               <div className="mt-4 text-xs ocws-muted2">Advanced diagnostics</div>
             </Link>
@@ -98,7 +123,8 @@ export default function HomePage() {
                 </span>
               </div>
               <p className="mt-3 text-sm ocws-muted leading-relaxed">
-                Grid testing and reporting to support AHJ / Fire Marshal review and compliance workflows.
+                Grid testing and reporting to support AHJ / Fire Marshal review and
+                compliance workflows.
               </p>
               <div className="mt-4 text-xs ocws-muted2">Compliance-ready evidence</div>
             </Link>
@@ -113,7 +139,8 @@ export default function HomePage() {
                 </span>
               </div>
               <p className="mt-3 text-sm ocws-muted leading-relaxed">
-                Donor signal survey + in-building gap analysis + blueprint outputs to guide integrators and budgeting.
+                Donor signal survey + in-building gap analysis + blueprint outputs
+                to guide integrators and budgeting.
               </p>
               <div className="mt-4 text-xs ocws-muted2">Commercial environments</div>
             </Link>
