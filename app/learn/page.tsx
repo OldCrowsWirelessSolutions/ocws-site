@@ -20,7 +20,7 @@ const ARTICLES: ArticleCard[] = [
     href: "/learn/signal-strength-vs-quality",
     title: "Signal Strength vs Signal Quality",
     description:
-      "Why “bars” lie: RSSI/RSRP vs SINR, noise floor, and what actually predicts performance.",
+      "Why “bars” lie: strength vs usability, noise floor, and what actually predicts performance.",
     tag: "Core concept",
   },
   {
@@ -45,13 +45,13 @@ const ARTICLES: ArticleCard[] = [
     href: "/learn/coverage-materials-layout",
     title: "Coverage, Building Materials, and Layout",
     description:
-      "How walls, glass, metal, and geometry create dead zones—and why moving an AP 8 feet can matter.",
+      "How materials and geometry create dead zones—and why moving an AP can matter.",
   },
   {
     href: "/learn/what-you-get-deliverables",
     title: "What You Get From an OCWS Engagement",
     description:
-      "Deliverables, validation, and how to turn findings into a defensible plan of action.",
+      "Deliverables, validation, and how we turn findings into a defensible plan.",
     tag: "Client-ready",
   },
 ];
@@ -92,7 +92,7 @@ export default function LearnPage() {
                   {a.description}
                 </div>
                 <div className="mt-4 text-sm text-white/70 group-hover:text-white transition">
-                  Read → 
+                  Read →
                 </div>
               </Link>
             ))}

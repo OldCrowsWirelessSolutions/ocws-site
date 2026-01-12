@@ -31,16 +31,14 @@ export default function Page() {
             />
             <Card
               title="What it feels like"
-              body="Random drops, voice choppiness, high latency spikes, throughput that collapses at certain times, or specific rooms that behave ‘haunted.’"
+              body="Random drops, voice choppiness, latency spikes, throughput collapse at certain times, or specific rooms that behave ‘haunted.’"
             />
             <Card
               title="How OCWS hunts RFI"
               body="We look for noise patterns, correlate performance to time/location, and isolate candidates using measurement—not guesswork."
             />
             <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-5">
-              <div className="text-sm font-semibold text-white">
-                Pro tip
-              </div>
+              <div className="text-sm font-semibold text-white">Pro tip</div>
               <p className="mt-2 text-sm leading-6 text-white/75">
                 If performance changes when certain equipment is on/off, that’s a strong RFI clue.
                 Don’t replace your router first—measure and confirm.

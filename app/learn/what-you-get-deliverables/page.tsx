@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "What You Get From OCWS | OCWS Learn",
   description:
-    "Understand OCWS deliverables, what validation means, and how to turn results into a plan.",
+    "Understand OCWS deliverables, what validation means, and how results turn into a plan.",
 };
 
 export default function Page() {
@@ -30,22 +30,20 @@ export default function Page() {
             />
             <Card
               title="Prioritized recommendations"
-              body="The highest ROI fixes first: placement, configuration, channel planning, or targeted hardware where it’s truly justified."
+              body="High ROI fixes first: placement, configuration, channel planning, and targeted hardware only when justified."
             />
             <Card
               title="A defensible plan"
-              body="Clear steps that your internal team or installer can execute without guesswork, plus optional vendor/equipment guidance."
+              body="Clear steps your internal team or installer can execute without guesswork, plus optional equipment guidance."
             />
             <Card
               title="Post-change validation"
-              body="Optional re-testing to confirm improvement and document the results—especially important for business environments and ROI."
+              body="Optional re-testing to confirm improvement and document results—especially important for business environments and ROI."
             />
             <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-5">
-              <div className="text-sm font-semibold text-white">
-                Next step
-              </div>
+              <div className="text-sm font-semibold text-white">Next step</div>
               <p className="mt-2 text-sm leading-6 text-white/75">
-                If you want, we can scope a fast assessment first, then expand only if the data supports it.
+                If you want, we can start with a fast assessment, then expand only if the data supports it.
               </p>
               <div className="mt-4">
                 <Link href="/request-quote" className="ocws-btn ocws-btn-primary">
