@@ -36,13 +36,19 @@ export const ALL_SERVICES: ServiceCard[] = [
       "Donor signal survey + in-building gap analysis + blueprint outputs to guide integrators and budgeting.",
     footnote: "Commercial environments",
   },
+
+  // NEW — baseline survey for small business and above
   {
-    href: "/services/small-business-rf-assessment",
-    title: "Small Business Connectivity & RF Assessment",
+    href: "/services/commercial-connectivity-rf-baseline-survey",
+    title: "Commercial Connectivity & RF Baseline Survey",
     description:
-      "Evidence-driven RF and Wi-Fi assessment to improve reliability for staff, customers, and critical devices.",
-    footnote: "Small business-ready",
+      "Establish a defensible baseline across cellular, Wi-Fi, and RF conditions—then receive prioritized recommendations and next-step options for your environment.",
+    footnote: "Recommended first step (B2B)",
   },
+
+  // NOTE: Option A decision — Small Business uses the Baseline Survey as the single recommended
+  // starting point. The "Small Business Connectivity & RF Assessment" service is intentionally
+  // not listed here to avoid redundant/overlapping recommendations in the UI.
 ];
 
 /**
@@ -56,34 +62,66 @@ export const INDUSTRY_TO_SERVICE_HREFS: Record<string, string[]> = {
     "/services/rfi-hunting",
   ],
 
-  // Small Business (professional offices, small orgs)
+  // Small Business (professional offices, small orgs) — Option A: one clear baseline entry
   "small-business": [
-    "/services/small-business-rf-assessment",
+    "/services/commercial-connectivity-rf-baseline-survey",
     "/services/rfi-hunting",
     "/services/cellular-das-design",
   ],
 
   // Healthcare
-  healthcare: ["/services/cellular-das-design", "/services/rfi-hunting"],
+  healthcare: [
+    "/services/commercial-connectivity-rf-baseline-survey",
+    "/services/cellular-das-design",
+    "/services/rfi-hunting",
+  ],
 
   // Hospitality
-  hospitality: ["/services/rfi-hunting", "/services/cellular-das-design"],
+  hospitality: [
+    "/services/commercial-connectivity-rf-baseline-survey",
+    "/services/rfi-hunting",
+    "/services/cellular-das-design",
+  ],
 
   // Retail
-  retail: ["/services/rfi-hunting", "/services/cellular-das-design"],
+  retail: [
+    "/services/commercial-connectivity-rf-baseline-survey",
+    "/services/rfi-hunting",
+    "/services/cellular-das-design",
+  ],
 
   // Industrial
-  industrial: ["/services/rfi-hunting", "/services/cellular-das-design"],
+  industrial: [
+    "/services/commercial-connectivity-rf-baseline-survey",
+    "/services/rfi-hunting",
+    "/services/cellular-das-design",
+  ],
 
   // Education
-  education: ["/services/cellular-das-design", "/services/rfi-hunting"],
+  education: [
+    "/services/commercial-connectivity-rf-baseline-survey",
+    "/services/cellular-das-design",
+    "/services/rfi-hunting",
+  ],
 
   // Enterprise
-  enterprise: ["/services/cellular-das-design", "/services/rfi-hunting"],
+  enterprise: [
+    "/services/commercial-connectivity-rf-baseline-survey",
+    "/services/cellular-das-design",
+    "/services/rfi-hunting",
+  ],
 
   // Government (non-public-safety)
-  government: ["/services/cellular-das-design", "/services/rfi-hunting"],
+  government: [
+    "/services/commercial-connectivity-rf-baseline-survey",
+    "/services/cellular-das-design",
+    "/services/rfi-hunting",
+  ],
 
   // Public Safety (P25 / ERRC)
-  "public-safety": ["/services/p25-survey", "/services/cellular-das-design"],
+  "public-safety": [
+    "/services/commercial-connectivity-rf-baseline-survey",
+    "/services/p25-survey",
+    "/services/cellular-das-design",
+  ],
 };
