@@ -11,12 +11,24 @@ import {
 } from "@/app/data/intakeAddendums";
 
 const SERVICE_OPTIONS = [
-  { href: "/services/commercial-connectivity-rf-baseline-survey", label: "Commercial Connectivity & RF Baseline Survey" },
-  { href: "/services/premium-home-rf-optimization", label: "Premium Home & Home Office RF Optimization" },
+  {
+    href: "/services/commercial-connectivity-rf-baseline-survey",
+    label: "Commercial Connectivity & RF Baseline Survey",
+  },
+  {
+    href: "/services/premium-home-rf-optimization",
+    label: "Premium Home & Home Office RF Optimization",
+  },
   { href: "/services/rfi-hunting", label: "Radio Frequency Interference (RFI) Hunting" },
-  { href: "/services/cellular-das-design", label: "Cellular / DAS Survey & Design Blueprint" },
+  {
+    href: "/services/cellular-das-design",
+    label: "Cellular / DAS Survey & Design Blueprint",
+  },
   { href: "/services/p25-survey", label: "Public Safety (P25) ERRC Survey" },
-  { href: "/services/post-install-validation", label: "Post-Installation Validation & Acceptance Survey" },
+  {
+    href: "/services/post-install-validation",
+    label: "Post-Installation Validation & Acceptance Survey",
+  },
 ];
 
 const INDUSTRY_OPTIONS = [
@@ -44,12 +56,8 @@ export default function RequestQuotePage() {
   const [message, setMessage] = useState("");
 
   // Preselect when coming from tiles (optional, supports future linking)
-  const [serviceHref, setServiceHref] = useState<string>(
-    sp.get("service") || ""
-  );
-  const [industrySlug, setIndustrySlug] = useState<string>(
-    sp.get("industry") || ""
-  );
+  const [serviceHref, setServiceHref] = useState<string>(sp.get("service") || "");
+  const [industrySlug, setIndustrySlug] = useState<string>(sp.get("industry") || "");
 
   // Trigger questions (only used to compute addendums)
   const [acreage, setAcreage] = useState<string>("");
@@ -121,9 +129,17 @@ export default function RequestQuotePage() {
     serviceHref === "/services/cellular-das-design" ||
     serviceHref === "/services/p25-survey" ||
     serviceHref === "/services/post-install-validation" ||
-    ["small-business", "healthcare", "hospitality", "retail", "industrial", "education", "enterprise", "government", "public-safety"].includes(
-      industrySlug
-    );
+    [
+      "small-business",
+      "healthcare",
+      "hospitality",
+      "retail",
+      "industrial",
+      "education",
+      "enterprise",
+      "government",
+      "public-safety",
+    ].includes(industrySlug);
 
   const showInterferenceTriggers =
     serviceHref === "/services/rfi-hunting" ||
@@ -412,7 +428,7 @@ export default function RequestQuotePage() {
                 onChange={(e) => setOutsideRegionTravel(e.target.checked)}
                 className="accent-white"
               />
-              Site is outside the standard service region (travel likely)
+              Site is outside the standard service region (over 50 miles from Pensacola, FL)
             </label>
           </div>
 
