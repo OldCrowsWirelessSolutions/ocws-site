@@ -1,3 +1,4 @@
+// app/components/ServicesGrid.tsx
 "use client";
 
 import Link from "next/link";
@@ -51,7 +52,10 @@ export default function ServicesGrid() {
                   href={`/learn/${svc.key}`}
                   className="inline-flex items-center rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15"
                 >
-                  Learn More <span className="ml-2 transition group-hover:translate-x-0.5">→</span>
+                  Learn More{" "}
+                  <span className="ml-2 transition group-hover:translate-x-0.5">
+                    →
+                  </span>
                 </Link>
 
                 <Link
