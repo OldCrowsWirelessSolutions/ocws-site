@@ -1,6 +1,7 @@
 // app/page.tsx
 import Link from "next/link";
 import Hero from "./components/Hero";
+import IndustryTiles from "./components/IndustryTiles";
 
 export const metadata = {
   title: "Old Crows Wireless Solutions (OCWS)",
@@ -10,13 +11,14 @@ export const metadata = {
 export default function HomePage() {
   return (
     <>
-      {/* FULL-WIDTH HERO */}
       <Hero />
 
-      {/* EVERYTHING BELOW HERO (constrained) */}
       <div className="ocws-container py-12 md:py-16">
-        {/* CORE SERVICES */}
-        <section>
+        {/* INDUSTRIES FIRST */}
+        <IndustryTiles />
+
+        {/* SERVICES UNDER INDUSTRIES */}
+        <section className="mt-14">
           <div className="flex items-end justify-between gap-4">
             <div>
               <h2 className="text-xl md:text-2xl font-semibold tracking-tight text-white">
@@ -51,10 +53,7 @@ export default function HomePage() {
               <div className="mt-4 text-xs ocws-muted2">Most popular</div>
             </Link>
 
-            <Link
-              href="/services/rfi-hunting"
-              className="ocws-tile ocws-tile-hover p-6"
-            >
+            <Link href="/services/rfi-hunting" className="ocws-tile ocws-tile-hover p-6">
               <div className="flex items-start justify-between gap-4">
                 <h3 className="text-lg font-semibold text-white">
                   Radio Frequency Interference (RFI) Hunting
@@ -69,10 +68,7 @@ export default function HomePage() {
               <div className="mt-4 text-xs ocws-muted2">Advanced diagnostics</div>
             </Link>
 
-            <Link
-              href="/services/p25-survey"
-              className="ocws-tile ocws-tile-hover p-6"
-            >
+            <Link href="/services/p25-survey" className="ocws-tile ocws-tile-hover p-6">
               <div className="flex items-start justify-between gap-4">
                 <h3 className="text-lg font-semibold text-white">
                   Public Safety (P25) ERRC Survey
@@ -87,10 +83,7 @@ export default function HomePage() {
               <div className="mt-4 text-xs ocws-muted2">Compliance-ready evidence</div>
             </Link>
 
-            <Link
-              href="/services/cellular-das-design"
-              className="ocws-tile ocws-tile-hover p-6"
-            >
+            <Link href="/services/cellular-das-design" className="ocws-tile ocws-tile-hover p-6">
               <div className="flex items-start justify-between gap-4">
                 <h3 className="text-lg font-semibold text-white">
                   Cellular / DAS Survey & Design Blueprint
@@ -107,7 +100,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* CTA */}
         <section className="mt-14 ocws-tile px-6 py-8 md:px-10 md:py-10">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div>
