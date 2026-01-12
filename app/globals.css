@@ -2,30 +2,133 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: dark; }
+/* =========================================
+   OCWS GLOBAL THEME TOKENS
+   ========================================= */
+:root {
+  /* Core */
+  --ocws-bg: #05070b;
+  --ocws-text: rgba(255, 255, 255, 0.92);
+  --ocws-muted: rgba(255, 255, 255, 0.70);
+  --ocws-muted2: rgba(255, 255, 255, 0.55);
 
-html, body { height: 100%; }
+  /* Brand */
+  --ocws-cyan: #00d4ff;
+  --ocws-cyan2: #00a3c9;
+  --ocws-gold: #d6b25e;
+  --ocws-gold2: #b8943e;
+
+  /* Panels / tiles */
+  --ocws-panel: rgba(255, 255, 255, 0.05);      /* opaque look */
+  --ocws-panelHover: rgba(255, 255, 255, 0.075);
+  --ocws-border: rgba(255, 255, 255, 0.12);
+  --ocws-borderHover: rgba(255, 255, 255, 0.18);
+
+  /* Shadows */
+  --ocws-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+}
+
+html,
+body {
+  height: 100%;
+}
 
 body {
-  @apply bg-black text-white antialiased;
+  background: var(--ocws-bg);
+  color: var(--ocws-text);
 }
 
-/* Make defaults look intentional even before we restyle components */
-a {
-  @apply text-white/80 hover:text-white underline underline-offset-4;
-}
+/* =========================================
+   GLOBAL LAYOUT HELPERS
+   ========================================= */
+@layer components {
+  .ocws-bg {
+    min-height: 100vh;
+    background:
+      radial-gradient(900px circle at 10% 0%, rgba(0, 212, 255, 0.10), transparent 55%),
+      radial-gradient(800px circle at 90% 20%, rgba(214, 178, 94, 0.09), transparent 60%),
+      linear-gradient(180deg, rgba(255,255,255,0.02), transparent 35%),
+      var(--ocws-bg);
+  }
 
-p { @apply text-white/70; }
-h1, h2, h3 { @apply text-white; }
+  .ocws-page {
+    min-height: calc(100vh - 120px);
+  }
 
-/* Form controls: consistent baseline */
-input, select, textarea {
-  @apply w-full rounded-xl bg-black/30 border border-white/10 px-3 py-2 text-white
-         outline-none focus:border-white/40;
-}
+  .ocws-container {
+    @apply mx-auto max-w-6xl px-6 md:px-10;
+  }
 
-label { @apply text-sm text-white/70; }
+  .ocws-h1 {
+    @apply text-3xl md:text-5xl font-semibold tracking-tight;
+  }
 
-button {
-  @apply rounded-xl bg-white text-black font-semibold px-4 py-2;
+  .ocws-h2 {
+    @apply text-xl md:text-2xl font-semibold tracking-tight;
+  }
+
+  .ocws-muted {
+    color: var(--ocws-muted);
+  }
+
+  .ocws-muted2 {
+    color: var(--ocws-muted2);
+  }
+
+  /* =========================================
+     THE “OPAQUE TILE” STANDARD (reusable)
+     ========================================= */
+  .ocws-tile {
+    background: var(--ocws-panel);
+    border: 1px solid var(--ocws-border);
+    border-radius: 1.25rem;
+    box-shadow: var(--ocws-shadow);
+  }
+
+  .ocws-tile-hover {
+    transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+  }
+
+  .ocws-tile-hover:hover {
+    background: var(--ocws-panelHover);
+    border-color: var(--ocws-borderHover);
+    transform: translateY(-1px);
+  }
+
+  .ocws-pill {
+    background: var(--ocws-panel);
+    border: 1px solid var(--ocws-border);
+    border-radius: 1.25rem;
+    padding: 1rem 1.25rem;
+  }
+
+  /* Buttons */
+  .ocws-btn {
+    @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold transition;
+  }
+
+  .ocws-btn-primary {
+    background: white;
+    color: black;
+  }
+  .ocws-btn-primary:hover {
+    opacity: 0.92;
+  }
+
+  .ocws-btn-ghost {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: white;
+  }
+  .ocws-btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.10);
+  }
+
+  /* Brand accents */
+  .ocws-accent-cyan {
+    color: var(--ocws-cyan);
+  }
+  .ocws-accent-gold {
+    color: var(--ocws-gold);
+  }
 }
