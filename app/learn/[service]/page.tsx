@@ -56,7 +56,7 @@ export default function LearnServicePage({ params }: PageProps) {
             >
               <div className="relative h-[220px] w-full">
                 <Image
-                  src={v.src} // ✅ THIS is the key fix (use the exact /services/... path)
+                  src={v.src}
                   alt={v.alt}
                   fill
                   sizes="(max-width: 768px) 100vw, 33vw"
@@ -65,9 +65,9 @@ export default function LearnServicePage({ params }: PageProps) {
                 />
               </div>
 
+              {/* ✅ Title removed — keeping only the caption/desc */}
               <div className="p-4">
-                <div className="font-semibold">{v.title}</div>
-                <p className="mt-1 text-sm text-white/75">{v.desc}</p>
+                <p className="text-sm text-white/75">{v.desc}</p>
               </div>
             </div>
           ))}
