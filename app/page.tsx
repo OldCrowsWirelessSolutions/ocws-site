@@ -2,6 +2,7 @@
 import Link from "next/link";
 import Hero from "./components/Hero";
 import IndustryTiles from "./components/IndustryTiles";
+import PreferredPricingCallout from "./components/PreferredPricingCallout";
 
 export const metadata = {
   title: "Old Crows Wireless Solutions (OCWS)",
@@ -119,6 +120,9 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* PREFERRED PRICING (Subtle) */}
+        <PreferredPricingCallout />
+
         <section className="mt-14 ocws-tile px-6 py-8 md:px-10 md:py-10">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div>
@@ -131,11 +135,11 @@ export default function HomePage() {
             </div>
 
             <div className="flex gap-3">
-              <Link href="/request-quote" className="ocws-btn ocws-btn-primary">
-                Request a Quote
+              <Link href="/services" className="ocws-btn ocws-btn-primary">
+                Explore Services
               </Link>
-              <Link href="/services" className="ocws-btn ocws-btn-ghost">
-                Services
+              <Link href="/learn" className="ocws-btn ocws-btn-ghost">
+                Learn
               </Link>
             </div>
           </div>
