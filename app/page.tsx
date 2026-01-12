@@ -53,10 +53,26 @@ export default function HomePage() {
               <div className="mt-4 text-xs ocws-muted2">Most popular</div>
             </Link>
 
+            {/* Small Business service (RESTORED) */}
             <Link
-              href="/services/rfi-hunting"
+              href="/services/small-business-rf-assessment"
               className="ocws-tile ocws-tile-hover p-6"
             >
+              <div className="flex items-start justify-between gap-4">
+                <h3 className="text-lg font-semibold text-white">
+                  Small Business Connectivity & RF Assessment
+                </h3>
+                <span className="text-white/40" aria-hidden="true">
+                  →
+                </span>
+              </div>
+              <p className="mt-3 text-sm ocws-muted leading-relaxed">
+                Improve reliability for staff, customers, and critical devices with evidence-driven findings.
+              </p>
+              <div className="mt-4 text-xs ocws-muted2">Small business-ready</div>
+            </Link>
+
+            <Link href="/services/rfi-hunting" className="ocws-tile ocws-tile-hover p-6">
               <div className="flex items-start justify-between gap-4">
                 <h3 className="text-lg font-semibold text-white">
                   Radio Frequency Interference (RFI) Hunting
@@ -71,10 +87,7 @@ export default function HomePage() {
               <div className="mt-4 text-xs ocws-muted2">Advanced diagnostics</div>
             </Link>
 
-            <Link
-              href="/services/p25-survey"
-              className="ocws-tile ocws-tile-hover p-6"
-            >
+            <Link href="/services/p25-survey" className="ocws-tile ocws-tile-hover p-6">
               <div className="flex items-start justify-between gap-4">
                 <h3 className="text-lg font-semibold text-white">
                   Public Safety (P25) ERRC Survey
@@ -89,10 +102,7 @@ export default function HomePage() {
               <div className="mt-4 text-xs ocws-muted2">Compliance-ready evidence</div>
             </Link>
 
-            <Link
-              href="/services/cellular-das-design"
-              className="ocws-tile ocws-tile-hover p-6"
-            >
+            <Link href="/services/cellular-das-design" className="ocws-tile ocws-tile-hover p-6">
               <div className="flex items-start justify-between gap-4">
                 <h3 className="text-lg font-semibold text-white">
                   Cellular / DAS Survey & Design Blueprint

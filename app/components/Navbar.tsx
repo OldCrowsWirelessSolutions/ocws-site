@@ -6,7 +6,9 @@ const navLinks = [
   { href: "/services", label: "Services" },
   { href: "/industries", label: "Industries" },
   { href: "/learn", label: "Learn" },
-  { href: "/testimonials", label: "Testimonials" },
+  { href: "/faq", label: "FAQ" },
+  // Hidden until real testimonials exist
+  // { href: "/testimonials", label: "Testimonials" },
 ];
 
 export default function Navbar() {
@@ -52,7 +54,10 @@ export default function Navbar() {
 
           {/* Right: CTA */}
           <div className="flex items-center gap-2">
-            <Link href="/request-quote" className="ocws-btn ocws-btn-ghost hidden sm:inline-flex">
+            <Link
+              href="/request-quote"
+              className="ocws-btn ocws-btn-ghost hidden sm:inline-flex"
+            >
               Request a Quote
             </Link>
 
@@ -76,7 +81,10 @@ export default function Navbar() {
               {l.label}
             </Link>
           ))}
-          <Link href="/request-quote" className="ml-auto ocws-btn ocws-btn-primary">
+          <Link
+            href="/request-quote"
+            className="ml-auto ocws-btn ocws-btn-primary"
+          >
             Quote
           </Link>
         </div>

@@ -36,46 +36,54 @@ export const ALL_SERVICES: ServiceCard[] = [
       "Donor signal survey + in-building gap analysis + blueprint outputs to guide integrators and budgeting.",
     footnote: "Commercial environments",
   },
+  {
+    href: "/services/small-business-rf-assessment",
+    title: "Small Business Connectivity & RF Assessment",
+    description:
+      "Evidence-driven RF and Wi-Fi assessment to improve reliability for staff, customers, and critical devices.",
+    footnote: "Small business-ready",
+  },
 ];
 
 /**
  * Map industry slug -> list of service hrefs recommended for that industry.
- * Add/edit slugs here to match app/data/industries.ts (ind.slug values).
+ * Slugs must match app/data/industries.ts (ind.slug).
  */
 export const INDUSTRY_TO_SERVICE_HREFS: Record<string, string[]> = {
-  // Residential
+  // Homes & Estates (home + home office)
   "homes-estates": [
     "/services/premium-home-rf-optimization",
     "/services/rfi-hunting",
   ],
 
-  // Healthcare / clinics
-  healthcare: [
-    "/services/cellular-das-design",
+  // Small Business (professional offices, small orgs)
+  "small-business": [
+    "/services/small-business-rf-assessment",
     "/services/rfi-hunting",
+    "/services/cellular-das-design",
   ],
+
+  // Healthcare
+  healthcare: ["/services/cellular-das-design", "/services/rfi-hunting"],
 
   // Hospitality
-  hospitality: [
-    "/services/rfi-hunting",
-    "/services/cellular-das-design",
-  ],
+  hospitality: ["/services/rfi-hunting", "/services/cellular-das-design"],
 
-  // Small business / office (use your actual slug if different)
-  "small-business": [
-    "/services/rfi-hunting",
-    "/services/cellular-das-design",
-  ],
+  // Retail
+  retail: ["/services/rfi-hunting", "/services/cellular-das-design"],
 
-  // Commercial / enterprise (use your actual slug if different)
-  commercial: [
-    "/services/cellular-das-design",
-    "/services/rfi-hunting",
-  ],
+  // Industrial
+  industrial: ["/services/rfi-hunting", "/services/cellular-das-design"],
 
-  // Public safety / government (use your actual slug if different)
-  "public-safety": [
-    "/services/p25-survey",
-    "/services/cellular-das-design",
-  ],
+  // Education
+  education: ["/services/cellular-das-design", "/services/rfi-hunting"],
+
+  // Enterprise
+  enterprise: ["/services/cellular-das-design", "/services/rfi-hunting"],
+
+  // Government (non-public-safety)
+  government: ["/services/cellular-das-design", "/services/rfi-hunting"],
+
+  // Public Safety (P25 / ERRC)
+  "public-safety": ["/services/p25-survey", "/services/cellular-das-design"],
 };
