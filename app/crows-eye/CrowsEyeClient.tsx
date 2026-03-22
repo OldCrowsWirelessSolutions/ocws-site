@@ -454,7 +454,7 @@ export default function CrowsEyeClient() {
         <div className="flex flex-col sm:flex-row gap-3 mb-3">
           {/* Google Play badge */}
           <a
-            href="https://play.google.com/store/search?q=wifi+analyzer+open+source"
+            href="https://play.google.com/store/apps/details?id=com.vrem.wifianalyzer"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 px-4 py-3 rounded-xl transition"
