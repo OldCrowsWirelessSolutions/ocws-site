@@ -41,7 +41,7 @@ export default function Navbar() {
           <Link href="/" className="flex items-center gap-3 min-w-0">
             <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-white/10 bg-black/20 shrink-0">
               <Image
-                src="/brand/ocws-logo.png"
+                src="/OCWS_Logo_Transparent.png"
                 alt="Old Crows Wireless Solutions"
                 fill
                 sizes="40px"
