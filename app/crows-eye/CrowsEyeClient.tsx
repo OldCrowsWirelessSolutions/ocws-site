@@ -618,7 +618,7 @@ export default function CrowsEyeClient() {
                 }}
                 placeholder="Name or business name"
                 autoComplete="name"
-                className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
+                className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
               />
             </div>
             <div>
@@ -630,7 +630,7 @@ export default function CrowsEyeClient() {
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="City and state is fine"
                 autoComplete="street-address"
-                className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
+                className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
               />
             </div>
           </div>
@@ -641,7 +641,7 @@ export default function CrowsEyeClient() {
                 Environment
               </label>
               <div
-                className="inline-flex rounded-xl overflow-hidden"
+                className="flex w-full sm:w-auto rounded-xl overflow-hidden"
                 style={{ border: "1px solid rgba(255,255,255,0.10)" }}
               >
                 {(["indoor", "outdoor"] as const).map((opt) => (
@@ -649,7 +649,7 @@ export default function CrowsEyeClient() {
                     key={opt}
                     type="button"
                     onClick={() => setEnvironment(opt)}
-                    className="px-5 py-2.5 text-sm font-semibold transition"
+                    className="flex-1 px-5 py-3 text-base font-semibold transition min-h-[48px]"
                     style={{
                       background:
                         environment === opt
@@ -678,7 +678,7 @@ export default function CrowsEyeClient() {
               <select
                 value={locationType}
                 onChange={(e) => setLocationType(e.target.value)}
-                className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+                className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-base text-white focus:outline-none focus:ring-2 focus:ring-white/20"
                 style={{
                   color: locationType ? "white" : "rgba(255,255,255,0.35)",
                 }}
@@ -710,7 +710,7 @@ export default function CrowsEyeClient() {
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
             placeholder="What's slow, what drops, what frustrates you. The more detail, the sharper the Verdict."
-            className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
+            className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
           />
         </div>
 
@@ -725,7 +725,7 @@ export default function CrowsEyeClient() {
           <button
             type="submit"
             disabled={phase === "analyzing"}
-            className="w-full sm:w-auto rounded-2xl px-8 py-4 text-base font-bold tracking-tight transition disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto rounded-2xl px-8 py-4 text-base font-bold tracking-tight transition disabled:opacity-60 disabled:cursor-not-allowed min-h-[56px]"
             style={{
               background: "linear-gradient(135deg, var(--ocws-cyan), var(--ocws-cyan2))",
               color: "#05070b",
@@ -895,7 +895,7 @@ export default function CrowsEyeClient() {
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <button
                     onClick={handleStripePayment}
-                    className="rounded-2xl px-8 py-4 text-base font-bold tracking-tight transition"
+                    className="w-full sm:w-auto rounded-2xl px-8 py-4 text-base font-bold tracking-tight transition min-h-[56px]"
                     style={{
                       background: "linear-gradient(135deg, #d6b25e, #b8943e)",
                       color: "#05070b",
@@ -906,7 +906,7 @@ export default function CrowsEyeClient() {
                   </button>
                   <button
                     onClick={handleDemoVerdict}
-                    className="ocws-btn ocws-btn-ghost text-sm"
+                    className="ocws-btn ocws-btn-ghost text-sm w-full sm:w-auto min-h-[48px]"
                   >
                     Demo: See Full Verdict
                   </button>
@@ -1027,9 +1027,9 @@ export default function CrowsEyeClient() {
 
                 {/* Download PDF */}
                 {verdictStep >= result.full_findings.length && (
-                  <div className="text-center pt-2">
+                  <div className="pt-2">
                     <button
-                      className="rounded-2xl px-8 py-4 text-base font-bold tracking-tight transition"
+                      className="w-full sm:w-auto rounded-2xl px-8 py-4 text-base font-bold tracking-tight transition min-h-[56px]"
                       style={{
                         background:
                           "linear-gradient(135deg, var(--ocws-cyan), var(--ocws-cyan2))",
@@ -1052,9 +1052,9 @@ export default function CrowsEyeClient() {
         <div
           className="fixed z-50 rounded-2xl overflow-hidden transition-all"
           style={{
-            bottom: "1.5rem",
-            right: "1.5rem",
-            width: "240px",
+            bottom: "1rem",
+            right: "1rem",
+            width: "clamp(160px, 40vw, 240px)",
             border: "2px solid var(--ocws-cyan)",
             background: "#05070b",
             boxShadow: "0 8px 40px rgba(0,212,255,0.22)",

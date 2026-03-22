@@ -1,6 +1,6 @@
 // app/layout.tsx
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import StickyQuoteCTA from "./components/StickyQuoteCTA";
@@ -8,6 +8,11 @@ import StickyQuoteCTA from "./components/StickyQuoteCTA";
 export const metadata: Metadata = {
   title: "Old Crows Wireless Solutions (OCWS)",
   description: "Strategic RF Engineering & Wireless Intelligence",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
