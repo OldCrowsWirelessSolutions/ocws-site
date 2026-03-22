@@ -43,7 +43,7 @@ const US_STATES = [
 ];
 
 // Google reCAPTCHA v2 — replace with real site key from reCAPTCHA admin console
-const RECAPTCHA_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MIYBAFVl";
+const RECAPTCHA_SITE_KEY = "6Lfr-ZMsAAAAEzbD76fstxGNuby5Yd7lWf2Wb1C";
 
 const LOCATION_TYPES = [
   "Home",
@@ -412,6 +412,7 @@ export default function CrowsEyeClient() {
           environment,
           locationType,
           notes,
+          recaptchaToken: analyzeCaptchaToken,
         }),
       });
 

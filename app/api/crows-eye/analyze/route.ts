@@ -118,6 +118,7 @@ export async function POST(req: Request) {
       environment = "indoor",
       locationType = "",
       notes = "",
+      recaptchaToken = "",
     } = body as {
       images: Record<string, string>;
       mimeTypes: Record<string, string>;
@@ -126,7 +127,34 @@ export async function POST(req: Request) {
       environment: string;
       locationType: string;
       notes: string;
+      recaptchaToken: string;
     };
+
+    // Verify reCAPTCHA token server-side
+    const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
+    if (!recaptchaSecret) {
+      return Response.json(
+        { ok: false, error: "reCAPTCHA secret not configured." },
+        { status: 500 }
+      );
+    }
+
+    const verifyRes = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        secret: recaptchaSecret,
+        response: recaptchaToken,
+      }),
+    });
+
+    const verifyData = await verifyRes.json() as { success: boolean };
+    if (!verifyData.success) {
+      return Response.json(
+        { ok: false, error: "reCAPTCHA verification failed. Please try again." },
+        { status: 400 }
+      );
+    }
 
     const hasImages = Object.values(images).some(Boolean);
     if (!hasImages) {
