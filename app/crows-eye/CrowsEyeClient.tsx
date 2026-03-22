@@ -588,7 +588,7 @@ export default function CrowsEyeClient() {
           <p className="ocws-muted text-sm mb-5">
             All three for the sharpest Verdict. JPEG or PNG.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {UPLOAD_SLOTS.map((slot) => (
               <UploadBox
                 key={slot.id}
@@ -725,7 +725,7 @@ export default function CrowsEyeClient() {
           <button
             type="submit"
             disabled={phase === "analyzing"}
-            className="w-full sm:w-auto rounded-2xl px-8 py-4 text-base font-bold tracking-tight transition disabled:opacity-60 disabled:cursor-not-allowed min-h-[56px]"
+            className="w-full md:w-auto rounded-2xl px-8 py-4 text-base font-bold tracking-tight transition disabled:opacity-60 disabled:cursor-not-allowed min-h-[56px]"
             style={{
               background: "linear-gradient(135deg, var(--ocws-cyan), var(--ocws-cyan2))",
               color: "#05070b",
