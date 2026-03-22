@@ -446,57 +446,137 @@ export default function CrowsEyeClient() {
       {/* ── HOW TO GET YOUR SCANS ─────────────────────────────────────────── */}
       <section className="mb-14">
         <h2 className="ocws-h2 text-white mb-2">How to get your scans</h2>
-        <p className="ocws-muted text-sm mb-6">
-          You&rsquo;ll need the free{" "}
-          <span className="text-white font-medium">WiFi Analyzer (open source)</span>{" "}
-          app — green icon, Google Play Store, no account required.
+        <p className="ocws-muted text-sm mb-5">
+          You&rsquo;ll need a free Wi-Fi scanner app on your phone. Pick yours below.
         </p>
-        <ol className="space-y-4">
-          {[
-            {
-              n: "1",
-              title: "Download WiFi Analyzer (open source)",
-              body: 'Search "WiFi Analyzer open source" on the Google Play Store. Free. Green icon. Install it.',
-            },
-            {
-              n: "2",
-              title: "Open the app",
-              body: "Grant location permission if prompted — Android requires it for Wi-Fi scanning.",
-            },
-            {
-              n: "3",
-              title: 'Tap "Access Points" — screenshot that screen',
-              body: "You'll see every network your phone can detect, with signal strength and channel numbers. Take a screenshot.",
-            },
-            {
-              n: "4",
-              title: 'Tap "Channel Graph" — screenshot each band',
-              body: "Switch to 2.4 GHz and screenshot. Then switch to 5 GHz and screenshot. These reveal channel congestion.",
-            },
-            {
-              n: "5",
-              title: "You're done. Upload below.",
-              body: "Three screenshots. That's everything Corvus needs to render his Verdict.",
-            },
-          ].map(({ n, title, body }) => (
-            <li key={n} className="flex gap-4 items-start">
-              <div
-                className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold"
-                style={{
-                  background: "rgba(0,212,255,0.12)",
-                  border: "1px solid rgba(0,212,255,0.30)",
-                  color: "var(--ocws-cyan)",
-                }}
-              >
-                {n}
+
+        {/* App badges */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-3">
+          {/* Google Play badge */}
+          <a
+            href="https://play.google.com/store/search?q=wifi+analyzer+open+source"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-3 px-4 py-3 rounded-xl transition"
+            style={{
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              textDecoration: "none",
+            }}
+          >
+            {/* Play triangle */}
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M5 3.5L19 12L5 20.5V3.5Z" fill="#00d4ff" />
+            </svg>
+            <div>
+              <p className="text-white/55 text-xs leading-none mb-0.5">GET IT ON</p>
+              <p className="text-white font-semibold text-sm leading-none">Google Play</p>
+            </div>
+          </a>
+
+          {/* Apple App Store badge */}
+          <a
+            href="https://apps.apple.com/us/app/wifi-analyzer/id1286522951"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-3 px-4 py-3 rounded-xl transition"
+            style={{
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              textDecoration: "none",
+            }}
+          >
+            {/* Apple logo */}
+            <svg width="20" height="22" viewBox="0 0 814 1000" fill="#00d4ff">
+              <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.5-155.5-127.4C46 790.8 0 663 0 541.3c0-194.3 126.4-297.5 250.8-297.5 66.1 0 121.2 43.4 162.7 43.4 39.5 0 101.1-46 176.3-46 28.5 0 130.9 2.6 198.3 99.2zm-234-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z" />
+            </svg>
+            <div>
+              <p className="text-white/55 text-xs leading-none mb-0.5">IPHONE USERS</p>
+              <p className="text-white font-semibold text-sm leading-none">WiFi Analyzer by Zolt&#225;n Pall&#225;ghy</p>
+            </div>
+          </a>
+        </div>
+
+        <p className="ocws-muted2 text-xs mb-8">
+          Android: look for the green icon that says <span className="text-white/70">WiFi Analyzer (open-source)</span> — free with no ads.
+        </p>
+
+        {/* Steps */}
+        <ol className="space-y-6">
+
+          {/* Step 1 */}
+          <li className="flex gap-4 items-start">
+            <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold" style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.30)", color: "var(--ocws-cyan)" }}>1</div>
+            <div>
+              <p className="text-white font-semibold text-sm">Download WiFi Analyzer (open source)</p>
+              <p className="ocws-muted text-sm mt-0.5 leading-relaxed">Search &ldquo;WiFi Analyzer open source&rdquo; on the Google Play Store. Free. Green icon. Install it.</p>
+            </div>
+          </li>
+
+          {/* Step 2 */}
+          <li className="flex gap-4 items-start">
+            <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold" style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.30)", color: "var(--ocws-cyan)" }}>2</div>
+            <div>
+              <p className="text-white font-semibold text-sm">Open the app</p>
+              <p className="ocws-muted text-sm mt-0.5 leading-relaxed">Grant location permission if prompted — Android requires it for Wi-Fi scanning.</p>
+            </div>
+          </li>
+
+          {/* Step 3 */}
+          <li className="flex gap-4 items-start">
+            <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold" style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.30)", color: "var(--ocws-cyan)" }}>3</div>
+            <div>
+              <p className="text-white font-semibold text-sm">Tap &ldquo;Access Points&rdquo; at the bottom of the screen — screenshot this</p>
+              <p className="ocws-muted text-sm mt-0.5 leading-relaxed">
+                You will see a list of every Wi-Fi network nearby. Each one shows the network name, signal strength (the number like <span className="text-white/80 font-medium">-52 dBm</span>), and channel number. This is your <span className="text-white/80 font-medium">Signal List screenshot</span>.
+              </p>
+            </div>
+          </li>
+
+          {/* Step 4 — NEW */}
+          <li className="flex gap-4 items-start">
+            <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold" style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.30)", color: "var(--ocws-cyan)" }}>4</div>
+            <div className="flex-1">
+              <p className="text-white font-semibold text-sm">Switch to 2.4 GHz view and screenshot the Channel Graph</p>
+              <p className="ocws-muted text-sm mt-0.5 leading-relaxed">
+                Tap <span className="text-white/80 font-medium">&ldquo;Channel Graph&rdquo;</span> at the bottom of the screen. In the top right corner you will see <span className="text-white/80 font-medium">&ldquo;2.4 GHz&rdquo;</span> — make sure it says 2.4 GHz. If it says 5 GHz, tap it to switch. You will see colored bars showing channel congestion. Screenshot this.
+              </p>
+              <div className="mt-3 px-4 py-3 rounded-xl text-sm ocws-muted leading-relaxed" style={{ borderLeft: "3px solid rgba(0,212,255,0.5)", background: "rgba(0,212,255,0.05)" }}>
+                <span className="text-white/70 font-semibold">Tip:</span> The 2.4 GHz view shows channels 1 through 13. If you see lots of overlapping bars, your network is congested.
               </div>
-              <div>
-                <p className="text-white font-semibold text-sm">{title}</p>
-                <p className="ocws-muted text-sm mt-0.5 leading-relaxed">{body}</p>
+            </div>
+          </li>
+
+          {/* Step 5 — NEW */}
+          <li className="flex gap-4 items-start">
+            <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold" style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.30)", color: "var(--ocws-cyan)" }}>5</div>
+            <div className="flex-1">
+              <p className="text-white font-semibold text-sm">Switch to 5 GHz view and screenshot the Channel Graph</p>
+              <p className="ocws-muted text-sm mt-0.5 leading-relaxed">
+                Tap the <span className="text-white/80 font-medium">&ldquo;2.4 GHz&rdquo;</span> text in the top right corner — it will switch to <span className="text-white/80 font-medium">&ldquo;5 GHz&rdquo;</span>. Screenshot this new view.
+              </p>
+              <div className="mt-3 px-4 py-3 rounded-xl text-sm ocws-muted leading-relaxed" style={{ borderLeft: "3px solid rgba(0,212,255,0.5)", background: "rgba(0,212,255,0.05)" }}>
+                <span className="text-white/70 font-semibold">Tip:</span> If the 5 GHz screen looks empty, that is normal — 5 GHz has shorter range and you may not see many networks.
               </div>
-            </li>
-          ))}
+            </div>
+          </li>
+
+          {/* Step 6 */}
+          <li className="flex gap-4 items-start">
+            <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold" style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.30)", color: "var(--ocws-cyan)" }}>6</div>
+            <div>
+              <p className="text-white font-semibold text-sm">You now have three screenshots. Upload them below.</p>
+              <p className="ocws-muted text-sm mt-0.5 leading-relaxed">That&rsquo;s everything Corvus needs to render his Verdict.</p>
+            </div>
+          </li>
+
         </ol>
+
+        {/* Corvus reassurance box */}
+        <div className="mt-8 px-5 py-4 rounded-2xl text-sm leading-relaxed" style={{ border: "1px solid rgba(0,212,255,0.25)", background: "rgba(0,212,255,0.04)" }}>
+          <span className="text-white font-semibold">Not sure if you did it right?</span>
+          <span className="ocws-muted"> That&rsquo;s okay. Upload what you have and Corvus will work with whatever he can see. He has seen worse.</span>
+        </div>
       </section>
 
       {/* ── UPLOAD FORM ───────────────────────────────────────────────────── */}
