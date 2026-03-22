@@ -33,6 +33,14 @@ interface AnalysisResult {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
+const US_STATES = [
+  "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA",
+  "HI","ID","IL","IN","IA","KS","KY","LA","ME","MD",
+  "MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ",
+  "NM","NY","NC","ND","OH","OK","OR","PA","RI","SC",
+  "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY",
+];
+
 const LOCATION_TYPES = [
   "Home",
   "Office",
@@ -281,7 +289,11 @@ export default function CrowsEyeClient() {
     scan5: null,
   });
   const [name, setName] = useState("");
-  const [address, setAddress] = useState("");
+  const [street, setStreet] = useState("");
+  const [suite, setSuite] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("FL");
+  const [zip, setZip] = useState("");
   const [environment, setEnvironment] = useState<"indoor" | "outdoor">("indoor");
   const [locationType, setLocationType] = useState("");
   const [notes, setNotes] = useState("");
@@ -377,7 +389,9 @@ export default function CrowsEyeClient() {
           images,
           mimeTypes,
           name,
-          address,
+          address: [street.trim(), suite.trim(), city.trim(), state, zip.trim()]
+            .filter(Boolean)
+            .join(", "),
           environment,
           locationType,
           notes,
@@ -605,31 +619,84 @@ export default function CrowsEyeClient() {
         <div className="ocws-tile p-6 space-y-5">
           <h2 className="ocws-h2 text-white">About your location</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Name */}
+          <div>
+            <label className="block text-sm font-medium text-white mb-1">
+              Your name <span className="text-white/50">*</span>
+            </label>
+            <input
+              value={name}
+              onChange={(e) => { setName(e.target.value); setErrorMsg(""); }}
+              placeholder="Name or business name"
+              autoComplete="name"
+              className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
+            />
+          </div>
+
+          {/* Street address */}
+          <div>
+            <label className="block text-sm font-medium text-white mb-1">
+              Street address
+            </label>
+            <input
+              value={street}
+              onChange={(e) => setStreet(e.target.value)}
+              placeholder="123 Main St"
+              autoComplete="address-line1"
+              className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
+            />
+          </div>
+
+          {/* Suite */}
+          <div>
+            <label className="block text-sm font-medium text-white mb-1">
+              Suite / Apt / Unit
+            </label>
+            <input
+              value={suite}
+              onChange={(e) => setSuite(e.target.value)}
+              placeholder="Suite 100, Apt 4B (optional)"
+              autoComplete="address-line2"
+              className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
+            />
+          </div>
+
+          {/* City / State / ZIP */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-white mb-1">
-                Your name <span className="text-white/50">*</span>
-              </label>
+              <label className="block text-sm font-medium text-white mb-1">City</label>
               <input
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  setErrorMsg("");
-                }}
-                placeholder="Name or business name"
-                autoComplete="name"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="Pensacola"
+                autoComplete="address-level2"
                 className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white mb-1">
-                Site address
-              </label>
+              <label className="block text-sm font-medium text-white mb-1">State</label>
+              <select
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                autoComplete="address-level1"
+                className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-base text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+              >
+                {US_STATES.map((s) => (
+                  <option key={s} value={s} style={{ color: "white", background: "#0d1117" }}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-white mb-1">ZIP Code</label>
               <input
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="City and state is fine"
-                autoComplete="street-address"
+                value={zip}
+                onChange={(e) => setZip(e.target.value.replace(/\D/g, "").slice(0, 5))}
+                placeholder="32501"
+                inputMode="numeric"
+                autoComplete="postal-code"
+                maxLength={5}
                 className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
               />
             </div>

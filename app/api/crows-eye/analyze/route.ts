@@ -164,7 +164,7 @@ export async function POST(req: Request) {
 
     const contextLines = [
       `Client: ${String(name).trim() || "Not provided"}`,
-      `Address: ${String(address).trim() || "Not provided"}`,
+      `Site address: ${String(address).trim() || "Not provided"}`,
       `Environment: ${environment}`,
       `Location type: ${locationType || "Not specified"}`,
       `Problem description: ${String(notes).trim() || "Not provided"}`,
