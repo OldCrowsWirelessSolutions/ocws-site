@@ -1,30 +1,30 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 
 function isEmail(s: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
 }
 
-export default function ContactClient({
-  initialSubject = "",
-}: {
-  initialSubject?: string;
-}) {
+const SUBJECT_OPTIONS = [
+  "General inquiry",
+  "Request on-site assessment",
+  "Technical question",
+  "Press/media",
+  "Other",
+];
+
+export default function ContactClient() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [subject, setSubject] = useState(initialSubject || "");
+  const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [address, setAddress] = useState("");
+  const [honeypot, setHoneypot] = useState("");
 
-  // Honeypot (hidden)
-  const [company, setCompany] = useState("");
-
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
-    "idle"
-  );
-  const [errorMsg, setErrorMsg] = useState<string>("");
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const validationError = useMemo(() => {
     if (!name.trim()) return "Please enter your name.";
@@ -36,208 +36,178 @@ export default function ContactClient({
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-
-    // Validate (no disabled mystery)
     if (validationError) {
       setStatus("error");
       setErrorMsg(validationError);
       return;
     }
-
     setStatus("sending");
     setErrorMsg("");
-
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          email,
-          phone,
-          subject,
-          message,
-          company, // honeypot
-        }),
+        body: JSON.stringify({ name, email, phone, subject, message, address, company: honeypot }),
       });
-
-      const data = (await res.json()) as { ok: boolean; error?: string };
-
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || "Failed to send message.");
-      }
-
+      const data = await res.json() as { ok: boolean; error?: string };
+      if (!res.ok || !data.ok) throw new Error(data.error || "Failed to send message.");
       setStatus("sent");
-
-      // Clear fields after successful send
-      setName("");
-      setEmail("");
-      setPhone("");
-      setSubject(initialSubject || "");
-      setMessage("");
-      setCompany("");
-    } catch (err: any) {
+      setName(""); setEmail(""); setPhone(""); setSubject("");
+      setMessage(""); setAddress(""); setHoneypot("");
+    } catch (err: unknown) {
       setStatus("error");
-      setErrorMsg(err?.message || "Failed to send message.");
+      setErrorMsg(err instanceof Error ? err.message : "Failed to send message.");
     }
   }
 
   return (
-    <main className="ocws-container py-10">
-      <div className="max-w-3xl">
-        <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-white">
-          Contact
-        </h1>
-
-        <p className="mt-3 text-white/75">
-          Send a message and we’ll get back to you by email. If you’re ready to
-          start, you can also use the intake form.
-        </p>
-
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link href="/request-quote" className="ocws-btn ocws-btn-primary">
-            Request a Quote
-          </Link>
-          <Link href="/services" className="ocws-btn ocws-btn-ghost">
-            View Services
-          </Link>
-        </div>
-
-        <form onSubmit={onSubmit} className="mt-8 ocws-tile p-6 space-y-5">
-          {/* Honeypot */}
-          <div className="hidden" aria-hidden="true">
-            <label className="block text-sm font-medium mb-1">Company</label>
-            <input
-              value={company}
-              onChange={(e) => setCompany(e.target.value)}
-              className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3"
-              tabIndex={-1}
-              autoComplete="off"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1 text-white">
-                Name <span className="text-white/60">*</span>
-              </label>
-              <input
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  if (status !== "sent") setStatus("idle");
-                }}
-                className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-white/20"
-                autoComplete="name"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1 text-white">
-                Email <span className="text-white/60">*</span>
-              </label>
-              <input
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (status !== "sent") setStatus("idle");
-                }}
-                type="email"
-                className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-white/20"
-                autoComplete="email"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1 text-white">
-              Phone (optional)
-            </label>
-            <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              type="tel"
-              className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-white/20"
-              autoComplete="tel"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1 text-white">
-              Subject (optional)
-            </label>
-            <input
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-white/20"
-              placeholder="e.g., Clinic Wi-Fi drops, indoor LTE/5G weak zones…"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1 text-white">
-              Message <span className="text-white/60">*</span>
-            </label>
-            <textarea
-              value={message}
-              onChange={(e) => {
-                setMessage(e.target.value);
-                if (status !== "sent") setStatus("idle");
-              }}
-              rows={6}
-              className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-white/20"
-              placeholder="Briefly describe what you’re seeing, the environment, and what success looks like."
-            />
-          </div>
-
-          <p className="text-xs text-white/60">
-            By submitting, you consent to receive a reply from OCWS regarding
-            your request. We don’t sell your info. No spam calls.
+    <main style={{ background: "#0D1520", minHeight: "100vh" }}>
+      <section className="ocws-container py-16">
+        <div className="max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#00C2C7", letterSpacing: "0.18em" }}>
+            Old Crows Wireless Solutions
+          </p>
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Get in Touch</h1>
+          <p className="text-base mb-10" style={{ color: "#888" }}>
+            For on-site assessment requests please include your address so we can confirm service
+            area and any travel fee.
           </p>
 
-          {status === "sent" ? (
-            <div className="rounded-xl border border-white/10 bg-black/30 p-4 text-white">
-              ✅ Message sent. We’ll reply by email.
+          <form
+            onSubmit={onSubmit}
+            className="rounded-2xl p-6 space-y-5"
+            style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)" }}
+          >
+            {/* Honeypot */}
+            <div className="hidden" aria-hidden="true">
+              <input
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+              />
             </div>
-          ) : null}
 
-          {status === "error" ? (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-white">
-              ❌ {errorMsg || "Please check the required fields and try again."}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1 text-white">
+                  Full name <span style={{ color: "#00C2C7" }}>*</span>
+                </label>
+                <input
+                  value={name}
+                  onChange={(e) => { setName(e.target.value); if (status !== "sent") setStatus("idle"); }}
+                  className="w-full rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
+                  style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  autoComplete="name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1 text-white">
+                  Email <span style={{ color: "#00C2C7" }}>*</span>
+                </label>
+                <input
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); if (status !== "sent") setStatus("idle"); }}
+                  type="email"
+                  className="w-full rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
+                  style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  autoComplete="email"
+                />
+              </div>
             </div>
-          ) : null}
 
-          {/* Helpful hint when required fields aren’t filled */}
-          {status !== "sending" && status !== "sent" && validationError ? (
-            <div className="text-xs text-white/60">
-              Required: Name, Email, Message.
+            <div>
+              <label className="block text-sm font-medium mb-1 text-white">
+                Phone <span style={{ color: "#888" }}>(optional)</span>
+              </label>
+              <input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                type="tel"
+                className="w-full rounded-xl px-4 py-3 text-white text-sm focus:outline-none"
+                style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.1)" }}
+                autoComplete="tel"
+              />
             </div>
-          ) : null}
 
-          <div className="flex items-center justify-end pt-2">
-            <button
-              type="submit"
-              disabled={status === "sending"}
-              className="
-                inline-flex items-center justify-center
-                rounded-2xl px-6 py-3
-                font-semibold tracking-tight
-                border border-white/15
-                bg-white/10 text-white
-                shadow-[0_10px_30px_rgba(0,0,0,0.35)]
-                hover:bg-white/15 hover:border-white/25
-                active:translate-y-[1px]
-                disabled:opacity-60 disabled:cursor-not-allowed
-                focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30
-                transition
-              "
-              title={validationError ? validationError : undefined}
-            >
-              {status === "sending" ? "Sending…" : "Send message"}
-            </button>
-          </div>
-        </form>
-      </div>
+            <div>
+              <label className="block text-sm font-medium mb-1 text-white">Subject</label>
+              <select
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                className="w-full rounded-xl px-4 py-3 text-white text-sm focus:outline-none"
+                style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.1)" }}
+              >
+                <option value="">Select a subject…</option>
+                {SUBJECT_OPTIONS.map((o) => (
+                  <option key={o} value={o}>{o}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1 text-white">
+                Message <span style={{ color: "#00C2C7" }}>*</span>
+              </label>
+              <textarea
+                value={message}
+                onChange={(e) => { setMessage(e.target.value); if (status !== "sent") setStatus("idle"); }}
+                rows={5}
+                className="w-full rounded-xl px-4 py-3 text-white text-sm focus:outline-none"
+                style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.1)" }}
+                placeholder="Describe what you're seeing, your environment, and what success looks like."
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1 text-white">
+                Address{" "}
+                <span style={{ color: "#888" }}>(optional — required for assessment requests)</span>
+              </label>
+              <input
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="w-full rounded-xl px-4 py-3 text-white text-sm focus:outline-none"
+                style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.1)" }}
+                placeholder="Street address, city, state"
+                autoComplete="street-address"
+              />
+            </div>
+
+            {status === "sent" && (
+              <div
+                className="rounded-xl px-4 py-3 text-sm text-white"
+                style={{ background: "rgba(13,110,122,0.2)", border: "1px solid #0D6E7A" }}
+              >
+                Message received. Joshua will respond within 1 business day.
+              </div>
+            )}
+
+            {status === "error" && (
+              <div
+                className="rounded-xl px-4 py-3 text-sm text-white"
+                style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)" }}
+              >
+                {errorMsg}
+              </div>
+            )}
+
+            <div className="flex items-center justify-between pt-2">
+              <p className="text-xs" style={{ color: "#555" }}>
+                We don&rsquo;t sell your info. No spam.
+              </p>
+              <button
+                type="submit"
+                disabled={status === "sending"}
+                className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold disabled:opacity-60 transition"
+                style={{ background: "#00C2C7", color: "#0D1520" }}
+              >
+                {status === "sending" ? "Sending…" : "Send message"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
     </main>
   );
 }

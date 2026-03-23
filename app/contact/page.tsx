@@ -4,16 +4,9 @@ import ContactClient from "./ContactClient";
 export const metadata = {
   title: "Contact | Old Crows Wireless Solutions",
   description:
-    "Get in touch with Old Crows Wireless Solutions to discuss RF engineering, wireless diagnostics, and connectivity challenges.",
+    "Get in touch with OCWS for on-site RF assessments, technical questions, or general inquiries. Joshua Turner responds within 1 business day.",
 };
 
-type PageProps = {
-  searchParams?: Record<string, string | string[] | undefined>;
-};
-
-export default function ContactPage({ searchParams }: PageProps) {
-  const subject =
-    typeof searchParams?.subject === "string" ? searchParams.subject : "";
-
-  return <ContactClient initialSubject={subject} />;
+export default function ContactPage() {
+  return <ContactClient />;
 }

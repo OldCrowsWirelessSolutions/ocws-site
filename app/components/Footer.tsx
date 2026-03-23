@@ -1,72 +1,76 @@
 // app/components/Footer.tsx
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Footer() {
   return (
-    <footer className="mt-20 border-t border-white/10">
-      <div className="ocws-container py-12 grid grid-cols-1 md:grid-cols-3 gap-10">
-        {/* Brand */}
-        <div>
-          <h3 className="text-base font-semibold text-white">
-            Old Crows Wireless Solutions
-          </h3>
-          <p className="mt-2 text-sm ocws-muted">
-            Clarity where wireless fails.
-          </p>
-          <p className="mt-2 text-sm ocws-muted">
-            Based in Pensacola, FL
-          </p>
-          <p className="mt-3 text-xs ocws-muted2">
-            RF diagnostics • Interference hunting • Validation • Public safety survey support
-          </p>
-        </div>
+    <footer style={{ background: "#0D1520" }}>
+      <div className="ocws-container py-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          {/* Col 1: Brand */}
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="relative shrink-0" style={{ height: "40px", width: "40px" }}>
+                <Image
+                  src="/OCWS_Logo_Transparent.png"
+                  alt="OCWS"
+                  fill
+                  sizes="40px"
+                  className="object-contain"
+                />
+              </div>
+              <span className="text-base font-bold text-white">Old Crows Wireless Solutions LLC</span>
+            </div>
+            <p className="text-sm font-semibold" style={{ color: "#00C2C7" }}>
+              Clarity Where Wireless Fails
+            </p>
+            <p className="mt-1 text-sm text-white/50">Pensacola, FL</p>
+            <div className="mt-3 flex items-center gap-2">
+              <span
+                className="inline-block rounded-full px-3 py-1 text-xs font-semibold"
+                style={{ border: "1px solid #B8922A", color: "#B8922A" }}
+              >
+                Florida LLC
+              </span>
+            </div>
+            <p className="mt-2 text-xs text-white/30">American made &middot; Faith driven</p>
+          </div>
 
-        {/* Navigation */}
-        <div>
-          <h4 className="text-sm font-semibold text-white">Navigate</h4>
-          <ul className="mt-3 space-y-2 text-sm">
-            <li>
-              <Link href="/services" className="hover:text-white text-white/70">
-                Services
-              </Link>
-            </li>
-            <li>
-              <Link href="/industries" className="hover:text-white text-white/70">
-                Industries
-              </Link>
-            </li>
-            <li>
-              <Link href="/request-quote" className="hover:text-white text-white/70">
-                Request a Quote
-              </Link>
-            </li>
-            <li>
-              <Link href="/contact" className="hover:text-white text-white/70">
-                Contact
-              </Link>
-            </li>
-          </ul>
-        </div>
+          {/* Col 2: Navigate */}
+          <div>
+            <h4 className="text-sm font-semibold mb-3" style={{ color: "#00C2C7" }}>Navigate</h4>
+            <ul className="space-y-2 text-sm">
+              <li><Link href="/crows-eye" className="text-white/50 hover:text-white transition">Crow&rsquo;s Eye</Link></li>
+              <li><Link href="/services" className="text-white/50 hover:text-white transition">Services</Link></li>
+              <li><Link href="/case-studies" className="text-white/50 hover:text-white transition">Case Studies</Link></li>
+              <li><Link href="/learn" className="text-white/50 hover:text-white transition">Learn</Link></li>
+              <li><Link href="/faq" className="text-white/50 hover:text-white transition">FAQ</Link></li>
+              <li><Link href="/about" className="text-white/50 hover:text-white transition">About</Link></li>
+              <li><Link href="/contact" className="text-white/50 hover:text-white transition">Contact</Link></li>
+            </ul>
+          </div>
 
-        {/* CTA */}
-        <div>
-          <h4 className="text-sm font-semibold text-white">Get Started</h4>
-          <p className="mt-3 text-sm ocws-muted">
-            Not sure which service you need? Use the intake form and we’ll recommend the right scope.
-          </p>
-          <div className="mt-4 flex gap-3">
-            <Link href="/intake" className="ocws-btn ocws-btn-primary">
-              Start Intake →
-            </Link>
-            <Link href="/services" className="ocws-btn ocws-btn-ghost">
-              View Services
-            </Link>
+          {/* Col 3: Get Started */}
+          <div>
+            <h4 className="text-sm font-semibold mb-3" style={{ color: "#00C2C7" }}>Get Started</h4>
+            <ul className="space-y-2 text-sm">
+              <li><Link href="/crows-eye" className="text-white/50 hover:text-white transition">Free Analysis</Link></li>
+              <li><Link href="/crows-eye" className="text-white/50 hover:text-white transition">Corvus&rsquo; Verdict &mdash; $50</Link></li>
+              <li><Link href="/crows-eye" className="text-white/50 hover:text-white transition">Full Reckoning &mdash; $150+</Link></li>
+              <li><Link href="/contact" className="text-white/50 hover:text-white transition">OCWS Pro &mdash; $750</Link></li>
+              <li><Link href="/waitlist" className="text-white/50 hover:text-white transition">Join Waitlist</Link></li>
+            </ul>
           </div>
         </div>
-      </div>
 
-      <div className="border-t border-white/10 py-4 text-center text-xs ocws-muted2">
-        © {new Date().getFullYear()} Old Crows Wireless Solutions. All rights reserved.
+        {/* Teal divider */}
+        <div className="mt-10 mb-6" style={{ height: "1px", background: "#0D6E7A" }} />
+
+        {/* Bottom bar */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-white/30">
+          <span>&copy; 2026 Old Crows Wireless Solutions LLC &middot; oldcrowswireless.com</span>
+          <span>Built in Pensacola FL &middot; Faith driven</span>
+        </div>
       </div>
     </footer>
   );
