@@ -7,6 +7,22 @@ import ReCAPTCHA from "react-google-recaptcha";
 
 type UploadSlot = "signal" | "scan24" | "scan5";
 
+interface LocationEntry {
+  id: string;
+  name: string;
+  files: Record<UploadSlot, File | null>;
+  previews: Record<UploadSlot, string | null>;
+}
+
+function makeEmptyLocation(): LocationEntry {
+  return {
+    id: `loc-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    name: "",
+    files: { signal: null, scan24: null, scan5: null },
+    previews: { signal: null, scan24: null, scan5: null },
+  };
+}
+
 interface TeaserProblem {
   title: string;
   teaser: string;
@@ -329,6 +345,23 @@ export default function CrowsEyeClient() {
   // Corvus panel
   const [corvusVisible, setCorvusVisible] = useState(false);
 
+  // Mode toggle
+  const [mode, setMode] = useState<"single" | "site">("single");
+
+  // Multi-location (site mode)
+  const [locations, setLocations] = useState<LocationEntry[]>(() => [makeEmptyLocation()]);
+
+  // Admin modal
+  const [adminMode, setAdminMode] = useState(false);
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const [adminPassword, setAdminPassword] = useState("");
+  const [adminError, setAdminError] = useState("");
+
+  // Subscriber code
+  const [showSubCode, setShowSubCode] = useState(false);
+  const [subCode, setSubCode] = useState("");
+  const [subCodeStatus, setSubCodeStatus] = useState<null | "valid" | "invalid">(null);
+
   const resultsRef = useRef<HTMLDivElement>(null);
 
   // Auto-skip missing teaser 2
@@ -365,6 +398,13 @@ export default function CrowsEyeClient() {
 
   function validateForm(): boolean {
     if (!name.trim()) { setErrorMsg("Please enter your name."); return false; }
+    if (mode === "site") {
+      if (!locations.some((l) => l.files.signal || l.files.scan24 || l.files.scan5)) {
+        setErrorMsg("Please upload at least one screenshot for at least one location.");
+        return false;
+      }
+      return true;
+    }
     if (!files.signal && !files.scan24 && !files.scan5) {
       setErrorMsg("Please upload at least one screenshot.");
       return false;
@@ -389,20 +429,19 @@ export default function CrowsEyeClient() {
     );
 
     try {
-      const images: Record<string, string> = {};
-      const mimeTypes: Record<string, string> = {};
+      let bodyPayload: Record<string, unknown>;
 
-      for (const slot of ["signal", "scan24", "scan5"] as UploadSlot[]) {
-        if (files[slot]) {
-          images[slot] = await fileToBase64(files[slot]!);
-          mimeTypes[slot] = files[slot]!.type || "image/jpeg";
+      if (mode === "single") {
+        const images: Record<string, string> = {};
+        const mimeTypes: Record<string, string> = {};
+        for (const slot of ["signal", "scan24", "scan5"] as UploadSlot[]) {
+          if (files[slot]) {
+            images[slot] = await fileToBase64(files[slot]!);
+            mimeTypes[slot] = files[slot]!.type || "image/jpeg";
+          }
         }
-      }
-
-      const res = await fetch("/api/crows-eye/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        bodyPayload = {
+          mode: "single",
           images,
           mimeTypes,
           name,
@@ -413,7 +452,39 @@ export default function CrowsEyeClient() {
           locationType,
           notes,
           recaptchaToken: analyzeCaptchaToken,
-        }),
+        };
+      } else {
+        const encodedLocations = await Promise.all(
+          locations.map(async (loc, idx) => {
+            const images: Record<string, string> = {};
+            const mimeTypes: Record<string, string> = {};
+            for (const slot of ["signal", "scan24", "scan5"] as UploadSlot[]) {
+              if (loc.files[slot]) {
+                images[slot] = await fileToBase64(loc.files[slot]!);
+                mimeTypes[slot] = loc.files[slot]!.type || "image/jpeg";
+              }
+            }
+            return { name: loc.name.trim() || `Location ${idx + 1}`, images, mimeTypes };
+          })
+        );
+        bodyPayload = {
+          mode: "site",
+          locations: encodedLocations,
+          name,
+          address: [street.trim(), suite.trim(), city.trim(), state, zip.trim()]
+            .filter(Boolean)
+            .join(", "),
+          environment,
+          locationType,
+          notes,
+          recaptchaToken: analyzeCaptchaToken,
+        };
+      }
+
+      const res = await fetch("/api/crows-eye/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bodyPayload),
       });
 
       const data: AnalysisResult & { ok: boolean; error?: string } = await res
@@ -425,8 +496,13 @@ export default function CrowsEyeClient() {
       }
 
       setResult(data);
-      setPhase("free_result");
-      setFreeStep(1);
+      if (adminMode) {
+        setPhase("full_verdict");
+        setVerdictStep(0);
+      } else {
+        setPhase("free_result");
+        setFreeStep(1);
+      }
 
       setTimeout(
         () => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
@@ -492,6 +568,76 @@ export default function CrowsEyeClient() {
       () => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
       100
     );
+  }
+
+  function unlockVerdict() {
+    setPhase("full_verdict");
+    setVerdictStep(0);
+    setTimeout(
+      () => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+      100
+    );
+  }
+
+  // Location management (site mode)
+  function addLocation() {
+    if (locations.length >= 10) return;
+    setLocations((prev) => [...prev, makeEmptyLocation()]);
+  }
+
+  function removeLocation(id: string) {
+    setLocations((prev) => prev.length > 1 ? prev.filter((l) => l.id !== id) : prev);
+  }
+
+  function updateLocationName(id: string, val: string) {
+    setLocations((prev) => prev.map((l) => l.id === id ? { ...l, name: val } : l));
+  }
+
+  function handleLocationFile(locId: string, slot: UploadSlot, f: File | null) {
+    if (f) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const preview = (e.target?.result as string) ?? null;
+        setLocations((prev) =>
+          prev.map((l) =>
+            l.id === locId
+              ? { ...l, files: { ...l.files, [slot]: f }, previews: { ...l.previews, [slot]: preview } }
+              : l
+          )
+        );
+      };
+      reader.readAsDataURL(f);
+    } else {
+      setLocations((prev) =>
+        prev.map((l) =>
+          l.id === locId
+            ? { ...l, files: { ...l.files, [slot]: null }, previews: { ...l.previews, [slot]: null } }
+            : l
+        )
+      );
+    }
+  }
+
+  // Admin modal
+  function handleAdminSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (adminPassword === "OCWS2026") {
+      setAdminMode(true);
+      setShowAdminModal(false);
+      setAdminPassword("");
+      setAdminError("");
+    } else {
+      setAdminError("Invalid password.");
+    }
+  }
+
+  // Subscriber code
+  function handleSubCodeCheck() {
+    if (subCode.trim().toUpperCase() === "CORVUS-NEST") {
+      setSubCodeStatus("valid");
+    } else {
+      setSubCodeStatus("invalid");
+    }
   }
 
   // ── Render ──────────────────────────────────────────────────────────────────
@@ -655,7 +801,41 @@ export default function CrowsEyeClient() {
       {/* ── UPLOAD FORM ───────────────────────────────────────────────────── */}
       <form onSubmit={handleAnalyze} className="space-y-8 max-w-3xl">
 
-        {/* Upload boxes */}
+        {/* Mode toggle */}
+        <div>
+          <div
+            className="flex w-full rounded-2xl overflow-hidden"
+            style={{ border: "1px solid rgba(255,255,255,0.12)" }}
+          >
+            {(["single", "site"] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setMode(m)}
+                className="flex-1 px-4 py-3 text-sm font-semibold transition"
+                style={{
+                  background: mode === m ? "rgba(0,212,255,0.13)" : "rgba(255,255,255,0.03)",
+                  color: mode === m ? "var(--ocws-cyan)" : "rgba(255,255,255,0.50)",
+                  borderRight: m === "single" ? "1px solid rgba(255,255,255,0.10)" : undefined,
+                }}
+              >
+                {m === "single" ? "Corvus\u2019 Verdict \u2014 Single Location" : "The Full Reckoning \u2014 Full Site"}
+              </button>
+            ))}
+          </div>
+          {mode === "site" && (
+            <p className="mt-2 text-xs ocws-muted2">
+              Upload scans for each location on the property. Corvus synthesizes a site-wide assessment.{" "}
+              <span className="text-white/60 font-semibold">
+                {locations.length <= 5 ? "$150" : "$350"}
+              </span>{" "}
+              ({locations.length <= 5 ? "up to 5 locations" : "6\u201310 locations"})
+            </p>
+          )}
+        </div>
+
+        {/* Upload boxes — single mode */}
+        {mode === "single" && (
         <div>
           <h2 className="ocws-h2 text-white mb-1">Upload your screenshots</h2>
           <p className="ocws-muted text-sm mb-5">
@@ -673,6 +853,81 @@ export default function CrowsEyeClient() {
             ))}
           </div>
         </div>
+        )}
+
+        {/* Upload boxes — site mode */}
+        {mode === "site" && (
+        <div className="space-y-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="ocws-h2 text-white mb-1">Upload location scans</h2>
+              <p className="ocws-muted text-sm">One set of screenshots per location. Up to 10.</p>
+            </div>
+            {locations.length < 10 && (
+              <button
+                type="button"
+                onClick={addLocation}
+                className="shrink-0 rounded-xl px-4 py-2 text-sm font-semibold transition"
+                style={{
+                  background: "rgba(0,212,255,0.10)",
+                  border: "1px solid rgba(0,212,255,0.25)",
+                  color: "var(--ocws-cyan)",
+                }}
+              >
+                + Add Location
+              </button>
+            )}
+          </div>
+
+          {locations.map((loc, idx) => (
+            <div
+              key={loc.id}
+              className="ocws-tile p-5 space-y-4"
+              style={{ border: "1px solid rgba(0,212,255,0.15)" }}
+            >
+              <div className="flex items-center gap-3">
+                <span
+                  className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+                  style={{
+                    background: "rgba(0,212,255,0.12)",
+                    border: "1px solid rgba(0,212,255,0.30)",
+                    color: "var(--ocws-cyan)",
+                  }}
+                >
+                  {idx + 1}
+                </span>
+                <input
+                  value={loc.name}
+                  onChange={(e) => updateLocationName(loc.id, e.target.value)}
+                  placeholder={`Location ${idx + 1} name (e.g. Main Building, Pool House)`}
+                  className="flex-1 rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
+                />
+                {locations.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeLocation(loc.id)}
+                    className="shrink-0 text-white/35 hover:text-red-400 transition text-xs"
+                    aria-label="Remove location"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {UPLOAD_SLOTS.map((slot) => (
+                  <UploadBox
+                    key={slot.id}
+                    slot={slot}
+                    file={loc.files[slot.id]}
+                    preview={loc.previews[slot.id]}
+                    onFile={(f) => handleLocationFile(loc.id, slot.id, f)}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        )}
 
         {/* Location details */}
         <div className="ocws-tile p-6 space-y-5">
@@ -1051,7 +1306,9 @@ export default function CrowsEyeClient() {
                         boxShadow: "0 8px 28px rgba(214,178,94,0.28)",
                       }}
                     >
-                      Get the Full Verdict — $50
+                      {mode === "single"
+                        ? "Get the Full Verdict \u2014 $50"
+                        : `Get the Full Reckoning \u2014 ${locations.length <= 5 ? "$150" : "$350"}`}
                     </button>
                     <button
                       onClick={handleDemoVerdict}
@@ -1060,6 +1317,64 @@ export default function CrowsEyeClient() {
                       Demo: See Full Verdict
                     </button>
                   </div>
+
+                  {/* Subscriber code */}
+                  {!showSubCode && subCodeStatus !== "valid" && (
+                    <button
+                      type="button"
+                      onClick={() => setShowSubCode(true)}
+                      className="text-xs text-white/40 hover:text-white/70 transition underline underline-offset-2"
+                    >
+                      Have a subscription code?
+                    </button>
+                  )}
+                  {showSubCode && subCodeStatus !== "valid" && (
+                    <div className="flex flex-col items-center gap-2 w-full max-w-xs">
+                      <div className="flex w-full gap-2">
+                        <input
+                          value={subCode}
+                          onChange={(e) => { setSubCode(e.target.value); setSubCodeStatus(null); }}
+                          placeholder="Subscription code"
+                          className="flex-1 rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
+                          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSubCodeCheck(); } }}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleSubCodeCheck}
+                          className="rounded-xl px-4 py-2 text-sm font-semibold transition"
+                          style={{
+                            background: "rgba(0,212,255,0.10)",
+                            border: "1px solid rgba(0,212,255,0.25)",
+                            color: "var(--ocws-cyan)",
+                          }}
+                        >
+                          Apply
+                        </button>
+                      </div>
+                      {subCodeStatus === "invalid" && (
+                        <p className="text-xs text-red-400">Invalid code. Try again.</p>
+                      )}
+                    </div>
+                  )}
+                  {subCodeStatus === "valid" && (
+                    <div className="flex flex-col items-center gap-3">
+                      <p className="text-sm font-semibold" style={{ color: "#4ade80" }}>
+                        ✓ Subscriber access granted
+                      </p>
+                      <button
+                        type="button"
+                        onClick={unlockVerdict}
+                        className="rounded-2xl px-8 py-3 text-sm font-bold transition"
+                        style={{
+                          background: "rgba(74,222,128,0.12)",
+                          border: "1px solid rgba(74,222,128,0.35)",
+                          color: "#4ade80",
+                        }}
+                      >
+                        Unlock Full Verdict →
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1196,6 +1511,88 @@ export default function CrowsEyeClient() {
           </div>
         )}
       </div>
+
+      {/* ── ADMIN ACCESS LINK ─────────────────────────────────────────────── */}
+      <div className="mt-16 text-center">
+        <button
+          type="button"
+          onClick={() => setShowAdminModal(true)}
+          className="text-[11px] transition"
+          style={{ color: adminMode ? "rgba(74,222,128,0.5)" : "rgba(255,255,255,0.12)" }}
+          onMouseEnter={(e) => { if (!adminMode) (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.30)"; }}
+          onMouseLeave={(e) => { if (!adminMode) (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.12)"; }}
+        >
+          {adminMode ? "✓ Admin" : "Admin Access"}
+        </button>
+      </div>
+
+      {/* ── ADMIN MODAL ────────────────────────────────────────────────────── */}
+      {showAdminModal && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center">
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={() => { setShowAdminModal(false); setAdminPassword(""); setAdminError(""); }}
+            className="absolute inset-0 bg-black/70"
+          />
+          <div
+            className="relative z-10 w-[min(92%,360px)] rounded-2xl p-6 space-y-4"
+            style={{ background: "#0d1117", border: "1px solid rgba(255,255,255,0.12)" }}
+          >
+            <p className="text-xs font-semibold uppercase tracking-widest ocws-muted2">
+              Admin Access
+            </p>
+            {adminMode ? (
+              <div className="space-y-3">
+                <p className="text-sm font-semibold" style={{ color: "#4ade80" }}>
+                  ✓ Admin mode active — Stripe bypassed
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowAdminModal(false)}
+                  className="w-full rounded-xl px-4 py-2 text-sm text-white/60 hover:text-white/90 transition"
+                >
+                  Close
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleAdminSubmit} className="space-y-3">
+                <input
+                  type="password"
+                  value={adminPassword}
+                  onChange={(e) => { setAdminPassword(e.target.value); setAdminError(""); }}
+                  placeholder="Password"
+                  autoFocus
+                  className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
+                />
+                {adminError && (
+                  <p className="text-xs text-red-400">{adminError}</p>
+                )}
+                <div className="flex gap-2 justify-end">
+                  <button
+                    type="button"
+                    onClick={() => { setShowAdminModal(false); setAdminPassword(""); setAdminError(""); }}
+                    className="rounded-xl px-4 py-2 text-sm text-white/50 hover:text-white/80 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="rounded-xl px-4 py-2 text-sm font-semibold transition"
+                    style={{
+                      background: "rgba(255,255,255,0.08)",
+                      border: "1px solid rgba(255,255,255,0.15)",
+                      color: "white",
+                    }}
+                  >
+                    Enter
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── CORVUS VIDEO PANEL — fixed bottom-right ───────────────────────── */}
       {corvusVisible && (

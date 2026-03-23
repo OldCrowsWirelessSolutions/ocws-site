@@ -110,9 +110,17 @@ export async function POST(req: Request) {
       return Response.json({ ok: false, error: "Invalid request body." }, { status: 400 });
     }
 
+    type LocationPayload = {
+      name: string;
+      images: Record<string, string>;
+      mimeTypes: Record<string, string>;
+    };
+
     const {
-      images = {},
-      mimeTypes = {},
+      mode = "single",
+      images: singleImages = {},
+      mimeTypes: singleMimeTypes = {},
+      locations: locationPayloads = [],
       name = "",
       address = "",
       environment = "indoor",
@@ -120,8 +128,10 @@ export async function POST(req: Request) {
       notes = "",
       recaptchaToken = "",
     } = body as {
-      images: Record<string, string>;
-      mimeTypes: Record<string, string>;
+      mode?: string;
+      images?: Record<string, string>;
+      mimeTypes?: Record<string, string>;
+      locations?: LocationPayload[];
       name: string;
       address: string;
       environment: string;
@@ -156,7 +166,11 @@ export async function POST(req: Request) {
       );
     }
 
-    const hasImages = Object.values(images).some(Boolean);
+    const isSiteMode = mode === "site" && Array.isArray(locationPayloads) && locationPayloads.length > 0;
+    const hasImages = isSiteMode
+      ? locationPayloads.some((l) => Object.values(l.images ?? {}).some(Boolean))
+      : Object.values(singleImages).some(Boolean);
+
     if (!hasImages) {
       return Response.json(
         { ok: false, error: "At least one screenshot is required." },
@@ -173,28 +187,56 @@ export async function POST(req: Request) {
       scan5: "5 GHz Channel Graph",
     };
 
-    for (const [slot, label] of Object.entries(slotLabels)) {
-      if (images[slot]) {
-        content.push({
-          type: "image",
-          source: {
-            type: "base64",
-            media_type: sanitizeMime(mimeTypes[slot] ?? "image/jpeg"),
-            data: images[slot],
-          },
-        });
-        content.push({
-          type: "text",
-          text: `[Above image: ${label}]`,
-        });
+    if (isSiteMode) {
+      for (const loc of locationPayloads) {
+        const locName = String(loc.name || "Unnamed Location").trim();
+        for (const [slot, label] of Object.entries(slotLabels)) {
+          if (loc.images?.[slot]) {
+            content.push({
+              type: "image",
+              source: {
+                type: "base64",
+                media_type: sanitizeMime(loc.mimeTypes?.[slot] ?? "image/jpeg"),
+                data: loc.images[slot],
+              },
+            });
+            content.push({
+              type: "text",
+              text: `[Above image: ${locName} — ${label}]`,
+            });
+          }
+        }
+      }
+    } else {
+      for (const [slot, label] of Object.entries(slotLabels)) {
+        if (singleImages[slot]) {
+          content.push({
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: sanitizeMime(singleMimeTypes[slot] ?? "image/jpeg"),
+              data: singleImages[slot],
+            },
+          });
+          content.push({
+            type: "text",
+            text: `[Above image: ${label}]`,
+          });
+        }
       }
     }
 
-    const contextLines = [
+    const locationNames = isSiteMode
+      ? locationPayloads.map((l) => l.name || "Unnamed").join(", ")
+      : null;
+
+    const contextLines: string[] = [
       `Client: ${String(name).trim() || "Not provided"}`,
       `Site address: ${String(address).trim() || "Not provided"}`,
       `Environment: ${environment}`,
       `Location type: ${locationType || "Not specified"}`,
+      ...(isSiteMode && locationNames ? [`Locations surveyed (${locationPayloads.length}): ${locationNames}`] : []),
+      ...(isSiteMode ? ["ANALYSIS MODE: Full Site Survey — synthesize patterns ACROSS all locations for a site-wide assessment."] : []),
       `Problem description: ${String(notes).trim() || "Not provided"}`,
       "",
       "Analyze the screenshots above and return your Verdict as JSON.",
