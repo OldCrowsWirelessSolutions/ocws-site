@@ -2213,52 +2213,6 @@ export default function CrowsEyeClient() {
                     </button>
                   </div>
 
-                  {/* Nest membership note + extra credit purchase (for non-members) */}
-                  {!loggedInMember && mode === "single" && (
-                    <p className="text-xs text-white/40 max-w-xs text-center">
-                      Or{" "}
-                      <a href="/waitlist" className="underline underline-offset-2 text-white/55 hover:text-white/80 transition">
-                        join Nest for $20/mo
-                      </a>{" "}
-                      and get 3 Verdicts per month included.
-                    </p>
-                  )}
-
-                  {/* Extra credit purchase — shown when logged-in member has used monthly credits */}
-                  {loggedInMember && (
-                    <div className="w-full max-w-sm space-y-3">
-                      <p className="text-xs font-semibold uppercase tracking-widest text-white/50 text-center">Extra Verdict Credits</p>
-                      <div className="flex flex-col gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleStripePayment("credit_single")}
-                          className="w-full rounded-xl px-5 py-3 text-sm font-semibold transition text-left flex justify-between items-center"
-                          style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.25)", color: "var(--ocws-cyan)" }}
-                        >
-                          <span>Single credit</span>
-                          <span className="font-bold">$15</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleStripePayment("credit_6pack")}
-                          className="w-full rounded-xl px-5 py-3 text-sm font-semibold transition text-left flex justify-between items-center"
-                          style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.25)", color: "var(--ocws-cyan)" }}
-                        >
-                          <span>6-pack <span className="text-white/40 font-normal">(save $15)</span></span>
-                          <span className="font-bold">$75</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleStripePayment("credit_12pack")}
-                          className="w-full rounded-xl px-5 py-3 text-sm font-semibold transition text-left flex justify-between items-center"
-                          style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.25)", color: "var(--ocws-cyan)" }}
-                        >
-                          <span>12-pack <span className="text-white/40 font-normal">(save $60)</span></span>
-                          <span className="font-bold">$120</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
 
                   {/* Access code bypass / promo confirmation */}
                   {isBypassCode(appliedCode) && (
@@ -2526,45 +2480,6 @@ export default function CrowsEyeClient() {
       </div>
 
 
-      {/* ── CORVUS VIDEO PANEL — fixed bottom-right ───────────────────────── */}
-      {corvusVisible && (
-        <div
-          className="fixed z-50 rounded-2xl overflow-hidden transition-all"
-          style={{
-            bottom: "1rem",
-            right: "1rem",
-            width: "clamp(160px, 40vw, 240px)",
-            border: "2px solid var(--ocws-cyan)",
-            background: "#05070b",
-            boxShadow: "0 8px 40px rgba(0,212,255,0.22)",
-          }}
-        >
-          {/* Corvus video — autoplay, loop, muted */}
-          <video
-            src="/corvus.mp4"
-            autoPlay
-            loop
-            muted
-            playsInline
-            style={{ width: "100%", display: "block" }}
-          />
-
-          {/* Panel footer */}
-          <div
-            className="px-3 py-2 flex items-center justify-between"
-            style={{ borderTop: "1px solid rgba(0,212,255,0.15)" }}
-          >
-            <p className="text-xs font-semibold ocws-accent-cyan">Crow&rsquo;s Eye</p>
-            <button
-              onClick={() => setCorvusVisible(false)}
-              className="text-white/40 hover:text-white/80 transition text-sm leading-none"
-              aria-label="Close Corvus panel"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
