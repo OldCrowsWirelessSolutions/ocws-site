@@ -351,6 +351,9 @@ export default function CrowsEyeClient() {
   const [subCode, setSubCode] = useState("");
   const [subCodeStatus, setSubCodeStatus] = useState<null | "valid" | "invalid">(null);
 
+  // PDF generation
+  const [pdfGenerating, setPdfGenerating] = useState(false);
+
   const resultsRef = useRef<HTMLDivElement>(null);
 
   // Auto-skip missing teaser 2
@@ -589,6 +592,335 @@ export default function CrowsEyeClient() {
       setSubCodeStatus("valid");
     } else {
       setSubCodeStatus("invalid");
+    }
+  }
+
+  // PDF generation
+  async function handleDownloadPdf() {
+    if (!result || pdfGenerating) return;
+    setPdfGenerating(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF({ unit: "pt", format: "letter" });
+
+      const PW = 612;
+      const PH = 792;
+      const ML = 40;
+      const MR = 40;
+      const CW = PW - ML - MR;
+      const FOOTER_ZONE = 50;
+
+      const now = new Date();
+      const dateStr = now.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+      const reportId = `CE-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+
+      let y = 0;
+
+      function addPageFooter() {
+        doc.setFillColor(26, 35, 50);
+        doc.rect(0, PH - 36, PW, 36, "F");
+        doc.setTextColor(100, 120, 145);
+        doc.setFontSize(7);
+        doc.setFont("helvetica", "normal");
+        doc.text(
+          "\u00A9 2026 Old Crows Wireless Solutions LLC  \u00B7  oldcrowswireless.com  \u00B7  Clarity Where Wireless Fails",
+          PW / 2,
+          PH - 13,
+          { align: "center" }
+        );
+      }
+
+      function newPage() {
+        addPageFooter();
+        doc.addPage();
+        doc.setFillColor(26, 35, 50);
+        doc.rect(0, 0, PW, 28, "F");
+        doc.setFillColor(13, 110, 122);
+        doc.rect(0, 25, PW, 3, "F");
+        doc.setTextColor(0, 194, 199);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "bold");
+        doc.text("CORVUS\u2019 VERDICT", ML, 18);
+        doc.setTextColor(100, 120, 145);
+        doc.setFontSize(7);
+        doc.setFont("helvetica", "normal");
+        doc.text(reportId, PW - MR, 18, { align: "right" });
+        y = 44;
+      }
+
+      function ensure(needed: number) {
+        if (y + needed > PH - FOOTER_ZONE) newPage();
+      }
+
+      // ── HEADER ─────────────────────────────────────────────────────────────
+      const HDR = 68;
+      doc.setFillColor(26, 35, 50);
+      doc.rect(0, 0, PW, HDR, "F");
+      doc.setFillColor(13, 110, 122);
+      doc.rect(0, HDR - 3, PW, 3, "F");
+
+      doc.setTextColor(0, 194, 199);
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.text("CORVUS\u2019 VERDICT", ML, 40);
+
+      doc.setTextColor(184, 146, 42);
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      doc.text("CROW\u2019S EYE BY CORVUS", PW - MR, 22, { align: "right" });
+
+      doc.setTextColor(100, 120, 145);
+      doc.setFontSize(7.5);
+      doc.setFont("helvetica", "normal");
+      doc.text(reportId, PW - MR, 34, { align: "right" });
+      doc.text(dateStr, PW - MR, 46, { align: "right" });
+
+      y = HDR + 22;
+
+      // ── CLIENT INFO ────────────────────────────────────────────────────────
+      const clientH = 58;
+      doc.setFillColor(13, 110, 122);
+      doc.rect(ML, y, 3, clientH, "F");
+
+      doc.setTextColor(0, 194, 199);
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "bold");
+      doc.text("CLIENT REPORT", ML + 12, y + 11);
+
+      doc.setTextColor(220, 230, 242);
+      doc.setFontSize(13);
+      doc.setFont("helvetica", "bold");
+      doc.text(name || "\u2014", ML + 12, y + 26);
+
+      const addrStr = [street, suite, city, state, zip].filter(Boolean).join(", ");
+      doc.setTextColor(160, 178, 200);
+      doc.setFontSize(8.5);
+      doc.setFont("helvetica", "normal");
+      doc.text(addrStr || "Address not provided", ML + 12, y + 40);
+
+      const envStr = [
+        environment.charAt(0).toUpperCase() + environment.slice(1),
+        locationType,
+      ]
+        .filter(Boolean)
+        .join("  \u00B7  ");
+      doc.text(envStr, ML + 12, y + 52);
+
+      y += clientH + 18;
+
+      // Divider
+      doc.setDrawColor(13, 110, 122);
+      doc.setLineWidth(0.5);
+      doc.line(ML, y, PW - MR, y);
+      y += 18;
+
+      // ── CORVUS' ASSESSMENT ─────────────────────────────────────────────────
+      doc.setTextColor(0, 194, 199);
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "bold");
+      doc.text("CORVUS\u2019 ASSESSMENT", ML, y);
+      y += 13;
+
+      const openLines = doc.splitTextToSize(`\u201C${result.corvus_opening}\u201D`, CW);
+      ensure(openLines.length * 14 + 12);
+      doc.setTextColor(210, 222, 238);
+      doc.setFontSize(10.5);
+      doc.setFont("helvetica", "bolditalic");
+      doc.text(openLines, ML, y);
+      y += openLines.length * 14 + 14;
+
+      // Stats row
+      ensure(54);
+      const bW = (CW - 12) / 4;
+      const statsData = [
+        { label: "ISSUES FOUND", val: result.problems_found, r: 220, g: 228, b: 240 },
+        { label: "CRITICAL",     val: result.critical_count,  r: 248, g: 113, b: 113 },
+        { label: "WARNINGS",     val: result.warning_count,   r: 251, g: 191, b: 36  },
+        { label: "GOOD",         val: result.good_count,      r: 74,  g: 222, b: 128 },
+      ];
+      statsData.forEach((s, i) => {
+        const bx = ML + i * (bW + 4);
+        doc.setFillColor(18, 28, 46);
+        doc.roundedRect(bx, y, bW, 46, 4, 4, "F");
+        doc.setTextColor(s.r, s.g, s.b);
+        doc.setFontSize(22);
+        doc.setFont("helvetica", "bold");
+        doc.text(String(s.val), bx + bW / 2, y + 26, { align: "center" });
+        doc.setTextColor(100, 120, 145);
+        doc.setFontSize(6.5);
+        doc.setFont("helvetica", "normal");
+        doc.text(s.label, bx + bW / 2, y + 38, { align: "center" });
+      });
+      y += 58;
+
+      // ── FINDINGS ───────────────────────────────────────────────────────────
+      ensure(24);
+      doc.setDrawColor(13, 110, 122);
+      doc.setLineWidth(0.5);
+      doc.line(ML, y, PW - MR, y);
+      y += 14;
+
+      doc.setTextColor(0, 194, 199);
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "bold");
+      doc.text("COMPLETE FINDINGS", ML, y);
+      y += 14;
+
+      const SEV_COLOR: Record<string, [number, number, number]> = {
+        CRITICAL: [239, 68,  68 ],
+        WARNING:  [234, 179, 8  ],
+        GOOD:     [74,  222, 128],
+      };
+
+      for (const f of result.full_findings) {
+        const [sr, sg, sb] = SEV_COLOR[f.severity] ?? SEV_COLOR.WARNING;
+        const descLines = doc.splitTextToSize(f.description, CW - 20);
+        const fixLines  = doc.splitTextToSize(f.fix, CW - 40);
+        const cardH = 26 + descLines.length * 12 + 8 + fixLines.length * 12 + 18;
+
+        ensure(cardH + 8);
+
+        doc.setFillColor(sr, sg, sb);
+        doc.rect(ML, y, 3, cardH, "F");
+
+        doc.setFillColor(18, 28, 46);
+        doc.rect(ML + 3, y, CW - 3, cardH, "F");
+
+        // Severity badge
+        const pr = Math.round(sr * 0.20 + 18 * 0.80);
+        const pg = Math.round(sg * 0.20 + 28 * 0.80);
+        const pb = Math.round(sb * 0.20 + 46 * 0.80);
+        doc.setFillColor(pr, pg, pb);
+        doc.roundedRect(ML + 10, y + 8, 54, 13, 3, 3, "F");
+        doc.setTextColor(sr, sg, sb);
+        doc.setFontSize(6.5);
+        doc.setFont("helvetica", "bold");
+        doc.text(f.severity, ML + 37, y + 17, { align: "center" });
+
+        // Title (wraps if long)
+        doc.setTextColor(215, 225, 240);
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        const titleLines = doc.splitTextToSize(f.title, CW - 80);
+        doc.text(titleLines, ML + 72, y + 17);
+
+        // Description
+        doc.setTextColor(155, 175, 198);
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.text(descLines, ML + 10, y + 30);
+
+        // Fix box
+        const fixY = y + 30 + descLines.length * 12 + 4;
+        doc.setFillColor(12, 32, 52);
+        doc.roundedRect(ML + 10, fixY, CW - 20, fixLines.length * 12 + 14, 3, 3, "F");
+        doc.setTextColor(0, 194, 199);
+        doc.setFontSize(6.5);
+        doc.setFont("helvetica", "bold");
+        doc.text("FIX", ML + 18, fixY + 10);
+        doc.setTextColor(150, 200, 218);
+        doc.setFontSize(8.5);
+        doc.setFont("helvetica", "normal");
+        doc.text(fixLines, ML + 36, fixY + 10);
+
+        y += cardH + 8;
+      }
+
+      // ── RECOMMENDATIONS ────────────────────────────────────────────────────
+      ensure(24);
+      doc.setDrawColor(13, 110, 122);
+      doc.setLineWidth(0.5);
+      doc.line(ML, y, PW - MR, y);
+      y += 14;
+
+      doc.setTextColor(0, 194, 199);
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "bold");
+      doc.text("RECOMMENDATIONS", ML, y);
+      y += 14;
+
+      result.recommendations.forEach((rec, i) => {
+        const rLines = doc.splitTextToSize(rec, CW - 30);
+        const rH = rLines.length * 12 + 8;
+        ensure(rH + 4);
+
+        doc.setFillColor(13, 110, 122);
+        doc.circle(ML + 9, y + 6, 7, "F");
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(7);
+        doc.setFont("helvetica", "bold");
+        doc.text(String(i + 1), ML + 9, y + 9, { align: "center" });
+
+        doc.setTextColor(155, 175, 198);
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.text(rLines, ML + 24, y + 9);
+        y += rH + 4;
+      });
+
+      // ── CORVUS' FINAL WORD ─────────────────────────────────────────────────
+      y += 10;
+      const fwLines = doc.splitTextToSize(`\u201C${result.corvus_summary}\u201D`, CW - 28);
+      const fwH = fwLines.length * 13 + 30;
+      ensure(fwH + 8);
+
+      doc.setFillColor(20, 30, 50);
+      doc.roundedRect(ML, y, CW, fwH, 5, 5, "F");
+      doc.setFillColor(184, 146, 42);
+      doc.rect(ML, y, 3, fwH, "F");
+
+      doc.setTextColor(184, 146, 42);
+      doc.setFontSize(6.5);
+      doc.setFont("helvetica", "bold");
+      doc.text("CORVUS\u2019 FINAL WORD", ML + 12, y + 14);
+
+      doc.setTextColor(210, 222, 236);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "italic");
+      doc.text(fwLines, ML + 12, y + 26);
+      y += fwH + 22;
+
+      // ── CERTIFICATION ──────────────────────────────────────────────────────
+      const certH = 62;
+      ensure(certH + 8);
+      doc.setDrawColor(13, 110, 122);
+      doc.setLineWidth(0.8);
+      doc.roundedRect(ML, y, CW, certH, 4, 4);
+      doc.setFillColor(13, 110, 122);
+      doc.rect(ML, y, 3, certH, "F");
+
+      doc.setTextColor(0, 194, 199);
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "bold");
+      doc.text("CERTIFICATION", ML + 12, y + 14);
+
+      doc.setTextColor(155, 175, 198);
+      doc.setFontSize(8.5);
+      doc.setFont("helvetica", "normal");
+      const certLines = [
+        "Rendered by Crow\u2019s Eye  \u00B7  Certified by Joshua Turner",
+        "Managing Member, Old Crows Wireless Solutions LLC",
+        "17 Years U.S. Navy Electronic Warfare Experience",
+      ];
+      certLines.forEach((line, i) => {
+        doc.text(line, ML + 12, y + 28 + i * 13);
+      });
+
+      addPageFooter();
+
+      // ── SAVE ───────────────────────────────────────────────────────────────
+      const safeName = (name || "Client")
+        .replace(/[^\w\s-]/g, "")
+        .trim()
+        .replace(/\s+/g, " ");
+      const fileDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+      doc.save(`Corvus' Verdict - ${safeName} - ${fileDate}.pdf`);
+    } finally {
+      setPdfGenerating(false);
     }
   }
 
@@ -1436,7 +1768,9 @@ export default function CrowsEyeClient() {
                 {verdictStep >= result.full_findings.length && (
                   <div className="pt-2">
                     <button
-                      className="w-full sm:w-auto rounded-2xl px-8 py-4 text-base font-bold tracking-tight transition min-h-[56px]"
+                      onClick={handleDownloadPdf}
+                      disabled={pdfGenerating}
+                      className="w-full sm:w-auto rounded-2xl px-8 py-4 text-base font-bold tracking-tight transition min-h-[56px] disabled:opacity-60 disabled:cursor-not-allowed"
                       style={{
                         background:
                           "linear-gradient(135deg, var(--ocws-cyan), var(--ocws-cyan2))",
@@ -1444,7 +1778,7 @@ export default function CrowsEyeClient() {
                         boxShadow: "0 8px 28px rgba(0,212,255,0.25)",
                       }}
                     >
-                      Download Corvus&rsquo; Verdict PDF
+                      {pdfGenerating ? "Generating PDF…" : "Download Corvus\u2019 Verdict PDF"}
                     </button>
                   </div>
                 )}
