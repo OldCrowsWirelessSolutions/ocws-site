@@ -50,7 +50,7 @@ export default function ServicesPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {["Full AI RF environment diagnosis","Channel saturation and interference analysis","Router vendor identification from MAC OUI","Step-by-step fix instructions per router","Security posture assessment","Branded PDF report \u2014 yours to keep"].map((f) => (
                   <div key={f} className="flex items-start gap-2 text-sm" style={{ color: "#ccc" }}>
-                    <span style={{ color: "#00C2C7", flexShrink: 0 }}>\u2713</span><span>{f}</span>
+                    <span style={{ color: "#00C2C7", flexShrink: 0 }}>✓</span><span>{f}</span>
                   </div>
                 ))}
               </div>
@@ -106,7 +106,7 @@ export default function ServicesPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {["Full site Reckoning \u2014 all locations included","Personal certification by Joshua Turner","Valid for compliance and legal documentation","Insurance claim and vendor quote support","Board-ready professional report format","17 years Navy EW expertise behind every cert"].map((f) => (
                   <div key={f} className="flex items-start gap-2 text-sm" style={{ color: "#ccc" }}>
-                    <span style={{ color: "#B8922A", flexShrink: 0 }}>\u2713</span><span>{f}</span>
+                    <span style={{ color: "#B8922A", flexShrink: 0 }}>✓</span><span>{f}</span>
                   </div>
                 ))}
               </div>

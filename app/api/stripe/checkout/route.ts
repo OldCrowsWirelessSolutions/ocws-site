@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       ? Math.round(basePrice * (1 - discountPct / 100) * 100)
       : basePrice * 100;
 
-    const origin = req.headers.get("origin") ?? "https://ocws.tech";
+    const origin = req.headers.get("origin") ?? "https://oldcrowswireless.com";
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -50,8 +50,8 @@ export async function POST(req: NextRequest) {
           quantity: 1,
         },
       ],
-      success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/crows-eye`,
+      success_url: `${origin}/crows-eye?verdict=unlocked&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/crows-eye?verdict=cancelled`,
     });
 
     return NextResponse.json({ url: session.url });

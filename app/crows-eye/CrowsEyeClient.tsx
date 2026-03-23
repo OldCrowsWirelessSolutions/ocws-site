@@ -522,6 +522,29 @@ export default function CrowsEyeClient() {
     return "Commercial Site \u2014 $750";
   }, [locations.length, isHybrid, detachedCount, reckoningPrice]);
 
+  // Restore result after Stripe payment redirect (?verdict=unlocked)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("verdict") === "unlocked") {
+      try {
+        const saved = sessionStorage.getItem("corvus_pending_result");
+        if (saved) {
+          const parsed = JSON.parse(saved) as typeof result;
+          setResult(parsed);
+          setPhase("full_verdict");
+          setVerdictStep(0);
+          sessionStorage.removeItem("corvus_pending_result");
+          // Clean up URL param without reload
+          const url = new URL(window.location.href);
+          url.searchParams.delete("verdict");
+          url.searchParams.delete("session_id");
+          window.history.replaceState({}, "", url.toString());
+        }
+      } catch { /* ignore */ }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Auto-skip missing teaser 2
   useEffect(() => {
     if (result && freeStep === 3 && !result.teaser_problems[1]) {
@@ -741,6 +764,10 @@ export default function CrowsEyeClient() {
       });
       const data = await res.json().catch(() => ({}));
       if (data.url) {
+        // Persist the analysis result so it can be restored after Stripe redirect
+        if (result) {
+          try { sessionStorage.setItem("corvus_pending_result", JSON.stringify(result)); } catch { /* ignore */ }
+        }
         window.location.href = data.url;
       } else {
         setErrorMsg("Payment system unavailable. Please try again.");
@@ -748,15 +775,6 @@ export default function CrowsEyeClient() {
     } catch {
       setErrorMsg("Payment system unavailable. Please try again.");
     }
-  }
-
-  function handleDemoVerdict() {
-    setPhase("full_verdict");
-    setVerdictStep(0);
-    setTimeout(
-      () => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
-      100
-    );
   }
 
   function unlockVerdict() {
@@ -1519,23 +1537,6 @@ export default function CrowsEyeClient() {
           )}
         </div>
 
-        {/* SSID field */}
-        <div>
-          <label className="block text-sm font-medium text-white mb-1">
-            Your Network Name (SSID) <span className="text-white/50">*</span>
-          </label>
-          <input
-            value={ssid}
-            onChange={(e) => { setSsid(e.target.value); setErrorMsg(""); }}
-            placeholder="e.g. MyHomeWiFi or Smith_Family_5G"
-            autoComplete="off"
-            className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
-          />
-          <p className="mt-1.5 text-xs ocws-muted2">
-            This is the name of YOUR Wi-Fi network — the one you are trying to fix. You can find it in your phone&rsquo;s Wi-Fi settings.
-          </p>
-        </div>
-
         {/* Upload boxes — single mode */}
         {mode === "single" && (
         <div>
@@ -1868,6 +1869,23 @@ export default function CrowsEyeClient() {
             </div>
           </div>
 
+          {/* SSID field — placed after address */}
+          <div>
+            <label className="block text-sm font-medium text-white mb-1">
+              Your Network Name (SSID)
+            </label>
+            <input
+              value={ssid}
+              onChange={(e) => { setSsid(e.target.value); setErrorMsg(""); }}
+              placeholder="e.g. HomeNetwork-5G"
+              autoComplete="off"
+              className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
+            />
+            <p className="mt-1.5 text-xs ocws-muted2">
+              The name of YOUR Wi-Fi network — the one you are trying to fix. Find it in your phone&rsquo;s Wi-Fi settings.
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
             <div>
               <label className="block text-sm font-medium text-white mb-2">
@@ -2192,12 +2210,6 @@ export default function CrowsEyeClient() {
                       {mode === "single"
                         ? "Get the Full Verdict \u2014 $50"
                         : `Get the Full Reckoning \u2014 $${reckoningPrice}`}
-                    </button>
-                    <button
-                      onClick={handleDemoVerdict}
-                      className="ocws-btn ocws-btn-ghost text-sm w-full sm:w-auto min-h-[48px]"
-                    >
-                      Demo: See Full Verdict
                     </button>
                   </div>
 

@@ -23,7 +23,7 @@ const cases = [
     ],
     verdict:
       "Corvus identified the Cox-provided gateway as a Vantiva unit broadcasting on a non-standard channel with three competing ISP networks in the same power level range. Channel change to 1, 5 GHz band steering enabled, and isolation of POS VLAN resolved throughput degradation.",
-    pdfHref: "/Corvus' Verdict - Pilchers Barbershop.pdf",
+    pdfHref: "/Corvus_Verdict__Pilchers_Barbershop.pdf",
   },
   {
     name: "Olive Baptist Church",
@@ -39,7 +39,7 @@ const cases = [
     ],
     verdict:
       "Corvus identified the router as an ASUS unit on an auto-assigned channel that coincided with the six highest-power neighboring networks. WPA3 enabled, channel moved to 11, guest SSID created with VLAN isolation. Security posture corrected in under 30 minutes.",
-    pdfHref: "/Corvus' Verdict - Olive Baptist Church.pdf",
+    pdfHref: "/Corvus_Verdict__Olive_Baptist_Church.pdf",
   },
 ];
 
