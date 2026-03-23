@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -150,6 +150,20 @@ function Typewriter({
         />
       )}
     </span>
+  );
+}
+
+// ─── Corvus Dialogue (cycles lines with typewriter for analyzing panel) ────────
+
+function CorvusDialogue({ lines }: { lines: string[] }) {
+  const [idx, setIdx] = useState(0);
+  return (
+    <Typewriter
+      key={idx}
+      text={lines[idx % lines.length]}
+      speed={18}
+      onDone={() => setTimeout(() => setIdx((i) => i + 1), 800)}
+    />
   );
 }
 
@@ -369,6 +383,25 @@ export default function CrowsEyeClient() {
   const [pdfGenerating, setPdfGenerating] = useState(false);
 
   const resultsRef = useRef<HTMLDivElement>(null);
+
+  // Dynamic dialogue lines referencing actual form data shown while Corvus analyzes
+  const analysisDialogue = useMemo<string[]>(() => {
+    const lines: string[] = ["Reading your RF environment\u2026"];
+    if (ssid) lines.push(`Scanning for ${ssid} in the stack\u2026`);
+    lines.push("Checking 2.4\u202FGHz channel saturation\u2026");
+    if (ssid) lines.push(`Pulling BSSID data for ${ssid}\u2026`);
+    lines.push("Analyzing 5\u202FGHz band coverage topology\u2026");
+    if (mode === "site") {
+      lines.push(`Cross-referencing ${locations.length} location${locations.length !== 1 ? "s" : ""}\u2026`);
+    }
+    if (ssid) lines.push(`Identifying router vendor from ${ssid}\u2026`);
+    lines.push("Cataloging interference sources\u2026");
+    lines.push("Mapping channel conflicts and overlap\u2026");
+    lines.push("Calculating signal attenuation patterns\u2026");
+    lines.push("Building step-by-step remediation plan\u2026");
+    lines.push("Rendering the Verdict\u2026");
+    return lines;
+  }, [ssid, mode, locations.length]);
 
   // Auto-skip missing teaser 2
   useEffect(() => {
@@ -672,6 +705,37 @@ export default function CrowsEyeClient() {
         if (y + needed > PH - FOOTER_ZONE) newPage();
       }
 
+      // ── LOGO LOADING ───────────────────────────────────────────────────────
+      async function fetchLogoDataUrl(path: string): Promise<string | null> {
+        try {
+          const r = await fetch(path);
+          const blob = await r.blob();
+          return await new Promise((res) => {
+            const fr = new FileReader();
+            fr.onload = () => res(fr.result as string);
+            fr.readAsDataURL(blob);
+          });
+        } catch { return null; }
+      }
+      async function getImgScale(dataUrl: string, targetH: number): Promise<{ w: number; h: number }> {
+        return new Promise((res) => {
+          const img = new Image();
+          img.onload = () => {
+            const ratio = img.naturalHeight > 0 ? img.naturalWidth / img.naturalHeight : 1;
+            res({ w: Math.round(targetH * ratio), h: targetH });
+          };
+          img.onerror = () => res({ w: targetH, h: targetH });
+          img.src = dataUrl;
+        });
+      }
+      const LOGO_H = 42;
+      const [ocwsLogoUrl, crowsLogoUrl] = await Promise.all([
+        fetchLogoDataUrl("/OCWS_Logo_Transparent.png"),
+        fetchLogoDataUrl("/Crows_Eye_Logo.png"),
+      ]);
+      const ocwsSz = ocwsLogoUrl ? await getImgScale(ocwsLogoUrl, LOGO_H) : null;
+      const crowsSz = crowsLogoUrl ? await getImgScale(crowsLogoUrl, LOGO_H) : null;
+
       // ── HEADER ─────────────────────────────────────────────────────────────
       const HDR = 68;
       doc.setFillColor(26, 35, 50);
@@ -679,21 +743,31 @@ export default function CrowsEyeClient() {
       doc.setFillColor(13, 110, 122);
       doc.rect(0, HDR - 3, PW, 3, "F");
 
+      // Place logos flush to header edges
+      const logoY = (HDR - LOGO_H) / 2;
+      if (ocwsLogoUrl && ocwsSz) {
+        doc.addImage(ocwsLogoUrl, "PNG", ML, logoY, ocwsSz.w, LOGO_H);
+      }
+      if (crowsLogoUrl && crowsSz) {
+        doc.addImage(crowsLogoUrl, "PNG", PW - MR - crowsSz.w, logoY, crowsSz.w, LOGO_H);
+      }
+
+      const titleX = ocwsSz ? ML + ocwsSz.w + 8 : ML;
       doc.setTextColor(0, 194, 199);
       doc.setFontSize(22);
       doc.setFont("helvetica", "bold");
-      doc.text("CORVUS\u2019 VERDICT", ML, 40);
+      doc.text("CORVUS\u2019 VERDICT", titleX, 40);
 
+      const rightTextX = crowsSz ? PW - MR - crowsSz.w - 8 : PW - MR;
       doc.setTextColor(184, 146, 42);
       doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
-      doc.text("CROW\u2019S EYE BY CORVUS", PW - MR, 22, { align: "right" });
-
+      doc.text("CROW\u2019S EYE BY CORVUS", rightTextX, 22, { align: "right" });
       doc.setTextColor(100, 120, 145);
       doc.setFontSize(7.5);
       doc.setFont("helvetica", "normal");
-      doc.text(reportId, PW - MR, 34, { align: "right" });
-      doc.text(dateStr, PW - MR, 46, { align: "right" });
+      doc.text(reportId, rightTextX, 34, { align: "right" });
+      doc.text(dateStr, rightTextX, 46, { align: "right" });
 
       y = HDR + 22;
 
@@ -953,9 +1027,16 @@ export default function CrowsEyeClient() {
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
       <div className="text-center mb-14">
-        <p className="text-xs font-semibold uppercase tracking-widest ocws-accent-cyan mb-4">
-          Crow&rsquo;s Eye by Corvus
-        </p>
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <img
+            src="/Crows_Eye_Logo.png"
+            alt="Crow's Eye"
+            style={{ height: "48px", width: "auto" }}
+          />
+          <p className="text-xs font-semibold uppercase tracking-widest ocws-accent-cyan">
+            Crow&rsquo;s Eye by Corvus
+          </p>
+        </div>
         <h1 className="ocws-h1 mb-4">Crow&rsquo;s Eye</h1>
         <p className="text-xl font-medium text-white/90 mb-4">
           Corvus sees what your ISP won&rsquo;t tell you.
@@ -1459,20 +1540,41 @@ export default function CrowsEyeClient() {
       {/* ── RESULTS PANEL ─────────────────────────────────────────────────── */}
       <div ref={resultsRef} className="mt-16 max-w-3xl">
 
-        {/* Analyzing spinner */}
+        {/* Star Fox Corvus rendering panel */}
         {phase === "analyzing" && (
-          <div className="ocws-tile p-8 flex flex-col items-center gap-4 text-center">
-            <div
-              className="w-8 h-8 rounded-full border-2 animate-spin"
-              style={{
-                borderColor: "rgba(0,212,255,0.3)",
-                borderTopColor: "var(--ocws-cyan)",
-              }}
-            />
-            <p className="text-white font-semibold">Corvus is reading your environment…</p>
-            <p className="ocws-muted text-sm">
-              Analyzing channel allocation, signal topology, and interference patterns.
-            </p>
+          <div
+            className="ocws-tile overflow-hidden"
+            style={{ border: "1px solid rgba(0,212,255,0.25)" }}
+          >
+            <div className="flex flex-col md:flex-row">
+              {/* Left: Corvus video */}
+              <div className="shrink-0 md:w-60">
+                <video
+                  src="/corvus.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  style={{ width: "100%", display: "block", objectFit: "cover" }}
+                />
+              </div>
+              {/* Right: Live typewriter dialogue based on scan data */}
+              <div
+                className="flex-1 flex flex-col justify-center p-5"
+                style={{
+                  borderLeft: "1px solid rgba(0,212,255,0.18)",
+                  minHeight: "135px",
+                  background: "rgba(0,0,0,0.25)",
+                }}
+              >
+                <p className="text-[10px] font-semibold uppercase tracking-widest ocws-accent-cyan mb-3">
+                  Corvus is reading\u2026
+                </p>
+                <p className="text-white text-sm leading-relaxed font-medium">
+                  <CorvusDialogue lines={analysisDialogue} />
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
@@ -2020,31 +2122,15 @@ export default function CrowsEyeClient() {
             boxShadow: "0 8px 40px rgba(0,212,255,0.22)",
           }}
         >
-          {/* Video placeholder — swap src for actual MP4 when ready */}
-          <div
-            className="relative w-full flex flex-col items-center justify-center gap-2"
-            style={{
-              aspectRatio: "16/9",
-              background: "linear-gradient(135deg, #0a1628, #051020)",
-            }}
-          >
-            {phase === "analyzing" ? (
-              <>
-                <div
-                  className="w-5 h-5 rounded-full border-2 animate-spin"
-                  style={{
-                    borderColor: "rgba(0,212,255,0.3)",
-                    borderTopColor: "var(--ocws-cyan)",
-                  }}
-                />
-                <p className="text-xs ocws-accent-cyan font-semibold">Looking…</p>
-              </>
-            ) : (
-              <p className="text-xs ocws-accent-cyan font-semibold px-3 text-center">
-                Verdict rendered.
-              </p>
-            )}
-          </div>
+          {/* Corvus video — autoplay, loop, muted */}
+          <video
+            src="/corvus.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            style={{ width: "100%", display: "block" }}
+          />
 
           {/* Panel footer */}
           <div
