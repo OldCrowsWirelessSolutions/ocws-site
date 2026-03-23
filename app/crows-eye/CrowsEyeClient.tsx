@@ -27,14 +27,27 @@ interface TeaserProblem {
   teaser: string;
 }
 
+interface RouterInfo {
+  vendor: string;
+  gateway_ip: string | null;
+  default_username: string | null;
+  default_password: string | null;
+  confidence: "high" | "medium" | "low";
+}
+
 interface FullFinding {
   severity: "CRITICAL" | "WARNING" | "GOOD";
   title: string;
   description: string;
   fix: string;
+  steps?: string[];
+  router_info?: RouterInfo;
+  login_disclaimer?: string;
 }
 
 interface AnalysisResult {
+  identified_ssid: string | null;
+  router_vendor: string | null;
   corvus_opening: string;
   problems_found: number;
   critical_count: number;
@@ -313,6 +326,7 @@ export default function CrowsEyeClient() {
   const [environment, setEnvironment] = useState<"indoor" | "outdoor">("indoor");
   const [locationType, setLocationType] = useState("");
   const [notes, setNotes] = useState("");
+  const [ssid, setSsid] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
   // TODO: replace honeypot with reCAPTCHA once key issue resolved
@@ -439,6 +453,7 @@ export default function CrowsEyeClient() {
           environment,
           locationType,
           notes,
+          client_ssid: ssid,
           honeypot,
         };
       } else {
@@ -465,6 +480,7 @@ export default function CrowsEyeClient() {
           environment,
           locationType,
           notes,
+          client_ssid: ssid,
           honeypot,
         };
       }
@@ -682,7 +698,7 @@ export default function CrowsEyeClient() {
       y = HDR + 22;
 
       // ── CLIENT INFO ────────────────────────────────────────────────────────
-      const clientH = 58;
+      const clientH = ssid ? 70 : 58;
       doc.setFillColor(13, 110, 122);
       doc.rect(ML, y, 3, clientH, "F");
 
@@ -709,6 +725,12 @@ export default function CrowsEyeClient() {
         .filter(Boolean)
         .join("  \u00B7  ");
       doc.text(envStr, ML + 12, y + 52);
+
+      if (ssid) {
+        doc.setTextColor(0, 194, 199);
+        doc.setFontSize(7.5);
+        doc.text(`SSID: ${ssid}`, ML + 12, y + 64);
+      }
 
       y += clientH + 18;
 
@@ -1130,6 +1152,23 @@ export default function CrowsEyeClient() {
           )}
         </div>
 
+        {/* SSID field */}
+        <div>
+          <label className="block text-sm font-medium text-white mb-1">
+            Your Network Name (SSID) <span className="text-white/50">*</span>
+          </label>
+          <input
+            value={ssid}
+            onChange={(e) => { setSsid(e.target.value); setErrorMsg(""); }}
+            placeholder="e.g. MyHomeWiFi or Smith_Family_5G"
+            autoComplete="off"
+            className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
+          />
+          <p className="mt-1.5 text-xs ocws-muted2">
+            This is the name of YOUR Wi-Fi network — the one you are trying to fix. You can find it in your phone&rsquo;s Wi-Fi settings.
+          </p>
+        </div>
+
         {/* Upload boxes — single mode */}
         {mode === "single" && (
         <div>
@@ -1461,7 +1500,31 @@ export default function CrowsEyeClient() {
               </div>
             )}
 
-            {/* 2 — Stats grid */}
+            {/* 2 — Identified network banner + stats grid */}
+            {freeStep >= 2 && result.identified_ssid && (
+              <div
+                className="ocws-tile px-5 py-4 flex items-start gap-3"
+                style={{ border: "1px solid rgba(0,212,255,0.25)", background: "rgba(0,212,255,0.05)" }}
+              >
+                <span className="shrink-0 mt-0.5 text-base" aria-hidden="true">📡</span>
+                <p className="text-sm leading-relaxed">
+                  <span className="text-white font-semibold">
+                    I found your network —{" "}
+                    <span style={{ color: "var(--ocws-cyan)" }}>{result.identified_ssid}</span>
+                  </span>
+                  {result.router_vendor && result.router_vendor !== "Unknown" && (
+                    <span className="text-white/80">
+                      {" "}— running on a{" "}
+                      <span className="font-semibold text-white">{result.router_vendor}</span> router
+                    </span>
+                  )}
+                  <span className="ocws-muted">
+                    {". "}I found {result.problems_found} problem{result.problems_found !== 1 ? "s" : ""}.
+                  </span>
+                </p>
+              </div>
+            )}
+
             {freeStep >= 2 && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
@@ -1705,21 +1768,95 @@ export default function CrowsEyeClient() {
                         )}
                       </p>
 
-                      {/* Fix appears after description finishes */}
+                      {/* Fix + steps appear after description finishes */}
                       {i < verdictStep && (
-                        <div
-                          className="rounded-xl px-4 py-3"
-                          style={{
-                            background: "rgba(0,0,0,0.3)",
-                            border: "1px solid rgba(255,255,255,0.08)",
-                          }}
-                        >
-                          <p className="text-xs font-semibold uppercase tracking-wider text-white/50 mb-1">
-                            Fix
-                          </p>
-                          <p className="text-white text-sm leading-relaxed">
-                            {finding.fix}
-                          </p>
+                        <div className="space-y-3">
+                          {/* Fix summary */}
+                          <div
+                            className="rounded-xl px-4 py-3"
+                            style={{
+                              background: "rgba(0,0,0,0.3)",
+                              border: "1px solid rgba(255,255,255,0.08)",
+                            }}
+                          >
+                            <p className="text-xs font-semibold uppercase tracking-wider text-white/50 mb-1">
+                              Fix
+                            </p>
+                            <p className="text-white text-sm leading-relaxed">
+                              {finding.fix}
+                            </p>
+                          </div>
+
+                          {/* Router info bar */}
+                          {finding.router_info?.gateway_ip && (
+                            <div
+                              className="rounded-xl px-4 py-3 flex flex-wrap gap-x-6 gap-y-1"
+                              style={{
+                                background: "rgba(0,212,255,0.06)",
+                                border: "1px solid rgba(0,212,255,0.18)",
+                              }}
+                            >
+                              <div>
+                                <p className="text-[10px] font-semibold uppercase tracking-wider text-white/40 mb-0.5">Router</p>
+                                <p className="text-xs text-white font-medium">{finding.router_info.vendor}</p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-semibold uppercase tracking-wider text-white/40 mb-0.5">Gateway</p>
+                                <p className="text-xs font-mono" style={{ color: "var(--ocws-cyan)" }}>{finding.router_info.gateway_ip}</p>
+                              </div>
+                              {finding.router_info.default_username && (
+                                <div>
+                                  <p className="text-[10px] font-semibold uppercase tracking-wider text-white/40 mb-0.5">Username</p>
+                                  <p className="text-xs font-mono text-white/80">{finding.router_info.default_username}</p>
+                                </div>
+                              )}
+                              {finding.router_info.default_password && (
+                                <div>
+                                  <p className="text-[10px] font-semibold uppercase tracking-wider text-white/40 mb-0.5">Password</p>
+                                  <p className="text-xs font-mono text-white/80">{finding.router_info.default_password}</p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Step-by-step instructions */}
+                          {finding.steps && finding.steps.length > 0 && (
+                            <div
+                              className="rounded-xl px-4 py-4"
+                              style={{
+                                background: "rgba(0,0,0,0.25)",
+                                border: "1px solid rgba(255,255,255,0.07)",
+                              }}
+                            >
+                              <p className="text-xs font-semibold uppercase tracking-wider text-white/50 mb-3">
+                                Step-by-Step
+                              </p>
+                              <ol className="space-y-2">
+                                {finding.steps.map((step, si) => (
+                                  <li key={si} className="flex gap-3 items-start">
+                                    <span
+                                      className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold mt-0.5"
+                                      style={{
+                                        background: "rgba(0,212,255,0.12)",
+                                        border: "1px solid rgba(0,212,255,0.25)",
+                                        color: "var(--ocws-cyan)",
+                                      }}
+                                    >
+                                      {si + 1}
+                                    </span>
+                                    <p className="text-white/80 text-sm leading-relaxed">{step}</p>
+                                  </li>
+                                ))}
+                              </ol>
+
+                              {/* Login disclaimer */}
+                              {finding.login_disclaimer && (
+                                <p className="mt-3 text-[11px] text-white/35 leading-relaxed border-t border-white/[0.06] pt-3">
+                                  {finding.login_disclaimer}
+                                </p>
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
