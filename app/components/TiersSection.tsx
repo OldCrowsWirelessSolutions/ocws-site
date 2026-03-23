@@ -2,7 +2,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 
 type Tier = "Nest" | "Flock" | "Murder";
 
@@ -64,9 +63,9 @@ function WaitlistModal({
           </button>
         </div>
         <p className="text-xs mb-5" style={{ color: "#666" }}>
-          {tier === "Nest" && "Monthly plan: $57 minimum (3 months) · Annual plan: $149/yr no minimum"}
-          {tier === "Flock" && "Monthly plan: 3-month minimum · Annual plan: $899/yr"}
-          {tier === "Murder" && "Monthly plan: 3-month minimum · Annual plan: $1,999/yr"}
+          {tier === "Nest" && "Monthly plan: $60 minimum (3 months) · Annual plan: $160/yr no minimum"}
+          {tier === "Flock" && "Monthly plan: 3-month minimum · Annual plan: $900/yr"}
+          {tier === "Murder" && "Monthly plan: 3-month minimum · Annual plan: $2,000/yr"}
         </p>
 
         {status === "sent" ? (
@@ -172,12 +171,11 @@ const tiers = [
     id: "Nest" as Tier,
     emoji: "🪺",
     name: "NEST",
-    price: "$19/mo",
-    priceAlt: "or $149/yr",
+    price: "$20/mo",
+    priceAlt: "or $160/yr",
     tagline: "For homeowners and small businesses",
     features: [
       "3 Verdicts per month included",
-      "First Verdict unlocks 24 hours after signup",
       "Extra Verdicts available at $15 each",
       "1 Small Reckoning included per month (up to 5 locations)",
       "Additional Small Reckonings: $50 each",
@@ -188,15 +186,15 @@ const tiers = [
       "PDF report download",
       "Email support",
     ],
-    note: "3-month minimum on monthly plan ($57 minimum charge) · Cancel anytime after 90 days",
+    note: "3-month minimum on monthly plan ($60 minimum charge) · Cancel anytime after 90 days",
     featured: false,
   },
   {
     id: "Flock" as Tier,
     emoji: "🐦‍⬛",
     name: "FLOCK",
-    price: "$99/mo",
-    priceAlt: "or $899/yr",
+    price: "$100/mo",
+    priceAlt: "or $900/yr",
     tagline: "For MSPs and IT consultants",
     features: [
       "15 Verdicts per month included",
@@ -220,8 +218,8 @@ const tiers = [
     id: "Murder" as Tier,
     emoji: "💀",
     name: "MURDER",
-    price: "$249/mo",
-    priceAlt: "or $1,999/yr",
+    price: "$250/mo",
+    priceAlt: "or $2,000/yr",
     tagline: "For RF engineers and power users",
     features: [
       "Unlimited Verdicts",

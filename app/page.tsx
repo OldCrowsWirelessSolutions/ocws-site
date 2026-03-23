@@ -197,6 +197,74 @@ export default function HomePage() {
       {/* ── SECTION 4: TIERS (client component for modal) ── */}
       <TiersSection />
 
+      {/* ── SECTION 4b: APP COMING SOON ── */}
+      <section className="py-20" style={{ background: "#0D1520" }}>
+        <div className="ocws-container">
+          <div className="max-w-2xl mx-auto text-center">
+            <p
+              className="text-xs font-semibold uppercase tracking-widest mb-4"
+              style={{ color: "#00C2C7", letterSpacing: "0.18em" }}
+            >
+              Crow&rsquo;s Eye &middot; Mobile App
+            </p>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+              Crow&rsquo;s Eye &mdash; Coming to Your Phone
+            </h2>
+            <p className="text-base mb-10" style={{ color: "#888" }}>
+              The full power of Corvus in your pocket. Launching on iOS and Android.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+              {/* Google Play badge */}
+              <a
+                href="/waitlist"
+                className="inline-flex items-center gap-3 rounded-2xl px-6 py-4 transition min-w-[200px]"
+                style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.10)" }}
+              >
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+                  <path d="M4 3.5L16.5 14 4 24.5V3.5Z" fill="#00C2C7" />
+                  <path d="M4 3.5L16.5 14 23 10.5 4 3.5Z" fill="#4ade80" />
+                  <path d="M4 24.5L16.5 14 23 17.5 4 24.5Z" fill="#f87171" />
+                  <path d="M23 10.5L16.5 14 23 17.5 26 14 23 10.5Z" fill="#fbbf24" />
+                </svg>
+                <div className="text-left">
+                  <div className="text-[10px] font-medium" style={{ color: "#888" }}>Coming Soon on</div>
+                  <div className="text-sm font-bold text-white">Google Play</div>
+                </div>
+              </a>
+
+              {/* Apple App Store badge */}
+              <a
+                href="/waitlist"
+                className="inline-flex items-center gap-3 rounded-2xl px-6 py-4 transition min-w-[200px]"
+                style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.10)" }}
+              >
+                <svg width="24" height="28" viewBox="0 0 24 28" fill="none" aria-hidden="true">
+                  <path d="M20.5 21.5C19.3 23.3 18 25 16.2 25C14.5 25 13.8 24 12 24C10.2 24 9.4 25 7.7 25C6 25 4.7 23.2 3.5 21.4C1.8 18.9 0.5 14.8 1.9 11.8C2.7 10.1 4.5 9 6.5 9C8.2 9 9.2 10 11 10C12.8 10 13.6 9 15.6 9C17.4 9 19 9.9 20 11.4C16.5 13.3 17.1 18.5 20.5 21.5Z" fill="white" />
+                  <path d="M15.5 3C15.8 5.5 13.4 7.5 11.2 7.5C10.9 5.1 13.3 3.1 15.5 3Z" fill="white" />
+                </svg>
+                <div className="text-left">
+                  <div className="text-[10px] font-medium" style={{ color: "#888" }}>Coming Soon on the</div>
+                  <div className="text-sm font-bold text-white">App Store</div>
+                </div>
+              </a>
+            </div>
+
+            <p className="text-sm italic mb-8" style={{ color: "#B8922A" }}>
+              Be first when it launches. Join the waitlist and get early access pricing.
+            </p>
+
+            <a
+              href="/waitlist"
+              className="inline-flex items-center justify-center rounded-2xl px-8 py-4 text-base font-bold transition"
+              style={{ background: "#00C2C7", color: "#0D1520" }}
+            >
+              Join the App Waitlist
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* ── SECTION 5: CASE STUDIES ── */}
       <section className="py-20" style={{ background: "#0D1520" }}>
         <div className="ocws-container">

@@ -19,19 +19,15 @@ const FAQS = [
   },
   {
     q: "How much does Corvus' Verdict cost?",
-    a: "The initial analysis is free. Corvus will tell you how many problems he found and give you a teaser of what he saw. The full Verdict — all findings, all fixes, step-by-step router instructions specific to your equipment, and a branded PDF — is $50. Nest members ($19/mo) get 3 Verdicts per month included.",
+    a: "The initial analysis is free. Corvus will tell you how many problems he found and give you a teaser of what he saw. The full Verdict — all findings, all fixes, step-by-step router instructions specific to your equipment, and a branded PDF — is $50. Nest members ($20/mo) get 3 Verdicts per month included.",
   },
   {
     q: "How many Verdicts do I get per month?",
     a: "A single purchase gives you one Verdict immediately for $50. Nest membership includes 3 Verdicts per month. Flock includes 15 per month. Murder is unlimited. Extra credits are available for purchase at any time — $15 each for Nest members, $10 each for Flock members.",
   },
   {
-    q: "Why does my first Nest Verdict take 24 hours?",
-    a: "New Nest accounts unlock their first Verdict 24 hours after signup. This gives Corvus time to properly calibrate to your environment and ensures the best possible analysis. If you need an immediate Verdict, a single purchase is available for $50 — no waiting.",
-  },
-  {
     q: "Can I cancel my Nest membership?",
-    a: "Monthly Nest plans require a 3-month minimum commitment — your first charge covers 3 months at $57. After 90 days you can cancel anytime with no penalty. The annual plan ($149/yr) has no minimum commitment and can be cancelled for a prorated refund.",
+    a: "Monthly Nest plans require a 3-month minimum commitment — your first charge covers 3 months at $60. After 90 days you can cancel anytime with no penalty. The annual plan ($160/yr) has no minimum commitment and can be cancelled for a prorated refund.",
   },
   {
     q: "What if I need more than 3 Verdicts in a month?",
@@ -107,7 +103,7 @@ const FAQS = [
   },
   {
     q: "What are the subscription tiers?",
-    a: "Crow's Eye will offer three subscription tiers: Nest ($19/mo or $149/yr) for homeowners and small businesses, Flock ($99/mo or $899/yr) for MSPs and IT consultants, and Murder ($249/mo or $1,999/yr) for RF engineers and power users. All tiers are currently in development — join the waitlist to be notified at launch.",
+    a: "Crow's Eye will offer three subscription tiers: Nest ($20/mo or $160/yr) for homeowners and small businesses, Flock ($100/mo or $900/yr) for MSPs and IT consultants, and Murder ($250/mo or $2,000/yr) for RF engineers and power users. All tiers are currently in development — join the waitlist to be notified at launch.",
   },
   {
     q: "How do I join the waitlist?",

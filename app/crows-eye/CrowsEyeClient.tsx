@@ -358,6 +358,33 @@ function UploadBox({
   );
 }
 
+// ─── Access codes ─────────────────────────────────────────────────────────────
+
+type AppliedCode = {
+  type: "founder" | "admin" | "subscriber" | "promo";
+  name?: string;
+  discount?: number;
+  label?: string;
+};
+
+const VALID_CODES: Record<string, AppliedCode> = {
+  "CORVUS-NATE-2026":  { type: "founder",     name: "Nathanael Farrelly" },
+  "CORVUS-ERIC-2026":  { type: "founder",     name: "Eric Mims" },
+  "CORVUS-MIKE-2026":  { type: "founder",     name: "Mike Arbouret" },
+  "OCWS-ADMIN-2026":   { type: "admin",       name: "Joshua Turner" },
+  "CORVUS-NEST":       { type: "subscriber" },
+  "LAUNCH50":          { type: "promo",       discount: 50,  label: "50% off" },
+  "PENSACOLA25":       { type: "promo",       discount: 25,  label: "25% off" },
+  "FIRSTCITY20":       { type: "promo",       discount: 20,  label: "20% off \u2014 First City Internet" },
+  "NATE10":            { type: "promo",       discount: 10,  label: "10% off" },
+  "ERIC10":            { type: "promo",       discount: 10,  label: "10% off" },
+  "MIKE10":            { type: "promo",       discount: 10,  label: "10% off" },
+};
+
+function isBypassCode(code: AppliedCode | null): boolean {
+  return code?.type === "founder" || code?.type === "admin" || code?.type === "subscriber";
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function CrowsEyeClient() {
@@ -408,16 +435,15 @@ export default function CrowsEyeClient() {
   // Multi-location (site mode)
   const [locations, setLocations] = useState<LocationEntry[]>(() => [makeEmptyLocation()]);
 
-  // Admin modal
-  const [adminMode, setAdminMode] = useState(false);
-  const [showAdminModal, setShowAdminModal] = useState(false);
-  const [adminPassword, setAdminPassword] = useState("");
-  const [adminError, setAdminError] = useState("");
-
-  // Subscriber code
-  const [showSubCode, setShowSubCode] = useState(false);
-  const [subCode, setSubCode] = useState("");
-  const [subCodeStatus, setSubCodeStatus] = useState<null | "valid" | "invalid">(null);
+  // Access code system (founder / admin / subscriber / promo)
+  const [accessCodeInput, setAccessCodeInput] = useState("");
+  const [accessCodeStatus, setAccessCodeStatus] = useState<null | "valid" | "invalid">(null);
+  const [appliedCode, setAppliedCode] = useState<{
+    type: "founder" | "admin" | "subscriber" | "promo";
+    name?: string;
+    discount?: number;
+    label?: string;
+  } | null>(null);
 
   // Pricing info collapsible
   const [pricingOpen, setPricingOpen] = useState(false);
@@ -664,7 +690,7 @@ export default function CrowsEyeClient() {
       }
 
       setResult(data);
-      if (adminMode) {
+      if (isBypassCode(appliedCode)) {
         setPhase("full_verdict");
         setVerdictStep(0);
       } else {
@@ -690,10 +716,38 @@ export default function CrowsEyeClient() {
     runAnalysis();
   }
 
-  function handleStripePayment(product = "verdict") {
-    if (honeypot) return; // bot trap
-    console.log("Stripe payment triggered:", product);
-    // Wire real Stripe here later
+  async function handleStripePayment(product = "verdict") {
+    if (honeypot) return;
+    // Bypass for founder / admin / subscriber codes
+    if (isBypassCode(appliedCode)) {
+      unlockVerdict();
+      return;
+    }
+    try {
+      const basePrice = product === "verdict" ? 50 :
+        product === "reckoning-small" ? 150 :
+        product === "reckoning-standard" ? 350 :
+        product === "reckoning-commercial" ? 750 :
+        product === "pro" ? 1500 :
+        product === "credit-single" ? 15 :
+        product === "credit-6pack" ? 75 :
+        product === "credit-12pack" ? 120 : 50;
+      const discountPct = appliedCode?.type === "promo" ? (appliedCode.discount ?? 0) : 0;
+      const amount = discountPct > 0 ? Math.round(basePrice * (1 - discountPct / 100) * 100) / 100 : basePrice;
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product, amount, discount_percent: discountPct }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setErrorMsg("Payment system unavailable. Please try again.");
+      }
+    } catch {
+      setErrorMsg("Payment system unavailable. Please try again.");
+    }
   }
 
   function handleDemoVerdict() {
@@ -761,25 +815,16 @@ export default function CrowsEyeClient() {
     }
   }
 
-  // Admin modal
-  function handleAdminSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (adminPassword === "OCWS2026") {
-      setAdminMode(true);
-      setShowAdminModal(false);
-      setAdminPassword("");
-      setAdminError("");
+  // Access code
+  function handleApplyCode() {
+    const key = accessCodeInput.trim().toUpperCase();
+    const match = VALID_CODES[key] ?? null;
+    if (match) {
+      setAppliedCode(match);
+      setAccessCodeStatus("valid");
+      setAccessCodeInput("");
     } else {
-      setAdminError("Invalid password.");
-    }
-  }
-
-  // Subscriber code
-  function handleSubCodeCheck() {
-    if (subCode.trim().toUpperCase() === "CORVUS-NEST") {
-      setSubCodeStatus("valid");
-    } else {
-      setSubCodeStatus("invalid");
+      setAccessCodeStatus("invalid");
     }
   }
 
@@ -1179,6 +1224,56 @@ export default function CrowsEyeClient() {
         </p>
       </div>
 
+      {/* ── ACCESS CODE INPUT ────────────────────────────────────────────── */}
+      <div className="mb-6">
+        {appliedCode ? (
+          <div
+            className="flex items-center justify-between px-4 py-3 rounded-2xl text-sm"
+            style={{ background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.25)" }}
+          >
+            <span style={{ color: "#4ade80" }}>
+              {appliedCode.type === "admin" || appliedCode.type === "founder"
+                ? `✓ ${appliedCode.name ?? "Access"} — Stripe bypassed`
+                : appliedCode.type === "subscriber"
+                ? "✓ Subscriber access active"
+                : `✓ Promo code applied — ${appliedCode.label ?? `${appliedCode.discount}% off`}`}
+            </span>
+            <button
+              type="button"
+              onClick={() => { setAppliedCode(null); setAccessCodeStatus(null); }}
+              className="text-white/40 hover:text-white/70 transition text-xs ml-4"
+            >
+              Remove
+            </button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <input
+                type="text"
+                value={accessCodeInput}
+                onChange={(e) => { setAccessCodeInput(e.target.value); setAccessCodeStatus(null); }}
+                onKeyDown={(e) => e.key === "Enter" && handleApplyCode()}
+                placeholder="Have an access code or promo code?"
+                className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
+                style={{ background: "rgba(0,0,0,0.3)", border: `1px solid ${accessCodeStatus === "invalid" ? "rgba(239,68,68,0.5)" : "rgba(255,255,255,0.1)"}` }}
+              />
+              {accessCodeStatus === "invalid" && (
+                <p className="mt-1 text-xs text-red-400">Invalid code. Check your spelling and try again.</p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={handleApplyCode}
+              className="shrink-0 rounded-xl px-4 py-3 text-sm font-semibold transition"
+              style={{ background: "#00C2C7", color: "#0D1520" }}
+            >
+              Apply
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* ── PRICING INFO COLLAPSIBLE ─────────────────────────────────────── */}
       <div className="mb-10">
         <button
@@ -1206,8 +1301,8 @@ export default function CrowsEyeClient() {
               <p className="ocws-muted">Get one full Corvus analysis immediately. No account required. Best for one-time fixes.</p>
             </div>
             <div>
-              <p className="text-white font-semibold mb-1">Nest Membership &mdash; $19/mo</p>
-              <p className="ocws-muted">Get 3 Verdicts per month included. New accounts unlock first Verdict after 24 hours &mdash; Corvus needs time to properly calibrate. Monthly plan requires 3-month minimum commitment. Cancel anytime after 90 days. Annual plan ($149/yr) has no minimum &mdash; save $79 and cancel anytime.</p>
+              <p className="text-white font-semibold mb-1">Nest Membership &mdash; $20/mo</p>
+              <p className="ocws-muted">Get 3 Verdicts per month included. Monthly plan requires 3-month minimum commitment. Cancel anytime after 90 days. Annual plan ($160/yr) has no minimum &mdash; save $80 and cancel anytime.</p>
             </div>
             <div>
               <p className="text-white font-semibold mb-1">Need more than 3 per month?</p>
@@ -1218,7 +1313,7 @@ export default function CrowsEyeClient() {
                 <li>&middot; 12-pack: $120 <span className="text-white/40">(save $60)</span></li>
               </ul>
             </div>
-            <p className="ocws-muted">Flock members ($99/mo) get 15 Verdicts per month and extra credits at $10 each. Murder members ($249/mo) get unlimited Verdicts with no credit limits.</p>
+            <p className="ocws-muted">Flock members ($100/mo) get 15 Verdicts per month and extra credits at $10 each. Murder members ($250/mo) get unlimited Verdicts with no credit limits.</p>
             <div style={{ height: "1px", background: "rgba(0,212,255,0.15)" }} />
             <div>
               <p className="text-white font-semibold mb-1">The Full Reckoning — Multi-Location Survey</p>
@@ -2111,9 +2206,9 @@ export default function CrowsEyeClient() {
                     <p className="text-xs text-white/40 max-w-xs text-center">
                       Or{" "}
                       <a href="/waitlist" className="underline underline-offset-2 text-white/55 hover:text-white/80 transition">
-                        join Nest for $19/mo
+                        join Nest for $20/mo
                       </a>{" "}
-                      and get 3 Verdicts per month included. New accounts unlock first Verdict after 24 hours.
+                      and get 3 Verdicts per month included.
                     </p>
                   )}
 
@@ -2153,48 +2248,15 @@ export default function CrowsEyeClient() {
                     </div>
                   )}
 
-                  {/* Subscriber code */}
-                  {!showSubCode && subCodeStatus !== "valid" && (
-                    <button
-                      type="button"
-                      onClick={() => setShowSubCode(true)}
-                      className="text-xs text-white/40 hover:text-white/70 transition underline underline-offset-2"
-                    >
-                      Have a subscription code?
-                    </button>
-                  )}
-                  {showSubCode && subCodeStatus !== "valid" && (
-                    <div className="flex flex-col items-center gap-2 w-full max-w-xs">
-                      <div className="flex w-full gap-2">
-                        <input
-                          value={subCode}
-                          onChange={(e) => { setSubCode(e.target.value); setSubCodeStatus(null); }}
-                          placeholder="Subscription code"
-                          className="flex-1 rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
-                          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSubCodeCheck(); } }}
-                        />
-                        <button
-                          type="button"
-                          onClick={handleSubCodeCheck}
-                          className="rounded-xl px-4 py-2 text-sm font-semibold transition"
-                          style={{
-                            background: "rgba(0,212,255,0.10)",
-                            border: "1px solid rgba(0,212,255,0.25)",
-                            color: "var(--ocws-cyan)",
-                          }}
-                        >
-                          Apply
-                        </button>
-                      </div>
-                      {subCodeStatus === "invalid" && (
-                        <p className="text-xs text-red-400">Invalid code. Try again.</p>
-                      )}
-                    </div>
-                  )}
-                  {subCodeStatus === "valid" && (
+                  {/* Access code bypass / promo confirmation */}
+                  {isBypassCode(appliedCode) && (
                     <div className="flex flex-col items-center gap-3">
                       <p className="text-sm font-semibold" style={{ color: "#4ade80" }}>
-                        ✓ Subscriber access granted
+                        {appliedCode?.type === "admin"
+                          ? `✓ Admin access — ${appliedCode.name}. Stripe bypassed.`
+                          : appliedCode?.type === "founder"
+                          ? `✓ Founder access — Welcome, ${appliedCode.name}. Corvus is at your service.`
+                          : "✓ Subscriber access granted"}
                       </p>
                       <button
                         type="button"
@@ -2451,87 +2513,6 @@ export default function CrowsEyeClient() {
         )}
       </div>
 
-      {/* ── ADMIN ACCESS LINK ─────────────────────────────────────────────── */}
-      <div className="mt-16 text-center">
-        <button
-          type="button"
-          onClick={() => setShowAdminModal(true)}
-          className="text-[11px] transition"
-          style={{ color: adminMode ? "rgba(74,222,128,0.5)" : "rgba(255,255,255,0.12)" }}
-          onMouseEnter={(e) => { if (!adminMode) (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.30)"; }}
-          onMouseLeave={(e) => { if (!adminMode) (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.12)"; }}
-        >
-          {adminMode ? "✓ Admin" : "Admin Access"}
-        </button>
-      </div>
-
-      {/* ── ADMIN MODAL ────────────────────────────────────────────────────── */}
-      {showAdminModal && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center">
-          <button
-            type="button"
-            aria-label="Close"
-            onClick={() => { setShowAdminModal(false); setAdminPassword(""); setAdminError(""); }}
-            className="absolute inset-0 bg-black/70"
-          />
-          <div
-            className="relative z-10 w-[min(92%,360px)] rounded-2xl p-6 space-y-4"
-            style={{ background: "#0d1117", border: "1px solid rgba(255,255,255,0.12)" }}
-          >
-            <p className="text-xs font-semibold uppercase tracking-widest ocws-muted2">
-              Admin Access
-            </p>
-            {adminMode ? (
-              <div className="space-y-3">
-                <p className="text-sm font-semibold" style={{ color: "#4ade80" }}>
-                  ✓ Admin mode active — Stripe bypassed
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setShowAdminModal(false)}
-                  className="w-full rounded-xl px-4 py-2 text-sm text-white/60 hover:text-white/90 transition"
-                >
-                  Close
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleAdminSubmit} className="space-y-3">
-                <input
-                  type="password"
-                  value={adminPassword}
-                  onChange={(e) => { setAdminPassword(e.target.value); setAdminError(""); }}
-                  placeholder="Password"
-                  autoFocus
-                  className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
-                />
-                {adminError && (
-                  <p className="text-xs text-red-400">{adminError}</p>
-                )}
-                <div className="flex gap-2 justify-end">
-                  <button
-                    type="button"
-                    onClick={() => { setShowAdminModal(false); setAdminPassword(""); setAdminError(""); }}
-                    className="rounded-xl px-4 py-2 text-sm text-white/50 hover:text-white/80 transition"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="rounded-xl px-4 py-2 text-sm font-semibold transition"
-                    style={{
-                      background: "rgba(255,255,255,0.08)",
-                      border: "1px solid rgba(255,255,255,0.15)",
-                      color: "white",
-                    }}
-                  >
-                    Enter
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* ── CORVUS VIDEO PANEL — fixed bottom-right ───────────────────────── */}
       {corvusVisible && (

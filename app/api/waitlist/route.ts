@@ -20,6 +20,16 @@ function escapeHtml(s: string) {
 
 export async function POST(req: Request) {
   try {
+    const ip =
+      (req.headers as unknown as Headers).get?.("x-forwarded-for")?.split(",")[0]?.trim() ??
+      (req.headers as unknown as Headers).get?.("x-real-ip") ??
+      "unknown";
+    const timestamp = new Date().toLocaleString("en-US", {
+      timeZone: "America/Chicago",
+      dateStyle: "full",
+      timeStyle: "long",
+    });
+
     const body = await req.json().catch(() => null) as Record<string, unknown> | null;
     if (!body) return Response.json({ success: false, error: "Invalid request." }, { status: 400 });
 
@@ -59,6 +69,8 @@ export async function POST(req: Request) {
           <p><strong>Tier:</strong> ${escapeHtml(tier)}</p>
           ${message ? `<p><strong>Message:</strong></p><p style="white-space:pre-wrap;">${escapeHtml(message)}</p>` : ""}
           <hr/>
+          <p><strong>Submitted:</strong> ${escapeHtml(timestamp)}</p>
+          <p><strong>IP:</strong> ${escapeHtml(ip)}</p>
           <p style="color:#888;">Sent from the OCWS Crow's Eye waitlist form.</p>
         </div>
       `;
@@ -67,7 +79,7 @@ export async function POST(req: Request) {
         from,
         to,
         subject: `Crow's Eye Waitlist — ${tier} — ${name}`,
-        text: `New waitlist signup:\n\nName: ${name}\nEmail: ${email}\nTier: ${tier}\n${message ? `\nMessage:\n${message}` : ""}`,
+        text: `New waitlist signup:\n\nName: ${name}\nEmail: ${email}\nTier: ${tier}\n${message ? `\nMessage:\n${message}` : ""}\n\nSubmitted: ${timestamp}\nIP: ${ip}`,
         html,
         replyTo: email,
       });
@@ -91,7 +103,8 @@ export async function POST(req: Request) {
         email,
         tier,
         message: message || null,
-        timestamp: new Date().toISOString(),
+        timestamp,
+        ip,
       });
       await fs.writeFile(filePath, JSON.stringify(existing, null, 2), "utf8");
     } catch {
