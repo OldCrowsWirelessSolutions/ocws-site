@@ -82,6 +82,18 @@ const LOCATION_TYPES = [
   "Other",
 ];
 
+const LOCATION_NAME_PLACEHOLDERS: Record<string, string> = {
+  "Home":       "e.g. Living Room, Master Bedroom, Home Office, Garage, Back Yard",
+  "Office":     "e.g. Reception, Conference Room A, Server Room, Break Room, Floor 2",
+  "Church":     "e.g. Sanctuary, Fellowship Hall, Nursery, Offices, Parking Lot",
+  "Restaurant": "e.g. Dining Room, Bar, Kitchen, Patio, Host Stand",
+  "RV Park":    "e.g. Site 1, Clubhouse, Pool Area, Office, Back Loop",
+  "Marina":     "e.g. Dock A, Clubhouse, Fuel Dock, Dry Storage, Office",
+  "School":     "e.g. Classroom 1, Library, Gymnasium, Cafeteria, Main Office",
+  "Medical":    "e.g. Waiting Room, Exam Room 1, Nurses Station, Lab, Reception",
+  "Other":      "e.g. Location 1, Location 2, Location 3",
+};
+
 const UPLOAD_SLOTS: { id: UploadSlot; label: string; description: string }[] = [
   {
     id: "signal",
@@ -382,6 +394,9 @@ export default function CrowsEyeClient() {
   // Pricing info collapsible
   const [pricingOpen, setPricingOpen] = useState(false);
 
+  // Full Reckoning info collapsible
+  const [reckInfoOpen, setReckInfoOpen] = useState(false);
+
   // Placeholder: logged-in member who has used monthly credits (wire to auth later)
   const [loggedInMember] = useState(false);
 
@@ -626,7 +641,7 @@ export default function CrowsEyeClient() {
 
   // Location management (site mode)
   function addLocation() {
-    if (locations.length >= 10) return;
+    if (locations.length >= 30) return;
     setLocations((prev) => [...prev, makeEmptyLocation()]);
   }
 
@@ -746,7 +761,7 @@ export default function CrowsEyeClient() {
 
       function drawFooter() {
         sf(NAVY); doc.rect(0, PH - FOOTER_H, PW, FOOTER_H, "F");
-        const copyrightText = "\u00A9 2026 Old Crows Wireless Solutions LLC. Corvus, Crow\u2019s Eye, and The Full Reckoning are unregistered trademarks of Old Crows Wireless Solutions LLC. All rights reserved.";
+        const copyrightText = "\u00A9 2026 Old Crows Wireless Solutions LLC. Corvus, Crow\u2019s Eye, The Full Reckoning, and Corvus\u2019 Verdict are unregistered trademarks of Old Crows Wireless Solutions LLC. All rights reserved.";
         st(DGRAY); fn("normal", 6.5);
         const copyrightLines = doc.splitTextToSize(copyrightText, PW - ML - MR - 30);
         const lineH = 6.5 * 1.4;
@@ -1084,6 +1099,18 @@ export default function CrowsEyeClient() {
               </ul>
             </div>
             <p className="ocws-muted">Flock members ($99/mo) get 15 Verdicts per month and extra credits at $10 each. Murder members ($249/mo) get unlimited Verdicts with no credit limits.</p>
+            <div style={{ height: "1px", background: "rgba(0,212,255,0.15)" }} />
+            <div>
+              <p className="text-white font-semibold mb-1">The Full Reckoning — Multi-Location Survey</p>
+              <p className="ocws-muted mb-2">Map your entire facility room by room. One unified report across all locations.</p>
+              <ul className="ocws-muted space-y-0.5">
+                <li>&middot; Small Reckoning (up to 5 locations): $150</li>
+                <li>&middot; Standard Reckoning (6&ndash;15 locations): $350</li>
+                <li>&middot; Commercial Reckoning (16+ locations): $750</li>
+                <li>&middot; Pro Certified Reckoning (any size, Joshua certifies): $1,500</li>
+              </ul>
+              <p className="ocws-muted mt-2">Nest members get 1 Small Reckoning per month included. Flock members get 3 Small + 1 Standard. Murder members get unlimited Small and Standard Reckonings.</p>
+            </div>
           </div>
         )}
       </div>
@@ -1265,9 +1292,18 @@ export default function CrowsEyeClient() {
             <p className="mt-2 text-xs ocws-muted2">
               Upload scans for each location on the property. Corvus synthesizes a site-wide assessment.{" "}
               <span className="text-white/60 font-semibold">
-                {locations.length <= 5 ? "$150" : "$350"}
+                {locations.length <= 5
+                  ? "Small Site \u2014 $150"
+                  : locations.length <= 15
+                  ? "Standard Site \u2014 $350"
+                  : "Commercial Site \u2014 $750"}
               </span>{" "}
-              ({locations.length <= 5 ? "up to 5 locations" : "6\u201310 locations"})
+              ({locations.length <= 5
+                ? "up to 5 locations"
+                : locations.length <= 15
+                ? "6\u201315 locations"
+                : "16+ locations"}){" "}
+              <span className="text-white/35">&middot; Nest members: first Small Reckoning per month included. Additional from $50.</span>
             </p>
           )}
         </div>
@@ -1313,12 +1349,82 @@ export default function CrowsEyeClient() {
         {/* Upload boxes — site mode */}
         {mode === "site" && (
         <div className="space-y-6">
+
+          {/* How The Full Reckoning works — collapsible */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setReckInfoOpen((v) => !v)}
+              className="w-full flex items-center justify-between px-5 py-4 rounded-2xl text-left transition"
+              style={{ border: "1px solid rgba(0,212,255,0.30)", background: "rgba(0,212,255,0.05)" }}
+            >
+              <span className="text-sm font-semibold ocws-accent-cyan">How The Full Reckoning works</span>
+              <svg
+                width="16" height="16" viewBox="0 0 16 16" fill="none"
+                className="transition-transform duration-200 shrink-0"
+                style={{ transform: reckInfoOpen ? "rotate(180deg)" : "rotate(0deg)", color: "var(--ocws-cyan)" }}
+              >
+                <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            {reckInfoOpen && (
+              <div
+                className="rounded-b-2xl px-5 py-5 text-sm leading-relaxed space-y-3"
+                style={{ border: "1px solid rgba(0,212,255,0.30)", borderTop: "none", background: "rgba(0,0,0,0.25)" }}
+              >
+                <p className="ocws-muted">
+                  The Full Reckoning is Corvus moving through your entire facility — room by room, location by location, building a complete picture of everything wrong across the whole site.
+                </p>
+                <p className="ocws-muted">For each location you will need the same three screenshots:</p>
+                <ul className="ocws-muted space-y-1">
+                  <li>&middot; <span className="text-white/70">Signal List</span> — Access Points screen showing all networks</li>
+                  <li>&middot; <span className="text-white/70">2.4 GHz Scan</span> — Channel Graph filtered to 2.4 GHz</li>
+                  <li>&middot; <span className="text-white/70">5 GHz Scan</span> — Channel Graph filtered to 5 GHz</li>
+                </ul>
+                <p className="ocws-muted">
+                  Walk to each location — a different room, floor, or area — and take all three screenshots before moving to the next location. Label each location clearly so Corvus knows where each scan was taken.
+                </p>
+                <p className="ocws-muted">
+                  Corvus will synthesize findings across all locations, identify site-wide patterns, find dead zones, and deliver one unified Verdict covering your entire facility.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Step-by-step location instructions */}
+          <div
+            className="rounded-2xl px-5 py-4 text-sm space-y-2"
+            style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.02)" }}
+          >
+            <p className="text-white font-semibold mb-3">How to add locations</p>
+            {[
+              "Name your first location clearly. Example: Front Office, Lobby, Kitchen, Room 101.",
+              "Stand in that location and open WiFi Analyzer.",
+              "Take your Signal List screenshot (Access Points tab).",
+              "Take your 2.4 GHz Channel Graph screenshot.",
+              "Take your 5 GHz Channel Graph screenshot.",
+              "Upload all three to this location slot.",
+              "Click Add Location and repeat for each area.",
+              "When all locations are added hit Render The Full Reckoning.",
+            ].map((step, i) => (
+              <div key={i} className="flex gap-3 items-start">
+                <span
+                  className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold mt-0.5"
+                  style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.25)", color: "var(--ocws-cyan)" }}
+                >
+                  {i + 1}
+                </span>
+                <p className="ocws-muted leading-relaxed">{step}</p>
+              </div>
+            ))}
+          </div>
+
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="ocws-h2 text-white mb-1">Upload location scans</h2>
-              <p className="ocws-muted text-sm">One set of screenshots per location. Up to 10.</p>
+              <p className="ocws-muted text-sm">One set of screenshots per location. Up to 30.</p>
             </div>
-            {locations.length < 10 && (
+            {locations.length < 30 && (
               <button
                 type="button"
                 onClick={addLocation}
@@ -1354,7 +1460,7 @@ export default function CrowsEyeClient() {
                 <input
                   value={loc.name}
                   onChange={(e) => updateLocationName(loc.id, e.target.value)}
-                  placeholder={`Location ${idx + 1} name (e.g. Main Building, Pool House)`}
+                  placeholder={LOCATION_NAME_PLACEHOLDERS[locationType] ?? `e.g. Location ${idx + 1}, Room, Floor, Area`}
                   className="flex-1 rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
                 />
                 {locations.length > 1 && (
@@ -1568,7 +1674,11 @@ export default function CrowsEyeClient() {
               boxShadow: "0 8px 28px rgba(0,212,255,0.25)",
             }}
           >
-            {phase === "analyzing" ? "Corvus is looking…" : "Let Corvus Look"}
+            {phase === "analyzing"
+              ? "Corvus is looking\u2026"
+              : mode === "site"
+              ? "Render The Full Reckoning"
+              : "Let Corvus Look"}
           </button>
           <p className="mt-3 text-xs ocws-muted2">
             Free instant analysis. No account. Upgrade to the full Verdict for $50.
@@ -1786,7 +1896,7 @@ export default function CrowsEyeClient() {
                     >
                       {mode === "single"
                         ? "Get the Full Verdict \u2014 $50"
-                        : `Get the Full Reckoning \u2014 ${locations.length <= 5 ? "$150" : "$350"}`}
+                        : `Get the Full Reckoning \u2014 ${locations.length <= 5 ? "$150" : locations.length <= 15 ? "$350" : "$750"}`}
                     </button>
                     <button
                       onClick={handleDemoVerdict}

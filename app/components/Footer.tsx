@@ -69,7 +69,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="text-center text-xs text-white/30 space-y-1">
-          <p>&copy; 2026 Old Crows Wireless Solutions LLC. Corvus, Crow&rsquo;s Eye, and The Full Reckoning are unregistered trademarks of Old Crows Wireless Solutions LLC. All rights reserved.</p>
+          <p>&copy; 2026 Old Crows Wireless Solutions LLC. Corvus, Crow&rsquo;s Eye, The Full Reckoning, and Corvus&rsquo; Verdict are unregistered trademarks of Old Crows Wireless Solutions LLC. All rights reserved.</p>
         </div>
       </div>
     </footer>

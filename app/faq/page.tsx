@@ -43,7 +43,23 @@ const FAQS = [
   },
   {
     q: "What is The Full Reckoning?",
-    a: "The Full Reckoning is Crow's Eye's multi-location site survey mode. You upload scanner screenshots from multiple rooms or areas and Corvus synthesizes the findings across your entire property — identifying patterns, dead zones, and systemic issues that a single-point scan would miss. Starting at $150.",
+    a: "The Full Reckoning is Corvus moving through your entire facility location by location. Unlike a single Verdict which analyzes one scan point, The Full Reckoning maps your entire wireless environment — every room, every floor, every outdoor area. You take the same three screenshots at each location and Corvus synthesizes everything into one unified report identifying site-wide patterns, dead zones, and facility-wide fixes. Small sites up to 5 locations are $150. Standard sites 6-15 locations are $350. Commercial sites 16+ locations are $750.",
+  },
+  {
+    q: "How many locations can I include in a Full Reckoning?",
+    a: "Up to 5 locations on a Small Reckoning ($150). Up to 15 on a Standard Reckoning ($350). Unlimited locations on a Commercial Reckoning ($750). Nest members get one Small Reckoning included per month. Flock members get three Small and one Standard per month. Murder members get unlimited Small and Standard Reckonings.",
+  },
+  {
+    q: "How do I take screenshots for The Full Reckoning?",
+    a: "Same process as a single Verdict but repeated at each location. Walk to each area of your facility and take three screenshots: the Access Points list, the 2.4 GHz Channel Graph, and the 5 GHz Channel Graph. Label each location clearly before moving to the next. Crow's Eye guides you through each location step by step.",
+  },
+  {
+    q: "How long does The Full Reckoning take?",
+    a: "About 3-5 minutes per location for scanning and uploading. A 5-location Small Reckoning takes roughly 20-30 minutes to set up. Corvus analysis takes 2-3 minutes after all locations are submitted. Plan for about 45 minutes total for a thorough small site survey.",
+  },
+  {
+    q: "Can I get a certified Full Reckoning?",
+    a: "Yes. The OCWS Pro Certified Reckoning includes Joshua Turner personally reviewing and certifying every finding. The certified report is valid for compliance documentation, insurance claims, board presentations, and vendor quotes. $1,500 for any size facility. Contact OCWS to request one.",
   },
   {
     q: "Will this work for my home?",

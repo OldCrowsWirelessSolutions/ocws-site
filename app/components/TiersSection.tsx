@@ -179,6 +179,8 @@ const tiers = [
       "3 Verdicts per month included",
       "First Verdict unlocks 24 hours after signup",
       "Extra Verdicts available at $15 each",
+      "1 Small Reckoning included per month (up to 5 locations)",
+      "Additional Small Reckonings: $50 each",
       "Signal List analysis",
       "Channel congestion detection",
       "Router-specific fix instructions",
@@ -199,10 +201,14 @@ const tiers = [
     features: [
       "15 Verdicts per month included",
       "Extra Verdicts at $10 each",
+      "3 Small Reckonings included per month",
+      "1 Standard Reckoning included per month (up to 15 locations)",
+      "Additional Small Reckonings: $35 each",
+      "Additional Standard Reckonings: $75 each",
+      "Commercial Reckoning: $200 additional",
       "Everything in Nest",
       "Multi-seat up to 5 users",
       "White-label PDF reports",
-      "The Full Reckoning multi-site surveys",
       "Priority support",
       "Client management dashboard",
     ],
@@ -220,6 +226,9 @@ const tiers = [
     features: [
       "Unlimited Verdicts",
       "No credit limits ever",
+      "Unlimited Small and Standard Reckonings",
+      "Commercial Reckoning: $150 additional",
+      "Pro Certified Reckoning: $750 (Joshua certifies every one)",
       "Everything in Flock",
       "Unlimited seats",
       "Full design suite",
@@ -335,6 +344,8 @@ export default function TiersSection() {
               {[
                 "Full on-site walk survey",
                 "Personally certified by Joshua Turner",
+                "OCWS Pro Certified Reckoning available — $1,500",
+                "Any size facility, Joshua certifies every finding",
                 "Compliance and insurance grade",
                 "Board presentation ready",
                 "Signed PDF deliverable",
@@ -357,6 +368,40 @@ export default function TiersSection() {
           </div>
         </div>
       </div>
+
+        {/* Standalone Full Reckoning pricing */}
+        <div
+          className="mt-10 rounded-2xl p-6"
+          style={{ background: "#0D1520", border: "1px solid #0D6E7A" }}
+        >
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#00C2C7", letterSpacing: "0.15em" }}>
+            The Full Reckoning — No Subscription Required
+          </p>
+          <p className="text-sm mb-5" style={{ color: "#888" }}>
+            Need a site-wide assessment without a subscription? Purchase a Full Reckoning directly.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            {[
+              { name: "Small Reckoning", size: "Up to 5 locations", price: "$150" },
+              { name: "Standard Reckoning", size: "6–15 locations", price: "$350" },
+              { name: "Commercial Reckoning", size: "16+ locations", price: "$750" },
+              { name: "Pro Certified Reckoning", size: "Any size · Joshua certifies", price: "$1,500", gold: true },
+            ].map((r) => (
+              <div
+                key={r.name}
+                className="rounded-xl p-4"
+                style={{
+                  background: "rgba(0,0,0,0.2)",
+                  border: `1px solid ${r.gold ? "#B8922A" : "rgba(255,255,255,0.08)"}`,
+                }}
+              >
+                <p className="text-sm font-bold text-white mb-0.5">{r.name}</p>
+                <p className="text-xs mb-2" style={{ color: "#888" }}>{r.size}</p>
+                <p className="text-xl font-bold" style={{ color: r.gold ? "#B8922A" : "#00C2C7" }}>{r.price}</p>
+              </div>
+            ))}
+          </div>
+        </div>
 
       {openModal && (
         <WaitlistModal tier={openModal} onClose={() => setOpenModal(null)} />

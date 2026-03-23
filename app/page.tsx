@@ -90,7 +90,7 @@ export default function HomePage() {
             Three screenshots. One Verdict.
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
             {[
               {
                 step: "1",
@@ -106,6 +106,11 @@ export default function HomePage() {
                 step: "3",
                 title: "Upload to Crow's Eye",
                 desc: "Corvus analyzes every network in your environment and renders his Verdict.",
+              },
+              {
+                step: "★",
+                title: "Need the whole picture?",
+                desc: "The Full Reckoning maps your entire facility — room by room, floor by floor. From $150.",
               },
             ].map(({ step, title, desc }) => (
               <div
@@ -372,7 +377,7 @@ export default function HomePage() {
             Corvus already knows what they are.
           </p>
           <p className="text-sm mb-10" style={{ color: "rgba(255,255,255,0.65)" }}>
-            Free instant analysis. No account required.
+            Free instant analysis · Single Verdict $50 · Full Reckoning from $150
           </p>
           <Link
             href="/crows-eye"
