@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import ReCAPTCHA from "react-google-recaptcha";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -57,9 +56,6 @@ const US_STATES = [
   "NM","NY","NC","ND","OH","OK","OR","PA","RI","SC",
   "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY",
 ];
-
-// Google reCAPTCHA v2 — replace with real site key from reCAPTCHA admin console
-const RECAPTCHA_SITE_KEY = "6Lfr-ZMsAAAAEzbD76fstxGNuby5Yd7lWf2Wb1C";
 
 const LOCATION_TYPES = [
   "Home",
@@ -319,15 +315,8 @@ export default function CrowsEyeClient() {
   const [notes, setNotes] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  // reCAPTCHA
-  const analyzeRecaptchaRef = useRef<ReCAPTCHA>(null);
-  const paymentRecaptchaRef = useRef<ReCAPTCHA>(null);
-  const [showAnalyzeCaptcha, setShowAnalyzeCaptcha] = useState(false);
-  const [showPaymentCaptcha, setShowPaymentCaptcha] = useState(false);
-  const [analyzeCaptchaToken, setAnalyzeCaptchaToken] = useState<string | null>(null);
-  const [paymentCaptchaToken, setPaymentCaptchaToken] = useState<string | null>(null);
-  const pendingAnalyze = useRef(false);
-  const pendingPayment = useRef(false);
+  // TODO: replace honeypot with reCAPTCHA once key issue resolved
+  const [honeypot, setHoneypot] = useState("");
 
   // Phase: form → analyzing → free_result → full_verdict
   const [phase, setPhase] = useState<
@@ -418,10 +407,6 @@ export default function CrowsEyeClient() {
     setCorvusVisible(true);
     setFreeStep(0);
     setVerdictStep(-1);
-    // Reset captcha for next use
-    setAnalyzeCaptchaToken(null);
-    setShowAnalyzeCaptcha(false);
-    analyzeRecaptchaRef.current?.reset();
 
     setTimeout(
       () => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
@@ -451,7 +436,7 @@ export default function CrowsEyeClient() {
           environment,
           locationType,
           notes,
-          recaptchaToken: analyzeCaptchaToken,
+          honeypot,
         };
       } else {
         const encodedLocations = await Promise.all(
@@ -477,7 +462,7 @@ export default function CrowsEyeClient() {
           environment,
           locationType,
           notes,
-          recaptchaToken: analyzeCaptchaToken,
+          honeypot,
         };
       }
 
@@ -517,48 +502,15 @@ export default function CrowsEyeClient() {
 
   function handleAnalyze(e: React.FormEvent) {
     e.preventDefault();
+    if (honeypot) return; // bot trap
     if (!validateForm()) return;
-
-    if (!analyzeCaptchaToken) {
-      setShowAnalyzeCaptcha(true);
-      pendingAnalyze.current = true;
-      return;
-    }
     runAnalysis();
   }
 
-  function onAnalyzeCaptchaChange(token: string | null) {
-    setAnalyzeCaptchaToken(token);
-    if (token && pendingAnalyze.current) {
-      pendingAnalyze.current = false;
-      runAnalysis();
-    }
-  }
-
   function handleStripePayment() {
-    if (!paymentCaptchaToken) {
-      setShowPaymentCaptcha(true);
-      pendingPayment.current = true;
-      return;
-    }
-    // Reset captcha for next use
-    setPaymentCaptchaToken(null);
-    setShowPaymentCaptcha(false);
-    paymentRecaptchaRef.current?.reset();
+    if (honeypot) return; // bot trap
     console.log("Stripe payment triggered");
     // Wire real Stripe here later
-  }
-
-  function onPaymentCaptchaChange(token: string | null) {
-    setPaymentCaptchaToken(token);
-    if (token && pendingPayment.current) {
-      pendingPayment.current = false;
-      setPaymentCaptchaToken(null);
-      setShowPaymentCaptcha(false);
-      paymentRecaptchaRef.current?.reset();
-      console.log("Stripe payment triggered");
-      // Wire real Stripe here later
-    }
   }
 
   function handleDemoVerdict() {
@@ -800,6 +752,18 @@ export default function CrowsEyeClient() {
 
       {/* ── UPLOAD FORM ───────────────────────────────────────────────────── */}
       <form onSubmit={handleAnalyze} className="space-y-8 max-w-3xl">
+
+        {/* Honeypot — hidden from real users, bots fill it in */}
+        <input
+          type="text"
+          name="website"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: 0, height: 0 }}
+        />
 
         {/* Mode toggle */}
         <div>
@@ -1115,17 +1079,6 @@ export default function CrowsEyeClient() {
           >
             {phase === "analyzing" ? "Corvus is looking…" : "Let Corvus Look"}
           </button>
-          {showAnalyzeCaptcha && (
-            <div className="mt-5 flex flex-col items-center gap-2">
-              <p className="text-xs ocws-muted2">Quick security check before we proceed</p>
-              <ReCAPTCHA
-                ref={analyzeRecaptchaRef}
-                sitekey={RECAPTCHA_SITE_KEY}
-                theme="dark"
-                onChange={onAnalyzeCaptchaChange}
-              />
-            </div>
-          )}
           <p className="mt-3 text-xs ocws-muted2">
             Free instant analysis. No account. Upgrade to the full Verdict for $50.
           </p>
@@ -1285,17 +1238,6 @@ export default function CrowsEyeClient() {
                   Plus a downloadable PDF branded with the Crow&rsquo;s Eye mark.
                 </p>
                 <div className="flex flex-col items-center gap-4">
-                  {showPaymentCaptcha && (
-                    <div className="flex flex-col items-center gap-2">
-                      <p className="text-xs ocws-muted2">Quick security check before we proceed</p>
-                      <ReCAPTCHA
-                        ref={paymentRecaptchaRef}
-                        sitekey={RECAPTCHA_SITE_KEY}
-                        theme="dark"
-                        onChange={onPaymentCaptchaChange}
-                      />
-                    </div>
-                  )}
                   <div className="flex flex-col sm:flex-row gap-3 justify-center w-full sm:w-auto">
                     <button
                       onClick={handleStripePayment}

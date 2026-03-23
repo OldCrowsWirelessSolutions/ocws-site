@@ -126,7 +126,7 @@ export async function POST(req: Request) {
       environment = "indoor",
       locationType = "",
       notes = "",
-      recaptchaToken = "",
+      honeypot = "",
     } = body as {
       mode?: string;
       images?: Record<string, string>;
@@ -137,31 +137,14 @@ export async function POST(req: Request) {
       environment: string;
       locationType: string;
       notes: string;
-      recaptchaToken: string;
+      honeypot: string;
     };
 
-    // Verify reCAPTCHA token server-side
-    const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
-    if (!recaptchaSecret) {
+    // TODO: replace honeypot with reCAPTCHA once key issue resolved
+    // Honeypot check — real users leave this field empty; bots fill it in
+    if (honeypot) {
       return Response.json(
-        { ok: false, error: "reCAPTCHA secret not configured." },
-        { status: 500 }
-      );
-    }
-
-    const verifyRes = await fetch("https://www.google.com/recaptcha/api/siteverify", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        secret: recaptchaSecret,
-        response: recaptchaToken,
-      }),
-    });
-
-    const verifyData = await verifyRes.json() as { success: boolean };
-    if (!verifyData.success) {
-      return Response.json(
-        { ok: false, error: "reCAPTCHA verification failed. Please try again." },
+        { ok: false, error: "Submission rejected." },
         { status: 400 }
       );
     }
