@@ -382,6 +382,12 @@ export default function CrowsEyeClient() {
   // PDF generation
   const [pdfGenerating, setPdfGenerating] = useState(false);
 
+  // Logos pre-loaded at mount so PDF generation is instant
+  const [pdfLogos, setPdfLogos] = useState<{
+    ocws: string | null; ocwsAspect: number;
+    crows: string | null; crowsAspect: number;
+  }>({ ocws: null, ocwsAspect: 1, crows: null, crowsAspect: 1 });
+
   const resultsRef = useRef<HTMLDivElement>(null);
 
   // Dynamic dialogue lines referencing actual form data shown while Corvus analyzes
@@ -410,6 +416,35 @@ export default function CrowsEyeClient() {
       return () => clearTimeout(t);
     }
   }, [result, freeStep]);
+
+  // Load PDF logos at mount so they are ready when the PDF generates
+  useEffect(() => {
+    (async () => {
+      async function fetchLogo(path: string) {
+        try {
+          const r = await fetch(path);
+          const blob = await r.blob();
+          const data = await new Promise<string>((res) => {
+            const fr = new FileReader();
+            fr.onload = () => res(fr.result as string);
+            fr.readAsDataURL(blob);
+          });
+          const aspect = await new Promise<number>((res) => {
+            const img = new Image();
+            img.onload = () => res(img.naturalHeight > 0 ? img.naturalWidth / img.naturalHeight : 1);
+            img.onerror = () => res(1);
+            img.src = data;
+          });
+          return { data, aspect };
+        } catch { return { data: null as string | null, aspect: 1 }; }
+      }
+      const [ocws, crows] = await Promise.all([
+        fetchLogo("/OCWS_Logo_Transparent.png"),
+        fetchLogo("/Crows_Eye_Logo.png"),
+      ]);
+      setPdfLogos({ ocws: ocws.data, ocwsAspect: ocws.aspect, crows: crows.data, crowsAspect: crows.aspect });
+    })();
+  }, []);
 
   function handleFile(slot: UploadSlot, f: File | null) {
     setFiles((prev) => ({ ...prev, [slot]: f }));
@@ -651,370 +686,322 @@ export default function CrowsEyeClient() {
     try {
       const { jsPDF } = await import("jspdf");
       const doc = new jsPDF({ unit: "pt", format: "letter" });
+      doc.setLineHeightFactor(1.4);
 
-      const PW = 612;
-      const PH = 792;
-      const ML = 40;
-      const MR = 40;
-      const CW = PW - ML - MR;
-      const FOOTER_ZONE = 50;
+      // ── Page geometry ────────────────────────────────────────────────────
+      const PW = 612, PH = 792, ML = 36, MR = 36, CW = PW - ML - MR;
+      const FOOTER_H = 28, SAFE_BTM = PH - FOOTER_H - 8;
 
+      // ── Brand colors ─────────────────────────────────────────────────────
+      const NAVY:  [number,number,number] = [26,  35,  50];
+      const NAVYL: [number,number,number] = [26,  38,  69];
+      const NAVYD: [number,number,number] = [13,  21,  32];
+      const TEAL:  [number,number,number] = [13,  110, 122];
+      const CYAN:  [number,number,number] = [0,   194, 199];
+      const GOLD:  [number,number,number] = [184, 146, 42];
+      const WHITE: [number,number,number] = [255, 255, 255];
+      const LGRAY: [number,number,number] = [244, 246, 248];
+      const MGRAY: [number,number,number] = [170, 170, 170];
+      const DGRAY: [number,number,number] = [100, 120, 145];
+      const RED:   [number,number,number] = [224, 85,  85];
+      const GREEN: [number,number,number] = [34,  197, 94];
+      const SEV: Record<string, [number,number,number]> = {
+        CRITICAL: RED, WARNING: GOLD, GOOD: GREEN,
+      };
+
+      // ── Metadata ─────────────────────────────────────────────────────────
       const now = new Date();
-      const dateStr = now.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-      const reportId = `CE-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+      const dateStr = now.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+      const reportId = `CE-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,"0")}${String(now.getDate()).padStart(2,"0")}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
 
-      let y = 0;
+      // ── Y cursor & page counter ───────────────────────────────────────────
+      let y = 0, pg = 1;
 
-      function addPageFooter() {
-        doc.setFillColor(26, 35, 50);
-        doc.rect(0, PH - 36, PW, 36, "F");
-        doc.setTextColor(100, 120, 145);
-        doc.setFontSize(7);
-        doc.setFont("helvetica", "normal");
+      // ── Helpers ──────────────────────────────────────────────────────────
+      // Set fill / text / draw color from a tuple
+      const sf = (c: [number,number,number]) => doc.setFillColor(c[0], c[1], c[2]);
+      const st = (c: [number,number,number]) => doc.setTextColor(c[0], c[1], c[2]);
+      const sd = (c: [number,number,number]) => doc.setDrawColor(c[0], c[1], c[2]);
+      const fn = (style: "normal"|"bold"|"italic"|"bolditalic", sz: number) => {
+        doc.setFont("helvetica", style); doc.setFontSize(sz);
+      };
+      // Height of n lines at size sz with lineHeightFactor 1.4
+      const th = (n: number, sz: number) => n * sz * 1.4;
+      // Wrap text to maxW — always use before rendering
+      const wrap = (t: string, maxW: number) => doc.splitTextToSize(t, maxW);
+      // Render wrapped text left-aligned at topY (baseline = topY + sz*0.8), return height consumed
+      function txt(lines: string | string[], x: number, topY: number, sz: number): number {
+        const arr = typeof lines === "string" ? [lines] : lines;
+        doc.text(arr, x, topY + sz * 0.8);
+        return th(arr.length, sz);
+      }
+
+      function drawBg() { sf(NAVY); doc.rect(0, 0, PW, PH, "F"); }
+
+      function drawFooter() {
+        sf(NAVY); doc.rect(0, PH - FOOTER_H, PW, FOOTER_H, "F");
+        st(DGRAY); fn("normal", 7.5);
         doc.text(
           "\u00A9 2026 Old Crows Wireless Solutions LLC  \u00B7  oldcrowswireless.com  \u00B7  Clarity Where Wireless Fails",
-          PW / 2,
-          PH - 13,
-          { align: "center" }
+          PW / 2, PH - FOOTER_H + 18, { align: "center" }
         );
+        st(DGRAY); fn("normal", 7);
+        doc.text(String(pg), PW - MR, PH - FOOTER_H + 18, { align: "right" });
       }
 
       function newPage() {
-        addPageFooter();
-        doc.addPage();
-        doc.setFillColor(26, 35, 50);
-        doc.rect(0, 0, PW, 28, "F");
-        doc.setFillColor(13, 110, 122);
-        doc.rect(0, 25, PW, 3, "F");
-        doc.setTextColor(0, 194, 199);
-        doc.setFontSize(8);
-        doc.setFont("helvetica", "bold");
-        doc.text("CORVUS\u2019 VERDICT", ML, 18);
-        doc.setTextColor(100, 120, 145);
-        doc.setFontSize(7);
-        doc.setFont("helvetica", "normal");
-        doc.text(reportId, PW - MR, 18, { align: "right" });
-        y = 44;
+        drawFooter(); doc.addPage(); pg++; drawBg();
+        // Slim continuation header
+        sf(NAVYD); doc.rect(0, 0, PW, 26, "F");
+        sf(TEAL);  doc.rect(0, 23, PW, 3, "F");
+        st(CYAN); fn("bold", 7.5); doc.text("CORVUS\u2019 VERDICT", ML, 17);
+        st(DGRAY); fn("normal", 7); doc.text(reportId, PW - MR, 17, { align: "right" });
+        y = 36;
       }
 
-      function ensure(needed: number) {
-        if (y + needed > PH - FOOTER_ZONE) newPage();
+      function ensure(needed: number) { if (y + needed > SAFE_BTM) newPage(); }
+
+      function sectionBar(title: string) {
+        ensure(26);
+        sf(TEAL); doc.rect(0, y, PW, 22, "F");
+        st(WHITE); fn("bold", 9); doc.text(title, ML, y + 15);
+        y += 22;
       }
 
-      // ── LOGO LOADING ───────────────────────────────────────────────────────
-      async function fetchLogoDataUrl(path: string): Promise<string | null> {
-        try {
-          const r = await fetch(path);
-          const blob = await r.blob();
-          return await new Promise((res) => {
-            const fr = new FileReader();
-            fr.onload = () => res(fr.result as string);
-            fr.readAsDataURL(blob);
-          });
-        } catch { return null; }
+      // ── Page 1 background ────────────────────────────────────────────────
+      drawBg();
+
+      // ── HEADER BAR ───────────────────────────────────────────────────────
+      const HDR = 72;
+      sf(NAVYD); doc.rect(0, 0, PW, HDR, "F");
+      sf(GOLD);  doc.rect(0, HDR - 2, PW, 2, "F");
+
+      // OCWS logo left
+      const LOGO_H = 44;
+      let ocwsW = 0;
+      if (pdfLogos.ocws) {
+        ocwsW = Math.round(LOGO_H * pdfLogos.ocwsAspect);
+        doc.addImage(pdfLogos.ocws, "PNG", ML, (HDR - LOGO_H) / 2, ocwsW, LOGO_H);
       }
-      async function getImgScale(dataUrl: string, targetH: number): Promise<{ w: number; h: number }> {
-        return new Promise((res) => {
-          const img = new Image();
-          img.onload = () => {
-            const ratio = img.naturalHeight > 0 ? img.naturalWidth / img.naturalHeight : 1;
-            res({ w: Math.round(targetH * ratio), h: targetH });
-          };
-          img.onerror = () => res({ w: targetH, h: targetH });
-          img.src = dataUrl;
-        });
-      }
-      const LOGO_H = 42;
-      const [ocwsLogoUrl, crowsLogoUrl] = await Promise.all([
-        fetchLogoDataUrl("/OCWS_Logo_Transparent.png"),
-        fetchLogoDataUrl("/Crows_Eye_Logo.png"),
-      ]);
-      const ocwsSz = ocwsLogoUrl ? await getImgScale(ocwsLogoUrl, LOGO_H) : null;
-      const crowsSz = crowsLogoUrl ? await getImgScale(crowsLogoUrl, LOGO_H) : null;
+      // "CORVUS' VERDICT" centered in cyan
+      st(CYAN); fn("bold", 20);
+      doc.text("CORVUS\u2019 VERDICT", PW / 2, HDR / 2 + 7, { align: "center" });
+      // Report info right in gold/gray
+      st(GOLD); fn("bold", 7.5);
+      doc.text("CROW\u2019S EYE BY CORVUS", PW - MR, HDR / 2 - 6, { align: "right" });
+      st(DGRAY); fn("normal", 7.5);
+      doc.text(reportId, PW - MR, HDR / 2 + 5,  { align: "right" });
+      doc.text(dateStr,  PW - MR, HDR / 2 + 16, { align: "right" });
+      y = HDR + 2;
 
-      // ── HEADER ─────────────────────────────────────────────────────────────
-      const HDR = 68;
-      doc.setFillColor(26, 35, 50);
-      doc.rect(0, 0, PW, HDR, "F");
-      doc.setFillColor(13, 110, 122);
-      doc.rect(0, HDR - 3, PW, 3, "F");
+      // ── CLIENT INFO BLOCK (two-column, fully wrapped) ─────────────────────
+      const CPAD = 16, HALF = CW / 2 - 8;
+      const nameW   = wrap(name || "\u2014", HALF);
+      const addrStr = [street, suite, city, state, zip].filter(Boolean).join(", ") || "Address not provided";
+      const addrW   = wrap(addrStr, HALF);
+      const ssidW   = ssid ? wrap(`SSID: ${ssid}`, HALF) : [];
+      const envVal  = [environment.charAt(0).toUpperCase() + environment.slice(1), locationType]
+        .filter(Boolean).join("  \u00B7  ");
+      const rightRows: Array<[string, string]> = [
+        ["REPORT",      reportId],
+        ["DATE",        dateStr],
+        ["ENVIRONMENT", envVal],
+        ...(mode === "site" ? [["LOCATIONS", String(locations.length)] as [string,string]] : []),
+      ];
+      let leftColH = th(nameW.length, 13) + 4 + th(addrW.length, 9);
+      if (ssidW.length) leftColH += 4 + th(ssidW.length, 9);
+      const rightColH = rightRows.reduce((a, [,v]) => {
+        return a + th(1, 6.5) + 2 + th(wrap(v, HALF).length, 8.5) + 6;
+      }, 0);
+      const clientH = Math.max(leftColH, rightColH) + CPAD * 2;
+      ensure(clientH + 4);
+      sf(NAVY); doc.rect(0, y, PW, clientH, "F");
 
-      // Place logos flush to header edges
-      const logoY = (HDR - LOGO_H) / 2;
-      if (ocwsLogoUrl && ocwsSz) {
-        doc.addImage(ocwsLogoUrl, "PNG", ML, logoY, ocwsSz.w, LOGO_H);
-      }
-      if (crowsLogoUrl && crowsSz) {
-        doc.addImage(crowsLogoUrl, "PNG", PW - MR - crowsSz.w, logoY, crowsSz.w, LOGO_H);
-      }
-
-      const titleX = ocwsSz ? ML + ocwsSz.w + 8 : ML;
-      doc.setTextColor(0, 194, 199);
-      doc.setFontSize(22);
-      doc.setFont("helvetica", "bold");
-      doc.text("CORVUS\u2019 VERDICT", titleX, 40);
-
-      const rightTextX = crowsSz ? PW - MR - crowsSz.w - 8 : PW - MR;
-      doc.setTextColor(184, 146, 42);
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "bold");
-      doc.text("CROW\u2019S EYE BY CORVUS", rightTextX, 22, { align: "right" });
-      doc.setTextColor(100, 120, 145);
-      doc.setFontSize(7.5);
-      doc.setFont("helvetica", "normal");
-      doc.text(reportId, rightTextX, 34, { align: "right" });
-      doc.text(dateStr, rightTextX, 46, { align: "right" });
-
-      y = HDR + 22;
-
-      // ── CLIENT INFO ────────────────────────────────────────────────────────
-      const clientH = ssid ? 70 : 58;
-      doc.setFillColor(13, 110, 122);
-      doc.rect(ML, y, 3, clientH, "F");
-
-      doc.setTextColor(0, 194, 199);
-      doc.setFontSize(7);
-      doc.setFont("helvetica", "bold");
-      doc.text("CLIENT REPORT", ML + 12, y + 11);
-
-      doc.setTextColor(220, 230, 242);
-      doc.setFontSize(13);
-      doc.setFont("helvetica", "bold");
-      doc.text(name || "\u2014", ML + 12, y + 26);
-
-      const addrStr = [street, suite, city, state, zip].filter(Boolean).join(", ");
-      doc.setTextColor(160, 178, 200);
-      doc.setFontSize(8.5);
-      doc.setFont("helvetica", "normal");
-      doc.text(addrStr || "Address not provided", ML + 12, y + 40);
-
-      const envStr = [
-        environment.charAt(0).toUpperCase() + environment.slice(1),
-        locationType,
-      ]
-        .filter(Boolean)
-        .join("  \u00B7  ");
-      doc.text(envStr, ML + 12, y + 52);
-
-      if (ssid) {
-        doc.setTextColor(0, 194, 199);
-        doc.setFontSize(7.5);
-        doc.text(`SSID: ${ssid}`, ML + 12, y + 64);
+      // Left column
+      let ly = y + CPAD;
+      st(WHITE); fn("bold",   13); ly += txt(nameW, ML, ly, 13) + 4;
+      st(MGRAY); fn("normal",  9); ly += txt(addrW, ML, ly, 9);
+      if (ssidW.length) {
+        ly += 4; st(CYAN); fn("normal", 9); txt(ssidW, ML, ly, 9);
       }
 
-      y += clientH + 18;
+      // Right column
+      let ry = y + CPAD;
+      const rx = ML + CW / 2 + 8;
+      for (const [label, val] of rightRows) {
+        const valW = wrap(val, HALF);
+        st(GOLD); fn("bold", 6.5); ry += txt(label, rx, ry, 6.5) + 2;
+        st(DGRAY); fn("normal", 8.5); ry += txt(valW, rx, ry, 8.5) + 6;
+      }
+      y += clientH + 8;
 
-      // Divider
-      doc.setDrawColor(13, 110, 122);
-      doc.setLineWidth(0.5);
-      doc.line(ML, y, PW - MR, y);
-      y += 18;
-
-      // ── CORVUS' ASSESSMENT ─────────────────────────────────────────────────
-      doc.setTextColor(0, 194, 199);
-      doc.setFontSize(7);
-      doc.setFont("helvetica", "bold");
-      doc.text("CORVUS\u2019 ASSESSMENT", ML, y);
-      y += 13;
-
-      const openLines = doc.splitTextToSize(`\u201C${result.corvus_opening}\u201D`, CW);
-      ensure(openLines.length * 14 + 12);
-      doc.setTextColor(210, 222, 238);
-      doc.setFontSize(10.5);
-      doc.setFont("helvetica", "bolditalic");
-      doc.text(openLines, ML, y);
-      y += openLines.length * 14 + 14;
+      // ── CORVUS ANALYSIS (cyan-bordered dark box, fully wrapped) ───────────
+      sectionBar("CORVUS ANALYSIS");
+      y += 6;
+      const INNER_W = CW - 3 - 16;
+      const openW = wrap(`\u201C${result.corvus_opening}\u201D`, INNER_W);
+      const aH = th(openW.length, 9) + 24;
+      ensure(aH + 4);
+      sf(NAVYL); doc.rect(ML, y, CW, aH, "F");
+      sf(CYAN);  doc.rect(ML, y, 3, aH, "F");
+      st(LGRAY); fn("italic", 9); txt(openW, ML + 3 + 12, y + 12, 9);
+      y += aH + 8;
 
       // Stats row
-      ensure(54);
-      const bW = (CW - 12) / 4;
-      const statsData = [
-        { label: "ISSUES FOUND", val: result.problems_found, r: 220, g: 228, b: 240 },
-        { label: "CRITICAL",     val: result.critical_count,  r: 248, g: 113, b: 113 },
-        { label: "WARNINGS",     val: result.warning_count,   r: 251, g: 191, b: 36  },
-        { label: "GOOD",         val: result.good_count,      r: 74,  g: 222, b: 128 },
-      ];
-      statsData.forEach((s, i) => {
-        const bx = ML + i * (bW + 4);
-        doc.setFillColor(18, 28, 46);
-        doc.roundedRect(bx, y, bW, 46, 4, 4, "F");
-        doc.setTextColor(s.r, s.g, s.b);
-        doc.setFontSize(22);
-        doc.setFont("helvetica", "bold");
-        doc.text(String(s.val), bx + bW / 2, y + 26, { align: "center" });
-        doc.setTextColor(100, 120, 145);
-        doc.setFontSize(6.5);
-        doc.setFont("helvetica", "normal");
-        doc.text(s.label, bx + bW / 2, y + 38, { align: "center" });
+      ensure(52);
+      const SW = (CW - 9) / 4;
+      [
+        { label: "ISSUES",   val: result.problems_found, clr: LGRAY },
+        { label: "CRITICAL", val: result.critical_count, clr: RED   },
+        { label: "WARNINGS", val: result.warning_count,  clr: GOLD  },
+        { label: "GOOD",     val: result.good_count,     clr: GREEN },
+      ].forEach((s, i) => {
+        const sx = ML + i * (SW + 3);
+        sf(NAVYL); doc.roundedRect(sx, y, SW, 46, 3, 3, "F");
+        st(s.clr); fn("bold", 20);  doc.text(String(s.val), sx + SW / 2, y + 30, { align: "center" });
+        st(DGRAY); fn("normal", 6.5); doc.text(s.label, sx + SW / 2, y + 40, { align: "center" });
       });
-      y += 58;
+      y += 54;
 
-      // ── FINDINGS ───────────────────────────────────────────────────────────
-      ensure(24);
-      doc.setDrawColor(13, 110, 122);
-      doc.setLineWidth(0.5);
-      doc.line(ML, y, PW - MR, y);
-      y += 14;
-
-      doc.setTextColor(0, 194, 199);
-      doc.setFontSize(7);
-      doc.setFont("helvetica", "bold");
-      doc.text("COMPLETE FINDINGS", ML, y);
-      y += 14;
-
-      const SEV_COLOR: Record<string, [number, number, number]> = {
-        CRITICAL: [239, 68,  68 ],
-        WARNING:  [234, 179, 8  ],
-        GOOD:     [74,  222, 128],
-      };
+      // ── FINDINGS ─────────────────────────────────────────────────────────
+      sectionBar("FINDINGS");
+      y += 6;
 
       for (const f of result.full_findings) {
-        const [sr, sg, sb] = SEV_COLOR[f.severity] ?? SEV_COLOR.WARNING;
-        const descLines = doc.splitTextToSize(f.description, CW - 20);
-        const fixLines  = doc.splitTextToSize(f.fix, CW - 40);
-        const cardH = 26 + descLines.length * 12 + 8 + fixLines.length * 12 + 18;
+        const sc = SEV[f.severity] ?? GOLD;
+        const CP = 12, CARD_IW = CW - 3 - CP * 2;
+
+        // Pre-wrap all text blocks
+        const titleW = wrap(f.title, CARD_IW - 58);
+        const descW  = wrap(f.description, CARD_IW);
+        const fixW   = wrap(`Fix: ${f.fix}`, CARD_IW);
+        const stepsW: string[][] = f.steps?.length
+          ? f.steps.map((s, si) => wrap(`${si + 1}.  ${s}`, CARD_IW - 10))
+          : [];
+
+        let routerW: string[] = [], disclaimerW: string[] = [], rBoxH = 0;
+        if (f.router_info?.gateway_ip) {
+          const ri = f.router_info;
+          const rtxt = [
+            ri.vendor,
+            `Gateway: ${ri.gateway_ip}`,
+            ri.default_username ? `User: ${ri.default_username}` : "",
+            ri.default_password ? `Pass: ${ri.default_password}` : "",
+          ].filter(Boolean).join("   \u00B7   ");
+          routerW = wrap(rtxt, CARD_IW - 16);
+          if (f.login_disclaimer) disclaimerW = wrap(f.login_disclaimer, CARD_IW - 16);
+          rBoxH = th(routerW.length, 8.5)
+            + (disclaimerW.length ? 4 + th(disclaimerW.length, 7.5) : 0)
+            + 16;
+        }
+
+        // Calculate total card height so ensure() can check fit
+        const S = stepsW.length  ? stepsW.reduce((a, sl) => a + th(sl.length, 8) + 3, 0) + 5 : 0;
+        const R = routerW.length ? rBoxH + 8 : 0;
+        const cardH = CP * 2
+          + th(titleW.length, 10) + 6
+          + th(descW.length, 9)   + 6
+          + th(fixW.length, 9)    + 8
+          + S + R;
 
         ensure(cardH + 8);
 
-        doc.setFillColor(sr, sg, sb);
-        doc.rect(ML, y, 3, cardH, "F");
+        // Card background + severity left border
+        sf(NAVYL); doc.rect(ML, y, CW, cardH, "F");
+        sf(sc);    doc.rect(ML, y, 3, cardH, "F");
 
-        doc.setFillColor(18, 28, 46);
-        doc.rect(ML + 3, y, CW - 3, cardH, "F");
+        // Severity badge top-right
+        const bb: [number,number,number] = [
+          Math.round(sc[0] * 0.12 + NAVYL[0] * 0.88),
+          Math.round(sc[1] * 0.12 + NAVYL[1] * 0.88),
+          Math.round(sc[2] * 0.12 + NAVYL[2] * 0.88),
+        ];
+        sf(bb); doc.roundedRect(ML + CW - 58, y + CP - 4, 52, 14, 2, 2, "F");
+        st(sc); fn("bold", 7);
+        doc.text(f.severity, ML + CW - 32, y + CP + 5.5, { align: "center" });
 
-        // Severity badge
-        const pr = Math.round(sr * 0.20 + 18 * 0.80);
-        const pg = Math.round(sg * 0.20 + 28 * 0.80);
-        const pb = Math.round(sb * 0.20 + 46 * 0.80);
-        doc.setFillColor(pr, pg, pb);
-        doc.roundedRect(ML + 10, y + 8, 54, 13, 3, 3, "F");
-        doc.setTextColor(sr, sg, sb);
-        doc.setFontSize(6.5);
-        doc.setFont("helvetica", "bold");
-        doc.text(f.severity, ML + 37, y + 17, { align: "center" });
+        // Content — tracked with cy so each block flows below the previous
+        let cy = y + CP;
+        const cx = ML + 3 + CP;
+        st(WHITE); fn("bold",   10); cy += txt(titleW, cx, cy, 10) + 6;
+        st(MGRAY); fn("normal",  9); cy += txt(descW,  cx, cy,  9) + 6;
+        st(CYAN);  fn("normal",  9); cy += txt(fixW,   cx, cy,  9) + 8;
 
-        // Title (wraps if long)
-        doc.setTextColor(215, 225, 240);
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "bold");
-        const titleLines = doc.splitTextToSize(f.title, CW - 80);
-        doc.text(titleLines, ML + 72, y + 17);
+        // Numbered steps
+        if (stepsW.length) {
+          for (const sl of stepsW) {
+            st(MGRAY); fn("normal", 8); cy += txt(sl, cx + 10, cy, 8) + 3;
+          }
+          cy += 5;
+        }
 
-        // Description
-        doc.setTextColor(155, 175, 198);
-        doc.setFontSize(9);
-        doc.setFont("helvetica", "normal");
-        doc.text(descLines, ML + 10, y + 30);
-
-        // Fix box
-        const fixY = y + 30 + descLines.length * 12 + 4;
-        doc.setFillColor(12, 32, 52);
-        doc.roundedRect(ML + 10, fixY, CW - 20, fixLines.length * 12 + 14, 3, 3, "F");
-        doc.setTextColor(0, 194, 199);
-        doc.setFontSize(6.5);
-        doc.setFont("helvetica", "bold");
-        doc.text("FIX", ML + 18, fixY + 10);
-        doc.setTextColor(150, 200, 218);
-        doc.setFontSize(8.5);
-        doc.setFont("helvetica", "normal");
-        doc.text(fixLines, ML + 36, fixY + 10);
+        // Router info box (dark inset, amber text, wrapped disclaimer)
+        if (routerW.length) {
+          sf(NAVYD); doc.rect(cx, cy, CARD_IW, rBoxH, "F");
+          st(GOLD); fn("normal", 8.5); txt(routerW, cx + 8, cy + 8, 8.5);
+          if (disclaimerW.length) {
+            const dty = cy + 8 + th(routerW.length, 8.5) + 4;
+            st(MGRAY); fn("normal", 7.5); txt(disclaimerW, cx + 8, dty, 7.5);
+          }
+        }
 
         y += cardH + 8;
       }
 
-      // ── RECOMMENDATIONS ────────────────────────────────────────────────────
-      ensure(24);
-      doc.setDrawColor(13, 110, 122);
-      doc.setLineWidth(0.5);
-      doc.line(ML, y, PW - MR, y);
-      y += 14;
-
-      doc.setTextColor(0, 194, 199);
-      doc.setFontSize(7);
-      doc.setFont("helvetica", "bold");
-      doc.text("RECOMMENDATIONS", ML, y);
-      y += 14;
-
+      // ── RECOMMENDATIONS ───────────────────────────────────────────────────
+      sectionBar("RECOMMENDATIONS");
+      y += 8;
       result.recommendations.forEach((rec, i) => {
-        const rLines = doc.splitTextToSize(rec, CW - 30);
-        const rH = rLines.length * 12 + 8;
+        const rW = wrap(rec, CW - 28);
+        const rH = th(rW.length, 9) + 8;
         ensure(rH + 4);
-
-        doc.setFillColor(13, 110, 122);
-        doc.circle(ML + 9, y + 6, 7, "F");
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(7);
-        doc.setFont("helvetica", "bold");
-        doc.text(String(i + 1), ML + 9, y + 9, { align: "center" });
-
-        doc.setTextColor(155, 175, 198);
-        doc.setFontSize(9);
-        doc.setFont("helvetica", "normal");
-        doc.text(rLines, ML + 24, y + 9);
-        y += rH + 4;
+        sf(TEAL); doc.circle(ML + 9, y + rH / 2, 7, "F");
+        st(WHITE); fn("bold", 7); doc.text(String(i + 1), ML + 9, y + rH / 2 + 2.5, { align: "center" });
+        st(LGRAY); fn("normal", 9); txt(rW, ML + 22, y + 4, 9);
+        y += rH + 6;
       });
 
-      // ── CORVUS' FINAL WORD ─────────────────────────────────────────────────
+      // Corvus final word
       y += 10;
-      const fwLines = doc.splitTextToSize(`\u201C${result.corvus_summary}\u201D`, CW - 28);
-      const fwH = fwLines.length * 13 + 30;
+      const fwW = wrap(`\u201C${result.corvus_summary}\u201D`, CW - 24);
+      const fwH = th(fwW.length, 9) + 28;
       ensure(fwH + 8);
+      sf(NAVYL); doc.rect(ML, y, CW, fwH, "F");
+      sf(GOLD);  doc.rect(ML, y, 3, fwH, "F");
+      st(GOLD);  fn("bold", 7);   txt("CORVUS\u2019 FINAL WORD", ML + 10, y + 8, 7);
+      st(LGRAY); fn("italic", 9); txt(fwW, ML + 10, y + 18, 9);
+      y += fwH + 14;
 
-      doc.setFillColor(20, 30, 50);
-      doc.roundedRect(ML, y, CW, fwH, 5, 5, "F");
-      doc.setFillColor(184, 146, 42);
-      doc.rect(ML, y, 3, fwH, "F");
+      // ── GOLD DIVIDER ──────────────────────────────────────────────────────
+      ensure(4); sf(GOLD); doc.rect(0, y, PW, 2, "F"); y += 10;
 
-      doc.setTextColor(184, 146, 42);
-      doc.setFontSize(6.5);
-      doc.setFont("helvetica", "bold");
-      doc.text("CORVUS\u2019 FINAL WORD", ML + 12, y + 14);
+      // ── CERTIFICATION ─────────────────────────────────────────────────────
+      const CERT_H = 74;
+      ensure(CERT_H + 10);
+      sf(NAVY); doc.rect(ML, y, CW, CERT_H, "F");
+      sd(TEAL); doc.setLineWidth(0.8); doc.roundedRect(ML, y, CW, CERT_H, 4, 4);
+      sf(TEAL); doc.rect(ML, y, 3, CERT_H, "F");
+      let sealW = 0;
+      if (pdfLogos.ocws) {
+        const SEAL_H = 42;
+        sealW = Math.round(SEAL_H * pdfLogos.ocwsAspect);
+        doc.addImage(pdfLogos.ocws, "PNG", ML + 10, y + (CERT_H - SEAL_H) / 2, sealW, SEAL_H);
+      }
+      const certX = ML + 10 + sealW + 12;
+      st(CYAN);  fn("bold",   7);  txt("CERTIFICATION", certX, y + 10, 7);
+      st(WHITE); fn("bold",  11);  txt("Joshua Turner", certX, y + 22, 11);
+      st(MGRAY); fn("normal", 9);  txt("Managing Member  \u00B7  Old Crows Wireless Solutions LLC", certX, y + 37, 9);
+      st(CYAN);  fn("normal", 9);  txt("17 Years U.S. Navy Electronic Warfare Experience", certX, y + 50, 9);
+      st(GOLD);  fn("normal", 8);  txt(`Rendered by Crow\u2019s Eye  \u00B7  ${dateStr}`, certX, y + 63, 8);
+      y += CERT_H + 10;
 
-      doc.setTextColor(210, 222, 236);
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "italic");
-      doc.text(fwLines, ML + 12, y + 26);
-      y += fwH + 22;
+      // ── FOOTER (final page) ───────────────────────────────────────────────
+      drawFooter();
 
-      // ── CERTIFICATION ──────────────────────────────────────────────────────
-      const certH = 62;
-      ensure(certH + 8);
-      doc.setDrawColor(13, 110, 122);
-      doc.setLineWidth(0.8);
-      doc.roundedRect(ML, y, CW, certH, 4, 4);
-      doc.setFillColor(13, 110, 122);
-      doc.rect(ML, y, 3, certH, "F");
-
-      doc.setTextColor(0, 194, 199);
-      doc.setFontSize(7);
-      doc.setFont("helvetica", "bold");
-      doc.text("CERTIFICATION", ML + 12, y + 14);
-
-      doc.setTextColor(155, 175, 198);
-      doc.setFontSize(8.5);
-      doc.setFont("helvetica", "normal");
-      const certLines = [
-        "Rendered by Crow\u2019s Eye  \u00B7  Certified by Joshua Turner",
-        "Managing Member, Old Crows Wireless Solutions LLC",
-        "17 Years U.S. Navy Electronic Warfare Experience",
-      ];
-      certLines.forEach((line, i) => {
-        doc.text(line, ML + 12, y + 28 + i * 13);
-      });
-
-      addPageFooter();
-
-      // ── SAVE ───────────────────────────────────────────────────────────────
-      const safeName = (name || "Client")
-        .replace(/[^\w\s-]/g, "")
-        .trim()
-        .replace(/\s+/g, " ");
-      const fileDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-      doc.save(`Corvus' Verdict - ${safeName} - ${fileDate}.pdf`);
+      // ── SAVE ──────────────────────────────────────────────────────────────
+      const safeName = (name || "Client").replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, " ");
+      const fileDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+      doc.save(`Corvus\u2019 Verdict - ${safeName} - ${fileDate}.pdf`);
     } finally {
       setPdfGenerating(false);
     }
