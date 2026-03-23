@@ -67,9 +67,8 @@ export default function Footer() {
         <div className="mt-10 mb-6" style={{ height: "1px", background: "#0D6E7A" }} />
 
         {/* Bottom bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-white/30">
-          <span>&copy; 2026 Old Crows Wireless Solutions LLC &middot; oldcrowswireless.com</span>
-          <span>Built in Pensacola FL &middot; Faith driven</span>
+        <div className="text-center text-xs text-white/30 space-y-1">
+          <p>&copy; 2026 Old Crows Wireless Solutions LLC. Corvus, Crow&rsquo;s Eye, and The Full Reckoning are unregistered trademarks of Old Crows Wireless Solutions LLC. All rights reserved.</p>
         </div>
       </div>
     </footer>

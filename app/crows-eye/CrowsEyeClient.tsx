@@ -690,7 +690,7 @@ export default function CrowsEyeClient() {
 
       // ── Page geometry ────────────────────────────────────────────────────
       const PW = 612, PH = 792, ML = 36, MR = 36, CW = PW - ML - MR;
-      const FOOTER_H = 28, SAFE_BTM = PH - FOOTER_H - 8;
+      const FOOTER_H = 36, SAFE_BTM = PH - FOOTER_H - 8;
 
       // ── Brand colors ─────────────────────────────────────────────────────
       const NAVY:  [number,number,number] = [26,  35,  50];
@@ -740,11 +740,13 @@ export default function CrowsEyeClient() {
 
       function drawFooter() {
         sf(NAVY); doc.rect(0, PH - FOOTER_H, PW, FOOTER_H, "F");
-        st(DGRAY); fn("normal", 7.5);
-        doc.text(
-          "\u00A9 2026 Old Crows Wireless Solutions LLC  \u00B7  oldcrowswireless.com  \u00B7  Clarity Where Wireless Fails",
-          PW / 2, PH - FOOTER_H + 18, { align: "center" }
-        );
+        const copyrightText = "\u00A9 2026 Old Crows Wireless Solutions LLC. Corvus, Crow\u2019s Eye, and The Full Reckoning are unregistered trademarks of Old Crows Wireless Solutions LLC. All rights reserved.";
+        st(DGRAY); fn("normal", 6.5);
+        const copyrightLines = doc.splitTextToSize(copyrightText, PW - ML - MR - 30);
+        const lineH = 6.5 * 1.4;
+        const blockH = copyrightLines.length * lineH;
+        const startY = PH - FOOTER_H + (FOOTER_H - blockH) / 2 + 6.5 * 0.8;
+        doc.text(copyrightLines, PW / 2, startY, { align: "center" });
         st(DGRAY); fn("normal", 7);
         doc.text(String(pg), PW - MR, PH - FOOTER_H + 18, { align: "right" });
       }
