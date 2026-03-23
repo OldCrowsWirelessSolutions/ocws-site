@@ -374,6 +374,9 @@ const VALID_CODES: Record<string, AppliedCode> = {
   "CORVUS-MIKE-2026":  { type: "founder",     name: "Mike Arbouret" },
   "OCWS-ADMIN-2026":   { type: "admin",       name: "Joshua Turner" },
   "CORVUS-NEST":       { type: "subscriber" },
+  "CORVUS-NATE":       { type: "founder",     name: "Nathanael Farrelly" },
+  "CORVUS-MIKE":       { type: "founder",     name: "Mike Arbouret" },
+  "CORVUS-ERIC":       { type: "founder",     name: "Eric Mims" },
   "LAUNCH50":          { type: "promo",       discount: 50,  label: "50% off" },
   "PENSACOLA25":       { type: "promo",       discount: 25,  label: "25% off" },
   "FIRSTCITY20":       { type: "promo",       discount: 20,  label: "20% off \u2014 First City Internet" },
@@ -427,8 +430,6 @@ export default function CrowsEyeClient() {
   // Full verdict reveal: index of currently-typing finding (-1 = not started)
   const [verdictStep, setVerdictStep] = useState(-1);
 
-  // Corvus panel
-  const [corvusVisible, setCorvusVisible] = useState(false);
 
   // Mode toggle
   const [mode, setMode] = useState<"single" | "site">("single");
@@ -457,9 +458,6 @@ export default function CrowsEyeClient() {
 
   // Site overview (Full Reckoning)
   const [siteOverview, setSiteOverview] = useState("");
-
-  // Placeholder: logged-in member who has used monthly credits (wire to auth later)
-  const [loggedInMember] = useState(false);
 
   // PDF generation
   const [pdfGenerating, setPdfGenerating] = useState(false);
@@ -626,7 +624,6 @@ export default function CrowsEyeClient() {
   async function runAnalysis() {
     setErrorMsg("");
     setPhase("analyzing");
-    setCorvusVisible(true);
     setFreeStep(0);
     setVerdictStep(-1);
 
@@ -728,7 +725,6 @@ export default function CrowsEyeClient() {
       );
     } catch (err: unknown) {
       setPhase("form");
-      setCorvusVisible(false);
       setErrorMsg(err instanceof Error ? err.message : "Analysis failed. Please try again.");
     }
   }
