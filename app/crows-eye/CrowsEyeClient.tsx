@@ -368,6 +368,7 @@ type AppliedCode = {
 };
 
 const VALID_CODES: Record<string, AppliedCode> = {
+  "OCWS2026":          { type: "admin",       name: "Joshua Turner" },
   "CORVUS-NATE-2026":  { type: "founder",     name: "Nathanael Farrelly" },
   "CORVUS-ERIC-2026":  { type: "founder",     name: "Eric Mims" },
   "CORVUS-MIKE-2026":  { type: "founder",     name: "Mike Arbouret" },
@@ -841,6 +842,10 @@ export default function CrowsEyeClient() {
       setAppliedCode(match);
       setAccessCodeStatus("valid");
       setAccessCodeInput("");
+      // If analysis is already done and this is a bypass code, unlock immediately
+      if (result && isBypassCode(match)) {
+        unlockVerdict();
+      }
     } else {
       setAccessCodeStatus("invalid");
     }
@@ -2214,29 +2219,15 @@ export default function CrowsEyeClient() {
                   </div>
 
 
-                  {/* Access code bypass / promo confirmation */}
+                  {/* Access code bypass confirmation — auto-unlocks, this is just a status flash */}
                   {isBypassCode(appliedCode) && (
-                    <div className="flex flex-col items-center gap-3">
-                      <p className="text-sm font-semibold" style={{ color: "#4ade80" }}>
-                        {appliedCode?.type === "admin"
-                          ? `✓ Admin access — ${appliedCode.name}. Stripe bypassed.`
-                          : appliedCode?.type === "founder"
-                          ? `✓ Founder access — Welcome, ${appliedCode.name}. Corvus is at your service.`
-                          : "✓ Subscriber access granted"}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={unlockVerdict}
-                        className="rounded-2xl px-8 py-3 text-sm font-bold transition"
-                        style={{
-                          background: "rgba(74,222,128,0.12)",
-                          border: "1px solid rgba(74,222,128,0.35)",
-                          color: "#4ade80",
-                        }}
-                      >
-                        Unlock Full Verdict →
-                      </button>
-                    </div>
+                    <p className="text-sm font-semibold" style={{ color: "#4ade80" }}>
+                      {appliedCode?.type === "admin"
+                        ? `✓ Admin access verified. Unlocking…`
+                        : appliedCode?.type === "founder"
+                        ? `✓ Founder access verified. Unlocking…`
+                        : "✓ Subscriber access verified. Unlocking…"}
+                    </p>
                   )}
                 </div>
               </div>
