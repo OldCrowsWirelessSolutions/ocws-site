@@ -134,7 +134,7 @@ export default function HomePage() {
             {/* Image */}
             <div className="shrink-0 w-full md:w-auto flex justify-center">
               <Image
-                src="/corvus_still_clean.png"
+                src="/corvus_still.png"
                 alt="Corvus"
                 width={380}
                 height={480}
