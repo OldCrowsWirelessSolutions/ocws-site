@@ -1891,24 +1891,28 @@ export default function CrowsEyeClient() {
             className="ocws-tile overflow-hidden"
             style={{ border: "1px solid rgba(0,212,255,0.25)" }}
           >
-            <div className="flex flex-col md:flex-row">
-              {/* Left: Corvus video */}
-              <div className="shrink-0 md:w-60">
+            {/* flex-col on mobile (video top, dialogue bottom), flex-row on md+ (video left, dialogue right) */}
+            <div className="flex flex-col md:flex-row" style={{ minHeight: "220px" }}>
+              {/* Left: Corvus video — explicit height so objectFit cover can crop correctly */}
+              <div
+                className="shrink-0 md:w-60"
+                style={{ height: "220px" }}
+              >
                 <video
                   src="/corvus.mp4"
                   autoPlay
                   loop
                   muted
                   playsInline
-                  style={{ width: "100%", display: "block", objectFit: "cover" }}
+                  style={{ width: "100%", height: "100%", display: "block", objectFit: "cover" }}
                 />
               </div>
-              {/* Right: Live typewriter dialogue based on scan data */}
+              {/* Right: Live typewriter dialogue based on scan data
+                  border-t on mobile (separator under video), md:border-l (vertical separator desktop) */}
               <div
-                className="flex-1 flex flex-col justify-center p-5"
+                className="flex-1 flex flex-col justify-center p-5 border-t md:border-t-0 md:border-l"
                 style={{
-                  borderLeft: "1px solid rgba(0,212,255,0.18)",
-                  minHeight: "135px",
+                  borderColor: "rgba(0,212,255,0.18)",
                   background: "rgba(0,0,0,0.25)",
                 }}
               >
