@@ -289,10 +289,13 @@ export default function HomePage() {
             </div>
           </div>
 
-          <p className="text-xs mb-6" style={{ color: "#B8922A" }}>
+          <p className="text-xs mb-3" style={{ color: "#B8922A" }}>
             Service area covers Pensacola metro (Escambia + Santa Rosa Counties) through Northwest
             Florida to Mobile AL. Travel fee of $125 applies for locations requiring more than 50
             miles round trip from Pensacola.
+          </p>
+          <p className="text-xs mb-6" style={{ color: "#888" }}>
+            Properties with detached structures, large outdoor areas, or complex multi-building layouts may require additional time. Discussed and confirmed before booking.
           </p>
 
           <Link

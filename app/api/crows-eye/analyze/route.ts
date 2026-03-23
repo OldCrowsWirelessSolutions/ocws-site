@@ -159,6 +159,8 @@ export async function POST(req: Request) {
 
     type LocationPayload = {
       name: string;
+      locType?: string;
+      structureRel?: string;
       images: Record<string, string>;
       mimeTypes: Record<string, string>;
     };
@@ -168,6 +170,9 @@ export async function POST(req: Request) {
       images: singleImages = {},
       mimeTypes: singleMimeTypes = {},
       locations: locationPayloads = [],
+      isHybrid = false,
+      siteOverview = "",
+      detachedCount = 0,
       name = "",
       address = "",
       environment = "indoor",
@@ -180,6 +185,9 @@ export async function POST(req: Request) {
       images?: Record<string, string>;
       mimeTypes?: Record<string, string>;
       locations?: LocationPayload[];
+      isHybrid?: boolean;
+      siteOverview?: string;
+      detachedCount?: number;
       name: string;
       address: string;
       environment: string;
@@ -222,6 +230,7 @@ export async function POST(req: Request) {
     if (isSiteMode) {
       for (const loc of locationPayloads) {
         const locName = String(loc.name || "Unnamed Location").trim();
+        const locMeta = [loc.locType, loc.structureRel].filter(Boolean).join(", ");
         for (const [slot, label] of Object.entries(slotLabels)) {
           if (loc.images?.[slot]) {
             content.push({
@@ -234,7 +243,7 @@ export async function POST(req: Request) {
             });
             content.push({
               type: "text",
-              text: `[Above image: ${locName} — ${label}]`,
+              text: `[Above image: ${locName}${locMeta ? ` (${locMeta})` : ""} — ${label}]`,
             });
           }
         }
@@ -259,7 +268,10 @@ export async function POST(req: Request) {
     }
 
     const locationNames = isSiteMode
-      ? locationPayloads.map((l) => l.name || "Unnamed").join(", ")
+      ? locationPayloads.map((l) => {
+          const meta = [l.locType, l.structureRel].filter(Boolean).join(", ");
+          return `${l.name || "Unnamed"}${meta ? ` (${meta})` : ""}`;
+        }).join("; ")
       : null;
 
     const contextLines: string[] = [
@@ -270,6 +282,19 @@ export async function POST(req: Request) {
       `Client's Wi-Fi network name (SSID): ${String(client_ssid).trim() || "Not provided"} — use this to identify their router in the scan data`,
       ...(isSiteMode && locationNames ? [`Locations surveyed (${locationPayloads.length}): ${locationNames}`] : []),
       ...(isSiteMode ? ["ANALYSIS MODE: Full Site Survey — synthesize patterns ACROSS all locations for a site-wide assessment."] : []),
+      ...(isHybrid ? [
+        "",
+        `HYBRID PROPERTY SURVEY — ${detachedCount} detached structure(s) present.`,
+        `Site overview: ${String(siteOverview).trim() || "Not provided"}`,
+        "CRITICAL REQUIREMENT: You MUST include a 'cross_structure_analysis' object in your JSON response with these exact keys:",
+        "  - threshold_analysis: describe signal strength and behavior at thresholds/doorways between each pair of structures (2-3 sentences)",
+        "  - bridge_feasibility: assess whether current equipment can bridge the structures; what is missing (2-3 sentences)",
+        "  - recommended_placement: specific locations to place access points or wireless bridges to fix cross-structure coverage (2-3 sentences)",
+        "  - powerline_moca: whether powerline adapters (Ethernet over power lines) or MoCA adapters (Ethernet over coax) would help, and when to use each (2-3 sentences)",
+        "  - cost_estimate: realistic cost range in USD for the recommended solution (equipment only; e.g. '$80-$150 for a wireless access point, $60-$120 for a powerline adapter kit') (1-2 sentences)",
+        "  - corvus_assessment: 2-3 sentences in Corvus' voice summarizing the overall cross-structure coverage situation and the single most important action",
+        "All cross_structure_analysis values must be plain text strings in Corvus' voice.",
+      ] : []),
       `Problem description: ${String(notes).trim() || "Not provided"}`,
       "",
       "Analyze the screenshots above and return your Verdict as JSON.",

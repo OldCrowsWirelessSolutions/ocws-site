@@ -9,6 +9,8 @@ type UploadSlot = "signal" | "scan24" | "scan5";
 interface LocationEntry {
   id: string;
   name: string;
+  locType: string;
+  structureRel: string;
   files: Record<UploadSlot, File | null>;
   previews: Record<UploadSlot, string | null>;
 }
@@ -17,6 +19,8 @@ function makeEmptyLocation(): LocationEntry {
   return {
     id: `loc-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     name: "",
+    locType: "",
+    structureRel: "",
     files: { signal: null, scan24: null, scan5: null },
     previews: { signal: null, scan24: null, scan5: null },
   };
@@ -45,6 +49,15 @@ interface FullFinding {
   login_disclaimer?: string;
 }
 
+interface CrossStructureAnalysis {
+  threshold_analysis: string;
+  bridge_feasibility: string;
+  recommended_placement: string;
+  powerline_moca: string;
+  cost_estimate: string;
+  corvus_assessment: string;
+}
+
 interface AnalysisResult {
   identified_ssid: string | null;
   router_vendor: string | null;
@@ -58,6 +71,7 @@ interface AnalysisResult {
   full_findings: FullFinding[];
   recommendations: string[];
   corvus_summary: string;
+  cross_structure_analysis?: CrossStructureAnalysis;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -83,16 +97,31 @@ const LOCATION_TYPES = [
 ];
 
 const LOCATION_NAME_PLACEHOLDERS: Record<string, string> = {
-  "Home":       "e.g. Living Room, Master Bedroom, Home Office, Garage, Back Yard",
-  "Office":     "e.g. Reception, Conference Room A, Server Room, Break Room, Floor 2",
-  "Church":     "e.g. Sanctuary, Fellowship Hall, Nursery, Offices, Parking Lot",
-  "Restaurant": "e.g. Dining Room, Bar, Kitchen, Patio, Host Stand",
+  "Home":       "e.g. Main House Living Room, Master Bedroom, Man Cave, Workshop, Detached Garage, Back Patio, Pool Area, Driveway",
+  "Office":     "e.g. Main Office, Warehouse Floor, Loading Dock, Parking Lot, Guard Shack, Detached Storage",
+  "Church":     "e.g. Main Sanctuary, Fellowship Hall, Detached Youth Building, Covered Pavilion, Parking Lot North, Parking Lot South",
+  "Restaurant": "e.g. Main Dining, Bar, Kitchen, Front Patio, Back Patio, Parking Lot, Drive-Through Lane",
   "RV Park":    "e.g. Site 1, Clubhouse, Pool Area, Office, Back Loop",
   "Marina":     "e.g. Dock A, Clubhouse, Fuel Dock, Dry Storage, Office",
   "School":     "e.g. Classroom 1, Library, Gymnasium, Cafeteria, Main Office",
   "Medical":    "e.g. Waiting Room, Exam Room 1, Nurses Station, Lab, Reception",
   "Other":      "e.g. Location 1, Location 2, Location 3",
 };
+
+const LOCATION_TYPE_OPTIONS = [
+  "Indoor \u2014 Main Structure",
+  "Indoor \u2014 Detached Structure",
+  "Outdoor \u2014 Connected to Main",
+  "Outdoor \u2014 Standalone Area",
+  "Transition Zone (doorway/hallway between structures)",
+];
+
+const STRUCTURE_REL_OPTIONS = [
+  "Primary Structure",
+  "Detached Structure",
+  "Outdoor Area",
+  "Mixed/Transition",
+];
 
 const UPLOAD_SLOTS: { id: UploadSlot; label: string; description: string }[] = [
   {
@@ -397,6 +426,12 @@ export default function CrowsEyeClient() {
   // Full Reckoning info collapsible
   const [reckInfoOpen, setReckInfoOpen] = useState(false);
 
+  // Hybrid property mode
+  const [isHybrid, setIsHybrid] = useState(false);
+
+  // Site overview (Full Reckoning)
+  const [siteOverview, setSiteOverview] = useState("");
+
   // Placeholder: logged-in member who has used monthly credits (wire to auth later)
   const [loggedInMember] = useState(false);
 
@@ -420,6 +455,11 @@ export default function CrowsEyeClient() {
     lines.push("Analyzing 5\u202FGHz band coverage topology\u2026");
     if (mode === "site") {
       lines.push(`Cross-referencing ${locations.length} location${locations.length !== 1 ? "s" : ""}\u2026`);
+      if (isHybrid) {
+        lines.push("Analyzing cross-structure signal relationships\u2026");
+        lines.push("Mapping dead zones at structural thresholds\u2026");
+        lines.push("Evaluating bridge and access point placement options\u2026");
+      }
     }
     if (ssid) lines.push(`Identifying router vendor from ${ssid}\u2026`);
     lines.push("Cataloging interference sources\u2026");
@@ -428,7 +468,34 @@ export default function CrowsEyeClient() {
     lines.push("Building step-by-step remediation plan\u2026");
     lines.push("Rendering the Verdict\u2026");
     return lines;
-  }, [ssid, mode, locations.length]);
+  }, [ssid, mode, locations.length, isHybrid]);
+
+  // Derived counts and pricing for Full Reckoning
+  const detachedCount = useMemo(
+    () => locations.filter((l) => l.structureRel === "Detached Structure").length,
+    [locations]
+  );
+
+  const reckoningPrice = useMemo(() => {
+    const tierPrice = locations.length <= 5 ? 150 : locations.length <= 15 ? 350 : 750;
+    if (isHybrid && detachedCount >= 1) {
+      const hybridPrice = 350 + Math.max(0, detachedCount - 1) * 50;
+      return Math.max(tierPrice, hybridPrice);
+    }
+    return tierPrice;
+  }, [locations.length, isHybrid, detachedCount]);
+
+  const reckoningLabel = useMemo(() => {
+    if (isHybrid && detachedCount >= 1) {
+      const extras = Math.max(0, detachedCount - 1);
+      return extras > 0
+        ? `Hybrid Property \u2014 $${reckoningPrice} ($350 + ${extras} extra detached \xd7 $50)`
+        : "Hybrid Property \u2014 $350";
+    }
+    if (locations.length <= 5) return "Small Site \u2014 $150";
+    if (locations.length <= 15) return "Standard Site \u2014 $350";
+    return "Commercial Site \u2014 $750";
+  }, [locations.length, isHybrid, detachedCount, reckoningPrice]);
 
   // Auto-skip missing teaser 2
   useEffect(() => {
@@ -556,12 +623,21 @@ export default function CrowsEyeClient() {
                 mimeTypes[slot] = loc.files[slot]!.type || "image/jpeg";
               }
             }
-            return { name: loc.name.trim() || `Location ${idx + 1}`, images, mimeTypes };
+            return {
+              name: loc.name.trim() || `Location ${idx + 1}`,
+              locType: loc.locType,
+              structureRel: loc.structureRel,
+              images,
+              mimeTypes,
+            };
           })
         );
         bodyPayload = {
           mode: "site",
           locations: encodedLocations,
+          isHybrid,
+          siteOverview: siteOverview.trim(),
+          detachedCount,
           name,
           address: [street.trim(), suite.trim(), city.trim(), state, zip.trim()]
             .filter(Boolean)
@@ -651,6 +727,14 @@ export default function CrowsEyeClient() {
 
   function updateLocationName(id: string, val: string) {
     setLocations((prev) => prev.map((l) => l.id === id ? { ...l, name: val } : l));
+  }
+
+  function updateLocationLocType(id: string, val: string) {
+    setLocations((prev) => prev.map((l) => l.id === id ? { ...l, locType: val } : l));
+  }
+
+  function updateLocationStructureRel(id: string, val: string) {
+    setLocations((prev) => prev.map((l) => l.id === id ? { ...l, structureRel: val } : l));
   }
 
   function handleLocationFile(locId: string, slot: UploadSlot, f: File | null) {
@@ -995,6 +1079,43 @@ export default function CrowsEyeClient() {
       st(LGRAY); fn("italic", 9); txt(fwW, ML + 10, y + 18, 9);
       y += fwH + 14;
 
+      // ── CROSS-STRUCTURE ANALYSIS (hybrid Reckonings only) ────────────────
+      const csa = result.cross_structure_analysis;
+      if (csa) {
+        sectionBar("CROSS-STRUCTURE ANALYSIS");
+        y += 8;
+
+        const csaFields: { label: string; value: string }[] = [
+          { label: "SIGNAL AT THRESHOLDS", value: csa.threshold_analysis },
+          { label: "BRIDGE FEASIBILITY", value: csa.bridge_feasibility },
+          { label: "RECOMMENDED PLACEMENT", value: csa.recommended_placement },
+          { label: "POWERLINE / MoCA OPTIONS", value: csa.powerline_moca },
+          { label: "ESTIMATED COST RANGE", value: csa.cost_estimate },
+        ];
+
+        for (const { label, value } of csaFields) {
+          const valW = wrap(value, CW - 16);
+          const blockH = th(1, 7) + 4 + th(valW.length, 9) + 12;
+          ensure(blockH + 4);
+          sf(NAVYL); doc.rect(ML, y, CW, blockH, "F");
+          sf(TEAL);  doc.rect(ML, y, 3, blockH, "F");
+          st(GOLD);  fn("bold", 7);   txt(label, ML + 10, y + 6, 7);
+          st(LGRAY); fn("normal", 9); txt(valW, ML + 10, y + 6 + th(1, 7) + 4, 9);
+          y += blockH + 6;
+        }
+
+        // Corvus assessment of cross-structure situation
+        y += 4;
+        const csaAssessW = wrap(`\u201C${csa.corvus_assessment}\u201D`, CW - 24);
+        const csaAssessH = th(csaAssessW.length, 9) + 28;
+        ensure(csaAssessH + 8);
+        sf(NAVYL); doc.rect(ML, y, CW, csaAssessH, "F");
+        sf(CYAN);  doc.rect(ML, y, 3, csaAssessH, "F");
+        st(CYAN);  fn("bold", 7);   txt("CORVUS ON YOUR STRUCTURES", ML + 10, y + 8, 7);
+        st(LGRAY); fn("italic", 9); txt(csaAssessW, ML + 10, y + 18, 9);
+        y += csaAssessH + 14;
+      }
+
       // ── GOLD DIVIDER ──────────────────────────────────────────────────────
       ensure(4); sf(GOLD); doc.rect(0, y, PW, 2, "F"); y += 10;
 
@@ -1289,22 +1410,18 @@ export default function CrowsEyeClient() {
             ))}
           </div>
           {mode === "site" && (
-            <p className="mt-2 text-xs ocws-muted2">
-              Upload scans for each location on the property. Corvus synthesizes a site-wide assessment.{" "}
-              <span className="text-white/60 font-semibold">
-                {locations.length <= 5
-                  ? "Small Site \u2014 $150"
-                  : locations.length <= 15
-                  ? "Standard Site \u2014 $350"
-                  : "Commercial Site \u2014 $750"}
-              </span>{" "}
-              ({locations.length <= 5
-                ? "up to 5 locations"
-                : locations.length <= 15
-                ? "6\u201315 locations"
-                : "16+ locations"}){" "}
-              <span className="text-white/35">&middot; Nest members: first Small Reckoning per month included. Additional from $50.</span>
-            </p>
+            <div className="mt-2 space-y-1">
+              <p className="text-xs ocws-muted2">
+                Upload scans for each location on the property. Corvus synthesizes a site-wide assessment.{" "}
+                <span className="text-white/60 font-semibold">{reckoningLabel}</span>
+              </p>
+              {isHybrid && (
+                <p className="text-xs" style={{ color: "rgba(239,68,68,0.7)" }}>
+                  Properties with detached structures require a minimum Standard Reckoning ($350) due to the additional complexity of cross-structure signal analysis.
+                </p>
+              )}
+              <p className="text-xs text-white/30">Nest members: first Small Reckoning per month included. Additional from $50.</p>
+            </div>
           )}
         </div>
 
@@ -1349,6 +1466,57 @@ export default function CrowsEyeClient() {
         {/* Upload boxes — site mode */}
         {mode === "site" && (
         <div className="space-y-6">
+
+          {/* Site Overview textarea */}
+          <div>
+            <label className="block text-sm font-semibold text-white mb-1">
+              Site Overview <span className="text-white/40 font-normal">(optional but recommended)</span>
+            </label>
+            <textarea
+              value={siteOverview}
+              onChange={(e) => setSiteOverview(e.target.value)}
+              rows={3}
+              placeholder="e.g. Main house 2400 sq ft, detached 2-car garage with man cave above it 800 sq ft, covered back patio, pool area. Signal drops completely in the garage."
+              className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/20"
+            />
+            <p className="mt-1 text-xs ocws-muted2">Describe your property layout. Corvus uses this to understand relationships between structures.</p>
+          </div>
+
+          {/* Hybrid Property toggle */}
+          <div
+            className="rounded-2xl px-5 py-4"
+            style={{ border: `1px solid ${isHybrid ? "rgba(0,212,255,0.45)" : "rgba(255,255,255,0.10)"}`, background: isHybrid ? "rgba(0,212,255,0.06)" : "rgba(255,255,255,0.02)" }}
+          >
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-white">Hybrid Property</p>
+                <p className="text-xs ocws-muted2 mt-0.5">Enable if your property has detached structures — garages, workshops, man caves, outbuildings.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsHybrid((v) => !v)}
+                className="shrink-0 w-12 h-6 rounded-full transition-colors relative"
+                style={{ background: isHybrid ? "var(--ocws-cyan)" : "rgba(255,255,255,0.15)" }}
+                aria-pressed={isHybrid}
+              >
+                <span
+                  className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"
+                  style={{ transform: isHybrid ? "translateX(26px)" : "translateX(2px)" }}
+                />
+              </button>
+            </div>
+            {isHybrid && (
+              <div className="mt-3 text-xs ocws-accent-cyan leading-relaxed">
+                Hybrid property survey selected — Corvus will analyze signal relationships between all structures including dead zones, cross-structure bleed, and bridge placement recommendations.
+                {detachedCount > 0 && (
+                  <span className="block mt-1 text-white/50">
+                    {detachedCount} detached structure{detachedCount !== 1 ? "s" : ""} detected from location entries. Pricing: ${reckoningPrice}.
+                    {detachedCount > 1 && ` ($350 base + ${detachedCount - 1} extra × $50)`}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* How The Full Reckoning works — collapsible */}
           <div>
@@ -1446,33 +1614,62 @@ export default function CrowsEyeClient() {
               className="ocws-tile p-5 space-y-4"
               style={{ border: "1px solid rgba(0,212,255,0.15)" }}
             >
-              <div className="flex items-center gap-3">
-                <span
-                  className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-                  style={{
-                    background: "rgba(0,212,255,0.12)",
-                    border: "1px solid rgba(0,212,255,0.30)",
-                    color: "var(--ocws-cyan)",
-                  }}
-                >
-                  {idx + 1}
-                </span>
-                <input
-                  value={loc.name}
-                  onChange={(e) => updateLocationName(loc.id, e.target.value)}
-                  placeholder={LOCATION_NAME_PLACEHOLDERS[locationType] ?? `e.g. Location ${idx + 1}, Room, Floor, Area`}
-                  className="flex-1 rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
-                />
-                {locations.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeLocation(loc.id)}
-                    className="shrink-0 text-white/35 hover:text-red-400 transition text-xs"
-                    aria-label="Remove location"
+              <div className="space-y-3">
+                {/* Row 1: number badge + name + remove */}
+                <div className="flex items-center gap-3">
+                  <span
+                    className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+                    style={{
+                      background: "rgba(0,212,255,0.12)",
+                      border: "1px solid rgba(0,212,255,0.30)",
+                      color: "var(--ocws-cyan)",
+                    }}
                   >
-                    Remove
-                  </button>
-                )}
+                    {idx + 1}
+                  </span>
+                  <input
+                    value={loc.name}
+                    onChange={(e) => updateLocationName(loc.id, e.target.value)}
+                    placeholder={LOCATION_NAME_PLACEHOLDERS[locationType] ?? `e.g. Location ${idx + 1}, Room, Floor, Area`}
+                    className="flex-1 rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
+                  />
+                  {locations.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeLocation(loc.id)}
+                      className="shrink-0 text-white/35 hover:text-red-400 transition text-xs"
+                      aria-label="Remove location"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+
+                {/* Row 2: location type + structure relationship */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-10">
+                  <select
+                    value={loc.locType}
+                    onChange={(e) => updateLocationLocType(loc.id, e.target.value)}
+                    className="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+                    style={{ color: loc.locType ? "white" : "rgba(255,255,255,0.35)" }}
+                  >
+                    <option value="" disabled style={{ color: "rgba(255,255,255,0.35)", background: "#0d1117" }}>Location type…</option>
+                    {LOCATION_TYPE_OPTIONS.map((t) => (
+                      <option key={t} value={t} style={{ color: "white", background: "#0d1117" }}>{t}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={loc.structureRel}
+                    onChange={(e) => updateLocationStructureRel(loc.id, e.target.value)}
+                    className="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+                    style={{ color: loc.structureRel ? "white" : "rgba(255,255,255,0.35)" }}
+                  >
+                    <option value="" disabled style={{ color: "rgba(255,255,255,0.35)", background: "#0d1117" }}>Structure relationship…</option>
+                    {STRUCTURE_REL_OPTIONS.map((r) => (
+                      <option key={r} value={r} style={{ color: "white", background: "#0d1117" }}>{r}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {UPLOAD_SLOTS.map((slot) => (
@@ -1896,7 +2093,7 @@ export default function CrowsEyeClient() {
                     >
                       {mode === "single"
                         ? "Get the Full Verdict \u2014 $50"
-                        : `Get the Full Reckoning \u2014 ${locations.length <= 5 ? "$150" : locations.length <= 15 ? "$350" : "$750"}`}
+                        : `Get the Full Reckoning \u2014 $${reckoningPrice}`}
                     </button>
                     <button
                       onClick={handleDemoVerdict}
@@ -2184,6 +2381,34 @@ export default function CrowsEyeClient() {
                         </li>
                       ))}
                     </ol>
+                  </div>
+                )}
+
+                {/* Cross-Structure Analysis (hybrid only) */}
+                {verdictStep >= result.full_findings.length && result.cross_structure_analysis && (
+                  <div className="ocws-tile p-6 space-y-5" style={{ borderLeft: "3px solid var(--ocws-cyan)" }}>
+                    <p className="text-xs font-semibold uppercase tracking-widest ocws-accent-cyan">
+                      Cross-Structure Analysis
+                    </p>
+                    {[
+                      { label: "Signal at Thresholds", value: result.cross_structure_analysis.threshold_analysis },
+                      { label: "Bridge Feasibility", value: result.cross_structure_analysis.bridge_feasibility },
+                      { label: "Recommended Placement", value: result.cross_structure_analysis.recommended_placement },
+                      { label: "Powerline / MoCA Options", value: result.cross_structure_analysis.powerline_moca },
+                      { label: "Estimated Cost Range", value: result.cross_structure_analysis.cost_estimate },
+                    ].map(({ label, value }) => (
+                      <div key={label}>
+                        <p className="text-xs font-semibold text-white/60 uppercase tracking-widest mb-1">{label}</p>
+                        <p className="ocws-muted text-sm leading-relaxed">{value}</p>
+                      </div>
+                    ))}
+                    <div
+                      className="rounded-xl px-4 py-3 text-sm italic leading-relaxed"
+                      style={{ borderLeft: "3px solid var(--ocws-cyan)", background: "rgba(0,212,255,0.04)" }}
+                    >
+                      <span className="ocws-accent-cyan font-semibold not-italic">Corvus: </span>
+                      <span className="text-white/80">&ldquo;{result.cross_structure_analysis.corvus_assessment}&rdquo;</span>
+                    </div>
                   </div>
                 )}
 

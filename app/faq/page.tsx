@@ -62,6 +62,18 @@ const FAQS = [
     a: "Yes. The OCWS Pro Certified Reckoning includes Joshua Turner personally reviewing and certifying every finding. The certified report is valid for compliance documentation, insurance claims, board presentations, and vendor quotes. $1,500 for any size facility. Contact OCWS to request one.",
   },
   {
+    q: "Can Crow's Eye handle properties with detached structures like garages, workshops, or man caves?",
+    a: "Yes — this is exactly what The Full Reckoning was built for. Enable the Hybrid Property option when setting up your Reckoning, then add each structure as its own location group. Corvus analyzes signal relationships between all structures, identifies dead zones at thresholds and transition areas, and delivers specific recommendations for bridging coverage between buildings. Hybrid property surveys start at $350.",
+  },
+  {
+    q: "I have a main house, a detached garage with a man cave, and a pool area. How do I set up my Reckoning?",
+    a: "Enable Hybrid Property mode, then add locations for each area — Living Room, Kitchen, Master Bedroom for the main house; Man Cave, Garage Floor for the detached structure; Pool Deck, Patio for the outdoor area. Label each with its structure type. Corvus will map signal behavior across all three zones and tell you exactly where coverage breaks down and how to fix it. Standard Reckoning pricing applies ($350) plus $50 for each additional detached structure beyond the first.",
+  },
+  {
+    q: "What is a transition zone?",
+    a: "A transition zone is any area between two structures — a covered walkway, a breezeway, a doorway between a house and an attached garage, or the open air between a main building and a detached structure. These are where Wi-Fi coverage most commonly fails. Corvus specifically analyzes transition zones in hybrid surveys and tells you exactly where to place equipment to eliminate dead zones.",
+  },
+  {
     q: "Will this work for my home?",
     a: "Absolutely. Most of our users are homeowners frustrated with Wi-Fi performance that their ISP can't explain. Corvus was designed from the ground up to give real people real answers — not vague advice like 'try restarting your router.'",
   },
