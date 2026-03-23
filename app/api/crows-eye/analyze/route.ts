@@ -197,7 +197,6 @@ export async function POST(req: Request) {
       honeypot: string;
     };
 
-    // TODO: replace honeypot with reCAPTCHA once key issue resolved
     // Honeypot check — real users leave this field empty; bots fill it in
     if (honeypot) {
       return Response.json(

@@ -384,7 +384,6 @@ export default function CrowsEyeClient() {
   const [ssid, setSsid] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  // TODO: replace honeypot with reCAPTCHA once key issue resolved
   const [honeypot, setHoneypot] = useState("");
 
   // Phase: form → analyzing → free_result → full_verdict
