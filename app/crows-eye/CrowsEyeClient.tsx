@@ -379,6 +379,12 @@ export default function CrowsEyeClient() {
   const [subCode, setSubCode] = useState("");
   const [subCodeStatus, setSubCodeStatus] = useState<null | "valid" | "invalid">(null);
 
+  // Pricing info collapsible
+  const [pricingOpen, setPricingOpen] = useState(false);
+
+  // Placeholder: logged-in member who has used monthly credits (wire to auth later)
+  const [loggedInMember] = useState(false);
+
   // PDF generation
   const [pdfGenerating, setPdfGenerating] = useState(false);
 
@@ -594,9 +600,9 @@ export default function CrowsEyeClient() {
     runAnalysis();
   }
 
-  function handleStripePayment() {
+  function handleStripePayment(product = "verdict") {
     if (honeypot) return; // bot trap
-    console.log("Stripe payment triggered");
+    console.log("Stripe payment triggered:", product);
     // Wire real Stripe here later
   }
 
@@ -1036,6 +1042,50 @@ export default function CrowsEyeClient() {
           you have a Wi-Fi problem, Corvus can read your environment and tell you
           exactly what&rsquo;s wrong.
         </p>
+      </div>
+
+      {/* ── PRICING INFO COLLAPSIBLE ─────────────────────────────────────── */}
+      <div className="mb-10">
+        <button
+          type="button"
+          onClick={() => setPricingOpen((v) => !v)}
+          className="w-full flex items-center justify-between px-5 py-4 rounded-2xl text-left transition"
+          style={{ border: "1px solid rgba(0,212,255,0.30)", background: "rgba(0,212,255,0.05)" }}
+        >
+          <span className="text-sm font-semibold ocws-accent-cyan">How Crow&rsquo;s Eye pricing works</span>
+          <svg
+            width="16" height="16" viewBox="0 0 16 16" fill="none"
+            className="transition-transform duration-200 shrink-0"
+            style={{ transform: pricingOpen ? "rotate(180deg)" : "rotate(0deg)", color: "var(--ocws-cyan)" }}
+          >
+            <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        {pricingOpen && (
+          <div
+            className="rounded-b-2xl px-5 py-5 text-sm leading-relaxed space-y-4"
+            style={{ border: "1px solid rgba(0,212,255,0.30)", borderTop: "none", background: "rgba(0,0,0,0.25)" }}
+          >
+            <div>
+              <p className="text-white font-semibold mb-1">Single Verdict &mdash; $50</p>
+              <p className="ocws-muted">Get one full Corvus analysis immediately. No account required. Best for one-time fixes.</p>
+            </div>
+            <div>
+              <p className="text-white font-semibold mb-1">Nest Membership &mdash; $19/mo</p>
+              <p className="ocws-muted">Get 3 Verdicts per month included. New accounts unlock first Verdict after 24 hours &mdash; Corvus needs time to properly calibrate. Monthly plan requires 3-month minimum commitment. Cancel anytime after 90 days. Annual plan ($149/yr) has no minimum &mdash; save $79 and cancel anytime.</p>
+            </div>
+            <div>
+              <p className="text-white font-semibold mb-1">Need more than 3 per month?</p>
+              <p className="ocws-muted mb-1">Buy extra Verdict credits anytime:</p>
+              <ul className="ocws-muted space-y-0.5">
+                <li>&middot; Single credit: $15</li>
+                <li>&middot; 6-pack: $75 <span className="text-white/40">(save $15)</span></li>
+                <li>&middot; 12-pack: $120 <span className="text-white/40">(save $60)</span></li>
+              </ul>
+            </div>
+            <p className="ocws-muted">Flock members ($99/mo) get 15 Verdicts per month and extra credits at $10 each. Murder members ($249/mo) get unlimited Verdicts with no credit limits.</p>
+          </div>
+        )}
       </div>
 
       {/* ── HOW TO GET YOUR SCANS ─────────────────────────────────────────── */}
@@ -1726,7 +1776,7 @@ export default function CrowsEyeClient() {
                 <div className="flex flex-col items-center gap-4">
                   <div className="flex flex-col sm:flex-row gap-3 justify-center w-full sm:w-auto">
                     <button
-                      onClick={handleStripePayment}
+                      onClick={() => handleStripePayment("verdict")}
                       className="w-full sm:w-auto rounded-2xl px-8 py-4 text-base font-bold tracking-tight transition min-h-[56px]"
                       style={{
                         background: "linear-gradient(135deg, #d6b25e, #b8943e)",
@@ -1745,6 +1795,53 @@ export default function CrowsEyeClient() {
                       Demo: See Full Verdict
                     </button>
                   </div>
+
+                  {/* Nest membership note + extra credit purchase (for non-members) */}
+                  {!loggedInMember && mode === "single" && (
+                    <p className="text-xs text-white/40 max-w-xs text-center">
+                      Or{" "}
+                      <a href="/waitlist" className="underline underline-offset-2 text-white/55 hover:text-white/80 transition">
+                        join Nest for $19/mo
+                      </a>{" "}
+                      and get 3 Verdicts per month included. New accounts unlock first Verdict after 24 hours.
+                    </p>
+                  )}
+
+                  {/* Extra credit purchase — shown when logged-in member has used monthly credits */}
+                  {loggedInMember && (
+                    <div className="w-full max-w-sm space-y-3">
+                      <p className="text-xs font-semibold uppercase tracking-widest text-white/50 text-center">Extra Verdict Credits</p>
+                      <div className="flex flex-col gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleStripePayment("credit_single")}
+                          className="w-full rounded-xl px-5 py-3 text-sm font-semibold transition text-left flex justify-between items-center"
+                          style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.25)", color: "var(--ocws-cyan)" }}
+                        >
+                          <span>Single credit</span>
+                          <span className="font-bold">$15</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleStripePayment("credit_6pack")}
+                          className="w-full rounded-xl px-5 py-3 text-sm font-semibold transition text-left flex justify-between items-center"
+                          style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.25)", color: "var(--ocws-cyan)" }}
+                        >
+                          <span>6-pack <span className="text-white/40 font-normal">(save $15)</span></span>
+                          <span className="font-bold">$75</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleStripePayment("credit_12pack")}
+                          className="w-full rounded-xl px-5 py-3 text-sm font-semibold transition text-left flex justify-between items-center"
+                          style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.25)", color: "var(--ocws-cyan)" }}
+                        >
+                          <span>12-pack <span className="text-white/40 font-normal">(save $60)</span></span>
+                          <span className="font-bold">$120</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Subscriber code */}
                   {!showSubCode && subCodeStatus !== "valid" && (

@@ -53,7 +53,7 @@ function WaitlistModal({
         className="w-full max-w-md rounded-2xl p-6 shadow-2xl"
         style={{ background: "#1A2332", border: "1px solid #0D6E7A" }}
       >
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center justify-between mb-1">
           <h2 className="text-lg font-bold text-white">Join the Waitlist — {tier}</h2>
           <button
             type="button"
@@ -63,6 +63,11 @@ function WaitlistModal({
             ×
           </button>
         </div>
+        <p className="text-xs mb-5" style={{ color: "#666" }}>
+          {tier === "Nest" && "Monthly plan: $57 minimum (3 months) · Annual plan: $149/yr no minimum"}
+          {tier === "Flock" && "Monthly plan: 3-month minimum · Annual plan: $899/yr"}
+          {tier === "Murder" && "Monthly plan: 3-month minimum · Annual plan: $1,999/yr"}
+        </p>
 
         {status === "sent" ? (
           <div className="text-center py-8">
@@ -171,7 +176,9 @@ const tiers = [
     priceAlt: "or $149/yr",
     tagline: "For homeowners and small businesses",
     features: [
-      "Unlimited Corvus Verdicts",
+      "3 Verdicts per month included",
+      "First Verdict unlocks 24 hours after signup",
+      "Extra Verdicts available at $15 each",
       "Signal List analysis",
       "Channel congestion detection",
       "Router-specific fix instructions",
@@ -179,6 +186,7 @@ const tiers = [
       "PDF report download",
       "Email support",
     ],
+    note: "3-month minimum on monthly plan ($57 minimum charge) · Cancel anytime after 90 days",
     featured: false,
   },
   {
@@ -189,6 +197,8 @@ const tiers = [
     priceAlt: "or $899/yr",
     tagline: "For MSPs and IT consultants",
     features: [
+      "15 Verdicts per month included",
+      "Extra Verdicts at $10 each",
       "Everything in Nest",
       "Multi-seat up to 5 users",
       "White-label PDF reports",
@@ -196,6 +206,7 @@ const tiers = [
       "Priority support",
       "Client management dashboard",
     ],
+    note: "3-month minimum on monthly plan",
     featured: true,
     badge: "Most Popular",
   },
@@ -207,6 +218,8 @@ const tiers = [
     priceAlt: "or $1,999/yr",
     tagline: "For RF engineers and power users",
     features: [
+      "Unlimited Verdicts",
+      "No credit limits ever",
       "Everything in Flock",
       "Unlimited seats",
       "Full design suite",
@@ -215,6 +228,7 @@ const tiers = [
       "Dedicated support",
       "OCWS certified training",
     ],
+    note: "3-month minimum on monthly plan",
     featured: false,
   },
 ];
@@ -271,7 +285,7 @@ export default function TiersSection() {
                 <p className="mt-2 text-xs" style={{ color: "#888" }}>{tier.tagline}</p>
               </div>
 
-              <ul className="flex-1 space-y-2 mb-6">
+              <ul className="flex-1 space-y-2 mb-4">
                 {tier.features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-xs" style={{ color: "#aaa" }}>
                     <span style={{ color: "#00C2C7", flexShrink: 0, marginTop: "2px" }}>✓</span>
@@ -280,10 +294,17 @@ export default function TiersSection() {
                 ))}
               </ul>
 
+              {"note" in tier && tier.note && (
+                <p className="text-[10px] mb-4 leading-relaxed" style={{ color: "#666" }}>
+                  {tier.note as string}
+                </p>
+              )}
+
               <button
                 type="button"
                 onClick={() => setOpenModal(tier.id)}
                 className="w-full inline-flex items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition"
+                title={"note" in tier && tier.id !== "Murder" ? "Monthly plan requires 3-month minimum commitment" : undefined}
                 style={{
                   background: tier.featured ? "#00C2C7" : "transparent",
                   color: tier.featured ? "#0D1520" : "#00C2C7",

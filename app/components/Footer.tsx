@@ -55,8 +55,9 @@ export default function Footer() {
             <h4 className="text-sm font-semibold mb-3" style={{ color: "#00C2C7" }}>Get Started</h4>
             <ul className="space-y-2 text-sm">
               <li><Link href="/crows-eye" className="text-white/50 hover:text-white transition">Free Analysis</Link></li>
-              <li><Link href="/crows-eye" className="text-white/50 hover:text-white transition">Corvus&rsquo; Verdict &mdash; $50</Link></li>
+              <li><Link href="/crows-eye" className="text-white/50 hover:text-white transition">Single Verdict &mdash; $50</Link></li>
               <li><Link href="/crows-eye" className="text-white/50 hover:text-white transition">Full Reckoning &mdash; $150+</Link></li>
+              <li><Link href="/crows-eye" className="text-white/50 hover:text-white transition">Extra Credits &mdash; from $15</Link></li>
               <li><Link href="/contact" className="text-white/50 hover:text-white transition">OCWS Pro &mdash; $750</Link></li>
               <li><Link href="/waitlist" className="text-white/50 hover:text-white transition">Join Waitlist</Link></li>
             </ul>

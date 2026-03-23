@@ -19,7 +19,27 @@ const FAQS = [
   },
   {
     q: "How much does Corvus' Verdict cost?",
-    a: "The initial analysis is free. Corvus will tell you how many problems he found and give you a teaser of what he saw. The full Verdict — all findings, all fixes, step-by-step router instructions specific to your equipment, and a branded PDF — is $50.",
+    a: "The initial analysis is free. Corvus will tell you how many problems he found and give you a teaser of what he saw. The full Verdict — all findings, all fixes, step-by-step router instructions specific to your equipment, and a branded PDF — is $50. Nest members ($19/mo) get 3 Verdicts per month included.",
+  },
+  {
+    q: "How many Verdicts do I get per month?",
+    a: "A single purchase gives you one Verdict immediately for $50. Nest membership includes 3 Verdicts per month. Flock includes 15 per month. Murder is unlimited. Extra credits are available for purchase at any time — $15 each for Nest members, $10 each for Flock members.",
+  },
+  {
+    q: "Why does my first Nest Verdict take 24 hours?",
+    a: "New Nest accounts unlock their first Verdict 24 hours after signup. This gives Corvus time to properly calibrate to your environment and ensures the best possible analysis. If you need an immediate Verdict, a single purchase is available for $50 — no waiting.",
+  },
+  {
+    q: "Can I cancel my Nest membership?",
+    a: "Monthly Nest plans require a 3-month minimum commitment — your first charge covers 3 months at $57. After 90 days you can cancel anytime with no penalty. The annual plan ($149/yr) has no minimum commitment and can be cancelled for a prorated refund.",
+  },
+  {
+    q: "What if I need more than 3 Verdicts in a month?",
+    a: "Buy extra Verdict credits anytime from your account dashboard. Single credits are $15 for Nest members. 6-pack is $75 (saves $15). 12-pack is $120 (saves $60). Credits never expire and roll over month to month.",
+  },
+  {
+    q: "Why is a single Verdict $50 but extra credits are only $15 for Nest members?",
+    a: "The $50 single Verdict is for people who need an immediate answer with no commitment. Nest members have already committed to the platform so extra credits are discounted to reward that loyalty. Think of it as the difference between a walk-in price and a member price.",
   },
   {
     q: "What is The Full Reckoning?",
