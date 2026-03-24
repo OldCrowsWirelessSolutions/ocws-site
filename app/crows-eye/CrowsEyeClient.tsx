@@ -522,8 +522,10 @@ export default function CrowsEyeClient() {
   }, [locations.length, isHybrid, detachedCount, reckoningPrice]);
 
   // Restore result after Stripe payment redirect (?verdict=unlocked)
+  // Also handles ?reckoning=small|standard|commercial|pro pre-configuration
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+
     if (params.get("verdict") === "unlocked") {
       try {
         const saved = sessionStorage.getItem("corvus_pending_result");
@@ -540,6 +542,26 @@ export default function CrowsEyeClient() {
           window.history.replaceState({}, "", url.toString());
         }
       } catch { /* ignore */ }
+    }
+
+    // Pre-configure for a selected reckoning tier
+    const reckoning = params.get("reckoning");
+    if (reckoning) {
+      const locationCounts: Record<string, number> = {
+        small: 5,
+        standard: 6,
+        commercial: 16,
+        pro: 16,
+      };
+      const count = locationCounts[reckoning];
+      if (count) {
+        setMode("site");
+        setLocations(Array.from({ length: count }, () => makeEmptyLocation()));
+      }
+      // Clean up the param so refreshing doesn't re-trigger
+      const url = new URL(window.location.href);
+      url.searchParams.delete("reckoning");
+      window.history.replaceState({}, "", url.toString());
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

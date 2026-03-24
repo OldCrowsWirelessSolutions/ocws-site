@@ -407,10 +407,10 @@ export default function HomePage() {
               </p>
 
               <p className="text-base leading-relaxed mb-4" style={{ color: "#aaa" }}>
-                In October 2025 our house caught fire. My wife couldn&rsquo;t get a cell signal to
-                call for help. I explained that superheated metal wiring changes the magnetic field.
-                She asked how I knew. The Navy taught me. Old Crows Wireless Solutions was born that
-                night.
+                In October 2025 our house caught fire. During the cleanup, my wife noticed she
+                couldn&rsquo;t get a cell signal anywhere near the structure. She didn&rsquo;t know
+                why. I did &mdash; superheated metal wiring changes the magnetic field. The Navy
+                taught me that. Old Crows Wireless Solutions was born that night.
               </p>
               <p className="text-base leading-relaxed mb-6" style={{ color: "#aaa" }}>
                 The name is a homage to the Association of Old Crows — the fraternal organization of

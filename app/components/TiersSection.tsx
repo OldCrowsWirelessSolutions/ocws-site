@@ -1,6 +1,7 @@
 // app/components/TiersSection.tsx
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 type Tier = "Nest" | "Flock" | "Murder";
@@ -14,6 +15,7 @@ function WaitlistModal({
 }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
   const [honeypot, setHoneypot] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
@@ -31,7 +33,7 @@ function WaitlistModal({
       const res = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, tier, message, honeypot }),
+        body: JSON.stringify({ name, email, phone, tier, message, honeypot }),
       });
       const data = await res.json() as { success?: boolean; error?: string };
       if (!res.ok || !data.success) throw new Error(data.error || "Failed");
@@ -119,6 +121,21 @@ function WaitlistModal({
                 className="w-full rounded-xl px-4 py-3 text-white text-sm focus:outline-none"
                 style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.1)" }}
                 autoComplete="email"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1 text-white">
+                Phone <span style={{ color: "#888" }}>(optional)</span>
+              </label>
+              <input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                type="tel"
+                className="w-full rounded-xl px-4 py-3 text-white text-sm focus:outline-none"
+                style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.1)" }}
+                autoComplete="tel"
+                placeholder="(850) 555-0100"
               />
             </div>
 
@@ -382,14 +399,15 @@ export default function TiersSection() {
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             {[
-              { name: "Small Reckoning", size: "Up to 5 locations", price: "$150" },
-              { name: "Standard Reckoning", size: "6–15 locations", price: "$350" },
-              { name: "Commercial Reckoning", size: "16+ locations", price: "$750" },
-              { name: "Pro Certified Reckoning", size: "Any size · Joshua certifies", price: "$1,500", gold: true },
+              { name: "Small Reckoning", size: "Up to 5 locations", price: "$150", href: "/crows-eye?reckoning=small" },
+              { name: "Standard Reckoning", size: "6–15 locations", price: "$350", href: "/crows-eye?reckoning=standard" },
+              { name: "Commercial Reckoning", size: "16+ locations", price: "$750", href: "/crows-eye?reckoning=commercial" },
+              { name: "Pro Certified Reckoning", size: "Any size · Joshua certifies", price: "$1,500", gold: true, href: "/crows-eye?reckoning=pro" },
             ].map((r) => (
-              <div
+              <Link
                 key={r.name}
-                className="rounded-xl p-4"
+                href={r.href}
+                className={`block rounded-xl p-4 cursor-pointer ${r.gold ? "ocws-glow-hover-gold" : "ocws-card-glow"}`}
                 style={{
                   background: "rgba(0,0,0,0.2)",
                   border: `1px solid ${r.gold ? "#B8922A" : "rgba(255,255,255,0.08)"}`,
@@ -398,7 +416,10 @@ export default function TiersSection() {
                 <p className="text-sm font-bold text-white mb-0.5">{r.name}</p>
                 <p className="text-xs mb-2" style={{ color: "#888" }}>{r.size}</p>
                 <p className="text-xl font-bold" style={{ color: r.gold ? "#B8922A" : "#00C2C7" }}>{r.price}</p>
-              </div>
+                <p className="text-xs mt-2 font-semibold" style={{ color: r.gold ? "rgba(184,146,42,0.7)" : "rgba(0,194,199,0.6)" }}>
+                  Start here →
+                </p>
+              </Link>
             ))}
           </div>
         </div>

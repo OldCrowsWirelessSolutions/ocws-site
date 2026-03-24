@@ -55,12 +55,13 @@ export default function AboutPage() {
             </p>
 
             <p className="text-base leading-relaxed mb-4" style={{ color: "#aaa" }}>
-              In October 2025 our house caught fire. My wife couldn&rsquo;t get a cell signal to call
-              for help. I explained that superheated metal wiring changes the magnetic field and
-              disrupts the RF environment. She asked how I knew that. The Navy taught me.
+              In October 2025 our house caught fire. During the cleanup, my wife noticed she
+              couldn&rsquo;t get a cell signal anywhere near the structure. She didn&rsquo;t know
+              why. I did &mdash; superheated metal wiring changes the magnetic field. The Navy
+              taught me that. Old Crows Wireless Solutions was born that night.
             </p>
             <p className="text-base leading-relaxed mb-4" style={{ color: "#aaa" }}>
-              Old Crows Wireless Solutions was born that night. The mission is simple: give real
+              The mission is simple: give real
               people the wireless clarity that engineers have always had. No guessing. No vague ISP
               advice. Measured findings, plain-English explanations, and fix instructions that
               actually work.
