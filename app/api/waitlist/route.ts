@@ -26,27 +26,41 @@ function tierToTab(tier: string): string {
 }
 
 async function appendToGoogleSheet(row: string[], tier: string) {
-  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-  const privateKey  = (process.env.GOOGLE_PRIVATE_KEY ?? "")
-    .replace(/\\n/g, "\n")
-    .replace(/"/g, "");
-  const sheetId     = process.env.GOOGLE_SHEET_ID;
+  const sheetId = process.env.GOOGLE_SHEET_ID;
 
-  if (!clientEmail || !privateKey || !sheetId) {
+  if (
+    !process.env.GOOGLE_CLIENT_EMAIL ||
+    !process.env.GOOGLE_PRIVATE_KEY ||
+    !sheetId
+  ) {
     console.log("Google Sheets env vars not configured — skipping sheet append.");
     return;
   }
 
-  console.log("SHEETS DEBUG - Sheet ID:", sheetId?.slice(0, 8));
-  console.log("SHEETS DEBUG - Client email prefix:", clientEmail?.split("@")[0]);
-  console.log("SHEETS DEBUG - Private key starts with:", privateKey?.slice(0, 27));
+  const privateKey = (process.env.GOOGLE_PRIVATE_KEY)
+    .replace(/\\n/g, "\n")
+    .replace(/"/g, "");
+
+  console.log("SHEETS DEBUG - Sheet ID:", sheetId.slice(0, 8));
+  console.log("SHEETS DEBUG - Client email prefix:", process.env.GOOGLE_CLIENT_EMAIL.split("@")[0]);
   console.log("SHEETS DEBUG - Private key first real line:", privateKey.split("\n")[1]?.slice(0, 10));
 
+  const credentials = {
+    type: "service_account",
+    project_id: "my-project-7323-1774217401680",
+    private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
+    private_key: privateKey,
+    client_email: process.env.GOOGLE_CLIENT_EMAIL,
+    client_id: process.env.GOOGLE_CLIENT_ID,
+    auth_uri: "https://accounts.google.com/o/oauth2/auth",
+    token_uri: "https://oauth2.googleapis.com/token",
+    auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+    client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${encodeURIComponent(process.env.GOOGLE_CLIENT_EMAIL)}`,
+    universe_domain: "googleapis.com",
+  };
+
   const auth = new google.auth.GoogleAuth({
-    credentials: {
-      client_email: clientEmail,
-      private_key:  privateKey,
-    },
+    credentials,
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
 
