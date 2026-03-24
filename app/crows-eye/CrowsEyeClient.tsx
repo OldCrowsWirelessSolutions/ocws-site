@@ -450,6 +450,7 @@ export default function CrowsEyeClient() {
   const [accessCodeInput, setAccessCodeInput] = useState("");
   const [accessCodeStatus, setAccessCodeStatus] = useState<null | "valid" | "invalid">(null);
   const [accessCodeValidating, setAccessCodeValidating] = useState(false);
+  const [accessCodeVisible, setAccessCodeVisible] = useState(false);
   const [appliedCode, setAppliedCode] = useState<{
     type: "founder" | "admin" | "subscriber" | "promo";
     name?: string;
@@ -1509,15 +1510,27 @@ export default function CrowsEyeClient() {
             </label>
             <div className="flex gap-2">
               <div className="flex-1">
-                <input
-                  type="text"
-                  value={accessCodeInput}
-                  onChange={(e) => { setAccessCodeInput(e.target.value); setAccessCodeStatus(null); }}
-                  onKeyDown={(e) => e.key === "Enter" && handleApplyCode()}
-                  placeholder="Enter your Subscription ID"
-                  className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
-                  style={{ background: "rgba(0,0,0,0.3)", border: `1px solid ${accessCodeStatus === "invalid" ? "rgba(239,68,68,0.5)" : "rgba(255,255,255,0.1)"}` }}
-                />
+                <div className="relative">
+                  <input
+                    type={accessCodeVisible ? "text" : "password"}
+                    value={accessCodeInput}
+                    onChange={(e) => { setAccessCodeInput(e.target.value); setAccessCodeStatus(null); }}
+                    onKeyDown={(e) => e.key === "Enter" && handleApplyCode()}
+                    placeholder="Enter your Subscription ID"
+                    autoComplete="off"
+                    className="w-full rounded-xl px-4 py-3 pr-16 text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
+                    style={{ background: "rgba(0,0,0,0.3)", border: `1px solid ${accessCodeStatus === "invalid" ? "rgba(239,68,68,0.5)" : "rgba(255,255,255,0.1)"}` }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setAccessCodeVisible((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium transition"
+                    style={{ color: "rgba(255,255,255,0.35)" }}
+                    aria-label={accessCodeVisible ? "Hide subscription ID" : "Show subscription ID"}
+                  >
+                    {accessCodeVisible ? "Hide" : "Show"}
+                  </button>
+                </div>
                 {accessCodeStatus === "invalid" ? (
                   <p className="mt-1 text-xs text-red-400">Invalid Subscription ID. Check your entry and try again.</p>
                 ) : (
