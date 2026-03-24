@@ -27,7 +27,9 @@ function tierToTab(tier: string): string {
 
 async function appendToGoogleSheet(row: string[], tier: string) {
   const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-  const privateKey  = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  const privateKey  = (process.env.GOOGLE_PRIVATE_KEY ?? "")
+    .replace(/\\n/g, "\n")
+    .replace(/"/g, "");
   const sheetId     = process.env.GOOGLE_SHEET_ID;
 
   if (!clientEmail || !privateKey || !sheetId) {
@@ -38,6 +40,7 @@ async function appendToGoogleSheet(row: string[], tier: string) {
   console.log("SHEETS DEBUG - Sheet ID:", sheetId?.slice(0, 8));
   console.log("SHEETS DEBUG - Client email prefix:", clientEmail?.split("@")[0]);
   console.log("SHEETS DEBUG - Private key starts with:", privateKey?.slice(0, 27));
+  console.log("SHEETS DEBUG - Private key first real line:", privateKey.split("\n")[1]?.slice(0, 10));
 
   const auth = new google.auth.GoogleAuth({
     credentials: {
