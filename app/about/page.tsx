@@ -1,6 +1,5 @@
 // app/about/page.tsx
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -31,21 +30,19 @@ export default function AboutPage() {
           {/* Bio photo */}
           <div className="shrink-0 w-full md:w-auto flex justify-center">
             <div
-              className="rounded-full overflow-hidden"
+              className="rounded-2xl overflow-hidden"
               style={{
-                width: "260px",
-                height: "260px",
-                border: "3px solid #B8922A",
-                boxShadow: "0 0 0 6px rgba(184,146,42,0.15), 0 8px 40px rgba(0,0,0,0.5)",
+                width: "300px",
+                height: "400px",
+                border: "2px solid #B8922A",
+                boxShadow: "0 0 0 6px rgba(184,146,42,0.12), 0 8px 40px rgba(0,0,0,0.5)",
               }}
             >
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src="/bio-picture.jpg"
                 alt="Joshua Turner — Founder, Old Crows Wireless Solutions"
-                width={260}
-                height={260}
-                className="object-cover w-full h-full"
-                priority
+                style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top", display: "block" }}
               />
             </div>
           </div>
