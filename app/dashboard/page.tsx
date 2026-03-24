@@ -1,0 +1,609 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
+import Link from "next/link";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type SubscriptionTier = "nest" | "flock" | "murder";
+
+interface ValidationResult {
+  valid: boolean;
+  type: "subscription" | "founder" | "admin" | "promo" | null;
+  tier?: SubscriptionTier;
+  customer_name?: string;
+  verdicts_remaining?: number;
+  verdicts_unlimited?: boolean;
+  reckonings_remaining?: { small: number; standard: number; commercial: number };
+  reckonings_unlimited?: { small: boolean; standard: boolean; commercial: boolean };
+  seat_limit?: number;
+  seats_used?: number;
+  error?: string;
+}
+
+interface SubDetails {
+  customer_email: string;
+  customer_name: string;
+  tier: SubscriptionTier;
+  status: string;
+  current_period_start: string | null;
+  current_period_end: string | null;
+  created_at: string;
+  verdicts_used: number;
+  reckonings_used: { small: number; standard: number; commercial: number };
+  extra_verdict_credits: number;
+}
+
+// ─── Tier config ─────────────────────────────────────────────────────────────
+
+type TierCfg = {
+  label: string;
+  color: string;
+  textColor: string;
+  monthlyVerdicts: number;
+  price: string;
+};
+
+const TIER_CONFIG: Record<SubscriptionTier, TierCfg> = {
+  nest: {
+    label: "NEST",
+    color: "#00C2C7",
+    textColor: "#0D1520",
+    monthlyVerdicts: 3,
+    price: "$20/mo",
+  },
+  flock: {
+    label: "FLOCK",
+    color: "#B8922A",
+    textColor: "#0D1520",
+    monthlyVerdicts: 15,
+    price: "$100/mo",
+  },
+  murder: {
+    label: "MURDER",
+    color: "#9B1C1C",
+    textColor: "#ffffff",
+    monthlyVerdicts: 999999,
+    price: "$950/mo",
+  },
+};
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function fmtDate(iso: string | null | undefined) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("en-US", {
+    year: "numeric", month: "long", day: "numeric",
+  });
+}
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  boxSizing: "border-box",
+  background: "#0D1520",
+  border: "1px solid rgba(255,255,255,0.12)",
+  borderRadius: "10px",
+  padding: "12px 14px",
+  color: "#ffffff",
+  fontSize: "14px",
+  fontFamily: "monospace",
+  letterSpacing: "0.08em",
+  outline: "none",
+};
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+export default function DashboardPage() {
+  const [phase, setPhase]         = useState<"loading" | "auth" | "dashboard">("loading");
+  const [codeInput, setCodeInput] = useState("");
+  const [validating, setValidating] = useState(false);
+  const [authError, setAuthError] = useState("");
+  const [codeVisible, setCodeVisible] = useState(false);
+  const [codeCopied, setCodeCopied]   = useState(false);
+  const [sub, setSub]         = useState<ValidationResult | null>(null);
+  const [details, setDetails] = useState<SubDetails | null>(null);
+  const [storedCode, setStoredCode] = useState("");
+
+  // ── Auth + load ────────────────────────────────────────────────────────────
+
+  const loadDashboard = useCallback(async (code: string) => {
+    setValidating(true);
+    try {
+      const res  = await fetch("/api/subscriptions/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscription_id: code }),
+      });
+      const data: ValidationResult = await res.json();
+
+      if (!data.valid || (data.type !== "subscription" && data.type !== "founder" && data.type !== "admin")) {
+        setAuthError(data.error ?? "Invalid or inactive subscription.");
+        try { localStorage.removeItem("corvus_sub_code"); } catch { /* */ }
+        setPhase("auth");
+        return;
+      }
+
+      setSub(data);
+
+      if (data.type === "subscription") {
+        try {
+          const dRes = await fetch(`/api/subscriptions/details?code=${encodeURIComponent(code)}`);
+          if (dRes.ok) setDetails(await dRes.json());
+        } catch { /* non-fatal */ }
+      }
+
+      setStoredCode(code);
+      setPhase("dashboard");
+    } catch {
+      setAuthError("Connection error. Please try again.");
+      setPhase("auth");
+    } finally {
+      setValidating(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("corvus_sub_code");
+      if (saved) { loadDashboard(saved); } else { setPhase("auth"); }
+    } catch {
+      setPhase("auth");
+    }
+  }, [loadDashboard]);
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    const code = codeInput.trim().toUpperCase();
+    if (!code) return;
+    setAuthError("");
+    await loadDashboard(code);
+    if (sub?.valid) {
+      try { localStorage.setItem("corvus_sub_code", code); } catch { /* */ }
+    }
+  }
+
+  // This wrapper ensures we store to localStorage only on successful auth
+  const handleLoginWrapped = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = codeInput.trim().toUpperCase();
+    if (!code) return;
+    setAuthError("");
+    setValidating(true);
+    try {
+      const res  = await fetch("/api/subscriptions/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscription_id: code }),
+      });
+      const data: ValidationResult = await res.json();
+
+      if (!data.valid || (data.type !== "subscription" && data.type !== "founder" && data.type !== "admin")) {
+        setAuthError(data.error ?? "Invalid or inactive subscription.");
+        return;
+      }
+
+      try { localStorage.setItem("corvus_sub_code", code); } catch { /* */ }
+      setSub(data);
+
+      if (data.type === "subscription") {
+        try {
+          const dRes = await fetch(`/api/subscriptions/details?code=${encodeURIComponent(code)}`);
+          if (dRes.ok) setDetails(await dRes.json());
+        } catch { /* non-fatal */ }
+      }
+
+      setStoredCode(code);
+      setPhase("dashboard");
+    } catch {
+      setAuthError("Connection error. Please try again.");
+    } finally {
+      setValidating(false);
+    }
+  };
+
+  function handleLogout() {
+    try { localStorage.removeItem("corvus_sub_code"); } catch { /* */ }
+    setSub(null);
+    setDetails(null);
+    setStoredCode("");
+    setCodeInput("");
+    setCodeVisible(false);
+    setAuthError("");
+    setPhase("auth");
+  }
+
+  function copyCode() {
+    navigator.clipboard.writeText(storedCode).then(() => {
+      setCodeCopied(true);
+      setTimeout(() => setCodeCopied(false), 2000);
+    });
+  }
+
+  // ── Loading ────────────────────────────────────────────────────────────────
+
+  if (phase === "loading") {
+    return (
+      <div style={{ minHeight: "70vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p style={{ color: "#00C2C7", fontFamily: "monospace", fontSize: "13px", letterSpacing: "0.2em" }}>
+          AUTHENTICATING...
+        </p>
+      </div>
+    );
+  }
+
+  // ── Auth gate ─────────────────────────────────────────────────────────────
+
+  if (phase === "auth") {
+    return (
+      <div style={{ minHeight: "75vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
+        <div style={{ width: "100%", maxWidth: "440px" }}>
+
+          <div style={{ textAlign: "center", marginBottom: "32px" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "12px", marginBottom: "14px" }}>
+              <div style={{ position: "relative", width: "40px", height: "40px", flexShrink: 0 }}>
+                <Image src="/OCWS_Logo_Transparent.png" alt="OCWS" fill sizes="40px" style={{ objectFit: "contain" }} />
+              </div>
+              <div style={{ textAlign: "left" }}>
+                <p style={{ color: "#ffffff", fontSize: "16px", fontWeight: 700, margin: 0 }}>Corvus Dashboard</p>
+                <p style={{ color: "#00C2C7", fontSize: "11px", margin: 0 }}>Old Crows Wireless Solutions</p>
+              </div>
+            </div>
+            <p style={{ color: "#888888", fontSize: "13px" }}>
+              Enter your Subscription ID to access your dashboard.
+            </p>
+          </div>
+
+          <form
+            onSubmit={handleLoginWrapped}
+            style={{
+              background: "#1A2332",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: "16px",
+              padding: "32px",
+            }}
+          >
+            <label style={{
+              display: "block", color: "#00C2C7", fontSize: "11px", fontWeight: 700,
+              letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px",
+            }}>
+              Subscription ID
+            </label>
+            <input
+              type="password"
+              autoComplete="off"
+              placeholder="OCWS-NEST-XXXXXXXX"
+              value={codeInput}
+              onChange={e => setCodeInput(e.target.value)}
+              style={{ ...inputStyle, marginBottom: authError ? "8px" : "20px" }}
+            />
+            {authError && (
+              <p style={{ color: "#F87171", fontSize: "12px", marginBottom: "16px" }}>{authError}</p>
+            )}
+            <button
+              type="submit"
+              disabled={validating || !codeInput.trim()}
+              style={{
+                width: "100%", padding: "12px",
+                background: validating || !codeInput.trim() ? "#0D6E7A" : "#00C2C7",
+                color: "#0D1520", borderRadius: "10px", border: "none",
+                fontSize: "14px", fontWeight: 700,
+                cursor: validating || !codeInput.trim() ? "not-allowed" : "pointer",
+                letterSpacing: "0.05em",
+              }}
+            >
+              {validating ? "Validating..." : "Access Dashboard"}
+            </button>
+          </form>
+
+          <p style={{ textAlign: "center", marginTop: "20px", fontSize: "12px", color: "#555555" }}>
+            Don&rsquo;t have a subscription?{" "}
+            <Link href="/crows-eye" style={{ color: "#00C2C7" }}>Get Corvus&rsquo; Verdict</Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Dashboard ─────────────────────────────────────────────────────────────
+
+  const tier        = sub?.tier ?? "nest";
+  const tc          = TIER_CONFIG[tier];
+  const isUnlimited = sub?.verdicts_unlimited ?? false;
+  const verdictsRemaining = sub?.verdicts_remaining ?? 0;
+  const verdictsUsed = isUnlimited
+    ? 0
+    : Math.max(0, tc.monthlyVerdicts - verdictsRemaining);
+  const progressPct = isUnlimited
+    ? 0
+    : Math.min(100, (verdictsUsed / tc.monthlyVerdicts) * 100);
+
+  const rec         = sub?.reckonings_remaining  ?? { small: 0, standard: 0, commercial: 0 };
+  const recUnlim    = sub?.reckonings_unlimited   ?? { small: false, standard: false, commercial: false };
+  const isSubType   = sub?.type === "subscription";
+
+  const card: React.CSSProperties = {
+    background: "#1A2332",
+    border: "1px solid rgba(255,255,255,0.08)",
+    borderRadius: "16px",
+    padding: "24px",
+    marginBottom: "24px",
+  };
+
+  const sectionLabel: React.CSSProperties = {
+    color: "#00C2C7",
+    fontSize: "11px",
+    fontWeight: 700,
+    letterSpacing: "0.15em",
+    textTransform: "uppercase",
+    marginBottom: "16px",
+  };
+
+  return (
+    <div style={{ maxWidth: "900px", margin: "0 auto", padding: "32px 16px 64px" }}>
+
+      {/* ── Header ── */}
+      <div style={{
+        ...card,
+        display: "flex",
+        flexWrap: "wrap",
+        alignItems: "center",
+        gap: "16px",
+        justifyContent: "space-between",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", minWidth: 0 }}>
+          <div style={{ position: "relative", width: "44px", height: "44px", flexShrink: 0 }}>
+            <Image src="/OCWS_Logo_Transparent.png" alt="OCWS" fill sizes="44px" style={{ objectFit: "contain" }} />
+          </div>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+              <span style={{ color: "#ffffff", fontSize: "18px", fontWeight: 700 }}>
+                {sub?.customer_name ?? details?.customer_name ?? "Subscriber"}
+              </span>
+              <span style={{
+                background: tc.color, color: tc.textColor,
+                fontSize: "10px", fontWeight: 800, letterSpacing: "0.18em",
+                padding: "3px 10px", borderRadius: "20px",
+              }}>
+                {tc.label}
+              </span>
+              {!isSubType && (sub?.type === "admin" || sub?.type === "founder") && (
+                <span style={{
+                  background: "rgba(184,146,42,0.15)", color: "#B8922A",
+                  fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em",
+                  padding: "3px 8px", borderRadius: "20px", border: "1px solid rgba(184,146,42,0.3)",
+                }}>
+                  {sub.type.toUpperCase()} ACCESS
+                </span>
+              )}
+            </div>
+            <p style={{ color: "#888888", fontSize: "12px", marginTop: "2px" }}>
+              Corvus Subscriber Dashboard
+            </p>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>ID</span>
+            <span style={{ color: "#ffffff", fontSize: "13px", fontFamily: "monospace", letterSpacing: "0.08em" }}>
+              {codeVisible ? storedCode : "••••••••••••••"}
+            </span>
+            <button onClick={() => setCodeVisible(v => !v)}
+              style={{ background: "none", border: "none", color: "#00C2C7", fontSize: "11px", cursor: "pointer", padding: "2px 6px" }}>
+              {codeVisible ? "Hide" : "Show"}
+            </button>
+          </div>
+          <button onClick={handleLogout}
+            style={{
+              background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "8px", color: "#888888", fontSize: "12px", padding: "6px 14px", cursor: "pointer",
+            }}>
+            Sign Out
+          </button>
+        </div>
+      </div>
+
+      {/* ── Credits grid ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: "16px", marginBottom: "24px" }}>
+
+        {/* Verdict credits */}
+        <div style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "24px" }}>
+          <p style={{ ...sectionLabel, marginBottom: "8px" }}>Verdict Credits</p>
+          <p style={{ color: "#ffffff", fontSize: "52px", fontWeight: 800, lineHeight: 1, marginBottom: "4px" }}>
+            {isUnlimited ? "∞" : verdictsRemaining}
+          </p>
+          <p style={{ color: "#888888", fontSize: "12px", marginBottom: isUnlimited ? "16px" : "12px" }}>
+            {isUnlimited
+              ? "Unlimited this period"
+              : `of ${tc.monthlyVerdicts} remaining this period`}
+          </p>
+          {!isUnlimited && (
+            <div style={{
+              background: "rgba(255,255,255,0.06)", borderRadius: "100px",
+              height: "6px", overflow: "hidden", marginBottom: "12px",
+            }}>
+              <div style={{
+                height: "100%",
+                width: `${progressPct}%`,
+                background: progressPct > 80 ? "#F87171" : "#00C2C7",
+                borderRadius: "100px",
+                transition: "width 0.4s ease",
+              }} />
+            </div>
+          )}
+          {details?.current_period_end && (
+            <p style={{ color: "#555555", fontSize: "11px", marginBottom: "14px" }}>
+              Resets {fmtDate(details.current_period_end)}
+            </p>
+          )}
+          <Link href="/crows-eye" style={{
+            display: "inline-block",
+            background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.25)",
+            borderRadius: "8px", color: "#00C2C7", fontSize: "12px", fontWeight: 600,
+            padding: "7px 14px", textDecoration: "none",
+          }}>
+            Buy More Credits
+          </Link>
+        </div>
+
+        {/* Reckoning credits */}
+        <div style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "24px" }}>
+          <p style={{ color: "#B8922A", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
+            Full Reckoning Credits
+          </p>
+          {(["small", "standard", "commercial"] as const).map(key => (
+            <div key={key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+              <span style={{ color: "#888888", fontSize: "13px", textTransform: "capitalize" }}>{key}</span>
+              <span style={{
+                color: recUnlim[key] ? "#B8922A" : rec[key] > 0 ? "#ffffff" : "#444444",
+                fontSize: "14px", fontWeight: 700, fontFamily: "monospace",
+              }}>
+                {recUnlim[key] ? "∞" : rec[key]}
+              </span>
+            </div>
+          ))}
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "14px", marginTop: "4px" }}>
+            <Link href="/crows-eye" style={{
+              display: "inline-block",
+              background: "rgba(184,146,42,0.08)", border: "1px solid rgba(184,146,42,0.25)",
+              borderRadius: "8px", color: "#B8922A", fontSize: "12px", fontWeight: 600,
+              padding: "7px 14px", textDecoration: "none",
+            }}>
+              Run a Reckoning
+            </Link>
+          </div>
+        </div>
+
+        {/* Seats (subscription only) */}
+        {isSubType && sub?.seat_limit && (
+          <div style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "24px" }}>
+            <p style={{ color: "#888888", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
+              Devices (Seats)
+            </p>
+            <p style={{ color: "#ffffff", fontSize: "52px", fontWeight: 800, lineHeight: 1, marginBottom: "4px" }}>
+              {sub.seats_used ?? 0}
+            </p>
+            <p style={{ color: "#888888", fontSize: "12px", marginBottom: "12px" }}>
+              of {sub.seat_limit} seat{sub.seat_limit !== 1 ? "s" : ""} registered
+            </p>
+            <p style={{ color: "#555555", fontSize: "11px", lineHeight: 1.6 }}>
+              Each browser or device using this ID occupies one seat.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* ── Past Verdicts ── */}
+      <div style={card}>
+        <p style={sectionLabel}>Past Verdicts &amp; Reckonings</p>
+        <div style={{ textAlign: "center", padding: "32px 16px" }}>
+          <p style={{ color: "#555555", fontSize: "14px", marginBottom: "10px" }}>No Verdicts yet.</p>
+          <p style={{ color: "#888888", fontSize: "13px", marginBottom: "20px" }}>
+            Head to Crow&rsquo;s Eye to run your first scan.
+          </p>
+          <Link href="/crows-eye" style={{
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            background: "#00C2C7", color: "#0D1520", borderRadius: "10px",
+            padding: "10px 26px", fontSize: "14px", fontWeight: 700, textDecoration: "none",
+          }}>
+            Open Crow&rsquo;s Eye
+          </Link>
+        </div>
+      </div>
+
+      {/* ── Subscription ID ── */}
+      <div style={card}>
+        <p style={sectionLabel}>Your Subscription ID</p>
+        <div style={{
+          background: "#0D1520", border: "1px solid #0D6E7A",
+          borderRadius: "12px", padding: "20px 24px",
+          textAlign: "center", marginBottom: "16px",
+        }}>
+          <p style={{ color: "#00C2C7", fontSize: "10px", fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: "8px" }}>
+            Your Subscription ID
+          </p>
+          <p style={{ color: "#ffffff", fontSize: "22px", fontWeight: 700, fontFamily: "monospace", letterSpacing: "0.1em" }}>
+            {codeVisible ? storedCode : "••••••••••••••••••••"}
+          </p>
+        </div>
+        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+          <button onClick={() => setCodeVisible(v => !v)}
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#ffffff", fontSize: "13px", padding: "8px 16px", cursor: "pointer" }}>
+            {codeVisible ? "Hide ID" : "Show ID"}
+          </button>
+          <button onClick={copyCode}
+            style={{
+              background: codeCopied ? "rgba(0,194,199,0.12)" : "rgba(255,255,255,0.05)",
+              border: `1px solid ${codeCopied ? "rgba(0,194,199,0.4)" : "rgba(255,255,255,0.1)"}`,
+              borderRadius: "8px", color: codeCopied ? "#00C2C7" : "#ffffff",
+              fontSize: "13px", padding: "8px 16px", cursor: "pointer",
+            }}>
+            {codeCopied ? "Copied!" : "Copy ID"}
+          </button>
+        </div>
+        {(tier === "flock" || tier === "murder") && (
+          <p style={{ color: "#888888", fontSize: "12px", marginTop: "12px" }}>
+            Share this ID with team members to give them access — up to {sub?.seat_limit} device{sub?.seat_limit !== 1 ? "s" : ""} on your plan.
+          </p>
+        )}
+        {tier === "nest" && (
+          <p style={{ color: "#555555", fontSize: "12px", marginTop: "12px" }}>
+            Your Nest plan covers a single device. Upgrade to Flock for team access.
+          </p>
+        )}
+      </div>
+
+      {/* ── Account (subscription type only) ── */}
+      {isSubType && (
+        <div style={card}>
+          <p style={sectionLabel}>Account</p>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <tbody>
+              {(
+                [
+                  ["Email on file",   details?.customer_email ?? "—"],
+                  ["Plan",            `${tc.label} — ${tc.price}`],
+                  ["Status",          details?.status ?? "active"],
+                  ["Member since",    fmtDate(details?.created_at)],
+                  ["Billing period",  details?.current_period_start && details?.current_period_end
+                    ? `${fmtDate(details.current_period_start)} → ${fmtDate(details.current_period_end)}`
+                    : "—"],
+                ] as [string, string][]
+              ).map(([label, value]) => (
+                <tr key={label}>
+                  <td style={{ color: "#888888", fontSize: "13px", padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.05)", width: "45%" }}>{label}</td>
+                  <td style={{ color: "#ffffff", fontSize: "13px", padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.05)", textAlign: "right" }}>{value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div style={{ marginTop: "20px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <button disabled style={{
+              background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: "8px", color: "#444444", fontSize: "13px", padding: "8px 16px", cursor: "not-allowed",
+            }}>
+              Manage Billing (coming soon)
+            </button>
+          </div>
+          <p style={{ color: "#555555", fontSize: "11px", marginTop: "12px" }}>
+            To cancel your subscription, contact{" "}
+            <a href="mailto:joshua@oldcrowswireless.com" style={{ color: "#00C2C7" }}>joshua@oldcrowswireless.com</a>.
+          </p>
+        </div>
+      )}
+
+      {/* Bypass code notice */}
+      {!isSubType && (sub?.type === "admin" || sub?.type === "founder") && (
+        <div style={{
+          background: "rgba(184,146,42,0.06)", border: "1px solid rgba(184,146,42,0.2)",
+          borderRadius: "12px", padding: "16px 20px",
+        }}>
+          <p style={{ color: "#B8922A", fontSize: "12px", lineHeight: 1.6 }}>
+            <strong>Bypass access active.</strong> This is an {sub.type} code. Full account and billing details are not displayed for bypass codes. All Crow&rsquo;s Eye features are available.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}

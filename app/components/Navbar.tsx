@@ -18,11 +18,19 @@ const navLinks = [
 ];
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen]           = useState(false);
+  const [hasSub, setHasSub]       = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
     setOpen(false);
+  }, [pathname]);
+
+  // Show Dashboard link only when a subscriber code is stored
+  useEffect(() => {
+    try {
+      setHasSub(!!localStorage.getItem("corvus_sub_code"));
+    } catch { /* */ }
   }, [pathname]);
 
   useEffect(() => {
@@ -70,6 +78,15 @@ export default function Navbar() {
                 {l.label}
               </Link>
             ))}
+            {hasSub && (
+              <Link
+                href="/dashboard"
+                className="rounded-lg px-3 py-2 text-sm font-semibold transition"
+                style={{ color: "#00C2C7" }}
+              >
+                Dashboard
+              </Link>
+            )}
           </nav>
 
           {/* Right: CTA + Hamburger */}
@@ -142,6 +159,16 @@ export default function Navbar() {
                     {l.label}
                   </Link>
                 ))}
+                {hasSub && (
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setOpen(false)}
+                    className="rounded-xl px-3 py-3 text-sm font-semibold hover:bg-white/10 transition"
+                    style={{ color: "#00C2C7" }}
+                  >
+                    Dashboard
+                  </Link>
+                )}
               </div>
 
               <div className="mt-3 border-t border-white/10 pt-3">
