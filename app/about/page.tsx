@@ -1,5 +1,6 @@
 // app/about/page.tsx
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -27,14 +28,25 @@ export default function AboutPage() {
 
         {/* Founder section */}
         <div className="flex flex-col md:flex-row gap-12 items-start mb-16">
-          {/* Photo placeholder */}
+          {/* Bio photo */}
           <div className="shrink-0 w-full md:w-auto flex justify-center">
             <div
-              className="rounded-2xl flex flex-col items-center justify-center"
-              style={{ width: "300px", height: "400px", background: "#1A2332", border: "2px solid #B8922A" }}
+              className="rounded-full overflow-hidden"
+              style={{
+                width: "260px",
+                height: "260px",
+                border: "3px solid #B8922A",
+                boxShadow: "0 0 0 6px rgba(184,146,42,0.15), 0 8px 40px rgba(0,0,0,0.5)",
+              }}
             >
-              <span className="text-5xl font-bold" style={{ color: "#B8922A" }}>JT</span>
-              <span className="mt-3 text-xs" style={{ color: "#555" }}>Add photo</span>
+              <Image
+                src="/bio-picture.jpg"
+                alt="Joshua Turner — Founder, Old Crows Wireless Solutions"
+                width={260}
+                height={260}
+                className="object-cover w-full h-full"
+                priority
+              />
             </div>
           </div>
 
