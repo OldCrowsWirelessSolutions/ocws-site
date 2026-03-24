@@ -358,7 +358,8 @@ function UploadBox({
   );
 }
 
-// ─── Access codes ─────────────────────────────────────────────────────────────
+// ─── Subscription / access code types ────────────────────────────────────────
+// Codes are validated server-side. The client only stores what is safe to display.
 
 type AppliedCode = {
   type: "founder" | "admin" | "subscriber" | "promo";
@@ -367,23 +368,31 @@ type AppliedCode = {
   label?: string;
 };
 
-const VALID_CODES: Record<string, AppliedCode> = {
-  "OCWS2026":          { type: "admin",       name: "Joshua Turner" },
-  "CORVUS-NATE-2026":  { type: "founder",     name: "Nathanael Farrelly" },
-  "CORVUS-ERIC-2026":  { type: "founder",     name: "Eric Mims" },
-  "CORVUS-MIKE-2026":  { type: "founder",     name: "Mike Arbouret" },
-  "OCWS-ADMIN-2026":   { type: "admin",       name: "Joshua Turner" },
-  "CORVUS-NEST":       { type: "subscriber" },
-  "CORVUS-NATE":       { type: "founder",     name: "Nathanael Farrelly" },
-  "CORVUS-MIKE":       { type: "founder",     name: "Mike Arbouret" },
-  "CORVUS-ERIC":       { type: "founder",     name: "Eric Mims" },
-  "LAUNCH50":          { type: "promo",       discount: 50,  label: "50% off" },
-  "PENSACOLA25":       { type: "promo",       discount: 25,  label: "25% off" },
-  "FIRSTCITY20":       { type: "promo",       discount: 20,  label: "20% off \u2014 First City Internet" },
-  "NATE10":            { type: "promo",       discount: 10,  label: "10% off" },
-  "ERIC10":            { type: "promo",       discount: 10,  label: "10% off" },
-  "MIKE10":            { type: "promo",       discount: 10,  label: "10% off" },
+type SubscriptionEntitlement = {
+  tier?: string;
+  customer_name?: string;
+  verdicts_remaining?: number;
+  verdicts_unlimited?: boolean;
+  reckonings_remaining?: { small: number; standard: number; commercial: number };
+  reckonings_unlimited?: { small: boolean; standard: boolean; commercial: boolean };
+  seat_limit?: number;
+  seats_used?: number;
 };
+
+// Generates or retrieves a persistent device token from localStorage.
+// This is best-effort seat tracking, not tamper-proof device locking.
+function getOrCreateDeviceToken(): string {
+  const KEY = "ocws_device_token";
+  try {
+    const existing = localStorage.getItem(KEY);
+    if (existing) return existing;
+    const token = `dt-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    localStorage.setItem(KEY, token);
+    return token;
+  } catch {
+    return `dt-${Math.random().toString(36).slice(2, 12)}`;
+  }
+}
 
 function isBypassCode(code: AppliedCode | null): boolean {
   return code?.type === "founder" || code?.type === "admin" || code?.type === "subscriber";
@@ -440,12 +449,24 @@ export default function CrowsEyeClient() {
   // Access code system (founder / admin / subscriber / promo)
   const [accessCodeInput, setAccessCodeInput] = useState("");
   const [accessCodeStatus, setAccessCodeStatus] = useState<null | "valid" | "invalid">(null);
+  const [accessCodeValidating, setAccessCodeValidating] = useState(false);
   const [appliedCode, setAppliedCode] = useState<{
     type: "founder" | "admin" | "subscriber" | "promo";
     name?: string;
     discount?: number;
     label?: string;
   } | null>(null);
+  const [appliedSubscriptionId, setAppliedSubscriptionId] = useState<string | null>(null);
+  const [subscriptionEntitlement, setSubscriptionEntitlement] = useState<SubscriptionEntitlement | null>(null);
+
+  // Recovery UI
+  const [showRecovery, setShowRecovery] = useState(false);
+  const [recoveryEmail, setRecoveryEmail] = useState("");
+  const [recoverySent, setRecoverySent] = useState(false);
+  const [recoverySubmitting, setRecoverySubmitting] = useState(false);
+
+  // Seat acknowledgement checkbox
+  const [seatAcknowledged, setSeatAcknowledged] = useState(false);
 
   // Pricing info collapsible
   const [pricingOpen, setPricingOpen] = useState(false);
@@ -760,10 +781,30 @@ export default function CrowsEyeClient() {
 
   async function handleStripePayment(product = "verdict") {
     if (honeypot) return;
-    // Bypass for founder / admin / subscriber codes
-    if (isBypassCode(appliedCode)) {
+    // Bypass for founder / admin codes
+    if (appliedCode?.type === "admin" || appliedCode?.type === "founder") {
       unlockVerdict();
       return;
+    }
+    // Subscription credit coverage — consume server-side and unlock
+    if (appliedCode?.type === "subscriber" && appliedSubscriptionId && isProductCovered()) {
+      try {
+        const pt = currentProductType();
+        const creditRes = await fetch("/api/subscriptions/use-credit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ subscription_id: appliedSubscriptionId, product_type: pt }),
+        });
+        const creditData = await creditRes.json().catch(() => ({})) as { success?: boolean; error?: string };
+        if (creditData.success) {
+          unlockVerdict();
+          return;
+        }
+        // Credit rejected — fall through to Stripe (credit may have been exhausted)
+        setErrorMsg(creditData.error ?? "Credit could not be applied. Proceeding to payment.");
+      } catch {
+        setErrorMsg("Could not verify credit. Proceeding to payment.");
+      }
     }
     try {
       const basePrice = product === "verdict" ? 50 :
@@ -852,21 +893,145 @@ export default function CrowsEyeClient() {
     }
   }
 
-  // Access code
-  function handleApplyCode() {
+  // Access code — validates server-side via /api/subscriptions/validate
+  async function handleApplyCode() {
     const key = accessCodeInput.trim().toUpperCase();
-    const match = VALID_CODES[key] ?? null;
-    if (match) {
-      setAppliedCode(match);
-      setAccessCodeStatus("valid");
-      setAccessCodeInput("");
-      // If analysis is already done and this is a bypass code, unlock immediately
-      if (result && isBypassCode(match)) {
-        unlockVerdict();
+    if (!key) return;
+    setAccessCodeValidating(true);
+    setAccessCodeStatus(null);
+    try {
+      const res = await fetch("/api/subscriptions/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscription_id: key }),
+      });
+      const data = await res.json().catch(() => ({})) as {
+        valid?: boolean;
+        type?: string;
+        tier?: string;
+        customer_name?: string;
+        verdicts_remaining?: number;
+        verdicts_unlimited?: boolean;
+        reckonings_remaining?: { small: number; standard: number; commercial: number };
+        reckonings_unlimited?: { small: boolean; standard: boolean; commercial: boolean };
+        seat_limit?: number;
+        seats_used?: number;
+        discount?: number;
+        label?: string;
+        name?: string;
+      };
+      if (data.valid) {
+        const codeType: AppliedCode["type"] =
+          data.type === "admin" ? "admin" :
+          data.type === "founder" ? "founder" :
+          data.type === "promo" ? "promo" : "subscriber";
+        const match: AppliedCode = {
+          type: codeType,
+          name: data.name,
+          discount: data.discount,
+          label: data.label,
+        };
+        setAppliedCode(match);
+        setAccessCodeStatus("valid");
+        setAccessCodeInput("");
+        if (codeType === "subscriber") {
+          setAppliedSubscriptionId(key);
+          setSubscriptionEntitlement({
+            tier: data.tier,
+            customer_name: data.customer_name,
+            verdicts_remaining: data.verdicts_remaining,
+            verdicts_unlimited: data.verdicts_unlimited,
+            reckonings_remaining: data.reckonings_remaining,
+            reckonings_unlimited: data.reckonings_unlimited,
+            seat_limit: data.seat_limit,
+            seats_used: data.seats_used,
+          });
+
+          // Register this device as a seat (best-effort, non-blocking)
+          try {
+            const deviceToken = getOrCreateDeviceToken();
+            const seatRes = await fetch("/api/subscriptions/register-device", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ subscription_id: key, device_token: deviceToken }),
+            });
+            const seatData = await seatRes.json().catch(() => ({})) as {
+              success?: boolean;
+              seats_used?: number;
+              seat_limit?: number;
+              error?: string;
+            };
+            if (!seatData.success) {
+              // Seat limit reached — show error and reject the code
+              setAccessCodeStatus("invalid");
+              setAppliedCode(null);
+              setAppliedSubscriptionId(null);
+              setSubscriptionEntitlement(null);
+              // Reuse the invalid path but set a specific message via errorMsg
+              setErrorMsg(seatData.error ?? "Seat limit reached for this subscription.");
+              return;
+            }
+            // Update seat count with actual registration result
+            setSubscriptionEntitlement((prev) => prev ? {
+              ...prev,
+              seats_used: seatData.seats_used,
+              seat_limit: seatData.seat_limit,
+            } : prev);
+          } catch {
+            // Non-fatal — device registration failure doesn't block access
+          }
+        }
+        // If analysis is already done and this is a bypass code, unlock immediately
+        if (result && isBypassCode(match)) {
+          unlockVerdict();
+        }
+      } else {
+        setAccessCodeStatus("invalid");
       }
-    } else {
+    } catch {
       setAccessCodeStatus("invalid");
+    } finally {
+      setAccessCodeValidating(false);
     }
+  }
+
+  // Returns the product type key for the current mode/reckoning size
+  function currentProductType(): string {
+    if (mode === "single") return "verdict";
+    if (locations.length <= 5) return "reckoning_small";
+    if (locations.length <= 15) return "reckoning_standard";
+    return "reckoning_commercial";
+  }
+
+  // Returns true if the applied subscription covers this product at no extra cost
+  function isProductCovered(): boolean {
+    if (!subscriptionEntitlement || appliedCode?.type !== "subscriber") return false;
+    const pt = currentProductType();
+    if (pt === "verdict") {
+      return (subscriptionEntitlement.verdicts_unlimited === true) ||
+             ((subscriptionEntitlement.verdicts_remaining ?? 0) > 0);
+    }
+    const rem = subscriptionEntitlement.reckonings_remaining;
+    const unl = subscriptionEntitlement.reckonings_unlimited;
+    if (pt === "reckoning_small")      return (unl?.small === true) || ((rem?.small ?? 0) > 0);
+    if (pt === "reckoning_standard")   return (unl?.standard === true) || ((rem?.standard ?? 0) > 0);
+    if (pt === "reckoning_commercial") return (unl?.commercial === true) || ((rem?.commercial ?? 0) > 0);
+    return false;
+  }
+
+  // Sends a recovery email — non-fatal on failure
+  async function handleRecoverySubmit() {
+    if (!recoveryEmail) return;
+    setRecoverySubmitting(true);
+    try {
+      await fetch("/api/subscriptions/recover", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: recoveryEmail }),
+      });
+    } catch { /* ignore */ }
+    setRecoverySent(true);
+    setRecoverySubmitting(false);
   }
 
   // PDF generation
@@ -1265,52 +1430,149 @@ export default function CrowsEyeClient() {
         </p>
       </div>
 
-      {/* ── ACCESS CODE INPUT ────────────────────────────────────────────── */}
+      {/* ── SUBSCRIPTION ID INPUT ────────────────────────────────────────── */}
       <div className="mb-6">
         {appliedCode ? (
           <div
-            className="flex items-center justify-between px-4 py-3 rounded-2xl text-sm"
+            className="px-4 py-3 rounded-2xl text-sm"
             style={{ background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.25)" }}
           >
-            <span style={{ color: "#4ade80" }}>
-              {appliedCode.type === "admin" || appliedCode.type === "founder"
-                ? `✓ ${appliedCode.name ?? "Access"} — Stripe bypassed`
-                : appliedCode.type === "subscriber"
-                ? "✓ Subscriber access active"
-                : `✓ Promo code applied — ${appliedCode.label ?? `${appliedCode.discount}% off`}`}
-            </span>
-            <button
-              type="button"
-              onClick={() => { setAppliedCode(null); setAccessCodeStatus(null); }}
-              className="text-white/40 hover:text-white/70 transition text-xs ml-4"
-            >
-              Remove
-            </button>
+            <div className="flex items-center justify-between">
+              <span style={{ color: "#4ade80" }}>
+                {appliedCode.type === "admin" || appliedCode.type === "founder"
+                  ? `✓ ${appliedCode.name ?? "Access"} — Stripe bypassed`
+                  : appliedCode.type === "subscriber"
+                  ? `✓ Subscription active${subscriptionEntitlement?.tier ? ` — ${subscriptionEntitlement.tier.charAt(0).toUpperCase() + subscriptionEntitlement.tier.slice(1)} tier` : ""}`
+                  : `✓ Promo discount applied — ${appliedCode.label ?? `${appliedCode.discount}% off`}`}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setAppliedCode(null);
+                  setAccessCodeStatus(null);
+                  setAppliedSubscriptionId(null);
+                  setSubscriptionEntitlement(null);
+                }}
+                className="text-white/40 hover:text-white/70 transition text-xs ml-4"
+              >
+                Remove
+              </button>
+            </div>
+            {appliedCode.type === "subscriber" && subscriptionEntitlement && (
+              <div className="mt-2 space-y-1.5">
+                <div className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+                  {subscriptionEntitlement.verdicts_unlimited
+                    ? "Verdicts: unlimited"
+                    : `Verdicts remaining: ${subscriptionEntitlement.verdicts_remaining ?? 0}`}
+                  {subscriptionEntitlement.reckonings_remaining && (
+                    <span className="ml-3">
+                      Reckonings: {subscriptionEntitlement.reckonings_unlimited?.small ? "∞" : subscriptionEntitlement.reckonings_remaining.small} small
+                      {" / "}{subscriptionEntitlement.reckonings_unlimited?.standard ? "∞" : subscriptionEntitlement.reckonings_remaining.standard} standard
+                      {" / "}{subscriptionEntitlement.reckonings_unlimited?.commercial ? "∞" : subscriptionEntitlement.reckonings_remaining.commercial} commercial
+                    </span>
+                  )}
+                </div>
+                {/* Seat info */}
+                {subscriptionEntitlement.seat_limit != null && (
+                  <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                    Seats: {subscriptionEntitlement.seats_used ?? "—"} / {subscriptionEntitlement.seat_limit} used
+                  </div>
+                )}
+                {/* Seat policy notice */}
+                <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  Each device using this subscription counts as one seat. Access is limited to the number of seats included in your plan.
+                </p>
+                {/* Acknowledgement checkbox */}
+                {!seatAcknowledged && (
+                  <label className="flex items-start gap-2 cursor-pointer mt-1">
+                    <input
+                      type="checkbox"
+                      checked={seatAcknowledged}
+                      onChange={(e) => setSeatAcknowledged(e.target.checked)}
+                      className="mt-0.5 shrink-0"
+                    />
+                    <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+                      I understand that each device counts as one seat under my subscription.
+                    </span>
+                  </label>
+                )}
+                {seatAcknowledged && (
+                  <p className="text-xs" style={{ color: "rgba(74,222,128,0.7)" }}>✓ Seat policy acknowledged</p>
+                )}
+              </div>
+            )}
           </div>
         ) : (
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <input
-                type="text"
-                value={accessCodeInput}
-                onChange={(e) => { setAccessCodeInput(e.target.value); setAccessCodeStatus(null); }}
-                onKeyDown={(e) => e.key === "Enter" && handleApplyCode()}
-                placeholder="Have an access code or promo code?"
-                className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
-                style={{ background: "rgba(0,0,0,0.3)", border: `1px solid ${accessCodeStatus === "invalid" ? "rgba(239,68,68,0.5)" : "rgba(255,255,255,0.1)"}` }}
-              />
-              {accessCodeStatus === "invalid" && (
-                <p className="mt-1 text-xs text-red-400">Invalid code. Check your spelling and try again.</p>
+          <div>
+            <label className="block text-sm font-semibold text-white mb-1">
+              Subscription ID
+            </label>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={accessCodeInput}
+                  onChange={(e) => { setAccessCodeInput(e.target.value); setAccessCodeStatus(null); }}
+                  onKeyDown={(e) => e.key === "Enter" && handleApplyCode()}
+                  placeholder="Enter your Subscription ID"
+                  className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
+                  style={{ background: "rgba(0,0,0,0.3)", border: `1px solid ${accessCodeStatus === "invalid" ? "rgba(239,68,68,0.5)" : "rgba(255,255,255,0.1)"}` }}
+                />
+                {accessCodeStatus === "invalid" ? (
+                  <p className="mt-1 text-xs text-red-400">Invalid Subscription ID. Check your entry and try again.</p>
+                ) : (
+                  <p className="mt-1 text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                    Enter your active subscription ID to apply included credits or member pricing.
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={handleApplyCode}
+                disabled={accessCodeValidating}
+                className="shrink-0 self-start rounded-xl px-4 py-3 text-sm font-semibold ocws-glow-hover disabled:opacity-50"
+                style={{ background: "#00C2C7", color: "#0D1520" }}
+              >
+                {accessCodeValidating ? "Checking…" : "Apply Subscription"}
+              </button>
+            </div>
+            {/* Recovery link */}
+            <div className="mt-2">
+              {!showRecovery ? (
+                <button
+                  type="button"
+                  onClick={() => setShowRecovery(true)}
+                  className="text-xs transition"
+                  style={{ color: "rgba(0,194,199,0.6)" }}
+                >
+                  Forgot your Subscription ID?
+                </button>
+              ) : recoverySent ? (
+                <p className="text-xs" style={{ color: "#4ade80" }}>
+                  If an active subscription exists for that email, a recovery email has been sent.
+                </p>
+              ) : (
+                <div className="flex gap-2 mt-1">
+                  <input
+                    type="email"
+                    value={recoveryEmail}
+                    onChange={(e) => setRecoveryEmail(e.target.value)}
+                    placeholder="Your account email"
+                    className="flex-1 rounded-xl px-3 py-2 text-xs text-white placeholder:text-white/35 focus:outline-none focus:ring-1 focus:ring-cyan-500/40"
+                    style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRecoverySubmit}
+                    disabled={recoverySubmitting || !recoveryEmail}
+                    className="shrink-0 rounded-xl px-3 py-2 text-xs font-semibold disabled:opacity-50 transition"
+                    style={{ background: "rgba(0,194,199,0.15)", color: "#00C2C7", border: "1px solid rgba(0,194,199,0.3)" }}
+                  >
+                    {recoverySubmitting ? "Sending…" : "Send Recovery Email"}
+                  </button>
+                </div>
               )}
             </div>
-            <button
-              type="button"
-              onClick={handleApplyCode}
-              className="shrink-0 rounded-xl px-4 py-3 text-sm font-semibold ocws-glow-hover"
-              style={{ background: "#00C2C7", color: "#0D1520" }}
-            >
-              Apply
-            </button>
           </div>
         )}
       </div>
@@ -2222,29 +2484,42 @@ export default function CrowsEyeClient() {
                 <div className="flex flex-col items-center gap-4">
                   <div className="flex flex-col sm:flex-row gap-3 justify-center w-full sm:w-auto">
                     <button
-                      onClick={() => handleStripePayment("verdict")}
+                      onClick={() => {
+                        const stripeProduct = mode === "single" ? "verdict" :
+                          locations.length <= 5 ? "reckoning-small" :
+                          locations.length <= 15 ? "reckoning-standard" : "reckoning-commercial";
+                        handleStripePayment(stripeProduct);
+                      }}
                       className="w-full sm:w-auto rounded-2xl px-8 py-4 text-base font-bold tracking-tight transition min-h-[56px]"
                       style={{
-                        background: "linear-gradient(135deg, #d6b25e, #b8943e)",
+                        background: isProductCovered()
+                          ? "linear-gradient(135deg, #22c55e, #16a34a)"
+                          : "linear-gradient(135deg, #d6b25e, #b8943e)",
                         color: "#05070b",
-                        boxShadow: "0 8px 28px rgba(214,178,94,0.28)",
+                        boxShadow: isProductCovered()
+                          ? "0 8px 28px rgba(34,197,94,0.28)"
+                          : "0 8px 28px rgba(214,178,94,0.28)",
                       }}
                     >
-                      {mode === "single"
-                        ? "Get the Full Verdict \u2014 $50"
-                        : `Get the Full Reckoning \u2014 $${reckoningPrice}`}
+                      {isProductCovered()
+                        ? (mode === "single" ? "Unlock with Subscription — Free" : "Unlock with Subscription — Free")
+                        : mode === "single"
+                          ? "Get the Full Verdict \u2014 $50"
+                          : `Get the Full Reckoning \u2014 $${reckoningPrice}`}
                     </button>
                   </div>
 
-
-                  {/* Access code bypass confirmation — auto-unlocks, this is just a status flash */}
-                  {isBypassCode(appliedCode) && (
+                  {/* Status notes */}
+                  {(appliedCode?.type === "admin" || appliedCode?.type === "founder") && (
                     <p className="text-sm font-semibold" style={{ color: "#4ade80" }}>
-                      {appliedCode?.type === "admin"
+                      {appliedCode.type === "admin"
                         ? `✓ Admin access verified. Unlocking…`
-                        : appliedCode?.type === "founder"
-                        ? `✓ Founder access verified. Unlocking…`
-                        : "✓ Subscriber access verified. Unlocking…"}
+                        : `✓ Founder access verified. Unlocking…`}
+                    </p>
+                  )}
+                  {appliedCode?.type === "subscriber" && !isProductCovered() && (
+                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                      No remaining credits for this product — proceeding to payment.
                     </p>
                   )}
                 </div>
