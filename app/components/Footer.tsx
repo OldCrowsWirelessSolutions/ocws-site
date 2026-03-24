@@ -6,7 +6,7 @@ export default function Footer() {
   return (
     <footer style={{ background: "#0D1520" }}>
       <div className="ocws-container py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Col 1: Brand */}
           <div>
             <div className="flex items-center gap-3 mb-4">
@@ -60,6 +60,17 @@ export default function Footer() {
               <li><Link href="/crows-eye" className="text-white/50 hover:text-white transition">Extra Credits &mdash; from $15</Link></li>
               <li><Link href="/contact" className="text-white/50 hover:text-white transition">OCWS Pro &mdash; $750</Link></li>
               <li><Link href="/waitlist" className="text-white/50 hover:text-white transition">Join Waitlist</Link></li>
+            </ul>
+          </div>
+
+          {/* Col 4: Legal */}
+          <div>
+            <h4 className="text-sm font-semibold mb-3" style={{ color: "#00C2C7" }}>Legal</h4>
+            <ul className="space-y-2 text-sm">
+              <li><Link href="/legal/terms" className="text-white/50 hover:text-white transition">Terms of Service</Link></li>
+              <li><Link href="/legal/guarantee" className="text-white/50 hover:text-white transition">Guarantee Policy</Link></li>
+              <li><Link href="/legal/refunds" className="text-white/50 hover:text-white transition">Refund Policy</Link></li>
+              <li><Link href="/legal/report-ownership" className="text-white/50 hover:text-white transition">Report Ownership &amp; Usage</Link></li>
             </ul>
           </div>
         </div>
