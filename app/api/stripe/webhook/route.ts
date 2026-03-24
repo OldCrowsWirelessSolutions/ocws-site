@@ -7,6 +7,7 @@ import Stripe from "stripe";
 import { checkEnv } from "@/lib/env-check";
 
 checkEnv();
+import { randomBytes } from "crypto";
 import {
   createSubscription,
   generateSubscriptionId,
@@ -15,12 +16,14 @@ import {
   getSubscriptionByEmail,
   updateSubscription,
   resetPeriodCredits,
+  TIER_ENTITLEMENTS,
 } from "@/lib/subscriptions";
 import { CREDITS_BY_PRICE } from "@/lib/price-map";
 import redis from "@/lib/redis";
 import type { SubscriptionTier, SubscriptionStatus } from "@/lib/subscriptions";
 import {
   sendSubscriptionConfirmation,
+  sendWelcomeEmail,
   sendPaymentFailedNotice,
 } from "@/lib/subscription-email";
 
@@ -207,6 +210,96 @@ async function handleInvoicePaymentFailed(inv: Stripe.Invoice) {
   console.log(`[webhook] Subscription past_due: ${record.subscription_id}`);
 }
 
+// ─── Checkout subscription handler ────────────────────────────────────────────
+// Fires on checkout.session.completed when mode=subscription.
+// Generates CORVUS-{TIER}-{6hex} code and stores all Redis indexes.
+
+async function handleCheckoutSubscription(session: Stripe.Checkout.Session) {
+  const email = session.customer_details?.email
+    ?? await resolveCustomerEmail(session.customer);
+  if (!email) {
+    console.error("[webhook] checkout subscription: no email for session", session.id);
+    return;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const stripeSubId: string | null = typeof (session as any).subscription === "string"
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ? (session as any).subscription
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    : ((session as any).subscription?.id ?? null);
+
+  if (!stripeSubId) {
+    console.error("[webhook] checkout subscription: no subscription ID in session", session.id);
+    return;
+  }
+
+  // Deduplicate — may have already been created by customer.subscription.created
+  const existing = await getSubscriptionByStripeId(stripeSubId);
+  if (existing) {
+    console.log("[webhook] checkout subscription already recorded:", existing.subscription_id);
+    return;
+  }
+
+  // Retrieve Stripe subscription for price/period data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const stripeSub = await stripe.subscriptions.retrieve(stripeSubId) as any;
+  const priceId   = stripeSub.items?.data?.[0]?.price?.id ?? "";
+  const tier      = stripePriceIdToTier(priceId);
+  const name      = await resolveCustomerName(session.customer);
+  const customerId = typeof session.customer === "string"
+    ? session.customer
+    : (session.customer as Stripe.Customer | null)?.id ?? null;
+
+  // Generate CORVUS-{TIER}-{6 hex chars} code
+  const suffix = randomBytes(3).toString("hex").toUpperCase();
+  const code   = `CORVUS-${tier.toUpperCase()}-${suffix}`;
+
+  const ent = TIER_ENTITLEMENTS[tier];
+
+  await createSubscription({
+    subscription_id:        code,
+    customer_email:         email,
+    customer_name:          name,
+    tier,
+    status:                 stripeStatusToLocal(stripeSub.status),
+    stripe_subscription_id: stripeSubId,
+    stripe_customer_id:     customerId,
+    current_period_start:   new Date(stripeSub.current_period_start * 1000).toISOString(),
+    current_period_end:     new Date(stripeSub.current_period_end   * 1000).toISOString(),
+    verdicts_used:          0,
+    reckonings_used:        { small: 0, standard: 0, commercial: 0 },
+    extra_verdict_credits:  0,
+  });
+
+  // Store code record for listAllCodes() and getCodeStats()
+  await redis.set(`code:${code}`, JSON.stringify({
+    subscriptionId: code,
+    tier,
+    email,
+    createdAt: new Date().toISOString(),
+    active: true,
+    usageCount: 0,
+    lastUsed: null,
+  }));
+
+  // Fast-lookup indexes
+  if (customerId) {
+    await redis.set(`customer:${customerId}:code`, code);
+  }
+  await redis.lpush(`sub:${code}:codes`, code);
+  await redis.set(`email:${email.toLowerCase()}:code`, code);
+
+  // Send welcome email
+  try {
+    await sendWelcomeEmail(email, tier, code, ent.verdicts_per_month);
+  } catch (err) {
+    console.error("[webhook] welcome email failed (non-fatal):", err);
+  }
+
+  console.log(`[webhook] checkout subscription: ${code} for ${email} (${tier})`);
+}
+
 // ─── Main handler ─────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
@@ -228,7 +321,9 @@ export async function POST(req: NextRequest) {
         const session = event.data.object as Stripe.Checkout.Session;
         const metaType = session.metadata?.type;
 
-        if (metaType === "credit_purchase") {
+        if (session.mode === "subscription" && !metaType) {
+          await handleCheckoutSubscription(session);
+        } else if (metaType === "credit_purchase") {
           const subId   = session.metadata?.subscriptionId;
           const creditsFromMeta = Number(session.metadata?.credits ?? 0);
           const credits = creditsFromMeta > 0

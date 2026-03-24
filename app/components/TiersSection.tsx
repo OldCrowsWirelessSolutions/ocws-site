@@ -6,183 +6,6 @@ import { useState } from "react";
 
 type Tier = "Nest" | "Flock" | "Murder";
 
-function WaitlistModal({
-  tier,
-  onClose,
-}: {
-  tier: Tier;
-  onClose: () => void;
-}) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [message, setMessage] = useState("");
-  const [honeypot, setHoneypot] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
-  const [errorMsg, setErrorMsg] = useState("");
-
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!name.trim() || !email.trim()) {
-      setStatus("error");
-      setErrorMsg("Name and email are required.");
-      return;
-    }
-    setStatus("sending");
-    try {
-      const res = await fetch("/api/waitlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, tier, message, honeypot }),
-      });
-      const data = await res.json() as { success?: boolean; error?: string };
-      if (!res.ok || !data.success) throw new Error(data.error || "Failed");
-      setStatus("sent");
-    } catch (err: unknown) {
-      setStatus("error");
-      setErrorMsg(err instanceof Error ? err.message : "Something went wrong. Try again.");
-    }
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
-      style={{ background: "rgba(0,0,0,0.75)" }}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div
-        className="w-full max-w-md rounded-2xl p-6 shadow-2xl"
-        style={{ background: "#1A2332", border: "1px solid #0D6E7A" }}
-      >
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="text-lg font-bold text-white">Join the Waitlist — {tier}</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-white/50 hover:text-white transition text-xl leading-none"
-          >
-            ×
-          </button>
-        </div>
-        <p className="text-xs mb-5" style={{ color: "#666" }}>
-          {tier === "Nest" && "Monthly plan: $60 minimum (3 months) · Annual plan: $160/yr no minimum"}
-          {tier === "Flock" && "Monthly plan: 3-month minimum · Annual plan: $900/yr"}
-          {tier === "Murder" && "Monthly plan: 3-month minimum ($2,850 minimum) · Annual plan: $9,500/yr"}
-        </p>
-
-        {status === "sent" ? (
-          <div className="text-center py-8">
-            <p className="text-2xl mb-3">🐦‍⬛</p>
-            <p className="text-white font-semibold text-lg">You&rsquo;re on the list.</p>
-            <p className="mt-2 text-sm" style={{ color: "#888" }}>
-              Corvus will be in touch when your tier launches.
-            </p>
-            <button
-              onClick={onClose}
-              className="mt-6 inline-flex items-center justify-center rounded-xl px-5 py-2 text-sm font-semibold"
-              style={{ background: "#00C2C7", color: "#0D1520" }}
-            >
-              Close
-            </button>
-          </div>
-        ) : (
-          <form onSubmit={onSubmit} className="space-y-4">
-            {/* Honeypot */}
-            <div className="hidden" aria-hidden="true">
-              <input
-                value={honeypot}
-                onChange={(e) => setHoneypot(e.target.value)}
-                tabIndex={-1}
-                autoComplete="off"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1 text-white">
-                Full name <span style={{ color: "#00C2C7" }}>*</span>
-              </label>
-              <input
-                value={name}
-                onChange={(e) => { setName(e.target.value); setStatus("idle"); }}
-                className="w-full rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2"
-                style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.1)" }}
-                autoComplete="name"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1 text-white">
-                Email <span style={{ color: "#00C2C7" }}>*</span>
-              </label>
-              <input
-                value={email}
-                onChange={(e) => { setEmail(e.target.value); setStatus("idle"); }}
-                type="email"
-                className="w-full rounded-xl px-4 py-3 text-white text-sm focus:outline-none"
-                style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.1)" }}
-                autoComplete="email"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1 text-white">
-                Phone <span style={{ color: "#888" }}>(optional)</span>
-              </label>
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                type="tel"
-                className="w-full rounded-xl px-4 py-3 text-white text-sm focus:outline-none"
-                style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.1)" }}
-                autoComplete="tel"
-                placeholder="(850) 555-0100"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1 text-white">Tier</label>
-              <input
-                value={tier}
-                readOnly
-                className="w-full rounded-xl px-4 py-3 text-sm cursor-not-allowed"
-                style={{ background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.06)", color: "#00C2C7" }}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1 text-white">
-                Anything you want us to know? <span style={{ color: "#888" }}>(optional)</span>
-              </label>
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                rows={3}
-                className="w-full rounded-xl px-4 py-3 text-white text-sm focus:outline-none"
-                style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.1)" }}
-              />
-            </div>
-
-            {status === "error" && (
-              <div className="rounded-xl px-4 py-3 text-sm text-white" style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)" }}>
-                {errorMsg}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={status === "sending"}
-              className="w-full inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-bold disabled:opacity-60 ocws-glow-hover"
-              style={{ background: "#00C2C7", color: "#0D1520" }}
-            >
-              {status === "sending" ? "Reserving…" : "Reserve My Spot"}
-            </button>
-          </form>
-        )}
-      </div>
-    </div>
-  );
-}
-
 const tiers = [
   {
     id: "Nest" as Tier,
@@ -190,6 +13,10 @@ const tiers = [
     name: "NEST",
     price: "$20/mo",
     priceAlt: "or $160/yr",
+    monthlyProduct: "nest-monthly",
+    annualProduct: "nest-annual",
+    monthlyLabel: "Monthly — $20/mo",
+    annualLabel: "Annual — $160/yr",
     tagline: "For homeowners and small businesses",
     features: [
       "3 Verdicts per month included",
@@ -212,6 +39,10 @@ const tiers = [
     name: "FLOCK",
     price: "$100/mo",
     priceAlt: "or $900/yr",
+    monthlyProduct: "flock-monthly",
+    annualProduct: "flock-annual",
+    monthlyLabel: "Monthly — $100/mo",
+    annualLabel: "Annual — $900/yr",
     tagline: "For MSPs, IT consultants, and growing teams",
     features: [
       "15 Verdicts per month included",
@@ -237,6 +68,10 @@ const tiers = [
     name: "MURDER",
     price: "$950/mo",
     priceAlt: "or $9,500/yr",
+    monthlyProduct: "murder-monthly",
+    annualProduct: "murder-annual",
+    monthlyLabel: "Monthly — $950/mo",
+    annualLabel: "Annual — $9,500/yr",
     tagline: "For enterprise networks, multi-site operators, and mission-critical environments",
     features: [
       "Unlimited Verdicts",
@@ -269,7 +104,28 @@ const OcwsProSeal = () => (
 );
 
 export default function TiersSection() {
-  const [openModal, setOpenModal] = useState<Tier | null>(null);
+  const [checkingOut, setCheckingOut] = useState<string | null>(null);
+
+  async function handleCheckout(product: string) {
+    setCheckingOut(product);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product }),
+      });
+      const data = await res.json() as { url?: string; error?: string };
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error ?? "Checkout failed. Please try again.");
+        setCheckingOut(null);
+      }
+    } catch {
+      alert("Connection error. Please try again.");
+      setCheckingOut(null);
+    }
+  }
 
   return (
     <section className="py-20" style={{ background: "#1A2332" }}>
@@ -326,19 +182,39 @@ export default function TiersSection() {
                 </p>
               )}
 
-              <button
-                type="button"
-                onClick={() => setOpenModal(tier.id)}
-                className="w-full inline-flex items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition hover:bg-[#00C2C7]/10 ocws-glow-hover"
-                title={"note" in tier ? "Monthly plan requires 3-month minimum commitment" : undefined}
-                style={{
-                  background: "transparent",
-                  color: "#00C2C7",
-                  border: "1px solid rgba(0,194,199,0.35)",
-                }}
-              >
-                Join Waitlist
-              </button>
+              {/* Stripe checkout buttons */}
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleCheckout(tier.monthlyProduct)}
+                  disabled={checkingOut !== null}
+                  className="w-full inline-flex items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition ocws-glow-hover"
+                  style={{
+                    background: "#00C2C7",
+                    color: "#0D1520",
+                    border: "none",
+                    opacity: checkingOut !== null && checkingOut !== tier.monthlyProduct ? 0.5 : 1,
+                    cursor: checkingOut !== null ? "not-allowed" : "pointer",
+                  }}
+                >
+                  {checkingOut === tier.monthlyProduct ? "Redirecting…" : tier.monthlyLabel}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleCheckout(tier.annualProduct)}
+                  disabled={checkingOut !== null}
+                  className="w-full inline-flex items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition hover:bg-[#00C2C7]/10 ocws-glow-hover"
+                  style={{
+                    background: "transparent",
+                    color: "#00C2C7",
+                    border: "1px solid rgba(0,194,199,0.35)",
+                    opacity: checkingOut !== null && checkingOut !== tier.annualProduct ? 0.5 : 1,
+                    cursor: checkingOut !== null ? "not-allowed" : "pointer",
+                  }}
+                >
+                  {checkingOut === tier.annualProduct ? "Redirecting…" : tier.annualLabel}
+                </button>
+              </div>
             </div>
           ))}
 
@@ -424,9 +300,6 @@ export default function TiersSection() {
           </div>
         </div>
 
-      {openModal && (
-        <WaitlistModal tier={openModal} onClose={() => setOpenModal(null)} />
-      )}
     </section>
   );
 }

@@ -59,7 +59,7 @@ export default function Footer() {
               <li><Link href="/crows-eye" className="text-white/50 hover:text-white transition">Full Reckoning &mdash; $150+</Link></li>
               <li><Link href="/crows-eye" className="text-white/50 hover:text-white transition">Extra Credits &mdash; from $15</Link></li>
               <li><Link href="/contact" className="text-white/50 hover:text-white transition">OCWS Pro &mdash; $750</Link></li>
-              <li><Link href="/waitlist" className="text-white/50 hover:text-white transition">Join Waitlist</Link></li>
+              <li><Link href="/recover-code" className="text-white/50 hover:text-white transition">Lost your code? Recover it here</Link></li>
             </ul>
           </div>
 

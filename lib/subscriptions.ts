@@ -360,6 +360,96 @@ export async function resetPeriodCredits(
   });
 }
 
+// ─── Code tracking ────────────────────────────────────────────────────────────
+// Tracks per-code usage stats in a Redis hash at code:{code}:stats
+
+export async function trackCodeUsage(code: string): Promise<void> {
+  const key = `code:${code}:stats`;
+  await redis.hincrby(key, "usageCount", 1);
+  await redis.hset(key, { lastUsed: new Date().toISOString() });
+}
+
+export interface CodeStats {
+  usageCount: number;
+  lastUsed: string | null;
+  active: boolean;
+  tier: string | null;
+  email: string | null;
+  createdAt: string | null;
+}
+
+export async function getCodeStats(code: string): Promise<CodeStats | null> {
+  const [record, stats] = await Promise.all([
+    redis.get<{
+      subscriptionId?: string;
+      tier?: string;
+      email?: string;
+      createdAt?: string;
+      active?: boolean;
+    }>(`code:${code}`),
+    redis.hgetall(`code:${code}:stats`),
+  ]);
+
+  if (!record && !stats) return null;
+
+  return {
+    usageCount: stats ? Number((stats as Record<string, string>).usageCount ?? 0) : 0,
+    lastUsed:   stats ? ((stats as Record<string, string>).lastUsed ?? null) : null,
+    active:     record?.active ?? true,
+    tier:       record?.tier   ?? null,
+    email:      record?.email  ?? null,
+    createdAt:  record?.createdAt ?? null,
+  };
+}
+
+export interface CodeRecord {
+  code: string;
+  subscriptionId: string | null;
+  tier: string | null;
+  email: string | null;
+  createdAt: string | null;
+  active: boolean;
+  usageCount: number;
+  lastUsed: string | null;
+}
+
+export async function listAllCodes(): Promise<CodeRecord[]> {
+  const keys = await redis.keys("code:CORVUS-*");
+  // Exclude stats keys
+  const codeKeys = (keys as string[]).filter((k) => !k.endsWith(":stats"));
+  if (codeKeys.length === 0) return [];
+
+  const records = await Promise.all(
+    codeKeys.map(async (key) => {
+      const code = key.replace(/^code:/, "");
+      const [record, stats] = await Promise.all([
+        redis.get<{
+          subscriptionId?: string;
+          tier?: string;
+          email?: string;
+          createdAt?: string;
+          active?: boolean;
+        }>(key),
+        redis.hgetall(`${key}:stats`),
+      ]);
+      return {
+        code,
+        subscriptionId: record?.subscriptionId ?? null,
+        tier:           record?.tier            ?? null,
+        email:          record?.email           ?? null,
+        createdAt:      record?.createdAt       ?? null,
+        active:         record?.active          ?? true,
+        usageCount:     stats ? Number((stats as Record<string, string>).usageCount ?? 0) : 0,
+        lastUsed:       stats ? ((stats as Record<string, string>).lastUsed ?? null) : null,
+      };
+    })
+  );
+
+  return records.sort((a, b) =>
+    (b.createdAt ?? "").localeCompare(a.createdAt ?? "")
+  );
+}
+
 // ─── Device seat management ───────────────────────────────────────────────────
 // Best-effort seat tracking. NOT tamper-proof. Designed for honest web seat
 // registration — a willing user can clear localStorage to re-register.

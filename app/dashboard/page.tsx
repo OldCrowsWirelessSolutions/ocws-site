@@ -120,6 +120,9 @@ export default function DashboardPage() {
   const [storedCode, setStoredCode] = useState("");
   const [buyingCredits, setBuyingCredits]       = useState<string | null>(null);
   const [buyingReckoning, setBuyingReckoning]   = useState<string | null>(null);
+  const [codeStats, setCodeStats]               = useState<{ usageCount: number; lastUsed: string | null } | null>(null);
+  const [resending, setResending]               = useState(false);
+  const [resent, setResent]                     = useState(false);
 
   // ── Auth + load ────────────────────────────────────────────────────────────
 
@@ -146,6 +149,11 @@ export default function DashboardPage() {
         try {
           const dRes = await fetch(`/api/subscriptions/details?code=${encodeURIComponent(code)}`);
           if (dRes.ok) setDetails(await dRes.json());
+        } catch { /* non-fatal */ }
+        // Load code usage stats (best-effort)
+        try {
+          const sRes = await fetch(`/api/subscriptions/code-stats?code=${encodeURIComponent(code)}`);
+          if (sRes.ok) setCodeStats(await sRes.json());
         } catch { /* non-fatal */ }
       }
 
@@ -234,6 +242,22 @@ export default function DashboardPage() {
       setCodeCopied(true);
       setTimeout(() => setCodeCopied(false), 2000);
     });
+  }
+
+  async function handleResendCode() {
+    const email = details?.customer_email;
+    if (!email) return;
+    setResending(true);
+    try {
+      await fetch("/api/subscriptions/recover-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      setResent(true);
+      setTimeout(() => setResent(false), 4000);
+    } catch { /* non-fatal */ }
+    finally { setResending(false); }
   }
 
   async function handleBuyCredits(pack: "single" | "6pack" | "12pack") {
@@ -716,23 +740,29 @@ export default function DashboardPage() {
 
       {/* ── Subscription ID ── */}
       <div style={card}>
-        <p style={sectionLabel}>Your Subscription ID</p>
+        <p style={sectionLabel}>Your Subscriber Code</p>
         <div style={{
           background: "#0D1520", border: "1px solid #0D6E7A",
           borderRadius: "12px", padding: "20px 24px",
           textAlign: "center", marginBottom: "16px",
         }}>
           <p style={{ color: "#00C2C7", fontSize: "10px", fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: "8px" }}>
-            Your Subscription ID
+            Your Subscriber Code
           </p>
           <p style={{ color: "#ffffff", fontSize: "22px", fontWeight: 700, fontFamily: "monospace", letterSpacing: "0.1em" }}>
             {codeVisible ? storedCode : "••••••••••••••••••••"}
           </p>
+          {codeStats && (
+            <p style={{ color: "#555555", fontSize: "11px", marginTop: "8px" }}>
+              Used {codeStats.usageCount} time{codeStats.usageCount !== 1 ? "s" : ""}
+              {codeStats.lastUsed ? ` · last used ${fmtDate(codeStats.lastUsed)}` : ""}
+            </p>
+          )}
         </div>
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "12px" }}>
           <button onClick={() => setCodeVisible(v => !v)}
             style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#ffffff", fontSize: "13px", padding: "8px 16px", cursor: "pointer" }}>
-            {codeVisible ? "Hide ID" : "Show ID"}
+            {codeVisible ? "Hide Code" : "Show Code"}
           </button>
           <button onClick={copyCode}
             style={{
@@ -741,19 +771,43 @@ export default function DashboardPage() {
               borderRadius: "8px", color: codeCopied ? "#00C2C7" : "#ffffff",
               fontSize: "13px", padding: "8px 16px", cursor: "pointer",
             }}>
-            {codeCopied ? "Copied!" : "Copy ID"}
+            {codeCopied ? "Copied!" : "Copy Code"}
           </button>
+          {isSubType && details?.customer_email && (
+            <button
+              onClick={handleResendCode}
+              disabled={resending || resent}
+              style={{
+                background: resent ? "rgba(74,222,128,0.08)" : "rgba(255,255,255,0.05)",
+                border: `1px solid ${resent ? "rgba(74,222,128,0.3)" : "rgba(255,255,255,0.1)"}`,
+                borderRadius: "8px",
+                color: resent ? "#4ADE80" : "#888888",
+                fontSize: "13px", padding: "8px 16px",
+                cursor: resending || resent ? "not-allowed" : "pointer",
+              }}>
+              {resent ? "Sent!" : resending ? "Sending…" : "Resend Code to Email"}
+            </button>
+          )}
         </div>
-        {(tier === "flock" || tier === "murder") && (
-          <p style={{ color: "#888888", fontSize: "12px", marginTop: "12px" }}>
-            Share this ID with team members to give them access — up to {sub?.seat_limit} device{sub?.seat_limit !== 1 ? "s" : ""} on your plan.
+        {tier === "flock" && (
+          <p style={{ color: "#888888", fontSize: "12px" }}>
+            Share with your team — up to {sub?.seat_limit ?? 5} seats on your Flock plan.
+          </p>
+        )}
+        {tier === "murder" && (
+          <p style={{ color: "#888888", fontSize: "12px" }}>
+            Share this code with your team — up to {sub?.seat_limit ?? 3} devices on your plan.
           </p>
         )}
         {tier === "nest" && (
-          <p style={{ color: "#555555", fontSize: "12px", marginTop: "12px" }}>
+          <p style={{ color: "#555555", fontSize: "12px" }}>
             Your Nest plan covers a single device. Upgrade to Flock for team access.
           </p>
         )}
+        <p style={{ color: "#444444", fontSize: "11px", marginTop: "12px" }}>
+          Lost your code?{" "}
+          <a href="/recover-code" style={{ color: "#00C2C7" }}>Recover it here</a>
+        </p>
       </div>
 
       {/* ── Account (subscription type only) ── */}

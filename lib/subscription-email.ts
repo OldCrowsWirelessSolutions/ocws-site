@@ -245,6 +245,209 @@ export async function sendSubscriptionRecovery(opts: {
   });
 }
 
+// ─── Welcome email (sent on checkout.session.completed for new subscriptions) ──
+
+export async function sendWelcomeEmail(
+  email: string,
+  tier: SubscriptionTier,
+  code: string,
+  creditsMonthly: number
+): Promise<void> {
+  const from      = process.env.SMTP_FROM;
+  const bcc       = process.env.OCWS_CONTACT_TO ?? "joshua@oldcrowswireless.com";
+  const tierName  = TIER_NAMES[tier];
+  const credits   = creditsMonthly >= 999999 ? "Unlimited" : String(creditsMonthly);
+
+  const text = [
+    `Your Corvus subscription is active — here's your code`,
+    ``,
+    `Your Corvus ${tierName} subscription is active.`,
+    ``,
+    `Your subscriber code: ${code}`,
+    ``,
+    `This code unlocks your full Verdict at oldcrowswireless.com/crows-eye.`,
+    `Enter it when Corvus renders your free teaser analysis.`,
+    ``,
+    `You have ${credits} Verdicts included this month.`,
+    ``,
+    `How to use Crow's Eye:`,
+    `1. Download WiFi Analyzer (free — green icon, Google Play or App Store)`,
+    `2. Take three screenshots — Access Points, 2.4 GHz graph, 5 GHz graph`,
+    `3. Go to oldcrowswireless.com/crows-eye`,
+    `4. Upload screenshots and analyze`,
+    `5. Enter ${code} to unlock your full Verdict`,
+    ``,
+    `Access your subscriber dashboard at:`,
+    `oldcrowswireless.com/dashboard`,
+    ``,
+    `Lost your code? Go to oldcrowswireless.com/recover-code and enter your email.`,
+    ``,
+    `— Corvus`,
+    `Old Crows Wireless Solutions`,
+    `oldcrowswireless.com`,
+  ].join("\n");
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.6;max-width:600px;margin:0 auto;">
+      <div style="background:#0D1520;padding:24px 32px;border-radius:12px 12px 0 0;">
+        <p style="color:#00C2C7;font-size:12px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin:0 0 8px;">
+          Old Crows Wireless Solutions LLC
+        </p>
+        <h1 style="color:#ffffff;font-size:22px;margin:0;">Your Corvus subscription is active</h1>
+      </div>
+      <div style="background:#1A2332;padding:32px;border-radius:0 0 12px 12px;border:1px solid rgba(255,255,255,0.08);">
+        <p style="color:#aaaaaa;margin:0 0 20px;">
+          Your Corvus <strong style="color:#ffffff;">${escapeHtml(tierName)}</strong> subscription is active.
+        </p>
+
+        <div style="background:#0D1520;border:1px solid #0D6E7A;border-radius:12px;padding:20px 24px;margin:0 0 24px;text-align:center;">
+          <p style="color:#00C2C7;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;margin:0 0 8px;">
+            Your Subscriber Code
+          </p>
+          <p style="color:#ffffff;font-size:28px;font-weight:700;letter-spacing:0.12em;font-family:monospace;margin:0;">
+            ${escapeHtml(code)}
+          </p>
+        </div>
+
+        <p style="color:#aaaaaa;font-size:13px;margin:0 0 8px;">
+          This code unlocks your full Verdict at
+          <a href="https://oldcrowswireless.com/crows-eye" style="color:#00C2C7;">oldcrowswireless.com/crows-eye</a>.
+          Enter it when Corvus renders your free teaser analysis.
+        </p>
+        <p style="color:#aaaaaa;font-size:13px;margin:0 0 20px;">
+          You have <strong style="color:#ffffff;">${escapeHtml(credits)} Verdicts</strong> included this month.
+        </p>
+
+        <div style="background:rgba(0,194,199,0.06);border:1px solid rgba(0,194,199,0.2);border-radius:8px;padding:14px 18px;margin:0 0 20px;">
+          <p style="color:#00C2C7;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 10px;">How to use Crow&rsquo;s Eye</p>
+          <ol style="color:#aaaaaa;font-size:13px;margin:0;padding-left:20px;">
+            <li style="margin-bottom:6px;">Download WiFi Analyzer (free — green icon, Google Play or App Store)</li>
+            <li style="margin-bottom:6px;">Take three screenshots — Access Points, 2.4 GHz graph, 5 GHz graph</li>
+            <li style="margin-bottom:6px;">Go to <a href="https://oldcrowswireless.com/crows-eye" style="color:#00C2C7;">oldcrowswireless.com/crows-eye</a></li>
+            <li style="margin-bottom:6px;">Upload screenshots and analyze</li>
+            <li>Enter <strong style="color:#ffffff;">${escapeHtml(code)}</strong> to unlock your full Verdict</li>
+          </ol>
+        </div>
+
+        <p style="color:#aaaaaa;font-size:13px;margin:0 0 8px;">
+          Access your subscriber dashboard at
+          <a href="https://oldcrowswireless.com/dashboard" style="color:#00C2C7;">oldcrowswireless.com/dashboard</a>.
+        </p>
+        <p style="color:#aaaaaa;font-size:13px;margin:0 0 24px;">
+          Lost your code? Go to
+          <a href="https://oldcrowswireless.com/recover-code" style="color:#00C2C7;">oldcrowswireless.com/recover-code</a>
+          and enter your email.
+        </p>
+
+        <p style="color:#555555;font-size:11px;margin:0;">
+          &copy; 2026 Old Crows Wireless Solutions LLC.
+        </p>
+      </div>
+    </div>
+  `;
+
+  if (!from) {
+    console.log("[subscription-email] sendWelcomeEmail: SMTP_FROM not set. Code:", code);
+    return;
+  }
+
+  const transporter = getTransporter();
+  await transporter.sendMail({
+    from,
+    to: email,
+    bcc,
+    subject: `Your Corvus subscription is active — here's your code`,
+    text,
+    html,
+    replyTo: bcc,
+  });
+}
+
+// ─── Code recovery email (sends existing code, no reissue) ───────────────────
+
+export async function sendCodeRecoveryEmail(
+  email: string,
+  code: string,
+  tier: SubscriptionTier
+): Promise<void> {
+  const from     = process.env.SMTP_FROM;
+  const replyTo  = process.env.OCWS_CONTACT_TO ?? "joshua@oldcrowswireless.com";
+  const tierName = TIER_NAMES[tier];
+
+  const text = [
+    `Your Corvus subscriber code`,
+    ``,
+    `Here is your Corvus subscriber code:`,
+    ``,
+    `${code}`,
+    ``,
+    `Tier: ${tierName}`,
+    ``,
+    `Use this code at oldcrowswireless.com/crows-eye to unlock your full Verdict.`,
+    `Access your dashboard at oldcrowswireless.com/dashboard.`,
+    ``,
+    `If you did not request this email, please contact joshua@oldcrowswireless.com`,
+    ``,
+    `— Old Crows Wireless Solutions`,
+  ].join("\n");
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.6;max-width:600px;margin:0 auto;">
+      <div style="background:#0D1520;padding:24px 32px;border-radius:12px 12px 0 0;">
+        <p style="color:#00C2C7;font-size:12px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin:0 0 8px;">
+          Old Crows Wireless Solutions LLC
+        </p>
+        <h1 style="color:#ffffff;font-size:22px;margin:0;">Your Corvus Subscriber Code</h1>
+      </div>
+      <div style="background:#1A2332;padding:32px;border-radius:0 0 12px 12px;border:1px solid rgba(255,255,255,0.08);">
+        <p style="color:#aaaaaa;margin:0 0 24px;">Here is your Corvus subscriber code:</p>
+
+        <div style="background:#0D1520;border:1px solid #0D6E7A;border-radius:12px;padding:20px 24px;margin:0 0 24px;text-align:center;">
+          <p style="color:#00C2C7;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;margin:0 0 8px;">
+            Subscriber Code
+          </p>
+          <p style="color:#ffffff;font-size:28px;font-weight:700;letter-spacing:0.12em;font-family:monospace;margin:0;">
+            ${escapeHtml(code)}
+          </p>
+          <p style="color:#888888;font-size:12px;margin:8px 0 0;">Tier: ${escapeHtml(tierName)}</p>
+        </div>
+
+        <p style="color:#aaaaaa;font-size:13px;margin:0 0 8px;">
+          Use this code at
+          <a href="https://oldcrowswireless.com/crows-eye" style="color:#00C2C7;">oldcrowswireless.com/crows-eye</a>
+          to unlock your full Verdict.
+        </p>
+        <p style="color:#aaaaaa;font-size:13px;margin:0 0 20px;">
+          Access your dashboard at
+          <a href="https://oldcrowswireless.com/dashboard" style="color:#00C2C7;">oldcrowswireless.com/dashboard</a>.
+        </p>
+        <p style="color:#555555;font-size:12px;margin:0 0 24px;">
+          If you did not request this email, please contact
+          <a href="mailto:joshua@oldcrowswireless.com" style="color:#00C2C7;">joshua@oldcrowswireless.com</a>.
+        </p>
+        <p style="color:#555555;font-size:11px;margin:0;">
+          &copy; 2026 Old Crows Wireless Solutions LLC.
+        </p>
+      </div>
+    </div>
+  `;
+
+  if (!from) {
+    console.log("[subscription-email] sendCodeRecoveryEmail: SMTP_FROM not set. Code:", code);
+    return;
+  }
+
+  const transporter = getTransporter();
+  await transporter.sendMail({
+    from,
+    to: email,
+    subject: `Your Corvus subscriber code`,
+    text,
+    html,
+    replyTo,
+  });
+}
+
 // ─── Payment failed notice ────────────────────────────────────────────────────
 
 export async function sendPaymentFailedNotice(opts: {
