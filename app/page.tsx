@@ -56,14 +56,14 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
             <Link
               href="/crows-eye"
-              className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-base font-bold transition min-w-[200px]"
+              className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-base font-bold ocws-glow-hover min-w-[200px]"
               style={{ background: "#00C2C7", color: "#0D1520" }}
             >
               Get Corvus&rsquo; Verdict — Free
             </Link>
             <Link
               href="/learn"
-              className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-base font-semibold transition min-w-[200px]"
+              className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-base font-semibold ocws-glow-hover min-w-[200px]"
               style={{ border: "1px solid #00C2C7", color: "#00C2C7", background: "transparent" }}
             >
               See How It Works
@@ -184,7 +184,7 @@ export default function HomePage() {
 
               <Link
                 href="/crows-eye"
-                className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold transition"
+                className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold ocws-glow-hover"
                 style={{ background: "#00C2C7", color: "#0D1520" }}
               >
                 See Corvus in Action
@@ -256,7 +256,7 @@ export default function HomePage() {
 
             <a
               href="/waitlist"
-              className="inline-flex items-center justify-center rounded-2xl px-8 py-4 text-base font-bold transition"
+              className="inline-flex items-center justify-center rounded-2xl px-8 py-4 text-base font-bold ocws-glow-hover"
               style={{ background: "#00C2C7", color: "#0D1520" }}
             >
               Join the App Waitlist
@@ -368,7 +368,7 @@ export default function HomePage() {
 
           <Link
             href="/contact"
-            className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold transition"
+            className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold ocws-glow-hover"
             style={{ background: "#00C2C7", color: "#0D1520" }}
           >
             Request an Assessment
@@ -451,7 +451,7 @@ export default function HomePage() {
           </p>
           <Link
             href="/crows-eye"
-            className="inline-flex items-center justify-center rounded-2xl px-8 py-4 text-base font-bold transition"
+            className="inline-flex items-center justify-center rounded-2xl px-8 py-4 text-base font-bold ocws-glow-hover"
             style={{ background: "#0D1520", color: "white" }}
           >
             Get Corvus&rsquo; Verdict

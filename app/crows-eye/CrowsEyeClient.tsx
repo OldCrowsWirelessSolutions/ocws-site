@@ -1284,7 +1284,7 @@ export default function CrowsEyeClient() {
             <button
               type="button"
               onClick={handleApplyCode}
-              className="shrink-0 rounded-xl px-4 py-3 text-sm font-semibold transition"
+              className="shrink-0 rounded-xl px-4 py-3 text-sm font-semibold ocws-glow-hover"
               style={{ background: "#00C2C7", color: "#0D1520" }}
             >
               Apply

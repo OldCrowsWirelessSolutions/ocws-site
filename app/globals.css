@@ -86,13 +86,14 @@ body {
   }
 
   .ocws-tile-hover {
-    transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+    transition: background 180ms ease, border-color 180ms ease, transform 180ms ease, box-shadow 200ms ease;
   }
 
   .ocws-tile-hover:hover {
     background: var(--ocws-panelHover);
     border-color: var(--ocws-borderHover);
     transform: translateY(-1px);
+    box-shadow: 0 0 0 1px rgba(0, 194, 199, 0.28), 0 0 24px rgba(0, 194, 199, 0.10), var(--ocws-shadow);
   }
 
   .ocws-pill {
@@ -110,18 +111,76 @@ body {
   .ocws-btn-primary {
     background: white;
     color: black;
+    transition: opacity 200ms ease, box-shadow 200ms ease;
   }
   .ocws-btn-primary:hover {
     opacity: 0.92;
+    box-shadow: 0 0 0 1px rgba(0, 194, 199, 0.55), 0 0 20px rgba(0, 194, 199, 0.22);
+  }
+  .ocws-btn-primary:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 194, 199, 0.7);
   }
 
   .ocws-btn-ghost {
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.15);
     color: white;
+    transition: background 200ms ease, box-shadow 200ms ease;
   }
   .ocws-btn-ghost:hover {
     background: rgba(255, 255, 255, 0.10);
+    box-shadow: 0 0 0 1px rgba(0, 194, 199, 0.55), 0 0 20px rgba(0, 194, 199, 0.22);
+  }
+  .ocws-btn-ghost:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 194, 199, 0.7);
+  }
+
+  /* =========================================
+     INTERACTIVE GLOW — site-wide utilities
+     Apply .ocws-glow-hover to buttons, CTA links, icon buttons.
+     Apply .ocws-card-glow to clickable card/panel wrappers.
+     ========================================= */
+
+  /* Cyan glow — for all primary interactive elements */
+  .ocws-glow-hover {
+    transition: box-shadow 200ms ease, background 200ms ease, opacity 200ms ease;
+  }
+  .ocws-glow-hover:hover,
+  .ocws-glow-hover:focus-visible {
+    box-shadow: 0 0 0 1px rgba(0, 194, 199, 0.55), 0 0 20px rgba(0, 194, 199, 0.22);
+    outline: none;
+  }
+
+  /* Gold variant — for gold-branded elements */
+  .ocws-glow-hover-gold {
+    transition: box-shadow 200ms ease, background 200ms ease, opacity 200ms ease;
+  }
+  .ocws-glow-hover-gold:hover,
+  .ocws-glow-hover-gold:focus-visible {
+    box-shadow: 0 0 0 1px rgba(184, 146, 42, 0.55), 0 0 20px rgba(184, 146, 42, 0.22);
+    outline: none;
+  }
+
+  /* Card glow — lift + ambient glow for clickable panels */
+  .ocws-card-glow {
+    transition: box-shadow 200ms ease, transform 200ms ease;
+  }
+  .ocws-card-glow:hover {
+    box-shadow: 0 0 0 1px rgba(0, 194, 199, 0.38), 0 0 28px rgba(0, 194, 199, 0.13), 0 8px 32px rgba(0, 0, 0, 0.35);
+    transform: translateY(-1px);
+  }
+
+  /* FAQ details/summary elements */
+  details {
+    transition: box-shadow 200ms ease;
+  }
+  details:hover {
+    box-shadow: 0 0 0 1px rgba(0, 194, 199, 0.28), 0 0 14px rgba(0, 194, 199, 0.08);
+  }
+  details summary {
+    cursor: pointer;
   }
 
   /* Brand accents */

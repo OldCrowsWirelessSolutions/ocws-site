@@ -39,7 +39,7 @@ export default function FAQPreview() {
           {PREVIEW_FAQS.map((item, i) => (
             <div
               key={i}
-              className="rounded-2xl overflow-hidden"
+              className="rounded-2xl overflow-hidden ocws-card-glow"
               style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(0,0,0,0.2)" }}
             >
               <button
@@ -72,7 +72,7 @@ export default function FAQPreview() {
         </div>
 
         <div className="mt-8">
-          <Link href="/faq" className="text-sm font-semibold" style={{ color: "#00C2C7" }}>
+          <Link href="/faq" className="text-sm font-semibold ocws-glow-hover rounded-lg px-2 py-1 -ml-2" style={{ color: "#00C2C7" }}>
             See all questions →
           </Link>
         </div>

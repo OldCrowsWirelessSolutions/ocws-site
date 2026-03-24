@@ -54,7 +54,7 @@ export default function ContactForm() {
 
       <button
         type="submit"
-        className="mt-2 inline-flex items-center justify-center rounded-xl bg-ocws-gold px-6 py-3 text-sm font-semibold text-ocws-midnight hover:bg-ocws-goldSoft"
+        className="mt-2 inline-flex items-center justify-center rounded-xl bg-ocws-gold px-6 py-3 text-sm font-semibold text-ocws-midnight hover:bg-ocws-goldSoft ocws-glow-hover-gold"
       >
         Send
       </button>

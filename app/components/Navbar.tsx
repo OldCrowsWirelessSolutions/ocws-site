@@ -76,7 +76,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2 shrink-0">
             <Link
               href="/crows-eye"
-              className="hidden sm:inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold transition"
+              className="hidden sm:inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold ocws-glow-hover"
               style={{ background: "#00C2C7", color: "#0D1520" }}
             >
               Get Corvus&rsquo; Verdict
@@ -148,7 +148,7 @@ export default function Navbar() {
                 <Link
                   href="/crows-eye"
                   onClick={() => setOpen(false)}
-                  className="w-full inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold transition"
+                  className="w-full inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold ocws-glow-hover"
                   style={{ background: "#00C2C7", color: "#0D1520" }}
                 >
                   Get Corvus&rsquo; Verdict

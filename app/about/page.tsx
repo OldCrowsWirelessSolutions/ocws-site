@@ -146,14 +146,14 @@ export default function AboutPage() {
         <div className="flex flex-wrap gap-4">
           <Link
             href="/crows-eye"
-            className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold transition"
+            className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold ocws-glow-hover"
             style={{ background: "#00C2C7", color: "#0D1520" }}
           >
             Try Crow&rsquo;s Eye Free
           </Link>
           <Link
             href="/contact"
-            className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold transition"
+            className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold ocws-glow-hover"
             style={{ border: "1px solid rgba(255,255,255,0.15)", color: "white", background: "transparent" }}
           >
             Get in Touch

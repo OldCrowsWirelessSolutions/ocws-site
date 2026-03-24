@@ -38,7 +38,7 @@ export default function ServicesPage() {
                   <h2 className="text-2xl font-bold text-white mb-1">Corvus&rsquo; Verdict</h2>
                   <p className="text-sm font-semibold" style={{ color: "#00C2C7" }}>Single analysis &middot; $50 &middot; No account required</p>
                 </div>
-                <Link href="/crows-eye" className="shrink-0 inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-bold transition" style={{ background: "#00C2C7", color: "#0D1520" }}>
+                <Link href="/crows-eye" className="shrink-0 inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-bold ocws-glow-hover" style={{ background: "#00C2C7", color: "#0D1520" }}>
                   Get Your Verdict
                 </Link>
               </div>
@@ -65,7 +65,7 @@ export default function ServicesPage() {
                   <h2 className="text-2xl font-bold text-white mb-1">The Full Reckoning</h2>
                   <p className="text-sm font-semibold" style={{ color: "#B8922A" }}>Multi-location site survey &middot; From $150</p>
                 </div>
-                <Link href="/crows-eye" className="shrink-0 inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-bold transition" style={{ border: "1px solid #B8922A", color: "#B8922A", background: "transparent" }}>
+                <Link href="/crows-eye" className="shrink-0 inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-bold ocws-glow-hover-gold" style={{ border: "1px solid #B8922A", color: "#B8922A", background: "transparent" }}>
                   Start a Reckoning
                 </Link>
               </div>
@@ -95,7 +95,7 @@ export default function ServicesPage() {
                   <h2 className="text-2xl font-bold text-white mb-1">OCWS Pro Certified Reckoning</h2>
                   <p className="text-sm font-semibold" style={{ color: "#B8922A" }}>Joshua certifies every finding &middot; $1,500 &middot; Any size facility</p>
                 </div>
-                <Link href="/contact" className="shrink-0 inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-bold transition" style={{ border: "1px solid rgba(184,146,42,0.5)", color: "#B8922A", background: "transparent" }}>
+                <Link href="/contact" className="shrink-0 inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-bold ocws-glow-hover-gold" style={{ border: "1px solid rgba(184,146,42,0.5)", color: "#B8922A", background: "transparent" }}>
                   Request Pro Reckoning
                 </Link>
               </div>
@@ -140,7 +140,7 @@ export default function ServicesPage() {
           </div>
           <p className="text-xs mb-1" style={{ color: "#B8922A" }}>Service area: Pensacola metro through Northwest FL to Mobile AL. $125 travel fee for locations more than 50 miles round trip from Pensacola.</p>
           <p className="text-xs mb-6" style={{ color: "#888" }}>Properties with detached structures, large outdoor areas, or complex multi-building layouts may require additional time. Discussed and confirmed before booking.</p>
-          <Link href="/contact" className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold transition" style={{ background: "#00C2C7", color: "#0D1520" }}>
+          <Link href="/contact" className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold ocws-glow-hover" style={{ background: "#00C2C7", color: "#0D1520" }}>
             Request an Assessment
           </Link>
         </div>
@@ -149,7 +149,7 @@ export default function ServicesPage() {
         <div className="text-center py-12 rounded-2xl" style={{ background: "#0D6E7A" }}>
           <h2 className="text-3xl font-bold text-white mb-3">Start with a free scan.</h2>
           <p className="text-sm mb-8" style={{ color: "rgba(255,255,255,0.7)" }}>Upload your screenshots. Corvus reads the environment in under 3 minutes.</p>
-          <Link href="/crows-eye" className="inline-flex items-center justify-center rounded-2xl px-8 py-4 text-base font-bold transition" style={{ background: "#0D1520", color: "white" }}>
+          <Link href="/crows-eye" className="inline-flex items-center justify-center rounded-2xl px-8 py-4 text-base font-bold ocws-glow-hover" style={{ background: "#0D1520", color: "white" }}>
             Get Corvus&rsquo; Verdict
           </Link>
         </div>

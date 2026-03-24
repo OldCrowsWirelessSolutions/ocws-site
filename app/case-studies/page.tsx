@@ -77,7 +77,7 @@ export default function CaseStudiesPage() {
                   <a
                     href={c.pdfHref}
                     download
-                    className="shrink-0 inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold transition"
+                    className="shrink-0 inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold ocws-glow-hover"
                     style={{ border: "1px solid #00C2C7", color: "#00C2C7", background: "transparent" }}
                   >
                     Download PDF Verdict
@@ -133,14 +133,14 @@ export default function CaseStudiesPage() {
         <div className="flex flex-wrap gap-4">
           <Link
             href="/crows-eye"
-            className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold transition"
+            className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold ocws-glow-hover"
             style={{ background: "#00C2C7", color: "#0D1520" }}
           >
             Get Your Own Verdict
           </Link>
           <Link
             href="/contact"
-            className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold transition"
+            className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold ocws-glow-hover"
             style={{ border: "1px solid rgba(255,255,255,0.15)", color: "white", background: "transparent" }}
           >
             Request On-Site Assessment

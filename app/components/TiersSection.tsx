@@ -154,7 +154,7 @@ function WaitlistModal({
             <button
               type="submit"
               disabled={status === "sending"}
-              className="w-full inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-bold disabled:opacity-60 transition"
+              className="w-full inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-bold disabled:opacity-60 ocws-glow-hover"
               style={{ background: "#00C2C7", color: "#0D1520" }}
             >
               {status === "sending" ? "Reserving…" : "Reserve My Spot"}
@@ -269,7 +269,7 @@ export default function TiersSection() {
           {tiers.map((tier) => (
             <div
               key={tier.id}
-              className="relative flex flex-col rounded-2xl p-6"
+              className="relative flex flex-col rounded-2xl p-6 ocws-card-glow"
               style={{
                 background: "#0D1520",
                 border: "1px solid #0D6E7A",
@@ -310,7 +310,7 @@ export default function TiersSection() {
               <button
                 type="button"
                 onClick={() => setOpenModal(tier.id)}
-                className="w-full inline-flex items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition hover:bg-[#00C2C7]/10 hover:border-[#00C2C7]"
+                className="w-full inline-flex items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition hover:bg-[#00C2C7]/10 ocws-glow-hover"
                 title={"note" in tier && tier.id !== "Murder" ? "Monthly plan requires 3-month minimum commitment" : undefined}
                 style={{
                   background: "transparent",
@@ -325,7 +325,7 @@ export default function TiersSection() {
 
           {/* OCWS Pro card */}
           <div
-            className="flex flex-col rounded-2xl p-6"
+            className="flex flex-col rounded-2xl p-6 ocws-card-glow"
             style={{ background: "#0D1520", border: "1px solid #0D6E7A" }}
           >
             <div className="text-center mb-4">
@@ -358,7 +358,7 @@ export default function TiersSection() {
 
             <a
               href="/contact"
-              className="w-full inline-flex items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition"
+              className="w-full inline-flex items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition ocws-glow-hover-gold"
               style={{ background: "transparent", color: "#B8922A", border: "1px solid #B8922A" }}
             >
               Request Assessment

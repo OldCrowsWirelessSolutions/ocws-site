@@ -34,7 +34,7 @@ export default function CTA({
         <div className="flex flex-wrap gap-3">
           <Link
             href={primaryHref}
-            className="inline-flex items-center justify-center rounded-xl bg-black/80 px-4 py-2 text-sm font-semibold text-white transition hover:bg-black/95"
+            className="inline-flex items-center justify-center rounded-xl bg-black/80 px-4 py-2 text-sm font-semibold text-white ocws-glow-hover hover:bg-black/95"
           >
             {primaryText} →
           </Link>
@@ -42,7 +42,7 @@ export default function CTA({
           {secondaryText && secondaryHref ? (
             <Link
               href={secondaryHref}
-              className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-black/60 px-4 py-2 text-sm font-semibold text-white transition hover:bg-black/80"
+              className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-black/60 px-4 py-2 text-sm font-semibold text-white ocws-glow-hover hover:bg-black/80"
             >
               {secondaryText}
             </Link>
