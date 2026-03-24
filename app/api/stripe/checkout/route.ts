@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import { validatePromoCode, redeemPromoCode } from "@/lib/promo-codes";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
   apiVersion: "2026-02-25.clover",
@@ -58,7 +59,22 @@ export async function POST(req: NextRequest) {
       product?: string;
       amount?: number;
       discount_percent?: number;
+      promoCode?: string;
     };
+
+    // Promo code bypass — validate, redeem, and return without creating a Stripe session
+    if (body.promoCode) {
+      const code = body.promoCode.trim().toUpperCase();
+      const promoResult = await validatePromoCode(code);
+      if (!promoResult) {
+        return NextResponse.json({ error: "Invalid or already used promo code" }, { status: 400 });
+      }
+      const redeemed = await redeemPromoCode(code);
+      if (!redeemed) {
+        return NextResponse.json({ error: "Invalid or already used promo code" }, { status: 400 });
+      }
+      return NextResponse.json({ promoUnlocked: true, type: promoResult.type });
+    }
 
     const productKey = body.product ?? "verdict";
     const discountPct = typeof body.discount_percent === "number" ? body.discount_percent : 0;

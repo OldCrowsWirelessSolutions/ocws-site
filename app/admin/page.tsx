@@ -8,6 +8,43 @@ import Image from "next/image";
 type SubscriptionTier  = "nest" | "flock" | "murder";
 type SubscriptionStatus = "active" | "cancelled" | "past_due" | "expired";
 
+type PromoType = "verdict" | "reckoning_small" | "reckoning_standard" | "reckoning_commercial" | "reckoning_pro";
+type PromoStatus = "active" | "used" | "expired" | "deactivated";
+
+interface PromoCodeRecord {
+  code: string;
+  type: PromoType;
+  createdAt: string;
+  note: string;
+  used: boolean;
+  usedAt: string | null;
+  usedBy: string | null;
+  expiresAt: string | null;
+  deactivated?: boolean;
+}
+
+const PROMO_TYPE_LABELS: Record<PromoType, string> = {
+  verdict:               "Verdict",
+  reckoning_small:       "Small Reckoning",
+  reckoning_standard:    "Standard Reckoning",
+  reckoning_commercial:  "Commercial Reckoning",
+  reckoning_pro:         "Pro Reckoning",
+};
+
+function getPromoStatus(p: PromoCodeRecord): PromoStatus {
+  if (p.used) return "used";
+  if (p.deactivated) return "deactivated";
+  if (p.expiresAt && new Date() >= new Date(p.expiresAt)) return "expired";
+  return "active";
+}
+
+const PROMO_STATUS_COLORS: Record<PromoStatus, string> = {
+  active:      "#4ADE80",
+  used:        "#888888",
+  expired:     "#555555",
+  deactivated: "#F87171",
+};
+
 interface SubRecord {
   subscription_id: string;
   customer_email: string;
@@ -86,6 +123,17 @@ export default function AdminPage() {
   const [addingCredits, setAddingCredits] = useState(false);
   const [credFeedback, setCredFeedback]   = useState("");
 
+  // Promo code generator
+  const [promoType, setPromoType]       = useState<PromoType>("verdict");
+  const [promoNote, setPromoNote]       = useState("");
+  const [promoExpires, setPromoExpires] = useState("");
+  const [generatingPromo, setGeneratingPromo]     = useState(false);
+  const [generatedPromoCode, setGeneratedPromoCode] = useState("");
+  const [promoGenError, setPromoGenError] = useState("");
+  const [promoCodes, setPromoCodes]     = useState<PromoCodeRecord[]>([]);
+  const [loadingPromos, setLoadingPromos] = useState(false);
+  const [promoCopied, setPromoCopied]   = useState(false);
+
   // Action feedback
   const [actionMsg, setActionMsg] = useState("");
 
@@ -108,14 +156,30 @@ export default function AdminPage() {
     }
   }, []);
 
+  const loadPromoCodes = useCallback(async () => {
+    setLoadingPromos(true);
+    try {
+      const res = await fetch("/api/admin/promo/list", {
+        headers: { "x-admin-key": ADMIN_KEY },
+      });
+      const data = await res.json();
+      setPromoCodes(data.codes ?? []);
+    } catch {
+      // non-fatal
+    } finally {
+      setLoadingPromos(false);
+    }
+  }, []);
+
   useEffect(() => {
     try {
       if (localStorage.getItem("corvus_admin_auth") === ADMIN_KEY) {
         setPhase("dashboard");
         loadSubscribers();
+        loadPromoCodes();
       }
     } catch { /* */ }
-  }, [loadSubscribers]);
+  }, [loadSubscribers, loadPromoCodes]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -125,6 +189,7 @@ export default function AdminPage() {
       try { localStorage.setItem("corvus_admin_auth", ADMIN_KEY); } catch { /* */ }
       setPhase("dashboard");
       loadSubscribers();
+      loadPromoCodes();
     } else {
       setAuthError("Incorrect password.");
     }
@@ -211,6 +276,52 @@ export default function AdminPage() {
     }
   }
 
+  async function handleGeneratePromo(e: React.FormEvent) {
+    e.preventDefault();
+    setGeneratingPromo(true);
+    setPromoGenError("");
+    setGeneratedPromoCode("");
+    setPromoCopied(false);
+    try {
+      const res = await fetch("/api/admin/promo/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+        body: JSON.stringify({
+          type: promoType,
+          note: promoNote.trim(),
+          expiresAt: promoExpires ? new Date(promoExpires).toISOString() : undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed");
+      setGeneratedPromoCode(data.code);
+      setPromoNote("");
+      setPromoExpires("");
+      loadPromoCodes();
+    } catch (e: unknown) {
+      setPromoGenError(e instanceof Error ? e.message : "Generation failed.");
+    } finally {
+      setGeneratingPromo(false);
+    }
+  }
+
+  async function handleDeactivatePromo(code: string) {
+    if (!confirm(`Deactivate promo code ${code}?`)) return;
+    try {
+      const res = await fetch("/api/admin/promo/deactivate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+        body: JSON.stringify({ code }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed");
+      flash(`Deactivated: ${code}`);
+      loadPromoCodes();
+    } catch (e: unknown) {
+      flash(e instanceof Error ? e.message : "Deactivation failed.", true);
+    }
+  }
+
   function flash(msg: string, _isError = false) {
     setActionMsg(msg);
     setTimeout(() => setActionMsg(""), 4000);
@@ -219,6 +330,9 @@ export default function AdminPage() {
   // ── Stats ─────────────────────────────────────────────────────────────────
 
   const active             = subscribers.filter(s => s.status === "active");
+  const promoActive        = promoCodes.filter(p => getPromoStatus(p) === "active").length;
+  const promoUsed          = promoCodes.filter(p => p.used).length;
+  const promoDeactivated   = promoCodes.filter(p => p.deactivated && !p.used).length;
   const totalConsumed      = subscribers.reduce((n, s) => n + s.verdicts_used, 0);
   const recentActivity     = [...subscribers]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -505,6 +619,131 @@ export default function AdminPage() {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Promo Code Generator */}
+      <div style={card}>
+        <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
+          One-Time Promo Codes
+        </p>
+
+        {/* Stats row */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: "10px", marginBottom: "20px" }}>
+          {([
+            { label: "Total",       value: promoCodes.length, color: "#aaaaaa" },
+            { label: "Active",      value: promoActive,       color: "#4ADE80" },
+            { label: "Used",        value: promoUsed,         color: "#888888" },
+            { label: "Deactivated", value: promoDeactivated,  color: "#F87171" },
+          ] as { label: string; value: number; color: string }[]).map(({ label, value, color }) => (
+            <div key={label} style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "12px 14px" }}>
+              <p style={{ color: "#444", fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>{label}</p>
+              <p style={{ color, fontSize: "22px", fontWeight: 800, lineHeight: 1 }}>{value}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Generator form + result */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: "16px", marginBottom: "20px" }}>
+          <form onSubmit={handleGeneratePromo}>
+            <div style={{ marginBottom: "10px" }}>
+              <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Type</label>
+              <select value={promoType} onChange={e => setPromoType(e.target.value as PromoType)} style={{ ...inp }}>
+                <option value="verdict">Verdict</option>
+                <option value="reckoning_small">Small Reckoning</option>
+                <option value="reckoning_standard">Standard Reckoning</option>
+                <option value="reckoning_commercial">Commercial Reckoning</option>
+                <option value="reckoning_pro">Pro Reckoning</option>
+              </select>
+            </div>
+            <div style={{ marginBottom: "10px" }}>
+              <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Note (who is this for?)</label>
+              <input type="text" value={promoNote} onChange={e => setPromoNote(e.target.value)}
+                placeholder="e.g. Reddit giveaway, Nate Farrelly" style={inp} />
+            </div>
+            <div style={{ marginBottom: "14px" }}>
+              <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Expires (optional)</label>
+              <input type="datetime-local" value={promoExpires} onChange={e => setPromoExpires(e.target.value)}
+                style={{ ...inp, colorScheme: "dark" }} />
+            </div>
+            {promoGenError && <p style={{ color: "#F87171", fontSize: "12px", marginBottom: "8px" }}>{promoGenError}</p>}
+            <button type="submit" disabled={generatingPromo}
+              style={{ width: "100%", background: generatingPromo ? "#0D6E7A" : "#00C2C7", color: "#0D1520", border: "none", borderRadius: "8px", padding: "10px", fontSize: "13px", fontWeight: 700, cursor: generatingPromo ? "not-allowed" : "pointer" }}>
+              {generatingPromo ? "Generating…" : "Generate Code"}
+            </button>
+          </form>
+
+          {/* Generated code display */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {generatedPromoCode ? (
+              <div style={{ background: "#0D1520", border: "1px solid #0D6E7A", borderRadius: "12px", padding: "20px 24px", textAlign: "center", width: "100%" }}>
+                <p style={{ color: "#444", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "10px" }}>Generated Code</p>
+                <p style={{ color: "#00C2C7", fontSize: "17px", fontFamily: "monospace", fontWeight: 800, letterSpacing: "0.08em", marginBottom: "14px", wordBreak: "break-all" }}>
+                  {generatedPromoCode}
+                </p>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(generatedPromoCode).then(() => {
+                      setPromoCopied(true);
+                      setTimeout(() => setPromoCopied(false), 2000);
+                    });
+                  }}
+                  style={{ background: promoCopied ? "rgba(74,222,128,0.15)" : "rgba(0,194,199,0.1)", border: `1px solid ${promoCopied ? "rgba(74,222,128,0.4)" : "rgba(0,194,199,0.3)"}`, borderRadius: "7px", color: promoCopied ? "#4ADE80" : "#00C2C7", fontSize: "12px", fontWeight: 600, padding: "7px 18px", cursor: "pointer" }}>
+                  {promoCopied ? "✓ Copied" : "Copy to Clipboard"}
+                </button>
+              </div>
+            ) : (
+              <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "12px", padding: "20px 24px", textAlign: "center", width: "100%" }}>
+                <p style={{ color: "#333", fontSize: "13px" }}>Generated code will appear here</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Codes table */}
+        {promoCodes.length > 0 && (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px", minWidth: "700px" }}>
+              <thead>
+                <tr>
+                  {["Code", "Type", "Note", "Created", "Expires", "Status", "Used By", "Actions"].map(h => (
+                    <th key={h} style={{ color: "#444", fontWeight: 600, textAlign: "left", padding: "6px 10px", borderBottom: "1px solid rgba(255,255,255,0.06)", whiteSpace: "nowrap" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {promoCodes.map(p => {
+                  const status = getPromoStatus(p);
+                  return (
+                    <tr key={p.code} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
+                      <td style={{ color: "#00C2C7", padding: "10px", fontFamily: "monospace", fontSize: "11px", whiteSpace: "nowrap" }}>{p.code}</td>
+                      <td style={{ color: "#aaa", padding: "10px", whiteSpace: "nowrap" }}>{PROMO_TYPE_LABELS[p.type]}</td>
+                      <td style={{ color: "#666", padding: "10px", maxWidth: "160px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.note || "—"}</td>
+                      <td style={{ color: "#444", padding: "10px", whiteSpace: "nowrap" }}>{fmtDate(p.createdAt, true)}</td>
+                      <td style={{ color: "#444", padding: "10px", whiteSpace: "nowrap" }}>{p.expiresAt ? fmtDate(p.expiresAt, true) : "—"}</td>
+                      <td style={{ padding: "10px" }}>
+                        <span style={{ color: PROMO_STATUS_COLORS[status], fontSize: "11px", fontWeight: 600 }}>{status}</span>
+                      </td>
+                      <td style={{ color: "#555", padding: "10px", fontSize: "11px", maxWidth: "140px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {p.usedBy ?? (p.usedAt ? fmtDate(p.usedAt, true) : "—")}
+                      </td>
+                      <td style={{ padding: "10px" }}>
+                        <button
+                          onClick={() => handleDeactivatePromo(p.code)}
+                          disabled={status !== "active"}
+                          style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: "6px", color: status === "active" ? "#F87171" : "#444", fontSize: "11px", padding: "4px 10px", cursor: status === "active" ? "pointer" : "not-allowed" }}>
+                          Deactivate
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {!loadingPromos && promoCodes.length === 0 && (
+          <p style={{ color: "#333", fontSize: "13px", paddingTop: "8px" }}>No promo codes generated yet.</p>
+        )}
       </div>
 
       {/* Recent activity */}

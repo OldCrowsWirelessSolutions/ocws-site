@@ -451,6 +451,15 @@ export default function CrowsEyeClient() {
   const [accessCodeStatus, setAccessCodeStatus] = useState<null | "valid" | "invalid">(null);
   const [accessCodeValidating, setAccessCodeValidating] = useState(false);
   const [accessCodeVisible, setAccessCodeVisible] = useState(false);
+
+  // One-time promo codes
+  const [promoCodeInput, setPromoCodeInput] = useState("");
+  const [promoCodeStatus, setPromoCodeStatus] = useState<null | "valid" | "invalid">(null);
+  const [promoCodeValidating, setPromoCodeValidating] = useState(false);
+  const [promoCodeVisible, setPromoCodeVisible] = useState(false);
+  const [showPromoField, setShowPromoField] = useState(false);
+  const [appliedPromoCode, setAppliedPromoCode] = useState<{ code: string; type: string } | null>(null);
+
   const [appliedCode, setAppliedCode] = useState<{
     type: "founder" | "admin" | "subscriber" | "promo";
     name?: string;
@@ -787,6 +796,37 @@ export default function CrowsEyeClient() {
       unlockVerdict();
       return;
     }
+    // One-time promo code bypass
+    if (appliedPromoCode) {
+      const promoProductMap: Record<string, string> = {
+        verdict:               "verdict",
+        reckoning_small:       "reckoning-small",
+        reckoning_standard:    "reckoning-standard",
+        reckoning_commercial:  "reckoning-commercial",
+        reckoning_pro:         "pro",
+      };
+      if (promoProductMap[appliedPromoCode.type] === product) {
+        try {
+          const res = await fetch("/api/stripe/checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ product, promoCode: appliedPromoCode.code }),
+          });
+          const data = await res.json() as { promoUnlocked?: boolean; error?: string };
+          if (data.promoUnlocked) {
+            setAppliedPromoCode(null);
+            unlockVerdict();
+            return;
+          }
+          setErrorMsg(data.error ?? "Promo code could not be applied.");
+          setAppliedPromoCode(null);
+        } catch {
+          setErrorMsg("Promo code could not be applied.");
+          setAppliedPromoCode(null);
+        }
+        return;
+      }
+    }
     // Subscription credit coverage — consume server-side and unlock
     if (appliedCode?.type === "subscriber" && appliedSubscriptionId && isProductCovered()) {
       try {
@@ -993,6 +1033,44 @@ export default function CrowsEyeClient() {
       setAccessCodeStatus("invalid");
     } finally {
       setAccessCodeValidating(false);
+    }
+  }
+
+  function promoTypeLabel(type: string): string {
+    switch (type) {
+      case "verdict":               return "Verdict";
+      case "reckoning_small":       return "Small Reckoning";
+      case "reckoning_standard":    return "Standard Reckoning";
+      case "reckoning_commercial":  return "Commercial Reckoning";
+      case "reckoning_pro":         return "Pro Certified Reckoning";
+      default:                      return "product";
+    }
+  }
+
+  async function handleApplyPromoCode() {
+    const key = promoCodeInput.trim().toUpperCase();
+    if (!key) return;
+    setPromoCodeValidating(true);
+    setPromoCodeStatus(null);
+    try {
+      const res = await fetch("/api/promo/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: key }),
+      });
+      const data = await res.json() as { valid?: boolean; type?: string };
+      if (data.valid && data.type) {
+        setAppliedPromoCode({ code: key, type: data.type });
+        setPromoCodeStatus("valid");
+        setPromoCodeInput("");
+        setShowPromoField(false);
+      } else {
+        setPromoCodeStatus("invalid");
+      }
+    } catch {
+      setPromoCodeStatus("invalid");
+    } finally {
+      setPromoCodeValidating(false);
     }
   }
 
@@ -1587,6 +1665,88 @@ export default function CrowsEyeClient() {
               )}
             </div>
           </div>
+        )}
+      </div>
+
+      {/* ── PROMO CODE ───────────────────────────────────────────────────── */}
+      <div className="mb-6">
+        {appliedPromoCode ? (
+          <div
+            className="px-4 py-3 rounded-2xl text-sm"
+            style={{ background: "rgba(184,146,42,0.08)", border: "1px solid rgba(184,146,42,0.3)" }}
+          >
+            <div className="flex items-center justify-between">
+              <span style={{ color: "#B8922A" }}>
+                ✓ Promo code applied — your {promoTypeLabel(appliedPromoCode.type)} is unlocked
+              </span>
+              <button
+                type="button"
+                onClick={() => { setAppliedPromoCode(null); setPromoCodeStatus(null); }}
+                className="text-white/40 hover:text-white/70 transition text-xs ml-4"
+              >
+                Remove
+              </button>
+            </div>
+            <p className="mt-1 text-xs" style={{ color: "rgba(184,146,42,0.6)" }}>
+              Click the payment button below to redeem your promo code — no charge applied.
+            </p>
+          </div>
+        ) : showPromoField ? (
+          <div>
+            <label className="block text-sm font-semibold text-white mb-1">Promo Code</label>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <div className="relative">
+                  <input
+                    type={promoCodeVisible ? "text" : "password"}
+                    value={promoCodeInput}
+                    onChange={(e) => { setPromoCodeInput(e.target.value); setPromoCodeStatus(null); }}
+                    onKeyDown={(e) => e.key === "Enter" && handleApplyPromoCode()}
+                    placeholder="Enter promo code"
+                    autoComplete="off"
+                    className="w-full rounded-xl px-4 py-3 pr-16 text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2"
+                    style={{
+                      background: "rgba(0,0,0,0.3)",
+                      border: `1px solid ${promoCodeStatus === "invalid" ? "rgba(239,68,68,0.5)" : "rgba(255,255,255,0.1)"}`,
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setPromoCodeVisible((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium transition"
+                    style={{ color: "rgba(255,255,255,0.35)" }}
+                  >
+                    {promoCodeVisible ? "Hide" : "Show"}
+                  </button>
+                </div>
+                {promoCodeStatus === "invalid" ? (
+                  <p className="mt-1 text-xs text-red-400">This code is invalid or has already been used.</p>
+                ) : (
+                  <p className="mt-1 text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                    One-time promo codes unlock a Verdict or Reckoning at no charge.
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={handleApplyPromoCode}
+                disabled={promoCodeValidating}
+                className="shrink-0 self-start rounded-xl px-4 py-3 text-sm font-semibold transition disabled:opacity-50"
+                style={{ background: "#B8922A", color: "#0D1520" }}
+              >
+                {promoCodeValidating ? "Checking…" : "Apply Code"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowPromoField(true)}
+            className="text-xs transition"
+            style={{ color: "rgba(184,146,42,0.6)" }}
+          >
+            Have a promo code?
+          </button>
         )}
       </div>
 
