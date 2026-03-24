@@ -96,12 +96,13 @@ const INTERNAL_CODES: Record<
     name?: string;
     discount?: number;
     label?: string;
+    expires_at?: string; // ISO 8601 UTC — code invalid at or after this time
   }
 > = {
   "OCWS2026":         { type: "admin",   name: "Joshua Turner" },
   "OCWS-ADMIN-2026":  { type: "admin",   name: "Joshua Turner" },
   "CORVUS-NEST":      { type: "admin",   name: "Joshua Turner" },
-  "CORVUS-TRY-9R4M":  { type: "founder", name: "Guest" },
+  "CORVUS-TRY-9R4M":  { type: "founder", name: "Guest", expires_at: "2026-03-26T05:00:00.000Z" },
   "CORVUS-NATE-2026": { type: "founder", name: "Nathanael Farrelly" },
   "CORVUS-ERIC-2026": { type: "founder", name: "Eric Mims" },
   "CORVUS-MIKE-2026": { type: "founder", name: "Mike Arbouret" },
@@ -218,6 +219,9 @@ export async function validateSubscriptionId(
   // 1. Internal codes (admin, founder, promo) — checked first
   const internal = INTERNAL_CODES[code];
   if (internal) {
+    if (internal.expires_at && new Date() >= new Date(internal.expires_at)) {
+      return { valid: false, type: null, error: "This code has expired." };
+    }
     if (internal.type === "promo") {
       return {
         valid: true,
