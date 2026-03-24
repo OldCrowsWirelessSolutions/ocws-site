@@ -35,6 +35,10 @@ async function appendToGoogleSheet(row: string[], tier: string) {
     return;
   }
 
+  console.log("SHEETS DEBUG - Sheet ID:", sheetId?.slice(0, 8));
+  console.log("SHEETS DEBUG - Client email prefix:", clientEmail?.split("@")[0]);
+  console.log("SHEETS DEBUG - Private key starts with:", privateKey?.slice(0, 27));
+
   const auth = new google.auth.GoogleAuth({
     credentials: {
       client_email: clientEmail,
@@ -93,9 +97,10 @@ export async function POST(req: Request) {
     // Google Sheets append (non-fatal)
     try {
       await appendToGoogleSheet([timestamp, name, email, phone, tier, message], tier);
-    } catch (sheetErr) {
-      console.error("Google Sheets append failed:", sheetErr);
-      // Non-fatal — continue and still send email
+    } catch (sheetErr: unknown) {
+      const e = sheetErr as { message?: string; response?: { data?: unknown } };
+      console.error("GOOGLE SHEETS FAILED:", e?.message);
+      console.error("GOOGLE SHEETS ERROR DETAILS:", JSON.stringify(e?.response?.data || sheetErr));
     }
 
     // Email notification (non-fatal if not configured)
