@@ -16,7 +16,24 @@ const PRICE_ID_ENV: Record<string, string> = {
   "credit-single":        "STRIPE_PRICE_CREDIT_SINGLE",
   "credit-6pack":         "STRIPE_PRICE_CREDIT_6PACK",
   "credit-12pack":        "STRIPE_PRICE_CREDIT_12PACK",
+  // Subscription plans
+  "nest-monthly":    "STRIPE_PRICE_NEST_MONTHLY",
+  "nest-annual":     "STRIPE_PRICE_NEST_ANNUAL",
+  "flock-monthly":   "STRIPE_PRICE_FLOCK_MONTHLY",
+  "flock-annual":    "STRIPE_PRICE_FLOCK_ANNUAL",
+  "murder-monthly":  "STRIPE_PRICE_MURDER_MONTHLY",
+  "murder-annual":   "STRIPE_PRICE_MURDER_ANNUAL",
 };
+
+// Recurring price IDs — these use mode: "subscription"
+const SUBSCRIPTION_PRICE_IDS = new Set([
+  "price_1TEV81PXI1fk4YpacVKKcIze", // Nest monthly
+  "price_1TEV9WPXI1fk4Ypa6KioV00n", // Nest annual
+  "price_1TEVBCPXI1fk4YpaUhBqj7o5", // Flock monthly
+  "price_1TEVCVPXI1fk4Ypa20nY5G7y", // Flock annual
+  "price_1TEVLCPXI1fk4Ypa19fYGfCK", // Murder monthly
+  "price_1TEVMLPXI1fk4YpaDQMFj27E", // Murder annual
+]);
 
 const FALLBACK_PRICES: Record<string, number> = {
   "verdict": 50, "reckoning-small": 150, "reckoning-standard": 350,
@@ -75,11 +92,16 @@ export async function POST(req: NextRequest) {
       };
     }
 
+    const isSubscription = priceId ? SUBSCRIPTION_PRICE_IDS.has(priceId) : false;
+    const mode = isSubscription ? "subscription" : "payment";
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
-      mode: "payment",
+      mode,
       line_items: [lineItem],
-      success_url: `${origin}/crows-eye?verdict=unlocked&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: isSubscription
+        ? `${origin}/crows-eye?subscription=activated&session_id={CHECKOUT_SESSION_ID}`
+        : `${origin}/crows-eye?verdict=unlocked&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/crows-eye?verdict=cancelled`,
     });
 

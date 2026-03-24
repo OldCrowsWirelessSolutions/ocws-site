@@ -100,6 +100,7 @@ const INTERNAL_CODES: Record<
 > = {
   "OCWS2026":         { type: "admin",   name: "Joshua Turner" },
   "OCWS-ADMIN-2026":  { type: "admin",   name: "Joshua Turner" },
+  "CORVUS-NEST":      { type: "admin",   name: "Joshua Turner" },
   "CORVUS-NATE-2026": { type: "founder", name: "Nathanael Farrelly" },
   "CORVUS-ERIC-2026": { type: "founder", name: "Eric Mims" },
   "CORVUS-MIKE-2026": { type: "founder", name: "Mike Arbouret" },
