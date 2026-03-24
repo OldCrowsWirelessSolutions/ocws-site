@@ -137,6 +137,9 @@ export default function TiersSection() {
           <p className="mt-3 text-base" style={{ color: "#888" }}>
             From the frustrated homeowner to the RF engineer.
           </p>
+          <p className="mt-3 text-xs" style={{ color: "#555", fontFamily: "'Share Tech Mono', monospace" }}>
+            🥚 = Coming soon
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
