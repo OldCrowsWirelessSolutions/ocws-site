@@ -233,7 +233,7 @@ const tiers = [
   },
   {
     id: "Murder" as Tier,
-    emoji: "🏢",
+    emoji: "🐦‍⬛🐦‍⬛🐦‍⬛",
     name: "MURDER",
     price: "$950/mo",
     priceAlt: "or $9,500/yr",
