@@ -272,7 +272,7 @@ export default function TiersSection() {
               className="relative flex flex-col rounded-2xl p-6"
               style={{
                 background: "#0D1520",
-                border: `1px solid ${tier.featured ? "#00C2C7" : "#0D6E7A"}`,
+                border: "1px solid #0D6E7A",
               }}
             >
               {tier.featured && tier.badge && (
@@ -310,12 +310,12 @@ export default function TiersSection() {
               <button
                 type="button"
                 onClick={() => setOpenModal(tier.id)}
-                className="w-full inline-flex items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition"
+                className="w-full inline-flex items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition hover:bg-[#00C2C7]/10 hover:border-[#00C2C7]"
                 title={"note" in tier && tier.id !== "Murder" ? "Monthly plan requires 3-month minimum commitment" : undefined}
                 style={{
-                  background: tier.featured ? "#00C2C7" : "transparent",
-                  color: tier.featured ? "#0D1520" : "#00C2C7",
-                  border: tier.featured ? "none" : "1px solid #00C2C7",
+                  background: "transparent",
+                  color: "#00C2C7",
+                  border: "1px solid rgba(0,194,199,0.35)",
                 }}
               >
                 Join Waitlist
