@@ -887,6 +887,69 @@ export default function CrowsEyeClient() {
     );
   }
 
+  // ─── Report saving ────────────────────────────────────────────────────────
+  // Fires once per full_verdict reveal — saves silently in the background.
+  const reportSavedIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (phase !== "full_verdict" || !result) return;
+
+    // Use a simple content fingerprint to avoid double-saving on re-renders
+    const fingerprint = `${result.problems_found}-${result.critical_count}-${result.warning_count}-${name}-${mode}`;
+    if (reportSavedIdRef.current === fingerprint) return;
+    reportSavedIdRef.current = fingerprint;
+
+    const codeUsed =
+      appliedPromoCode?.code ??
+      appliedSubscriptionId ??
+      (appliedCode?.type === "admin" || appliedCode?.type === "founder" ? (appliedSubscriptionId ?? "CORVUS") : null) ??
+      "UNKNOWN";
+
+    const severity: "critical" | "warning" | "info" =
+      result.critical_count > 0 ? "critical" :
+      result.warning_count > 0  ? "warning"  : "info";
+
+    const reportType: string =
+      appliedPromoCode?.type === "reckoning_small"      ? "reckoning_small"
+      : appliedPromoCode?.type === "reckoning_standard" ? "reckoning_standard"
+      : appliedPromoCode?.type === "reckoning_commercial" ? "reckoning_commercial"
+      : appliedPromoCode?.type === "reckoning_pro"      ? "reckoning_pro"
+      : mode === "site"                                 ? "reckoning_small"
+      : "verdict";
+
+    const reportId = `OCWS-RPT-${Date.now()}-${Math.random().toString(16).slice(2, 8).toUpperCase()}`;
+
+    const locationName = name.trim() ||
+      (mode === "site" && locations[0]?.name ? locations[0].name : "Unknown");
+
+    const body = {
+      reportId,
+      type: reportType,
+      subscriptionId: appliedSubscriptionId ?? null,
+      email: null,
+      codeUsed,
+      createdAt: new Date().toISOString(),
+      locationName: locationName.slice(0, 200),
+      findingCount: result.full_findings?.length ?? result.problems_found,
+      severity,
+      reportData: JSON.stringify({
+        full_findings: result.full_findings ?? [],
+        recommendations: result.recommendations ?? [],
+        corvus_summary: result.corvus_summary ?? "",
+        cross_structure_analysis: result.cross_structure_analysis ?? null,
+      }),
+      pdfAvailable: false,
+    };
+
+    // Fire-and-forget — never blocks the UI
+    fetch("/api/reports/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }).catch(() => { /* silently ignore */ });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, result]);
+
   // Location management (site mode)
   function addLocation() {
     if (locations.length >= 30) return;

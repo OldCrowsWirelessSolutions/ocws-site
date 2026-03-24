@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -100,6 +101,7 @@ function creditsLeft(sub: SubRecord): string {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
+  const router = useRouter();
   const [phase, setPhase]       = useState<"auth" | "dashboard">("auth");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState("");
@@ -137,6 +139,40 @@ export default function AdminPage() {
   // Action feedback
   const [actionMsg, setActionMsg] = useState("");
 
+  // Reports
+  type ReportType2 = "verdict" | "reckoning_small" | "reckoning_standard" | "reckoning_commercial" | "reckoning_pro";
+  type ReportSeverity2 = "critical" | "warning" | "info";
+  interface AdminReportRecord {
+    reportId: string;
+    type: ReportType2;
+    subscriptionId: string | null;
+    email: string | null;
+    codeUsed: string;
+    createdAt: string;
+    locationName: string;
+    findingCount: number;
+    severity: ReportSeverity2;
+    reportData: string;
+    pdfAvailable: boolean;
+  }
+  const REPORT_TYPE_LABELS2: Record<ReportType2, string> = {
+    verdict:              "Verdict",
+    reckoning_small:      "Small Reckoning",
+    reckoning_standard:   "Standard Reckoning",
+    reckoning_commercial: "Commercial Reckoning",
+    reckoning_pro:        "Pro Reckoning",
+  };
+
+  const [allReports, setAllReports]           = useState<AdminReportRecord[]>([]);
+  const [loadingReports, setLoadingReports]   = useState(false);
+  const [expandedAdminReport, setExpandedAdminReport] = useState<string | null>(null);
+
+  // Remote access / impersonation
+  const [impersonateCode, setImpersonateCode]       = useState("");
+  const [impersonateVisible, setImpersonateVisible] = useState(false);
+  const [impersonating, setImpersonating]           = useState(false);
+  const [impersonateError, setImpersonateError]     = useState("");
+
   // ── Data load ──────────────────────────────────────────────────────────────
 
   const loadSubscribers = useCallback(async () => {
@@ -171,15 +207,30 @@ export default function AdminPage() {
     }
   }, []);
 
+  const loadAdminReports = useCallback(async () => {
+    setLoadingReports(true);
+    try {
+      const res = await fetch("/api/admin/reports", {
+        headers: { "x-admin-key": ADMIN_KEY },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAllReports(data.reports ?? []);
+      }
+    } catch { /* non-fatal */ }
+    finally { setLoadingReports(false); }
+  }, []);
+
   useEffect(() => {
     try {
       if (localStorage.getItem("corvus_admin_auth") === ADMIN_KEY) {
         setPhase("dashboard");
         loadSubscribers();
         loadPromoCodes();
+        loadAdminReports();
       }
     } catch { /* */ }
-  }, [loadSubscribers, loadPromoCodes]);
+  }, [loadSubscribers, loadPromoCodes, loadAdminReports]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -190,16 +241,48 @@ export default function AdminPage() {
       setPhase("dashboard");
       loadSubscribers();
       loadPromoCodes();
+      loadAdminReports();
     } else {
       setAuthError("Incorrect password.");
     }
   }
 
+  async function handleImpersonate(e: React.FormEvent) {
+    e.preventDefault();
+    const code = impersonateCode.trim().toUpperCase();
+    if (!code) return;
+    setImpersonateError("");
+    setImpersonating(true);
+    try {
+      const res = await fetch("/api/admin/impersonate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+        body: JSON.stringify({ code }),
+      });
+      const data = await res.json() as { valid?: boolean; subscriptionId?: string };
+      if (data.valid) {
+        const subCode = data.subscriptionId ?? code;
+        // Set in new tab's localStorage — opening a new tab shares localStorage within same origin
+        // We set the values now and then open the tab
+        try {
+          localStorage.setItem("corvus_sub_code", subCode);
+          localStorage.setItem("corvus_admin_impersonating", "true");
+        } catch { /* */ }
+        window.open("/dashboard", "_blank");
+        setImpersonateCode("");
+      } else {
+        setImpersonateError("Code not found in system.");
+      }
+    } catch {
+      setImpersonateError("Connection error. Please try again.");
+    } finally {
+      setImpersonating(false);
+    }
+  }
+
   function handleLogout() {
     try { localStorage.removeItem("corvus_admin_auth"); } catch { /* */ }
-    setPhase("auth");
-    setPassword("");
-    setSubscribers([]);
+    router.push("/login");
   }
 
   async function handleDeactivate(subscription_id: string) {
@@ -778,6 +861,179 @@ export default function AdminPage() {
           </div>
         )}
       </div>
+
+      {/* ── Remote Dashboard Access ── */}
+      <div style={card}>
+        <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "12px" }}>
+          Remote Dashboard Access
+        </p>
+        <p style={{ color: "#888888", fontSize: "13px", marginBottom: "20px" }}>
+          Log in to any subscriber dashboard for support or verification.
+        </p>
+        <form onSubmit={handleImpersonate} style={{ display: "flex", flexDirection: "column", gap: "12px", maxWidth: "480px" }}>
+          <div>
+            <label style={{ display: "block", color: "#888888", fontSize: "11px", fontWeight: 600, marginBottom: "6px" }}>
+              Subscriber Code
+            </label>
+            <div style={{ position: "relative" }}>
+              <input
+                type={impersonateVisible ? "text" : "password"}
+                placeholder="OCWS-NEST-XXXXXXXX or CORVUS-NEST"
+                value={impersonateCode}
+                onChange={e => setImpersonateCode(e.target.value)}
+                style={{ ...inp, paddingRight: "60px" }}
+              />
+              <button
+                type="button"
+                onClick={() => setImpersonateVisible(v => !v)}
+                style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#555", fontSize: "11px", cursor: "pointer" }}
+              >
+                {impersonateVisible ? "Hide" : "Show"}
+              </button>
+            </div>
+          </div>
+          {impersonateError && (
+            <p style={{ color: "#F87171", fontSize: "12px" }}>{impersonateError}</p>
+          )}
+          <button
+            type="submit"
+            disabled={impersonating || !impersonateCode.trim()}
+            style={{
+              padding: "10px 20px",
+              background: impersonating || !impersonateCode.trim() ? "#0D6E7A" : "#00C2C7",
+              color: "#0D1520", border: "none", borderRadius: "8px",
+              fontSize: "13px", fontWeight: 700,
+              cursor: impersonating || !impersonateCode.trim() ? "not-allowed" : "pointer",
+              alignSelf: "flex-start",
+            }}
+          >
+            {impersonating ? "Connecting..." : "Access Dashboard"}
+          </button>
+        </form>
+        <p style={{ color: "#444444", fontSize: "11px", marginTop: "14px", lineHeight: 1.6 }}>
+          Opens subscriber&rsquo;s dashboard in a new tab. Admin session is preserved in this tab.
+          A gold banner will appear in the new tab indicating admin view.
+        </p>
+      </div>
+
+      {/* ── All Reports ── */}
+      <div style={card}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+          <div>
+            <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>All Reports</p>
+            <p style={{ color: "#555555", fontSize: "12px", marginTop: "-12px" }}>
+              {allReports.length} total across all subscribers
+            </p>
+          </div>
+          <button
+            onClick={loadAdminReports}
+            disabled={loadingReports}
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "8px",
+              color: "#888888",
+              fontSize: "12px",
+              padding: "6px 14px",
+              cursor: loadingReports ? "not-allowed" : "pointer",
+            }}
+          >
+            {loadingReports ? "Loading..." : "Refresh"}
+          </button>
+        </div>
+
+        {loadingReports ? (
+          <p style={{ color: "#555555", fontSize: "13px", fontFamily: "monospace" }}>Loading reports...</p>
+        ) : allReports.length === 0 ? (
+          <p style={{ color: "#555555", fontSize: "13px" }}>No reports yet.</p>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "600px" }}>
+              <thead>
+                <tr>
+                  {["Report ID", "Type", "Code Used", "Location", "Date", "Findings", "Severity"].map(h => (
+                    <th key={h} style={{
+                      color: "#555555", fontSize: "10px", fontWeight: 700,
+                      letterSpacing: "0.12em", textTransform: "uppercase",
+                      padding: "8px 10px", textAlign: "left",
+                      borderBottom: "1px solid rgba(255,255,255,0.06)",
+                    }}>
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {allReports.map((r) => (
+                  <>
+                    <tr
+                      key={r.reportId}
+                      onClick={() => setExpandedAdminReport(expandedAdminReport === r.reportId ? null : r.reportId)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <td style={{ color: "#555555", fontSize: "10px", fontFamily: "monospace", padding: "10px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                        {r.reportId}
+                      </td>
+                      <td style={{ padding: "10px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                        <span style={{ background: "rgba(0,194,199,0.1)", color: "#00C2C7", fontSize: "9px", fontWeight: 700, letterSpacing: "0.1em", padding: "2px 7px", borderRadius: "20px" }}>
+                          {REPORT_TYPE_LABELS2[r.type] ?? r.type}
+                        </span>
+                      </td>
+                      <td style={{ color: "#888888", fontSize: "11px", fontFamily: "monospace", padding: "10px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                        {r.codeUsed}
+                      </td>
+                      <td style={{ color: "#ffffff", fontSize: "12px", padding: "10px", borderBottom: "1px solid rgba(255,255,255,0.04)", maxWidth: "180px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {r.locationName || "—"}
+                      </td>
+                      <td style={{ color: "#555555", fontSize: "11px", padding: "10px", borderBottom: "1px solid rgba(255,255,255,0.04)", whiteSpace: "nowrap" }}>
+                        {fmtDate(r.createdAt)}
+                      </td>
+                      <td style={{ color: "#888888", fontSize: "12px", padding: "10px", borderBottom: "1px solid rgba(255,255,255,0.04)", textAlign: "center" }}>
+                        {r.findingCount}
+                      </td>
+                      <td style={{ padding: "10px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                        <span style={{
+                          fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em",
+                          padding: "2px 7px", borderRadius: "20px",
+                          background: r.severity === "critical" ? "rgba(239,68,68,0.12)" : r.severity === "warning" ? "rgba(234,179,8,0.12)" : "rgba(34,197,94,0.12)",
+                          color: r.severity === "critical" ? "#f87171" : r.severity === "warning" ? "#fbbf24" : "#4ade80",
+                        }}>
+                          {r.severity.toUpperCase()}
+                        </span>
+                      </td>
+                    </tr>
+                    {expandedAdminReport === r.reportId && (() => {
+                      let parsed: { full_findings?: Array<{ severity: string; title: string; description: string }> } = {};
+                      try { parsed = JSON.parse(r.reportData); } catch { /* */ }
+                      return (
+                        <tr key={`${r.reportId}-exp`}>
+                          <td colSpan={7} style={{ padding: "0 10px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                            <div style={{ background: "#0D1520", borderRadius: "8px", padding: "12px 14px" }}>
+                              {parsed.full_findings?.map((f, i) => (
+                                <div key={i} style={{ marginBottom: "8px" }}>
+                                  <span style={{
+                                    color: f.severity === "CRITICAL" ? "#f87171" : f.severity === "GOOD" ? "#4ade80" : "#fbbf24",
+                                    fontSize: "9px", fontWeight: 700, marginRight: "8px"
+                                  }}>
+                                    {f.severity}
+                                  </span>
+                                  <span style={{ color: "#ffffff", fontSize: "12px", fontWeight: 600 }}>{f.title}</span>
+                                  <p style={{ color: "#555555", fontSize: "11px", marginTop: "2px", marginLeft: "0" }}>{f.description}</p>
+                                </div>
+                              )) ?? <p style={{ color: "#555555", fontSize: "12px" }}>No findings stored.</p>}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })()}
+                  </>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }

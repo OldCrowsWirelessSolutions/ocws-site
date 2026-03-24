@@ -17,20 +17,15 @@ const navLinks = [
   { href: "/contact", label: "Contact" },
 ];
 
+// "My Dashboard" is always visible — routes to the universal login page
+const DASHBOARD_HREF = "/login";
+
 export default function Navbar() {
-  const [open, setOpen]           = useState(false);
-  const [hasSub, setHasSub]       = useState(false);
+  const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
     setOpen(false);
-  }, [pathname]);
-
-  // Show Dashboard link only when a subscriber code is stored
-  useEffect(() => {
-    try {
-      setHasSub(!!localStorage.getItem("corvus_sub_code"));
-    } catch { /* */ }
   }, [pathname]);
 
   useEffect(() => {
@@ -78,15 +73,13 @@ export default function Navbar() {
                 {l.label}
               </Link>
             ))}
-            {hasSub && (
-              <Link
-                href="/dashboard"
-                className="rounded-lg px-3 py-2 text-sm font-semibold transition"
-                style={{ color: "#00C2C7" }}
-              >
-                Dashboard
-              </Link>
-            )}
+            <Link
+              href={DASHBOARD_HREF}
+              className="rounded-lg px-3 py-2 text-sm font-semibold transition"
+              style={{ color: "#00C2C7", background: "rgba(0,194,199,0.07)", border: "1px solid rgba(0,194,199,0.18)" }}
+            >
+              My Dashboard
+            </Link>
           </nav>
 
           {/* Right: CTA + Hamburger */}
@@ -159,16 +152,14 @@ export default function Navbar() {
                     {l.label}
                   </Link>
                 ))}
-                {hasSub && (
-                  <Link
-                    href="/dashboard"
-                    onClick={() => setOpen(false)}
-                    className="rounded-xl px-3 py-3 text-sm font-semibold hover:bg-white/10 transition"
-                    style={{ color: "#00C2C7" }}
-                  >
-                    Dashboard
-                  </Link>
-                )}
+                <Link
+                  href={DASHBOARD_HREF}
+                  onClick={() => setOpen(false)}
+                  className="rounded-xl px-3 py-3 text-sm font-semibold hover:bg-white/10 transition"
+                  style={{ color: "#00C2C7" }}
+                >
+                  My Dashboard
+                </Link>
               </div>
 
               <div className="mt-3 border-t border-white/10 pt-3">

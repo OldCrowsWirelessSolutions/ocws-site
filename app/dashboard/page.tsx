@@ -1,12 +1,44 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type SubscriptionTier = "nest" | "flock" | "murder";
+
+type ReportType = "verdict" | "reckoning_small" | "reckoning_standard" | "reckoning_commercial" | "reckoning_pro";
+type ReportSeverity = "critical" | "warning" | "info";
+
+interface ReportRecord {
+  reportId: string;
+  type: ReportType;
+  subscriptionId: string | null;
+  email: string | null;
+  codeUsed: string;
+  createdAt: string;
+  locationName: string;
+  findingCount: number;
+  severity: ReportSeverity;
+  reportData: string;
+  pdfAvailable: boolean;
+}
+
+const REPORT_TYPE_LABELS: Record<ReportType, string> = {
+  verdict:              "Verdict",
+  reckoning_small:      "Small Reckoning",
+  reckoning_standard:   "Standard Reckoning",
+  reckoning_commercial: "Commercial Reckoning",
+  reckoning_pro:        "Pro Reckoning",
+};
+
+const SEVERITY_COLORS: Record<ReportSeverity, { color: string; bg: string; border: string }> = {
+  critical: { color: "#f87171", bg: "rgba(239,68,68,0.12)",  border: "rgba(239,68,68,0.35)"  },
+  warning:  { color: "#fbbf24", bg: "rgba(234,179,8,0.12)",  border: "rgba(234,179,8,0.35)"  },
+  info:     { color: "#4ade80", bg: "rgba(34,197,94,0.12)",  border: "rgba(34,197,94,0.35)"  },
+};
 
 interface CreditPricing {
   single: string;       singlePrice: number;
@@ -109,6 +141,7 @@ const inputStyle: React.CSSProperties = {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [phase, setPhase]         = useState<"loading" | "auth" | "dashboard">("loading");
   const [codeInput, setCodeInput] = useState("");
   const [validating, setValidating] = useState(false);
@@ -123,8 +156,28 @@ export default function DashboardPage() {
   const [codeStats, setCodeStats]               = useState<{ usageCount: number; lastUsed: string | null } | null>(null);
   const [resending, setResending]               = useState(false);
   const [resent, setResent]                     = useState(false);
+  const [reports, setReports]                   = useState<ReportRecord[]>([]);
+  const [reportsLoading, setReportsLoading]     = useState(false);
+  const [expandedReport, setExpandedReport]     = useState<string | null>(null);
+  const [isAdminView, setIsAdminView]           = useState(false);
 
   // ── Auth + load ────────────────────────────────────────────────────────────
+
+  const loadReports = useCallback(async (code: string) => {
+    setReportsLoading(true);
+    try {
+      const res = await fetch("/api/reports/list", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      if (res.ok) {
+        const data = await res.json() as { reports?: ReportRecord[] };
+        setReports(data.reports ?? []);
+      }
+    } catch { /* non-fatal */ }
+    finally { setReportsLoading(false); }
+  }, []);
 
   const loadDashboard = useCallback(async (code: string) => {
     setValidating(true);
@@ -157,15 +210,22 @@ export default function DashboardPage() {
         } catch { /* non-fatal */ }
       }
 
+      // Check if this is an admin impersonation session
+      try {
+        const impersonating = localStorage.getItem("corvus_admin_impersonating") === "true";
+        setIsAdminView(impersonating);
+      } catch { /* */ }
+
       setStoredCode(code);
       setPhase("dashboard");
+      loadReports(code);
     } catch {
       setAuthError("Connection error. Please try again.");
       setPhase("auth");
     } finally {
       setValidating(false);
     }
-  }, []);
+  }, [loadReports]);
 
   useEffect(() => {
     try {
@@ -227,14 +287,12 @@ export default function DashboardPage() {
   };
 
   function handleLogout() {
-    try { localStorage.removeItem("corvus_sub_code"); } catch { /* */ }
-    setSub(null);
-    setDetails(null);
-    setStoredCode("");
-    setCodeInput("");
-    setCodeVisible(false);
-    setAuthError("");
-    setPhase("auth");
+    try {
+      localStorage.removeItem("corvus_sub_code");
+      localStorage.removeItem("corvus_sub_tier");
+      localStorage.removeItem("corvus_admin_impersonating");
+    } catch { /* */ }
+    router.push("/login");
   }
 
   function copyCode() {
@@ -417,6 +475,48 @@ export default function DashboardPage() {
 
   return (
     <div style={{ maxWidth: "900px", margin: "0 auto", padding: "32px 16px 64px" }}>
+
+      {/* ── Admin impersonation banner ── */}
+      {isAdminView && (
+        <div style={{
+          background: "#B8922A",
+          color: "#0D1520",
+          borderRadius: "12px",
+          padding: "14px 20px",
+          marginBottom: "24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "10px",
+        }}>
+          <p style={{ fontWeight: 700, fontSize: "14px", margin: 0 }}>
+            🔐 ADMIN VIEW — You are viewing this dashboard as{" "}
+            <span style={{ fontFamily: "monospace", letterSpacing: "0.08em" }}>{storedCode}</span>
+          </p>
+          <button
+            onClick={() => {
+              try {
+                localStorage.removeItem("corvus_admin_impersonating");
+                localStorage.removeItem("corvus_sub_code");
+              } catch { /* */ }
+              window.location.href = "/admin";
+            }}
+            style={{
+              background: "rgba(0,0,0,0.2)",
+              border: "1px solid rgba(0,0,0,0.3)",
+              borderRadius: "8px",
+              color: "#0D1520",
+              fontSize: "12px",
+              fontWeight: 700,
+              padding: "6px 14px",
+              cursor: "pointer",
+            }}
+          >
+            Exit Admin View
+          </button>
+        </div>
+      )}
 
       {/* ── Header ── */}
       <div style={{
@@ -720,22 +820,159 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* ── Past Verdicts ── */}
+      {/* ── Past Reports ── */}
       <div style={card}>
-        <p style={sectionLabel}>Past Verdicts &amp; Reckonings</p>
-        <div style={{ textAlign: "center", padding: "32px 16px" }}>
-          <p style={{ color: "#555555", fontSize: "14px", marginBottom: "10px" }}>No Verdicts yet.</p>
-          <p style={{ color: "#888888", fontSize: "13px", marginBottom: "20px" }}>
-            Head to Crow&rsquo;s Eye to run your first scan.
-          </p>
-          <Link href="/crows-eye" style={{
-            display: "inline-flex", alignItems: "center", justifyContent: "center",
-            background: "#00C2C7", color: "#0D1520", borderRadius: "10px",
-            padding: "10px 26px", fontSize: "14px", fontWeight: 700, textDecoration: "none",
-          }}>
-            Open Crow&rsquo;s Eye
-          </Link>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+          <p style={{ ...sectionLabel, marginBottom: 0 }}>Past Verdicts &amp; Reckonings</p>
+          {reports.length > 0 && (
+            <span style={{ color: "#555555", fontSize: "12px" }}>{reports.length} report{reports.length !== 1 ? "s" : ""}</span>
+          )}
         </div>
+
+        {reportsLoading ? (
+          <p style={{ color: "#555555", fontSize: "13px", fontFamily: "monospace", letterSpacing: "0.1em" }}>
+            Loading reports...
+          </p>
+        ) : reports.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "32px 16px" }}>
+            <p style={{ color: "#555555", fontSize: "14px", marginBottom: "10px" }}>No reports yet.</p>
+            <p style={{ color: "#888888", fontSize: "13px", marginBottom: "20px" }}>
+              Run your first scan at Crow&rsquo;s Eye.
+            </p>
+            <Link href="/crows-eye" style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              background: "#00C2C7", color: "#0D1520", borderRadius: "10px",
+              padding: "10px 26px", fontSize: "14px", fontWeight: 700, textDecoration: "none",
+            }}>
+              Go to Crow&rsquo;s Eye →
+            </Link>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            {reports.map((r) => {
+              const sev = SEVERITY_COLORS[r.severity] ?? SEVERITY_COLORS.info;
+              const isOpen = expandedReport === r.reportId;
+              let parsed: { full_findings?: Array<{ severity: string; title: string; description: string; fix: string }> } = {};
+              try { parsed = JSON.parse(r.reportData); } catch { /* */ }
+              return (
+                <div key={r.reportId} style={{
+                  background: "#0D1520",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                }}>
+                  {/* Card header */}
+                  <div style={{
+                    padding: "16px 20px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                    gap: "12px",
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
+                      {/* Type badge */}
+                      <span style={{
+                        background: "rgba(0,194,199,0.12)",
+                        color: "#00C2C7",
+                        fontSize: "9px",
+                        fontWeight: 800,
+                        letterSpacing: "0.18em",
+                        padding: "3px 8px",
+                        borderRadius: "20px",
+                        border: "1px solid rgba(0,194,199,0.25)",
+                        whiteSpace: "nowrap",
+                        flexShrink: 0,
+                      }}>
+                        {REPORT_TYPE_LABELS[r.type] ?? r.type}
+                      </span>
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ color: "#ffffff", fontSize: "14px", fontWeight: 600, margin: 0, truncate: "ellipsis" }}>
+                          {r.locationName || "Untitled"}
+                        </p>
+                        <p style={{ color: "#555555", fontSize: "11px", margin: 0 }}>
+                          {new Date(r.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+                        </p>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+                      {/* Severity badge */}
+                      <span style={{
+                        background: sev.bg, color: sev.color,
+                        border: `1px solid ${sev.border}`,
+                        fontSize: "9px", fontWeight: 800,
+                        letterSpacing: "0.15em", padding: "3px 8px", borderRadius: "20px",
+                      }}>
+                        {r.severity.toUpperCase()}
+                      </span>
+                      <span style={{ color: "#555555", fontSize: "11px" }}>
+                        {r.findingCount} finding{r.findingCount !== 1 ? "s" : ""}
+                      </span>
+                      <button
+                        onClick={() => setExpandedReport(isOpen ? null : r.reportId)}
+                        style={{
+                          background: "rgba(255,255,255,0.05)",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          borderRadius: "7px",
+                          color: "#00C2C7",
+                          fontSize: "11px",
+                          fontWeight: 600,
+                          padding: "5px 12px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {isOpen ? "Collapse" : "View Report"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Expanded findings */}
+                  {isOpen && (
+                    <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", padding: "16px 20px" }}>
+                      {parsed.full_findings && parsed.full_findings.length > 0 ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                          {parsed.full_findings.map((f, i) => {
+                            const fc = f.severity === "CRITICAL"
+                              ? { color: "#f87171", border: "rgba(239,68,68,0.3)" }
+                              : f.severity === "GOOD"
+                              ? { color: "#4ade80", border: "rgba(34,197,94,0.3)" }
+                              : { color: "#fbbf24", border: "rgba(234,179,8,0.3)" };
+                            return (
+                              <div key={i} style={{
+                                background: "rgba(255,255,255,0.03)",
+                                border: `1px solid ${fc.border}`,
+                                borderRadius: "8px",
+                                padding: "12px 14px",
+                              }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+                                  <span style={{ color: fc.color, fontSize: "9px", fontWeight: 800, letterSpacing: "0.15em" }}>
+                                    {f.severity}
+                                  </span>
+                                  <span style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600 }}>{f.title}</span>
+                                </div>
+                                <p style={{ color: "#888888", fontSize: "12px", marginBottom: "6px", lineHeight: 1.6 }}>{f.description}</p>
+                                {f.fix && (
+                                  <p style={{ color: "#00C2C7", fontSize: "12px", lineHeight: 1.6 }}>
+                                    <strong>Fix:</strong> {f.fix}
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p style={{ color: "#555555", fontSize: "13px" }}>No detailed findings stored for this report.</p>
+                      )}
+                      <p style={{ color: "#444444", fontSize: "10px", marginTop: "12px", fontFamily: "monospace" }}>
+                        Report ID: {r.reportId}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* ── Subscription ID ── */}
