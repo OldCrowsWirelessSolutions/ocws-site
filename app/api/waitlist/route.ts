@@ -17,10 +17,18 @@ function escapeHtml(s: string) {
     .replaceAll("'", "&#039;");
 }
 
-async function appendToGoogleSheet(row: string[]) {
+function tierToTab(tier: string): string {
+  const t = tier.trim().toLowerCase();
+  if (t === "nest")   return "Nest";
+  if (t === "flock")  return "Flock";
+  if (t === "murder") return "Murder";
+  return "General";
+}
+
+async function appendToGoogleSheet(row: string[], tier: string) {
   const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
-  const sheetId = process.env.GOOGLE_SHEET_ID;
+  const privateKey  = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  const sheetId     = process.env.GOOGLE_SHEET_ID;
 
   if (!clientEmail || !privateKey || !sheetId) {
     console.log("Google Sheets env vars not configured — skipping sheet append.");
@@ -30,21 +38,23 @@ async function appendToGoogleSheet(row: string[]) {
   const auth = new google.auth.GoogleAuth({
     credentials: {
       client_email: clientEmail,
-      private_key: privateKey,
+      private_key:  privateKey,
     },
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
 
   const sheets = google.sheets({ version: "v4", auth });
+  const tab    = tierToTab(tier);
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: sheetId,
-    range: "Sheet1!A:F",
+    range: `${tab}!A:F`,
     valueInputOption: "USER_ENTERED",
     requestBody: {
       values: [row],
     },
   });
+  console.log(`[waitlist] Appended to Google Sheets tab: ${tab}`);
 }
 
 export async function POST(req: Request) {
@@ -82,7 +92,7 @@ export async function POST(req: Request) {
 
     // Google Sheets append (non-fatal)
     try {
-      await appendToGoogleSheet([timestamp, name, email, phone, tier, message]);
+      await appendToGoogleSheet([timestamp, name, email, phone, tier, message], tier);
     } catch (sheetErr) {
       console.error("Google Sheets append failed:", sheetErr);
       // Non-fatal — continue and still send email
