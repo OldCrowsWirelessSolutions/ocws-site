@@ -5,7 +5,7 @@ import { deactivatePromoCode } from "@/lib/promo-codes";
 
 function isAuthed(req: Request): boolean {
   const key = req.headers.get("x-admin-key") ?? "";
-  return key === (process.env.OCWS_ADMIN_SECRET ?? "") || key === "OCWS2026";
+  return key === (process.env.OCWS_ADMIN_SECRET ?? "");
 }
 
 export async function POST(req: Request) {

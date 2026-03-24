@@ -62,7 +62,7 @@ interface SubRecord {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const ADMIN_KEY = "OCWS2026";
+const ADMIN_KEY = "SpectrumLife2026!!";
 
 const TIER_COLORS: Record<SubscriptionTier, { bg: string; text: string }> = {
   nest:   { bg: "#00C2C7", text: "#0D1520" },

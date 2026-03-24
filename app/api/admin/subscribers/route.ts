@@ -8,7 +8,7 @@ import { NextRequest } from "next/server";
 import redis from "@/lib/redis";
 import type { SubscriptionRecord } from "@/lib/subscriptions";
 
-const ADMIN_SECRET = process.env.OCWS_ADMIN_SECRET ?? "OCWS2026";
+const ADMIN_SECRET = process.env.OCWS_ADMIN_SECRET ?? "";
 
 export async function GET(req: NextRequest) {
   if (req.headers.get("x-admin-key") !== ADMIN_SECRET) {
