@@ -387,16 +387,15 @@ export default function HomePage() {
             {/* Photo placeholder */}
             <div className="shrink-0 flex justify-center w-full md:w-auto">
               <div
-                className="rounded-2xl flex flex-col items-center justify-center"
-                style={{
-                  width: "300px",
-                  height: "400px",
-                  background: "#1A2332",
-                  border: "2px solid #B8922A",
-                }}
+                className="rounded-2xl overflow-hidden"
+                style={{ width: "300px", height: "400px", border: "2px solid #B8922A" }}
               >
-                <span className="text-5xl font-bold" style={{ color: "#B8922A" }}>JT</span>
-                <span className="mt-3 text-xs" style={{ color: "#555" }}>Add photo</span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/bio-picture.jpg"
+                  alt="Joshua Turner — Founder, Old Crows Wireless Solutions"
+                  style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top", display: "block" }}
+                />
               </div>
             </div>
 
