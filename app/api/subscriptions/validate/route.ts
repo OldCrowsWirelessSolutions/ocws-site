@@ -7,6 +7,7 @@
 export const runtime = "nodejs";
 
 import { validateSubscriptionId } from "@/lib/subscriptions";
+import { CREDIT_PRICING, RECKONING_PRICING } from "@/lib/price-map";
 
 export async function POST(req: Request) {
   try {
@@ -18,6 +19,25 @@ export async function POST(req: Request) {
     }
 
     const result = await validateSubscriptionId(input);
+
+    // Enrich with tier-specific pricing for subscription type
+    if (result.valid && result.type === "subscription" && result.tier) {
+      const cp = CREDIT_PRICING[result.tier];
+      const rp = RECKONING_PRICING[result.tier];
+      return Response.json({
+        ...result,
+        credit_pricing: cp ? {
+          single:          cp.single,
+          singlePrice:     cp.singlePrice,
+          sixPack:         cp.sixPack,
+          sixPackPrice:    cp.sixPackPrice,
+          twelvePack:      cp.twelvePack,
+          twelvePackPrice: cp.twelvePackPrice,
+        } : undefined,
+        reckoning_pricing: rp ?? undefined,
+      }, { status: 200 });
+    }
+
     return Response.json(result, { status: 200 });
   } catch (err) {
     console.error("[subscriptions/validate]", err);

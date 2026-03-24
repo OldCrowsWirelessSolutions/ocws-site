@@ -8,6 +8,18 @@ import Link from "next/link";
 
 type SubscriptionTier = "nest" | "flock" | "murder";
 
+interface CreditPricing {
+  single: string;       singlePrice: number;
+  sixPack: string;      sixPackPrice: number;
+  twelvePack: string;   twelvePackPrice: number;
+}
+
+interface ReckoningPricing {
+  small?: string;      smallPrice?: number;
+  standard?: string;   standardPrice?: number;
+  commercial?: string; commercialPrice?: number;
+}
+
 interface ValidationResult {
   valid: boolean;
   type: "subscription" | "founder" | "admin" | "promo" | null;
@@ -19,6 +31,8 @@ interface ValidationResult {
   reckonings_unlimited?: { small: boolean; standard: boolean; commercial: boolean };
   seat_limit?: number;
   seats_used?: number;
+  credit_pricing?: CreditPricing;
+  reckoning_pricing?: ReckoningPricing;
   error?: string;
 }
 
@@ -104,6 +118,8 @@ export default function DashboardPage() {
   const [sub, setSub]         = useState<ValidationResult | null>(null);
   const [details, setDetails] = useState<SubDetails | null>(null);
   const [storedCode, setStoredCode] = useState("");
+  const [buyingCredits, setBuyingCredits]       = useState<string | null>(null);
+  const [buyingReckoning, setBuyingReckoning]   = useState<string | null>(null);
 
   // ── Auth + load ────────────────────────────────────────────────────────────
 
@@ -218,6 +234,42 @@ export default function DashboardPage() {
       setCodeCopied(true);
       setTimeout(() => setCodeCopied(false), 2000);
     });
+  }
+
+  async function handleBuyCredits(pack: "single" | "6pack" | "12pack") {
+    setBuyingCredits(pack);
+    try {
+      const res  = await fetch("/api/subscriptions/buy-credits", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: storedCode, pack }),
+      });
+      const data = await res.json();
+      if (data.error) { alert(data.error); return; }
+      if (data.url)   window.location.href = data.url;
+    } catch {
+      alert("Connection error. Please try again.");
+    } finally {
+      setBuyingCredits(null);
+    }
+  }
+
+  async function handleBuyReckoning(type: "small" | "standard" | "commercial") {
+    setBuyingReckoning(type);
+    try {
+      const res  = await fetch("/api/subscriptions/buy-reckoning", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: storedCode, type }),
+      });
+      const data = await res.json();
+      if (data.error) { alert(data.error); return; }
+      if (data.url)   window.location.href = data.url;
+    } catch {
+      alert("Connection error. Please try again.");
+    } finally {
+      setBuyingReckoning(null);
+    }
   }
 
   // ── Loading ────────────────────────────────────────────────────────────────
@@ -493,6 +545,156 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* ── Buy More Verdicts ── */}
+      {isSubType && (
+        <div style={card}>
+          <p style={sectionLabel}>Buy More Verdicts</p>
+          {tier === "murder" ? (
+            <p style={{ color: "#555555", fontSize: "13px" }}>
+              Murder subscribers have unlimited Verdict credits included — no purchase needed.
+            </p>
+          ) : (() => {
+            const cp = sub?.credit_pricing;
+            const sp = cp?.singlePrice ?? 0;
+            const packs: { pack: "single" | "6pack" | "12pack"; label: string; price: number; savings: string | null }[] = [
+              { pack: "single",  label: "Single Credit", price: sp,                         savings: null },
+              { pack: "6pack",   label: "6-Pack",        price: cp?.sixPackPrice ?? 0,       savings: cp ? `saves $${sp * 6  - cp.sixPackPrice}`  : null },
+              { pack: "12pack",  label: "12-Pack",       price: cp?.twelvePackPrice ?? 0,    savings: cp ? `saves $${sp * 12 - cp.twelvePackPrice}` : null },
+            ];
+            return (
+              <>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: "12px" }}>
+                  {packs.map(({ pack, label, price, savings }) => (
+                    <div key={pack} style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "16px", textAlign: "center" }}>
+                      <p style={{ color: "#888888", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>{label}</p>
+                      <p style={{ color: "#00C2C7", fontSize: "26px", fontWeight: 800, lineHeight: 1, marginBottom: "4px" }}>${price}</p>
+                      {savings
+                        ? <p style={{ color: "#4ADE80", fontSize: "10px", marginBottom: "10px" }}>{savings}</p>
+                        : <div style={{ height: "18px", marginBottom: "10px" }} />
+                      }
+                      <button
+                        onClick={() => handleBuyCredits(pack)}
+                        disabled={buyingCredits !== null}
+                        style={{
+                          width: "100%",
+                          background: buyingCredits === pack ? "#0D6E7A" : "#00C2C7",
+                          color: "#0D1520", border: "none", borderRadius: "7px",
+                          padding: "8px", fontSize: "12px", fontWeight: 700,
+                          cursor: buyingCredits !== null ? "not-allowed" : "pointer",
+                        }}>
+                        {buyingCredits === pack ? "Redirecting…" : "Buy Now"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <p style={{ color: "#444444", fontSize: "11px", marginTop: "12px" }}>
+                  Credits are added immediately after payment and never expire.
+                </p>
+              </>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* ── Buy More Reckonings ── */}
+      {isSubType && (
+        <div style={card}>
+          <p style={{ color: "#B8922A", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
+            Buy More Reckonings
+          </p>
+          {tier === "murder" ? (
+            <p style={{ color: "#555555", fontSize: "13px" }}>
+              Murder subscribers have unlimited Reckonings included — no purchase needed.
+            </p>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: "12px" }}>
+              {/* Small — available to Nest and Flock */}
+              <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "16px", textAlign: "center" }}>
+                <p style={{ color: "#888888", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>Small</p>
+                <p style={{ color: "#B8922A", fontSize: "26px", fontWeight: 800, lineHeight: 1, marginBottom: "4px" }}>
+                  ${sub?.reckoning_pricing?.smallPrice ?? (tier === "nest" ? 50 : 35)}
+                </p>
+                <p style={{ color: "#444444", fontSize: "10px", marginBottom: "10px" }}>≤ 2,500 sq ft</p>
+                <button
+                  onClick={() => handleBuyReckoning("small")}
+                  disabled={buyingReckoning !== null}
+                  style={{
+                    width: "100%",
+                    background: buyingReckoning === "small" ? "#0D6E7A" : "#B8922A",
+                    color: "#0D1520", border: "none", borderRadius: "7px",
+                    padding: "8px", fontSize: "12px", fontWeight: 700,
+                    cursor: buyingReckoning !== null ? "not-allowed" : "pointer",
+                  }}>
+                  {buyingReckoning === "small" ? "Redirecting…" : "Buy Now"}
+                </button>
+              </div>
+
+              {/* Standard */}
+              {tier === "flock" ? (
+                <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "16px", textAlign: "center" }}>
+                  <p style={{ color: "#888888", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>Standard</p>
+                  <p style={{ color: "#B8922A", fontSize: "26px", fontWeight: 800, lineHeight: 1, marginBottom: "4px" }}>
+                    ${sub?.reckoning_pricing?.standardPrice ?? 75}
+                  </p>
+                  <p style={{ color: "#444444", fontSize: "10px", marginBottom: "10px" }}>Multi-structure</p>
+                  <button
+                    onClick={() => handleBuyReckoning("standard")}
+                    disabled={buyingReckoning !== null}
+                    style={{
+                      width: "100%",
+                      background: buyingReckoning === "standard" ? "#0D6E7A" : "#B8922A",
+                      color: "#0D1520", border: "none", borderRadius: "7px",
+                      padding: "8px", fontSize: "12px", fontWeight: 700,
+                      cursor: buyingReckoning !== null ? "not-allowed" : "pointer",
+                    }}>
+                    {buyingReckoning === "standard" ? "Redirecting…" : "Buy Now"}
+                  </button>
+                </div>
+              ) : (
+                <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "16px", textAlign: "center" }}>
+                  <p style={{ color: "#444444", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>Standard</p>
+                  <p style={{ color: "#333333", fontSize: "12px", marginBottom: "10px" }}>Flock plan required</p>
+                  <Link href="/crows-eye" style={{ display: "inline-block", background: "rgba(184,146,42,0.08)", border: "1px solid rgba(184,146,42,0.2)", borderRadius: "7px", color: "#B8922A", fontSize: "11px", fontWeight: 600, padding: "6px 12px", textDecoration: "none" }}>
+                    Upgrade
+                  </Link>
+                </div>
+              )}
+
+              {/* Commercial */}
+              {tier === "flock" ? (
+                <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "16px", textAlign: "center" }}>
+                  <p style={{ color: "#888888", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>Commercial</p>
+                  <p style={{ color: "#B8922A", fontSize: "26px", fontWeight: 800, lineHeight: 1, marginBottom: "4px" }}>
+                    ${sub?.reckoning_pricing?.commercialPrice ?? 200}
+                  </p>
+                  <p style={{ color: "#444444", fontSize: "10px", marginBottom: "10px" }}>Commercial property</p>
+                  <button
+                    onClick={() => handleBuyReckoning("commercial")}
+                    disabled={buyingReckoning !== null}
+                    style={{
+                      width: "100%",
+                      background: buyingReckoning === "commercial" ? "#0D6E7A" : "#B8922A",
+                      color: "#0D1520", border: "none", borderRadius: "7px",
+                      padding: "8px", fontSize: "12px", fontWeight: 700,
+                      cursor: buyingReckoning !== null ? "not-allowed" : "pointer",
+                    }}>
+                    {buyingReckoning === "commercial" ? "Redirecting…" : "Buy Now"}
+                  </button>
+                </div>
+              ) : (
+                <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "16px", textAlign: "center" }}>
+                  <p style={{ color: "#444444", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>Commercial</p>
+                  <p style={{ color: "#333333", fontSize: "12px", marginBottom: "10px" }}>Flock plan required</p>
+                  <Link href="/crows-eye" style={{ display: "inline-block", background: "rgba(184,146,42,0.08)", border: "1px solid rgba(184,146,42,0.2)", borderRadius: "7px", color: "#B8922A", fontSize: "11px", fontWeight: 600, padding: "6px 12px", textDecoration: "none" }}>
+                    Upgrade
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Past Verdicts ── */}
       <div style={card}>

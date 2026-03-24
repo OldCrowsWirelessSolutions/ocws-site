@@ -10,11 +10,14 @@ checkEnv();
 import {
   createSubscription,
   generateSubscriptionId,
+  getSubscription,
   getSubscriptionByStripeId,
   getSubscriptionByEmail,
   updateSubscription,
   resetPeriodCredits,
 } from "@/lib/subscriptions";
+import { CREDITS_BY_PRICE } from "@/lib/price-map";
+import redis from "@/lib/redis";
 import type { SubscriptionTier, SubscriptionStatus } from "@/lib/subscriptions";
 import {
   sendSubscriptionConfirmation,
@@ -223,10 +226,43 @@ export async function POST(req: NextRequest) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        console.log("[webhook] checkout.session.completed", {
-          id: session.id, customer_email: session.customer_details?.email,
-          amount_total: session.amount_total, mode: session.mode,
-        });
+        const metaType = session.metadata?.type;
+
+        if (metaType === "credit_purchase") {
+          const subId   = session.metadata?.subscriptionId;
+          const creditsFromMeta = Number(session.metadata?.credits ?? 0);
+          const credits = creditsFromMeta > 0
+            ? creditsFromMeta
+            : (CREDITS_BY_PRICE[session.metadata?.priceId ?? ""] ?? 0);
+          if (subId && credits > 0) {
+            const sub = await getSubscription(subId);
+            if (sub) {
+              await updateSubscription(subId, {
+                extra_verdict_credits: sub.extra_verdict_credits + credits,
+              });
+              console.log(`[webhook] credit_purchase: +${credits} credits → ${subId}`);
+            }
+          }
+        } else if (metaType === "reckoning_purchase") {
+          const subId         = session.metadata?.subscriptionId;
+          const reckoningType = session.metadata?.reckoningType;
+          if (subId && reckoningType) {
+            const key   = `purchased_reckonings:${subId}`;
+            const entry = JSON.stringify({
+              type:        reckoningType,
+              purchasedAt: new Date().toISOString(),
+              used:        false,
+              session_id:  session.id,
+            });
+            await redis.lpush(key, entry);
+            console.log(`[webhook] reckoning_purchase: ${reckoningType} → ${subId}`);
+          }
+        } else {
+          console.log("[webhook] checkout.session.completed", {
+            id: session.id, customer_email: session.customer_details?.email,
+            amount_total: session.amount_total, mode: session.mode,
+          });
+        }
         break;
       }
       case "payment_intent.succeeded": {

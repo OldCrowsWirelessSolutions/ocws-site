@@ -37,6 +37,23 @@ const ENV_VARS: EnvVar[] = [
   { key: "STRIPE_PRICE_MURDER_MONTHLY",      required: false, description: "Stripe Price ID — Murder monthly"            },
   { key: "STRIPE_PRICE_MURDER_ANNUAL",       required: false, description: "Stripe Price ID — Murder annual"             },
 
+  // ── Subscriber-specific pricing (PRICE_* env vars for price-map.ts) ────────
+  { key: "PRICE_CORVUS_VERDICT",            required: false, description: "Price map — Corvus' Verdict"                  },
+  { key: "PRICE_RECKONING_SMALL",           required: false, description: "Price map — Reckoning Small (public)"         },
+  { key: "PRICE_RECKONING_STANDARD",        required: false, description: "Price map — Reckoning Standard (public)"      },
+  { key: "PRICE_RECKONING_COMMERCIAL",      required: false, description: "Price map — Reckoning Commercial (public)"    },
+  { key: "PRICE_OCWS_PRO",                  required: false, description: "Price map — OCWS Pro"                         },
+  { key: "PRICE_EXTRA_CREDIT",              required: false, description: "Price map — Extra credit (single)"            },
+  { key: "PRICE_VERDICT_6PACK",             required: false, description: "Price map — Verdict 6-pack"                   },
+  { key: "PRICE_VERDICT_12PACK",            required: false, description: "Price map — Verdict 12-pack"                  },
+  { key: "PRICE_RECKONING_SMALL_NEST",      required: false, description: "Price map — Reckoning Small (Nest rate)"      },
+  { key: "PRICE_EXTRA_CREDIT_FLOCK",        required: false, description: "Price map — Extra credit (Flock rate)"        },
+  { key: "PRICE_VERDICT_6PACK_FLOCK",       required: false, description: "Price map — Verdict 6-pack (Flock rate)"      },
+  { key: "PRICE_VERDICT_12PACK_FLOCK",      required: false, description: "Price map — Verdict 12-pack (Flock rate)"     },
+  { key: "PRICE_RECKONING_SMALL_FLOCK",     required: false, description: "Price map — Reckoning Small (Flock rate)"     },
+  { key: "PRICE_RECKONING_STANDARD_FLOCK",  required: false, description: "Price map — Reckoning Standard (Flock rate)"  },
+  { key: "PRICE_RECKONING_COMMERCIAL_FLOCK",required: false, description: "Price map — Reckoning Commercial (Flock rate)"},
+
   // ── SMTP ──────────────────────────────────────────────────────────────────
   { key: "SMTP_FROM",  required: true,  description: "SMTP sender address"  },
   { key: "SMTP_HOST",  required: true,  description: "SMTP server hostname" },
