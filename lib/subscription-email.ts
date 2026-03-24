@@ -53,10 +53,10 @@ export async function sendSubscriptionConfirmation(opts: {
   const ent  = TIER_ENTITLEMENTS[opts.tier];
   const seatLimit = ent.seat_limit;
 
-  const verdicts = ent.verdicts_per_month === Infinity ? "Unlimited" : String(ent.verdicts_per_month);
-  const smallReck = ent.reckonings_per_month.small === Infinity ? "Unlimited" : String(ent.reckonings_per_month.small);
-  const stdReck   = ent.reckonings_per_month.standard === Infinity ? "Unlimited" : String(ent.reckonings_per_month.standard);
-  const comReck   = ent.reckonings_per_month.commercial === Infinity ? "Unlimited" : String(ent.reckonings_per_month.commercial);
+  const verdicts = ent.verdicts_per_month >= 999999 ? "Unlimited" : String(ent.verdicts_per_month);
+  const smallReck = ent.reckonings_per_month.small >= 999999 ? "Unlimited" : String(ent.reckonings_per_month.small);
+  const stdReck   = ent.reckonings_per_month.standard >= 999999 ? "Unlimited" : String(ent.reckonings_per_month.standard);
+  const comReck   = ent.reckonings_per_month.commercial >= 999999 ? "Unlimited" : String(ent.reckonings_per_month.commercial);
 
   const tierName    = TIER_NAMES[opts.tier];
   const tierPrice   = TIER_PRICES[opts.tier];

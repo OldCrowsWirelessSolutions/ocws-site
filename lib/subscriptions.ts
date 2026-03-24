@@ -72,7 +72,7 @@ export const TIER_ENTITLEMENTS: Record<
   nest: {
     verdicts_per_month: 3,
     reckonings_per_month: { small: 1, standard: 0, commercial: 0 },
-    seat_limit: 2,
+    seat_limit: 1,
   },
   flock: {
     verdicts_per_month: 15,
@@ -80,9 +80,9 @@ export const TIER_ENTITLEMENTS: Record<
     seat_limit: 5,
   },
   murder: {
-    verdicts_per_month: Infinity,
-    reckonings_per_month: { small: Infinity, standard: 10, commercial: 3 },
-    seat_limit: 20,
+    verdicts_per_month: 999999,
+    reckonings_per_month: { small: 999999, standard: 10, commercial: 3 },
+    seat_limit: 3,
   },
 };
 
@@ -247,30 +247,32 @@ export async function validateSubscriptionId(
 
   const ent = TIER_ENTITLEMENTS[sub.tier];
 
-  const verdicts_unlimited = ent.verdicts_per_month === Infinity;
+  const UNLIMITED = 999999;
+
+  const verdicts_unlimited = ent.verdicts_per_month >= UNLIMITED;
   const verdicts_remaining = verdicts_unlimited
-    ? 999
+    ? UNLIMITED
     : Math.max(0, ent.verdicts_per_month - sub.verdicts_used) + sub.extra_verdict_credits;
 
   const reckonings_remaining = {
     small:
-      ent.reckonings_per_month.small === Infinity
-        ? 999
+      ent.reckonings_per_month.small >= UNLIMITED
+        ? UNLIMITED
         : Math.max(0, ent.reckonings_per_month.small - sub.reckonings_used.small),
     standard:
-      ent.reckonings_per_month.standard === Infinity
-        ? 999
+      ent.reckonings_per_month.standard >= UNLIMITED
+        ? UNLIMITED
         : Math.max(0, ent.reckonings_per_month.standard - sub.reckonings_used.standard),
     commercial:
-      ent.reckonings_per_month.commercial === Infinity
-        ? 999
+      ent.reckonings_per_month.commercial >= UNLIMITED
+        ? UNLIMITED
         : Math.max(0, ent.reckonings_per_month.commercial - sub.reckonings_used.commercial),
   };
 
   const reckonings_unlimited = {
-    small:      ent.reckonings_per_month.small === Infinity,
-    standard:   ent.reckonings_per_month.standard === Infinity,
-    commercial: ent.reckonings_per_month.commercial === Infinity,
+    small:      ent.reckonings_per_month.small >= UNLIMITED,
+    standard:   ent.reckonings_per_month.standard >= UNLIMITED,
+    commercial: ent.reckonings_per_month.commercial >= UNLIMITED,
   };
 
   const ent2 = TIER_ENTITLEMENTS[sub.tier];
@@ -303,7 +305,7 @@ export async function consumeCredit(
   const ent = TIER_ENTITLEMENTS[sub.tier];
 
   if (product === "verdict") {
-    const unlimited = ent.verdicts_per_month === Infinity;
+    const unlimited = ent.verdicts_per_month >= 999999;
     if (!unlimited) {
       const monthly_remaining = ent.verdicts_per_month - sub.verdicts_used;
       if (monthly_remaining <= 0 && sub.extra_verdict_credits <= 0) {
@@ -326,7 +328,7 @@ export async function consumeCredit(
     const limit = ent.reckonings_per_month[recType];
     const used = sub.reckonings_used[recType];
 
-    if (limit !== Infinity && used >= limit) {
+    if (limit < 999999 && used >= limit) {
       return {
         success: false,
         error: `No ${recType} Reckoning credits remaining this billing period.`,
