@@ -414,7 +414,9 @@ export default function HomePage() {
               </p>
               <p className="text-base leading-relaxed mb-6" style={{ color: "#aaa" }}>
                 The name is a homage to the Association of Old Crows — the fraternal organization of
-                electronic warfare professionals. We have operated in over 55 countries. We know RF.
+                electronic warfare professionals. I have operated in over 55 countries &mdash; from
+                the Strait of Magellan to the Arctic Circle. I have seen what RF does in every
+                environment on earth. Corvus was built on that foundation.
               </p>
 
               {/* Faith box */}
