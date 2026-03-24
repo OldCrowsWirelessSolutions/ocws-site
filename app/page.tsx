@@ -251,7 +251,7 @@ export default function HomePage() {
             </div>
 
             <p className="text-sm italic mb-8" style={{ color: "#B8922A" }}>
-              Be first when it launches. Join the waitlist and get early access pricing.
+              Be first when it launches. Join the waitlist.
             </p>
 
             <a

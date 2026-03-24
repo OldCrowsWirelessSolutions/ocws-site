@@ -103,11 +103,11 @@ const FAQS = [
   },
   {
     q: "What are the subscription tiers?",
-    a: "Crow's Eye will offer three subscription tiers: Nest ($20/mo or $160/yr) for homeowners and small businesses, Flock ($100/mo or $900/yr) for MSPs, IT consultants, and growing teams, and Murder ($950/mo or $9,500/yr) for enterprise networks, multi-site operators, and mission-critical environments. All tiers are currently in development — join the waitlist to be notified at launch.",
+    a: "Crow's Eye offers three subscription tiers: Nest ($20/mo or $160/yr) for homeowners and small businesses, Flock ($100/mo or $900/yr) for MSPs, IT consultants, and growing teams, and Murder ($950/mo or $9,500/yr) for enterprise networks, multi-site operators, and mission-critical environments. All tiers are live and available now.",
   },
   {
-    q: "How do I join the waitlist?",
-    a: "Click 'Join Waitlist' on any tier card on the homepage or visit the Crow's Eye page. You'll be asked for your name, email, and which tier you're interested in. We'll notify you when your tier launches.",
+    q: "Is there a waitlist?",
+    a: "The Crow's Eye mobile app (iOS + Android) is coming soon. Join the waitlist at oldcrowswireless.com/waitlist to be notified when it launches.",
   },
   {
     q: "Is my data safe?",
