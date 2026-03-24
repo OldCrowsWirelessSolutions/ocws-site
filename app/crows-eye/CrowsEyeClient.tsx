@@ -1332,7 +1332,7 @@ export default function CrowsEyeClient() {
                 <li>&middot; 12-pack: $120 <span className="text-white/40">(save $60)</span></li>
               </ul>
             </div>
-            <p className="ocws-muted">Flock members ($100/mo) get 15 Verdicts per month and extra credits at $10 each. Murder members ($250/mo) get unlimited Verdicts with no credit limits.</p>
+            <p className="ocws-muted">Flock members ($100/mo) get 15 Verdicts per month and extra credits at $10 each. Murder members ($950/mo) get unlimited Verdicts.</p>
             <div style={{ height: "1px", background: "rgba(0,212,255,0.15)" }} />
             <div>
               <p className="text-white font-semibold mb-1">The Full Reckoning — Multi-Location Survey</p>
@@ -1343,7 +1343,7 @@ export default function CrowsEyeClient() {
                 <li>&middot; Commercial Reckoning (16+ locations): $750</li>
                 <li>&middot; Pro Certified Reckoning (any size, Joshua certifies): $1,500</li>
               </ul>
-              <p className="ocws-muted mt-2">Nest members get 1 Small Reckoning per month included. Flock members get 3 Small + 1 Standard. Murder members get unlimited Small and Standard Reckonings.</p>
+              <p className="ocws-muted mt-2">Nest members get 1 Small Reckoning per month included. Flock members get 3 Small + 1 Standard. Murder members get unlimited Small, 10 Standard, and 3 Commercial Reckonings per month.</p>
             </div>
           </div>
         )}

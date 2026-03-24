@@ -23,7 +23,7 @@ const FAQS = [
   },
   {
     q: "How many Verdicts do I get per month?",
-    a: "A single purchase gives you one Verdict immediately for $50. Nest membership includes 3 Verdicts per month. Flock includes 15 per month. Murder is unlimited. Extra credits are available for purchase at any time — $15 each for Nest members, $10 each for Flock members.",
+    a: "A single purchase gives you one Verdict immediately for $50. Nest membership includes 3 Verdicts per month. Flock includes 15 per month. Murder includes unlimited Verdicts. Extra credits are available for purchase at any time — $15 each for Nest members, $10 each for Flock members.",
   },
   {
     q: "Can I cancel my Nest membership?",
@@ -43,7 +43,7 @@ const FAQS = [
   },
   {
     q: "How many locations can I include in a Full Reckoning?",
-    a: "Up to 5 locations on a Small Reckoning ($150). Up to 15 on a Standard Reckoning ($350). Unlimited locations on a Commercial Reckoning ($750). Nest members get one Small Reckoning included per month. Flock members get three Small and one Standard per month. Murder members get unlimited Small and Standard Reckonings.",
+    a: "Up to 5 locations on a Small Reckoning ($150). Up to 15 on a Standard Reckoning ($350). Unlimited locations on a Commercial Reckoning ($750). Nest members get one Small Reckoning included per month. Flock members get three Small and one Standard per month. Murder members get unlimited Small Reckonings, 10 Standard Reckonings per month, and 3 Commercial Reckonings per month.",
   },
   {
     q: "How do I take screenshots for The Full Reckoning?",
@@ -103,7 +103,7 @@ const FAQS = [
   },
   {
     q: "What are the subscription tiers?",
-    a: "Crow's Eye will offer three subscription tiers: Nest ($20/mo or $160/yr) for homeowners and small businesses, Flock ($100/mo or $900/yr) for MSPs and IT consultants, and Murder ($250/mo or $2,000/yr) for RF engineers and power users. All tiers are currently in development — join the waitlist to be notified at launch.",
+    a: "Crow's Eye will offer three subscription tiers: Nest ($20/mo or $160/yr) for homeowners and small businesses, Flock ($100/mo or $900/yr) for MSPs, IT consultants, and growing teams, and Murder ($950/mo or $9,500/yr) for enterprise networks, multi-site operators, and mission-critical environments. All tiers are currently in development — join the waitlist to be notified at launch.",
   },
   {
     q: "How do I join the waitlist?",

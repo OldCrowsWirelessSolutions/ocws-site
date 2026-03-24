@@ -65,7 +65,7 @@ function WaitlistModal({
         <p className="text-xs mb-5" style={{ color: "#666" }}>
           {tier === "Nest" && "Monthly plan: $60 minimum (3 months) · Annual plan: $160/yr no minimum"}
           {tier === "Flock" && "Monthly plan: 3-month minimum · Annual plan: $900/yr"}
-          {tier === "Murder" && "Monthly plan: 3-month minimum · Annual plan: $2,000/yr"}
+          {tier === "Murder" && "Monthly plan: 3-month minimum ($2,850 minimum) · Annual plan: $9,500/yr"}
         </p>
 
         {status === "sent" ? (
@@ -195,7 +195,7 @@ const tiers = [
     name: "FLOCK",
     price: "$100/mo",
     priceAlt: "or $900/yr",
-    tagline: "For MSPs and IT consultants",
+    tagline: "For MSPs, IT consultants, and growing teams",
     features: [
       "15 Verdicts per month included",
       "Extra Verdicts at $10 each",
@@ -216,26 +216,28 @@ const tiers = [
   },
   {
     id: "Murder" as Tier,
-    emoji: "💀",
+    emoji: "🏢",
     name: "MURDER",
-    price: "$250/mo",
-    priceAlt: "or $2,000/yr",
-    tagline: "For RF engineers and power users",
+    price: "$950/mo",
+    priceAlt: "or $9,500/yr",
+    tagline: "For enterprise networks, multi-site operators, and mission-critical environments",
     features: [
       "Unlimited Verdicts",
-      "No credit limits ever",
-      "Unlimited Small and Standard Reckonings",
-      "Commercial Reckoning: $150 additional",
-      "Pro Certified Reckoning: $750 (Joshua certifies every one)",
+      "Unlimited Small Reckonings",
+      "10 Standard Reckonings per month",
+      "3 Commercial Reckonings per month",
+      "Additional Standard Reckonings: $90 each",
+      "Additional Commercial Reckonings: $250 each",
+      "3 seats included",
+      "Additional seats: $75/user/month",
       "Everything in Flock",
-      "Unlimited seats",
-      "Full design suite",
-      "Custom report branding",
       "API access",
       "Dedicated support",
+      "Custom report branding",
       "OCWS certified training",
+      "Pro Certified Reckoning: custom quoted",
     ],
-    note: "3-month minimum on monthly plan",
+    note: "3-month minimum on monthly plan ($2,850 minimum charge)",
     featured: false,
   },
 ];
@@ -311,7 +313,7 @@ export default function TiersSection() {
                 type="button"
                 onClick={() => setOpenModal(tier.id)}
                 className="w-full inline-flex items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition hover:bg-[#00C2C7]/10 ocws-glow-hover"
-                title={"note" in tier && tier.id !== "Murder" ? "Monthly plan requires 3-month minimum commitment" : undefined}
+                title={"note" in tier ? "Monthly plan requires 3-month minimum commitment" : undefined}
                 style={{
                   background: "transparent",
                   color: "#00C2C7",
