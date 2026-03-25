@@ -42,6 +42,7 @@ interface RouterInfo {
 interface FullFinding {
   severity: "CRITICAL" | "WARNING" | "GOOD";
   title: string;
+  fix_summary?: string;
   description: string;
   fix: string;
   steps?: string[];
@@ -114,6 +115,14 @@ const LOCATION_NAME_PLACEHOLDERS: Record<string, string> = {
   "Medical":    "e.g. Waiting Room, Exam Room 1, Nurses Station, Lab, Reception",
   "Other":      "e.g. Location 1, Location 2, Location 3",
 };
+
+const COMFORT_LEVELS = [
+  { level: 1, emoji: "🆘", label: "Just make it work",   desc: "I plug it in and hope for the best" },
+  { level: 2, emoji: "🔌", label: "Basic user",           desc: "I can plug in a router and restart things" },
+  { level: 3, emoji: "⚙️",  label: "Somewhat technical",  desc: "I can log into my router and change settings" },
+  { level: 4, emoji: "💻", label: "IT Proficient",        desc: "College-level IT knowledge" },
+  { level: 5, emoji: "🎯", label: "Network Pro",          desc: "White hat / IT professional" },
+] as const;
 
 const LOCATION_TYPE_OPTIONS = [
   "Indoor \u2014 Main Structure",
@@ -428,6 +437,7 @@ export default function CrowsEyeClient() {
   const [environment, setEnvironment] = useState<"indoor" | "outdoor">("indoor");
   const [locationType, setLocationType] = useState("");
   const [notes, setNotes] = useState("");
+  const [itComfortLevel, setItComfortLevel] = useState(2);
   const [ssid, setSsid] = useState("");
   const [multiSsid, setMultiSsid] = useState(false);
   const [ssidDescription, setSsidDescription] = useState("");
@@ -717,6 +727,7 @@ export default function CrowsEyeClient() {
           environment,
           locationType,
           notes,
+          itComfortLevel,
           client_ssid: ssid,
           multiSsid,
           ssidDescription: multiSsid ? ssidDescription.trim() : "",
@@ -755,6 +766,7 @@ export default function CrowsEyeClient() {
           environment,
           locationType,
           notes,
+          itComfortLevel,
           client_ssid: ssid,
           multiSsid,
           ssidDescription: multiSsid ? ssidDescription.trim() : "",
@@ -1407,9 +1419,9 @@ export default function CrowsEyeClient() {
 
         // Pre-wrap all text blocks — font MUST be set before wrap() so jsPDF uses
         // the correct character metrics; mismatch is the root cause of text overflow
-        fn("bold",   10); const titleW = wrap(f.title, CARD_IW - 58);
-        fn("normal",  9); const descW  = wrap(f.description, CARD_IW);
-        fn("normal",  9); const fixW   = wrap(`Fix: ${f.fix}`, CARD_IW);
+        fn("bold",   10); const titleW  = wrap(f.title, CARD_IW - 58);
+        fn("bold",    9); const fixSumW = wrap(f.fix_summary || f.fix, CARD_IW - 16);
+        fn("normal",  9); const descW   = wrap(f.description, CARD_IW);
         fn("normal",  8);
         const stepsW: string[][] = f.steps?.length
           ? f.steps.map((s, si) => wrap(`${si + 1}.  ${s}`, CARD_IW - 10))
@@ -1432,12 +1444,14 @@ export default function CrowsEyeClient() {
         }
 
         // Calculate total card height so ensure() can check fit
+        const FIX_BOX_PAD = 8;
+        const fixSumBoxH = FIX_BOX_PAD + th(1, 7) + 3 + th(fixSumW.length, 9) + FIX_BOX_PAD;
         const S = stepsW.length  ? stepsW.reduce((a, sl) => a + th(sl.length, 8) + 3, 0) + 5 : 0;
         const R = routerW.length ? rBoxH + 8 : 0;
         const cardH = CP * 2
           + th(titleW.length, 10) + 6
+          + fixSumBoxH            + 8
           + th(descW.length, 9)   + 6
-          + th(fixW.length, 9)    + 8
           + S + R;
 
         ensure(cardH + 8);
@@ -1460,8 +1474,19 @@ export default function CrowsEyeClient() {
         let cy = y + CP;
         const cx = ML + 3 + CP;
         st(WHITE); fn("bold",   10); cy += txt(titleW, cx, cy, 10) + 6;
+
+        // Fix summary box — teal inset, shown first
+        const fixBoxStart = cy;
+        sf(NAVYL); doc.rect(cx, fixBoxStart, CARD_IW, fixSumBoxH, "F");
+        sf(TEAL);  doc.rect(cx, fixBoxStart, 3, fixSumBoxH, "F");
+        st(CYAN);  fn("bold", 7);
+        txt("THE FIX", cx + 8, fixBoxStart + FIX_BOX_PAD, 7);
+        st(WHITE); fn("bold", 9);
+        txt(fixSumW, cx + 8, fixBoxStart + FIX_BOX_PAD + th(1, 7) + 3, 9);
+        cy = fixBoxStart + fixSumBoxH + 8;
+
+        // Description — why it matters
         st(MGRAY); fn("normal",  9); cy += txt(descW,  cx, cy,  9) + 6;
-        st(CYAN);  fn("normal",  9); cy += txt(fixW,   cx, cy,  9) + 8;
 
         // Numbered steps
         if (stepsW.length) {
@@ -2606,6 +2631,42 @@ export default function CrowsEyeClient() {
           />
         </div>
 
+        {/* IT Comfort Level */}
+        <div>
+          <label className="block text-sm font-medium text-white mb-3">
+            How comfortable are you with technology?
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
+            {COMFORT_LEVELS.map((opt) => {
+              const selected = itComfortLevel === opt.level;
+              return (
+                <button
+                  key={opt.level}
+                  type="button"
+                  onClick={() => setItComfortLevel(opt.level)}
+                  className="flex flex-col items-center gap-1 rounded-xl px-3 py-3 text-center transition-all"
+                  style={{
+                    background: selected ? "rgba(0,194,199,0.12)" : "rgba(0,0,0,0.3)",
+                    border: selected ? "1px solid rgba(0,194,199,0.45)" : "1px solid rgba(255,255,255,0.08)",
+                    boxShadow: selected ? "0 0 0 1px rgba(0,194,199,0.25)" : "none",
+                  }}
+                >
+                  <span className="text-xl leading-none">{opt.emoji}</span>
+                  <span
+                    className="text-xs font-semibold leading-tight"
+                    style={{ color: selected ? "#00C2C7" : "rgba(255,255,255,0.85)" }}
+                  >
+                    {opt.label}
+                  </span>
+                  <span className="text-[10px] leading-tight" style={{ color: "rgba(255,255,255,0.35)" }}>
+                    {opt.desc}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {errorMsg && (
           <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-white text-sm">
             ❌ {errorMsg}
@@ -2905,6 +2966,7 @@ export default function CrowsEyeClient() {
                   if (i > verdictStep) return null;
                   const isTyping = i === verdictStep;
                   const borderColor = severityBorderColor(finding.severity);
+                  const fixText = finding.fix_summary || finding.fix;
 
                   return (
                     <div
@@ -2912,46 +2974,43 @@ export default function CrowsEyeClient() {
                       className="ocws-tile p-6 space-y-3"
                       style={{ borderLeft: `4px solid ${borderColor}` }}
                     >
+                      {/* Title + badge */}
                       <div className="flex items-center gap-3 flex-wrap">
                         <SeverityBadge severity={finding.severity} />
                         <p className="text-white font-semibold">{finding.title}</p>
                       </div>
 
-                      <p className="ocws-muted text-sm leading-relaxed">
-                        {isTyping ? (
-                          <Typewriter
-                            text={finding.description}
-                            speed={14}
-                            onDone={() =>
-                              setTimeout(
-                                () => setVerdictStep((v) => v + 1),
-                                450
-                              )
-                            }
-                          />
-                        ) : (
-                          finding.description
-                        )}
-                      </p>
+                      {/* ⚡ THE FIX — shown first, typewritten on reveal */}
+                      <div
+                        className="rounded-xl px-4 py-3"
+                        style={{
+                          background: "rgba(0,194,199,0.08)",
+                          border: "1px solid rgba(0,194,199,0.28)",
+                        }}
+                      >
+                        <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: "rgba(0,194,199,0.55)" }}>
+                          ⚡ The Fix
+                        </p>
+                        <p className="font-semibold text-base leading-snug" style={{ color: "#00C2C7" }}>
+                          {isTyping ? (
+                            <Typewriter
+                              text={fixText}
+                              speed={14}
+                              onDone={() => setTimeout(() => setVerdictStep((v) => v + 1), 450)}
+                            />
+                          ) : (
+                            fixText
+                          )}
+                        </p>
+                      </div>
 
-                      {/* Fix + steps appear after description finishes */}
+                      {/* Description + steps — revealed after fix is typed */}
                       {i < verdictStep && (
                         <div className="space-y-3">
-                          {/* Fix summary */}
-                          <div
-                            className="rounded-xl px-4 py-3"
-                            style={{
-                              background: "rgba(0,0,0,0.3)",
-                              border: "1px solid rgba(255,255,255,0.08)",
-                            }}
-                          >
-                            <p className="text-xs font-semibold uppercase tracking-wider text-white/50 mb-1">
-                              Fix
-                            </p>
-                            <p className="text-white text-sm leading-relaxed">
-                              {finding.fix}
-                            </p>
-                          </div>
+                          {/* Why it matters */}
+                          <p className="ocws-muted text-sm leading-relaxed">
+                            {finding.description}
+                          </p>
 
                           {/* Router info bar */}
                           {finding.router_info?.gateway_ip && (

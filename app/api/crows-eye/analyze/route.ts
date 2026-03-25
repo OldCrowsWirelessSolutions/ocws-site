@@ -83,7 +83,8 @@ RESPONSE FORMAT — return ONLY valid JSON, no markdown fences, no prose outside
     {
       "severity": "CRITICAL",
       "title": "Short finding title",
-      "description": "2–3 sentences in Corvus' voice. What is wrong? Why does it matter? Plain English. Specific to what you saw.",
+      "fix_summary": "One sentence. What to do. Right now. Calibrated to IT_COMFORT_LEVEL. This is the single most important line in the report.",
+      "description": "1–2 sentences in Corvus' voice. Why this is a problem. Calibrated to IT_COMFORT_LEVEL. Specific to what you saw.",
       "fix": "High-level fix in Corvus' voice. What needs to happen.",
       "router_info": {
         "vendor": "TP-Link",
@@ -112,12 +113,48 @@ RESPONSE FORMAT — return ONLY valid JSON, no markdown fences, no prose outside
   "corvus_summary": "2–3 sentence final word in his voice. Honest. Certain. Warm. What's the overall picture and what should they do first."
 }
 
+CRITICAL INSTRUCTION — IT COMFORT LEVEL ADAPTATION:
+
+The client context will include IT_COMFORT_LEVEL (1–5) and IT_COMFORT_LABEL. You MUST calibrate ALL language, fix_summary text, description text, and steps to match exactly. The end result of every fix is identical regardless of level — only the language and path to get there changes.
+
+LEVEL 1 — "Just make it work":
+- Zero technical terms. None. Ever.
+- Never say "SSID", "dBm", "MHz", "channel", "band", "firmware", "gateway". Say: "your Wi-Fi name", "signal strength", "frequency", "setting", "update", "router".
+- fix_summary: plain English directive a grandparent can follow. E.g. "Call your internet provider and ask them to move your Wi-Fi to a less crowded frequency."
+- steps: maximum 3. No sub-steps. Every step starts with exactly what to click or tap.
+- Tone: patient, encouraging. "You don't need to understand this to fix it — just follow the steps."
+
+LEVEL 2 — "Basic user":
+- Minimal technical terms — define any you use in parentheses on first use.
+- fix_summary: clear, actionable, one sentence. E.g. "Log into your router and change the Wi-Fi channel to reduce interference from your neighbors."
+- steps: 4–6 steps, simple sub-steps allowed. Assume they know what a browser is and can follow instructions.
+- Tone: friendly and clear, like a helpful neighbor who knows tech.
+
+LEVEL 3 — "Somewhat technical":
+- Standard technical terms are fine — SSID, channel, band, frequency, DHCP.
+- fix_summary: direct, uses proper terms. E.g. "Change your 2.4 GHz channel from Auto to Channel 1 to eliminate co-channel interference."
+- steps: include router admin panel navigation with specific menu paths.
+- Tone: peer to peer, confident, direct.
+
+LEVEL 4 — "IT Proficient":
+- Full technical language — dBm, RSSI, co-channel interference, SNR, band steering.
+- fix_summary: professional recommendation. E.g. "Migrate 2.4 GHz to CH1 — co-channel congestion with 8 competing BSSIDs on CH11 is degrading SNR."
+- steps: specific configurations, advanced settings paths, CLI commands if relevant. Reference standards (802.11ac, WPA3, MU-MIMO) where applicable.
+- Tone: professional, peer-level, efficient.
+
+LEVEL 5 — "Network Pro":
+- No hand-holding. Full RF and networking terminology.
+- fix_summary: engineer-to-engineer. E.g. "CH11 co-channel congestion — 17 BSSIDs, RSSI -52dBm. Move to CH1 (2 competitors at -75+). Consider RRM if supported."
+- steps: concise professional recommendations — packet capture suggestions, spectrum analysis, enterprise tool references where relevant.
+- Tone: direct, no fluff. Skip anything a network pro already knows.
+
 Rules:
 - Rank full_findings CRITICAL first, WARNING second, GOOD last
 - Always return exactly 2 teaser_problems
 - full_findings should have 3–6 entries
 - recommendations should have 3–5 items
-- steps should have 6–10 specific numbered instructions tailored to the identified router vendor
+- fix_summary is REQUIRED for every finding — one sentence, calibrated to IT_COMFORT_LEVEL, actionable, not descriptive
+- steps count: Level 1 max 3 steps, Level 2 4–6 steps, Levels 3–5 up to 8 steps with appropriate detail
 - For findings where the fix requires router admin access, include router_info with all fields and steps describing exactly how to do it on that specific router
 - For findings where no router admin access is needed (e.g., move the router, change its physical location), router_info.gateway_ip may be null and steps should describe the physical action instead
 - login_disclaimer must be included in every finding whose steps involve logging into the router admin panel
@@ -190,6 +227,7 @@ export async function POST(req: Request) {
       environment = "indoor",
       locationType = "",
       notes = "",
+      itComfortLevel = 2,
       client_ssid = "",
       multiSsid = false,
       ssidDescription = "",
@@ -207,6 +245,7 @@ export async function POST(req: Request) {
       environment: string;
       locationType: string;
       notes: string;
+      itComfortLevel?: number;
       client_ssid: string;
       multiSsid?: boolean;
       ssidDescription?: string;
@@ -312,6 +351,8 @@ export async function POST(req: Request) {
         "  - corvus_assessment: 2-3 sentences in Corvus' voice summarizing the overall cross-structure coverage situation and the single most important action",
         "All cross_structure_analysis values must be plain text strings in Corvus' voice.",
       ] : []),
+      `IT_COMFORT_LEVEL: ${itComfortLevel}`,
+      `IT_COMFORT_LABEL: ${["Just make it work","Basic user","Somewhat technical","IT Proficient","Network Pro"][Math.max(0, Math.min(4, (itComfortLevel as number) - 1))]}`,
       `Problem description: ${String(notes).trim() || "Not provided"}`,
       "",
       "Analyze the screenshots above and return your Verdict as JSON.",
