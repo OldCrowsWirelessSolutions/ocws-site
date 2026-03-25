@@ -160,8 +160,14 @@ export default function CorvusChat({
         if (data.messagesRemaining !== undefined) {
           setMessagesRemaining(data.messagesRemaining);
         }
+      } else if (data.error) {
+        const errId = `msg-${Date.now()}-e`;
+        setMessages((prev) => [...prev, { id: errId, role: "assistant", content: "Corvus is temporarily unavailable. Try again in a moment." }]);
+        setTypingId(errId);
+        console.error("[CorvusChat] API error:", data.error);
       }
-    } catch {
+    } catch (err) {
+      console.error("[CorvusChat] fetch error:", err);
       const errId = `msg-${Date.now()}-e`;
       setMessages((prev) => [...prev, { id: errId, role: "assistant", content: "Connection issue. Try again." }]);
       setTypingId(errId);
@@ -311,7 +317,7 @@ export default function CorvusChat({
               <div key={msg.id} style={{ display: "flex", flexDirection: isUser ? "row-reverse" : "row", alignItems: "flex-start", gap: "8px" }}>
                 {!isUser && (
                   <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "rgba(0,194,199,0.12)", border: "1px solid rgba(0,194,199,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", flexShrink: 0, marginTop: "2px" }}>
-                    🐦
+                    🐦‍⬛
                   </div>
                 )}
                 <div style={{ maxWidth: "80%", padding: "9px 13px", borderRadius: isUser ? "14px 14px 4px 14px" : "14px 14px 14px 4px", background: isUser ? "rgba(0,194,199,0.15)" : "#0a1018", border: isUser ? "1px solid rgba(0,194,199,0.25)" : "1px solid rgba(255,255,255,0.06)", borderLeft: !isUser ? "2.5px solid rgba(0,194,199,0.4)" : undefined, color: isUser ? "#e0f7f8" : "#cccccc", fontSize: "13.5px", lineHeight: 1.55, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
@@ -322,7 +328,7 @@ export default function CorvusChat({
           })}
           {loading && (
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "rgba(0,194,199,0.12)", border: "1px solid rgba(0,194,199,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", flexShrink: 0 }}>🐦</div>
+              <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "rgba(0,194,199,0.12)", border: "1px solid rgba(0,194,199,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", flexShrink: 0 }}>🐦‍⬛</div>
               <div style={{ padding: "9px 13px", background: "#0a1018", border: "1px solid rgba(255,255,255,0.06)", borderLeft: "2.5px solid rgba(0,194,199,0.4)", borderRadius: "14px 14px 14px 4px", fontSize: "13px" }}>
                 <ThinkingDots />
               </div>
@@ -370,7 +376,7 @@ export default function CorvusChat({
         title="Chat with Corvus"
         aria-label="Chat with Corvus"
       >
-        {open ? "✕" : "🐦"}
+        {open ? "✕" : "🐦‍⬛"}
       </button>
 
       {/* Chat panel */}
@@ -438,7 +444,7 @@ export default function CorvusChat({
                       display: "flex", alignItems: "center", justifyContent: "center",
                       fontSize: "13px", flexShrink: 0, marginTop: "2px",
                     }}>
-                      🐦
+                      🐦‍⬛
                     </div>
                   )}
                   <div style={{
@@ -480,7 +486,7 @@ export default function CorvusChat({
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: "13px", flexShrink: 0,
                 }}>
-                  🐦
+                  🐦‍⬛
                 </div>
                 <div style={{
                   padding: "9px 13px",

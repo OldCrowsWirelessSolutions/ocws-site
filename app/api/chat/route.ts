@@ -53,6 +53,8 @@ export async function POST(req: NextRequest) {
     const message = String(body?.message ?? "").trim().slice(0, 2000);
     const comfortLevel = Number(body?.comfortLevel ?? 2);
 
+    console.log("[chat] received:", { code: code ? `${code.slice(0, 8)}...` : "(empty)", messageLen: message.length });
+
     if (!code || !message) {
       return NextResponse.json({ error: "Missing code or message" }, { status: 400 });
     }
