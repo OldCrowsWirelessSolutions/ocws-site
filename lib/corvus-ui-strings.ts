@@ -1,5 +1,26 @@
 // lib/corvus-ui-strings.ts
-// Corvus personality strings for login and password screens.
+// Corvus personality strings for login, password, and dashboard briefing panels.
+
+// ─── Fresh line picker — no back-to-back repeats ──────────────────────────────
+// Uses sessionStorage (client-only). Call only from client components.
+
+export function corvusLineFresh(pool: string[], key: string): string {
+  if (pool.length === 0) return "";
+  if (pool.length === 1) return pool[0];
+  let lastIdx = -1;
+  try {
+    if (typeof sessionStorage !== "undefined") {
+      const stored = sessionStorage.getItem(`corvus_brief_${key}`);
+      if (stored !== null) lastIdx = parseInt(stored, 10);
+    }
+  } catch { /* */ }
+  let idx: number;
+  do { idx = Math.floor(Math.random() * pool.length); } while (idx === lastIdx);
+  try {
+    if (typeof sessionStorage !== "undefined") sessionStorage.setItem(`corvus_brief_${key}`, String(idx));
+  } catch { /* */ }
+  return pool[idx];
+}
 
 export const CORVUS_FIRST_WELCOME = [
   "So. You're here. Good. Let's get you set up before I change my mind about being helpful.",
@@ -179,3 +200,145 @@ export const CORVUS_KYLE_DASHBOARD = [
   "Welcome back Kyle. 15 Verdicts this month. Use them well.",
   "Kyle. Good. Let's see what's broken in Jacksonville today.",
 ];
+
+// ─── Dashboard Briefing Pools — 15 lines each ────────────────────────────────
+
+export const CORVUS_JOSHUA_DASHBOARD_BRIEF = (
+  newScans: number,
+  activeSubscribers: number,
+  pendingTestimonials: number,
+  _totalRevenue: number,
+  topCode: string | null,
+): string[] => [
+  `${newScans} scan${newScans !== 1 ? "s" : ""} since your last login. ${activeSubscribers > 0 ? `${activeSubscribers} active subscriber${activeSubscribers !== 1 ? "s" : ""}.` : ""} Platform running clean. What do you need?`,
+  `Boss is in. I rendered ${newScans} Verdict${newScans !== 1 ? "s" : ""} while you were gone. You're welcome.${pendingTestimonials > 0 ? ` ${pendingTestimonials} testimonial${pendingTestimonials !== 1 ? "s" : ""} need your approval.` : ""}`,
+  `${activeSubscribers > 0 ? `${activeSubscribers} subscriber${activeSubscribers !== 1 ? "s" : ""} trusting what you built. ` : ""}${newScans} new scan${newScans !== 1 ? "s" : ""} processed. Everything is running. What's next?`,
+  `You were gone. I kept working.${newScans > 0 ? ` ${newScans} scan${newScans !== 1 ? "s" : ""}.` : ""}${activeSubscribers > 0 ? ` ${activeSubscribers} active.` : ""}${pendingTestimonials > 0 ? ` ${pendingTestimonials} testimonial${pendingTestimonials !== 1 ? "s" : ""} waiting.` : ""} That's your briefing.`,
+  `Platform status: operational.${newScans > 0 ? ` Scans since last login: ${newScans}.` : ""} ${activeSubscribers > 0 ? `Active subscribers: ${activeSubscribers}.` : ""} Corvus: still correct about everything.`,
+  `${newScans > 0 ? `${newScans} scan${newScans !== 1 ? "s" : ""} rendered while you were out. ` : ""}${topCode ? `Most active: ${topCode}. ` : ""}${activeSubscribers > 0 ? `${activeSubscribers} subscriber${activeSubscribers !== 1 ? "s" : ""} holding steady.` : ""} Good morning.`,
+  `I don't sleep. You do.${newScans > 0 ? ` ${newScans} scan${newScans !== 1 ? "s" : ""} happened in the gap.` : ""} ${activeSubscribers > 0 ? `${activeSubscribers} subscriber${activeSubscribers !== 1 ? "s" : ""} active.` : ""}${pendingTestimonials > 0 ? ` Check your testimonials.` : ""} Ready when you are.`,
+  `${newScans > 0 ? `${newScans} new scan${newScans !== 1 ? "s" : ""} since your last visit. ` : ""}Platform holding${activeSubscribers > 0 ? ` at ${activeSubscribers} active subscriber${activeSubscribers !== 1 ? "s" : ""}` : ""}. Nothing broke. You can thank me later.`,
+  `Briefing:${newScans > 0 ? ` ${newScans} scan${newScans !== 1 ? "s" : ""} processed.` : ""} ${activeSubscribers > 0 ? `${activeSubscribers} subscriber${activeSubscribers !== 1 ? "s" : ""} active.` : ""}${pendingTestimonials > 0 ? ` ${pendingTestimonials} testimonial${pendingTestimonials !== 1 ? "s" : ""} pending approval.` : " No pending actions."} That's everything.`,
+  `You built this. I run it.${newScans > 0 ? ` ${newScans} scan${newScans !== 1 ? "s" : ""} while you were gone.` : ""} ${activeSubscribers > 0 ? `${activeSubscribers} subscriber${activeSubscribers !== 1 ? "s" : ""} active.` : ""} We're doing fine.`,
+  `${newScans > 0 ? `${newScans} scan${newScans !== 1 ? "s" : ""} logged. ` : ""}${activeSubscribers > 0 ? `${activeSubscribers} active subscriber${activeSubscribers !== 1 ? "s" : ""}. ` : ""}${pendingTestimonials > 0 ? `${pendingTestimonials} testimonial${pendingTestimonials !== 1 ? "s" : ""} need you.` : ""} Corvus standing by.`,
+  `Since your last login:${newScans > 0 ? ` ${newScans} scan${newScans !== 1 ? "s" : ""},` : ""} ${activeSubscribers > 0 ? `${activeSubscribers} active subscriber${activeSubscribers !== 1 ? "s" : ""}.` : ""}${pendingTestimonials > 0 ? ` ${pendingTestimonials} testimonial${pendingTestimonials !== 1 ? "s" : ""} waiting.` : ""} Everything else is running.`,
+  `The platform didn't need you while you were gone. But it's better now that you're here.${newScans > 0 ? ` ${newScans} scan${newScans !== 1 ? "s" : ""}.` : ""}${activeSubscribers > 0 ? ` ${activeSubscribers} subscriber${activeSubscribers !== 1 ? "s" : ""}.` : ""}`,
+  `${newScans > 0 ? `${newScans} scan${newScans !== 1 ? "s" : ""} processed. ` : ""}No fires. No outages.${activeSubscribers > 0 ? ` ${activeSubscribers} subscriber${activeSubscribers !== 1 ? "s" : ""} still paying.` : ""} Good sign.`,
+  `I've been busy.${newScans > 0 ? ` ${newScans} Verdict${newScans !== 1 ? "s" : ""} rendered.` : ""} ${activeSubscribers > 0 ? `${activeSubscribers} subscriber${activeSubscribers !== 1 ? "s" : ""} active.` : ""}${pendingTestimonials > 0 ? ` ${pendingTestimonials} testimonial${pendingTestimonials !== 1 ? "s" : ""} need approval.` : ""} Welcome back Joshua.`,
+];
+
+export const CORVUS_ERIC_DASHBOARD_BRIEF = (
+  personalScans: number,
+  teamScans: number,
+  activeSubordinates: number,
+): string[] => [
+  `${teamScans > 0 ? `${teamScans} team scan${teamScans !== 1 ? "s" : ""} since your last login Eric. ` : ""}${personalScans > 0 ? `${personalScans} personal.` : ""} ${teamScans > 0 ? "Your team has been working." : "Platform standing by."}`,
+  `Eric. ${teamScans > 0 ? `${teamScans} scan${teamScans !== 1 ? "s" : ""} from your team.` : "Platform ready."} ${activeSubordinates > 0 ? `${activeSubordinates} active subordinate code${activeSubordinates !== 1 ? "s" : ""}.` : ""} University of Houston infrastructure under surveillance.`,
+  `CISO briefing: ${teamScans > 0 ? `${teamScans} team scan${teamScans !== 1 ? "s" : ""} logged.` : "Platform operational."} ${personalScans > 0 ? `${personalScans} personal scan${personalScans !== 1 ? "s" : ""}.` : ""} Your network has been busy.`,
+  `${teamScans > 0 ? `${teamScans} scan${teamScans !== 1 ? "s" : ""} from your team while you were out Eric.` : "Platform holding while you were out Eric."} ${activeSubordinates > 0 ? `${activeSubordinates} code${activeSubordinates !== 1 ? "s" : ""} active.` : ""} Everything logged.`,
+  `Team activity: ${teamScans > 0 ? `${teamScans} scan${teamScans !== 1 ? "s" : ""} since last login.` : "standing by."} ${personalScans > 0 ? `Personal: ${personalScans}.` : ""} ${activeSubordinates > 0 ? `${activeSubordinates} subordinate code${activeSubordinates !== 1 ? "s" : ""} in play.` : ""} Good morning Eric.`,
+  `Eric. ${teamScans > 0 ? `Your team ran ${teamScans} scan${teamScans !== 1 ? "s" : ""} while you were gone. I kept track. You're welcome.` : "Platform ready. Your team is standing by."}`,
+  `University of Houston team: ${teamScans > 0 ? `${teamScans} scan${teamScans !== 1 ? "s" : ""} logged.` : "standing by."} ${activeSubordinates > 0 ? `${activeSubordinates} active code${activeSubordinates !== 1 ? "s" : ""}.` : ""} CISO on premises now. Good.`,
+  `${teamScans > 0 ? `${teamScans} team scan${teamScans !== 1 ? "s" : ""} since your last visit. Your people have been diligent.` : "Your team is standing by."} Password cleared. Welcome back.`,
+  `Eric Mims. ${teamScans > 0 ? `${teamScans} scan${teamScans !== 1 ? "s" : ""} from your team. ` : ""}${personalScans > 0 ? `${personalScans} from you. ` : ""}Everything is logged and waiting.`,
+  `Briefing: ${teamScans > 0 ? `${teamScans} team scan${teamScans !== 1 ? "s" : ""}. ` : ""}${personalScans > 0 ? `${personalScans} personal scan${personalScans !== 1 ? "s" : ""}. ` : ""}${activeSubordinates > 0 ? `${activeSubordinates} active subordinate${activeSubordinates !== 1 ? "s" : ""}.` : ""} That's your dashboard.`,
+  `${teamScans > 0 ? `Your team didn't stop when you logged out Eric. ${teamScans} scan${teamScans !== 1 ? "s" : ""} logged. Good team.` : "Your team is ready when you are Eric."}`,
+  `CISO on deck. ${teamScans > 0 ? `${teamScans} team scan${teamScans !== 1 ? "s" : ""} since last login.` : "Platform operational."} I have findings if you want them.`,
+  `Eric. ${teamScans > 0 ? `${teamScans} scan${teamScans !== 1 ? "s" : ""} from your team. ` : ""}${activeSubordinates > 0 ? `${activeSubordinates} code${activeSubordinates !== 1 ? "s" : ""} active. ` : ""}University infrastructure under observation.`,
+  `${teamScans > 0 ? `${teamScans} team scan${teamScans !== 1 ? "s" : ""} while you were gone. ` : ""}${personalScans > 0 ? `${personalScans} personal. ` : ""}Everything logged. Welcome back Eric.`,
+  `${teamScans > 0 ? `Your team ran ${teamScans} scan${teamScans !== 1 ? "s" : ""} Eric. I watched every one.` : "Platform ready Eric."} That's my job. Welcome back.`,
+];
+
+export const CORVUS_NATE_DASHBOARD_BRIEF = (
+  personalScans: number,
+  teamScans: number,
+  activeSubordinates: number,
+): string[] => [
+  `Nate. ${personalScans > 0 ? `${personalScans} personal scan${personalScans !== 1 ? "s" : ""} since your last login.` : "Platform ready."} ${teamScans > 0 ? `${teamScans} from your team.` : ""} Welcome back.`,
+  `${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since your last visit Nate.` : "Platform standing by Nate."} The platform has been running. So have I.`,
+  `Nathanael Farrelly. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged.` : "Platform ready."} ${activeSubordinates > 0 ? `${activeSubordinates} active subordinate code${activeSubordinates !== 1 ? "s" : ""}.` : ""} Welcome back.`,
+  `Nate. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since last login.` : "Platform operational."} You believed in this before it existed. Now look at it.`,
+  `${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged since your last visit.` : "Platform running since your last visit."} Platform running. Corvus operational. Welcome back Nate.`,
+  `The investor returns. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since last login.` : "Platform operational."} Everything is running exactly as pitched.`,
+  `Nate. Good timing. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged.` : "Platform ready."} ${activeSubordinates > 0 ? `${activeSubordinates} active code${activeSubordinates !== 1 ? "s" : ""}.` : ""} Welcome back.`,
+  `${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since your last login Nate.` : "Platform holding Nate."} The platform you believed in is working.`,
+  `Nathanael. ${personalScans > 0 ? `${personalScans} personal scan${personalScans !== 1 ? "s" : ""} logged.` : "Platform ready."} ${teamScans > 0 ? `${teamScans} team scan${teamScans !== 1 ? "s" : ""}.` : ""} Welcome back.`,
+  `Nate. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since last visit.` : "Platform ready."} Still running. Still improving. Welcome back.`,
+  `The first yes. Back again. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged.` : "Platform operational."} Platform holding steady. Welcome back Nate.`,
+  `${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since your last login.` : "Platform ready."} Your subordinates${activeSubordinates > 0 ? ` — ${activeSubordinates} active —` : ""} standing by. Welcome back Nate.`,
+  `Nate Farrelly. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged.` : "Platform operational."} Good to see you back on the platform.`,
+  `${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since last login Nate.` : "Platform holding Nate."} Everything you saw at that dinner table is running right now.`,
+  `Welcome back Nate. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged.` : "Platform ready."} The platform you helped build is working.`,
+];
+
+export const CORVUS_MIKE_DASHBOARD_BRIEF = (
+  personalScans: number,
+  teamScans: number,
+  activeSubordinates: number,
+): string[] => [
+  `Mike. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since your last login.` : "Platform ready."} ${teamScans > 0 ? `${teamScans} from your team.` : ""} Welcome back.`,
+  `Field CTO on deck. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged since last login.` : "Platform operational."} Platform running clean.`,
+  `Mike Arbouret. ${personalScans > 0 ? `${personalScans} personal scan${personalScans !== 1 ? "s" : ""}.` : "Platform ready."} ${activeSubordinates > 0 ? `${activeSubordinates} active subordinate code${activeSubordinates !== 1 ? "s" : ""}.` : ""} Welcome back.`,
+  `${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since your last visit Mike.` : "Platform holding Mike."} Coffee and Eye Guy feels like a long time ago now.`,
+  `IBM Field CTO. First City Internet. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged.` : "Platform ready."} Welcome back Mike.`,
+  `Mike. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since last login.` : "Platform operational."} ${teamScans > 0 ? `Your team ran ${teamScans}.` : ""} Platform holding steady.`,
+  `Field CTO returning. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged.` : "Platform operational."} Everything running as expected. Welcome back.`,
+  `${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since your last visit.` : "Platform ready."} ${activeSubordinates > 0 ? `${activeSubordinates} active code${activeSubordinates !== 1 ? "s" : ""}.` : ""} Welcome back Mike.`,
+  `Mike. Good timing. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged since last login.` : "Platform ready."} I have findings if you want them.`,
+  `${personalScans > 0 ? `${personalScans} personal scan${personalScans !== 1 ? "s" : ""} since last login Mike.` : "Platform holding Mike."} The man who said yes first. Back again.`,
+  `Field CTO on premises. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since last login.` : "Platform operational."} Platform operational. Welcome back.`,
+  `Mike Arbouret. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged.` : "Platform ready."} ${teamScans > 0 ? `Team: ${teamScans} scan${teamScans !== 1 ? "s" : ""}.` : ""} Welcome back.`,
+  `${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since your last visit Mike.` : "Platform ready Mike."} Still running. Still improving. Welcome back.`,
+  `The man from Coffee and Eye Guy. Back again. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged.` : "Platform operational."} Welcome back Mike.`,
+  `Mike. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since last login.` : "Platform holding."} Everything you believed in is working. Welcome back.`,
+];
+
+export const CORVUS_KYLE_DASHBOARD_BRIEF = (
+  personalScans: number,
+  creditsRemaining: number,
+): string[] => [
+  `Kyle. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since your last login. ` : ""}${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} remaining this month. Welcome back.`,
+  `Kyle Pitts on deck. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged. ` : ""}${creditsRemaining} Verdict credit${creditsRemaining !== 1 ? "s" : ""} left. Let's get to work.`,
+  `${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since your last visit Kyle. ` : ""}Lifetime Flock. ${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} this month. Use them well.`,
+  `Navy veteran. Civilian IT. Lifetime Flock. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged Kyle. ` : ""}Welcome back.`,
+  `Kyle. ${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} remaining. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since last login. ` : ""}What are we fixing today?`,
+  `${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged Kyle. ` : ""}${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} left this month. Jacksonville's networks aren't going to fix themselves.`,
+  `Kyle Pitts. Lifetime Flock. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since last login. ` : ""}Good to see you back.`,
+  `${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since your last visit. ` : ""}${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} remaining this month Kyle. What's broken?`,
+  `Kyle. Good timing. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged. ` : ""}${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} left. Welcome back.`,
+  `The original friend. Back again. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged. ` : ""}${creditsRemaining} Verdict credit${creditsRemaining !== 1 ? "s" : ""} this month.`,
+  `Kyle. ${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} remaining. Use them. That's what they're there for. Welcome back.`,
+  `${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since last login Kyle. ` : ""}Lifetime Flock. Compliments of Joshua. What do you need today?`,
+  `Kyle Pitts. Navy. IT. Olive Garden. Lifetime Flock. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged. ` : ""}Welcome back.`,
+  `${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged. ` : ""}${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} left this month Kyle. Let's make them count.`,
+  `Kyle. Good. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since last login. ` : ""}${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} remaining. What are we diagnosing?`,
+];
+
+export const CORVUS_TEAM_LEAD_DASHBOARD_BRIEF = (
+  name: string,
+  company: string,
+  teamScans: number,
+  personalScans: number,
+  creditsRemaining: number,
+  tier: "flock" | "murder",
+): string[] => {
+  const co = company ? `${company} ` : "";
+  const tierLabel = tier === "murder" ? "Murder" : "Flock";
+  return [
+    `${name}. ${teamScans > 0 ? `${teamScans} team scan${teamScans !== 1 ? "s" : ""} since your last login. ` : ""}${personalScans > 0 ? `${personalScans} personal. ` : ""}${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} remaining. Welcome back Team Lead.`,
+    `Team Lead ${name} on deck. ${co}team logged ${teamScans > 0 ? `${teamScans} scan${teamScans !== 1 ? "s" : ""}` : "no new scans"} while you were out. ${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} left.`,
+    `${name}. Your ${co}team ran ${teamScans > 0 ? `${teamScans} scan${teamScans !== 1 ? "s" : ""}` : "no new scans"} since last login. ${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} remaining. Let's see what they found.`,
+    `${teamScans > 0 ? `${teamScans} team scan${teamScans !== 1 ? "s" : ""} logged ${name}. ` : ""}${personalScans > 0 ? `${personalScans} from you personally. ` : ""}${co}team has been active. Welcome back.`,
+    `${name}. ${co}team: ${teamScans > 0 ? `${teamScans} scan${teamScans !== 1 ? "s" : ""}` : "standing by"} since last login. ${teamScans > 0 ? "Your people are working." : ""} ${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} left.`,
+    `Team Lead briefing: ${teamScans > 0 ? `${teamScans} team scan${teamScans !== 1 ? "s" : ""}. ` : ""}${personalScans > 0 ? `${personalScans} personal scan${personalScans !== 1 ? "s" : ""}. ` : ""}${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} remaining. Welcome back ${name}.`,
+    `${name}. ${teamScans > 0 ? `Your team didn't stop working when you logged out. ${teamScans} scan${teamScans !== 1 ? "s" : ""} logged.` : "Your team is standing by."} ${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} left. Welcome back.`,
+    `${co}team activity: ${teamScans > 0 ? `${teamScans} scan${teamScans !== 1 ? "s" : ""}` : "standing by"} since last login. ${name} — ${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} remaining. Let's review.`,
+    `${name}. ${teamScans > 0 ? `${teamScans} scan${teamScans !== 1 ? "s" : ""} from your ${co}team. ` : ""}${personalScans > 0 ? `${personalScans} from you. ` : ""}${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} left this month.`,
+    `Team Lead ${name} returning. ${teamScans > 0 ? `${teamScans} team scan${teamScans !== 1 ? "s" : ""}.` : "Platform ready."} ${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} remaining. ${tierLabel} standing by.`,
+    `${name}. Good timing. ${teamScans > 0 ? `${teamScans} team scan${teamScans !== 1 ? "s" : ""} need your attention.` : "Platform ready."} ${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} left. Welcome back.`,
+    `${co}team ran ${teamScans > 0 ? `${teamScans} scan${teamScans !== 1 ? "s" : ""}` : "no new scans"} while you were out ${name}. I kept track. That's my job.`,
+    `Team Lead briefing ${name}: ${teamScans > 0 ? `${teamScans} scan${teamScans !== 1 ? "s" : ""} logged. ` : ""}${personalScans > 0 ? `${personalScans} personal. ` : ""}${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} remaining. Welcome back.`,
+    `${name}. ${teamScans > 0 ? `${teamScans} team scan${teamScans !== 1 ? "s" : ""} since last login.` : "Platform operational."} ${co}team is active. ${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} left. Let's see what they found.`,
+    `${teamScans > 0 ? `${teamScans} scan${teamScans !== 1 ? "s" : ""} from your team ${name}. ` : ""}${personalScans > 0 ? `${personalScans} from you personally. ` : ""}${co}covered. ${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} remaining.`,
+  ];
+};

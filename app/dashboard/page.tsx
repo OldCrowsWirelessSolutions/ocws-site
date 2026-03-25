@@ -5,6 +5,15 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import CorvusChat from "@/app/components/CorvusChat";
+import {
+  corvusLineFresh,
+  CORVUS_JOSHUA_DASHBOARD_BRIEF,
+  CORVUS_ERIC_DASHBOARD_BRIEF,
+  CORVUS_NATE_DASHBOARD_BRIEF,
+  CORVUS_MIKE_DASHBOARD_BRIEF,
+  CORVUS_KYLE_DASHBOARD_BRIEF,
+  CORVUS_TEAM_LEAD_DASHBOARD_BRIEF,
+} from "@/lib/corvus-ui-strings";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -130,21 +139,59 @@ const SUBSCRIBER_GREETINGS = [
   "I've been here. Your network hasn't changed itself. Let's look.",
   "Back again. Good. I have things to show you.",
   "Subscriber dashboard ready. What are we looking at today?",
+  "You're back. I haven't changed anything. Your network might have. Let's check.",
+  "Dashboard loaded. Corvus online. What are we looking at?",
 ];
 
-const VIP_GREETINGS = [
-  "VIP access confirmed. Your dashboard is ready. What do you need?",
-  "Founding member. I remember you. What are we analyzing today?",
-  "Welcome back. Your network data is ready. Let's get to work.",
-];
+interface DashGreetingProps {
+  storedCode: string;
+  reportsCount: number;
+  teamReportsCount: number;
+  activeSubordinatesCount: number;
+  verdictsRemaining: number;
+  isVIP: boolean;
+  isSubType: boolean;
+  tier: string;
+  customerName: string | null;
+  vipCompany: string | null;
+}
 
-function CorvusDashGreeting({ isVIP, name }: { isVIP: boolean; name: string | null }) {
+function CorvusDashGreeting(props: DashGreetingProps) {
   const [displayed, setDisplayed] = useState("");
   const lineRef = useRef("");
 
   useEffect(() => {
-    const pool = isVIP ? VIP_GREETINGS : SUBSCRIBER_GREETINGS;
-    const line = pool[Math.floor(Math.random() * pool.length)];
+    const code = props.storedCode.toUpperCase();
+    let line: string;
+
+    const isJoshua = ["OCWS-CORVUS-FOUNDER-JOSHUA", "CORVUS-ADMIN", "CORVUS-NEST", "OCWS-ADMIN-2026"].includes(code);
+    const isEric   = ["CORVUS-ERIC", "CORVUS-ERIC-2026"].includes(code);
+    const isNate   = ["CORVUS-NATE", "CORVUS-NATE-2026"].includes(code);
+    const isMike   = ["CORVUS-MIKE", "CORVUS-MIKE-2026"].includes(code);
+    const isKyle   = code === "CORVUS-KYLE";
+    const isHighTierSub = props.isSubType && (props.tier === "flock" || props.tier === "murder");
+
+    if (isJoshua) {
+      line = corvusLineFresh(CORVUS_JOSHUA_DASHBOARD_BRIEF(props.reportsCount, 0, 0, 0, null), "dashboard_brief");
+    } else if (isEric) {
+      line = corvusLineFresh(CORVUS_ERIC_DASHBOARD_BRIEF(props.reportsCount, props.teamReportsCount, props.activeSubordinatesCount), "dashboard_brief");
+    } else if (isNate) {
+      line = corvusLineFresh(CORVUS_NATE_DASHBOARD_BRIEF(props.reportsCount, props.teamReportsCount, props.activeSubordinatesCount), "dashboard_brief");
+    } else if (isMike) {
+      line = corvusLineFresh(CORVUS_MIKE_DASHBOARD_BRIEF(props.reportsCount, props.teamReportsCount, props.activeSubordinatesCount), "dashboard_brief");
+    } else if (isKyle) {
+      line = corvusLineFresh(CORVUS_KYLE_DASHBOARD_BRIEF(props.reportsCount, props.verdictsRemaining), "dashboard_brief");
+    } else if (isHighTierSub) {
+      const name = props.customerName ?? "Team Lead";
+      const company = props.vipCompany ?? "";
+      line = corvusLineFresh(
+        CORVUS_TEAM_LEAD_DASHBOARD_BRIEF(name, company, props.teamReportsCount, props.reportsCount, props.verdictsRemaining, props.tier as "flock" | "murder"),
+        "dashboard_brief"
+      );
+    } else {
+      line = corvusLineFresh(SUBSCRIBER_GREETINGS, "dashboard_brief");
+    }
+
     lineRef.current = line;
     setDisplayed("");
     let i = 0;
@@ -152,7 +199,7 @@ function CorvusDashGreeting({ isVIP, name }: { isVIP: boolean; name: string | nu
       i++;
       setDisplayed(line.slice(0, i));
       if (i >= line.length) clearInterval(id);
-    }, 18);
+    }, 20);
     return () => clearInterval(id);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -163,9 +210,7 @@ function CorvusDashGreeting({ isVIP, name }: { isVIP: boolean; name: string | nu
       <img src="/corvus_still.png" className="corvus-dash-avatar" alt="Corvus" />
       <span className="corvus-dash-text">
         {displayed}
-        {displayed.length < lineRef.current.length && (
-          <span className="corvus-speech-cursor">▋</span>
-        )}
+        <span className="corvus-speech-cursor">▋</span>
       </span>
     </div>
   );
@@ -1698,7 +1743,18 @@ export default function DashboardPage() {
       </div>
 
       {/* Corvus greeting panel */}
-      <CorvusDashGreeting isVIP={isVIP} name={sub?.customer_name ?? details?.customer_name ?? null} />
+      <CorvusDashGreeting
+        storedCode={storedCode}
+        reportsCount={reports.length}
+        teamReportsCount={isVIP ? vipTeamActivity.length : teamActivity.length}
+        activeSubordinatesCount={vipSubordinates.filter(s => s.active).length}
+        verdictsRemaining={verdictsRemaining}
+        isVIP={isVIP}
+        isSubType={isSubType}
+        tier={tier}
+        customerName={sub?.customer_name ?? details?.customer_name ?? null}
+        vipCompany={sub?.vip_company ?? null}
+      />
 
       {/* Tab navigation */}
       <TabBar tabs={tabs as { id: AnyTab; label: string }[]} active={activeTab} onSelect={navigateTab} />
