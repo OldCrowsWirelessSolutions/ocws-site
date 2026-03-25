@@ -191,3 +191,134 @@ body {
     color: var(--ocws-gold);
   }
 }
+
+/* =========================================
+   CORVUS STAR FOX PANEL
+   ========================================= */
+.corvus-starfox-panel {
+  display: flex;
+  gap: 16px;
+  background: rgba(13, 21, 32, 0.95);
+  border: 1px solid rgba(0, 194, 199, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.corvus-starfox-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #B8922A, #00C2C7, #B8922A);
+}
+
+.corvus-starfox-panel.gold-accent {
+  border-color: rgba(184, 146, 42, 0.35);
+}
+
+.corvus-panel-frame {
+  width: 80px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.corvus-panel-image {
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  border: 1px solid rgba(184, 146, 42, 0.4);
+  object-fit: cover;
+  object-position: center top;
+}
+
+.corvus-panel-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.52rem;
+  color: #00C2C7;
+  letter-spacing: 0.15em;
+  text-align: center;
+}
+
+.corvus-panel-sublabel {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.42rem;
+  color: #888888;
+  letter-spacing: 0.1em;
+  text-align: center;
+}
+
+.corvus-panel-speech {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 72px;
+}
+
+.corvus-speech-text {
+  font-family: 'Exo 2', sans-serif;
+  font-style: italic;
+  font-size: 0.9rem;
+  color: #F4F6F8;
+  line-height: 1.6;
+}
+
+.corvus-speech-cursor {
+  display: inline-block;
+  color: #00C2C7;
+  animation: corvus-blink 0.7s ease-in-out infinite;
+  font-size: 0.9rem;
+  margin-left: 1px;
+}
+
+@keyframes corvus-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* Compact dashboard greeting variant */
+.corvus-dash-panel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(13, 21, 32, 0.8);
+  border: 1px solid rgba(0, 194, 199, 0.2);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.corvus-dash-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, #B8922A, #00C2C7, #B8922A);
+}
+
+.corvus-dash-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid rgba(184, 146, 42, 0.4);
+  object-fit: cover;
+  object-position: center top;
+  flex-shrink: 0;
+}
+
+.corvus-dash-text {
+  font-family: 'Exo 2', sans-serif;
+  font-style: italic;
+  font-size: 0.85rem;
+  color: #F4F6F8;
+  line-height: 1.5;
+  flex: 1;
+}

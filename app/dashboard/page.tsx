@@ -123,6 +123,54 @@ function TabBar({ tabs, active, onSelect }: {
   );
 }
 
+// ─── Corvus dashboard greeting (module-level to prevent remount) ──────────────
+
+const SUBSCRIBER_GREETINGS = [
+  "Your network is waiting. Let's see what needs fixing.",
+  "I've been here. Your network hasn't changed itself. Let's look.",
+  "Back again. Good. I have things to show you.",
+  "Subscriber dashboard ready. What are we looking at today?",
+];
+
+const VIP_GREETINGS = [
+  "VIP access confirmed. Your dashboard is ready. What do you need?",
+  "Founding member. I remember you. What are we analyzing today?",
+  "Welcome back. Your network data is ready. Let's get to work.",
+];
+
+function CorvusDashGreeting({ isVIP, name }: { isVIP: boolean; name: string | null }) {
+  const [displayed, setDisplayed] = useState("");
+  const lineRef = useRef("");
+
+  useEffect(() => {
+    const pool = isVIP ? VIP_GREETINGS : SUBSCRIBER_GREETINGS;
+    const line = pool[Math.floor(Math.random() * pool.length)];
+    lineRef.current = line;
+    setDisplayed("");
+    let i = 0;
+    const id = setInterval(() => {
+      i++;
+      setDisplayed(line.slice(0, i));
+      if (i >= line.length) clearInterval(id);
+    }, 18);
+    return () => clearInterval(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div className="corvus-dash-panel" style={{ marginBottom: "16px" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/corvus_still.png" className="corvus-dash-avatar" alt="Corvus" />
+      <span className="corvus-dash-text">
+        {displayed}
+        {displayed.length < lineRef.current.length && (
+          <span className="corvus-speech-cursor">▋</span>
+        )}
+      </span>
+    </div>
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
@@ -342,12 +390,20 @@ export default function DashboardPage() {
     } catch { setPhase("auth"); }
   }, [loadDashboard]);
 
-  // Restore tab from hash after dashboard loads
+  // Restore tab from hash after dashboard loads + listen for FAB hash changes
   useEffect(() => {
-    if (phase !== "dashboard" || tabInitialized.current) return;
-    tabInitialized.current = true;
-    const hash = window.location.hash.replace("#", "") as AnyTab;
-    if (hash) setActiveTab(hash);
+    if (phase !== "dashboard") return;
+    if (!tabInitialized.current) {
+      tabInitialized.current = true;
+      const hash = window.location.hash.replace("#", "") as AnyTab;
+      if (hash) setActiveTab(hash);
+    }
+    function onHashChange() {
+      const hash = window.location.hash.replace("#", "") as AnyTab;
+      if (hash) setActiveTab(hash);
+    }
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
   }, [phase]);
 
   const handleLoginWrapped = async (e: React.FormEvent) => {
@@ -650,7 +706,7 @@ export default function DashboardPage() {
     ...(hasTeam || isVIP ? [{ id: "team" as SubTab, label: "Team" }] : []),
     ...(isSubType ? [{ id: "billing" as SubTab, label: "Account & Billing" }] : []),
     { id: "products",   label: "Products"    },
-    { id: "chat",       label: "Corvus Chat" },
+    { id: "chat",       label: "Ask Corvus"  },
   ];
 
   const vipTabs: { id: VIPTab; label: string }[] = [
@@ -660,7 +716,7 @@ export default function DashboardPage() {
     { id: "codes",      label: "Sub Codes"   },
     { id: "team",       label: "Team Activity" },
     { id: "products",   label: "Products"    },
-    { id: "chat",       label: "Corvus Chat" },
+    { id: "chat",       label: "Ask Corvus"  },
   ];
 
   const tabs = isVIP ? vipTabs : subTabs;
@@ -1394,6 +1450,7 @@ export default function DashboardPage() {
           code={storedCode}
           hasRecentVerdict={reports.length > 0}
           expanded={true}
+          isVIP={isVIP}
         />
       </div>
     );
@@ -1639,6 +1696,9 @@ export default function DashboardPage() {
           <button onClick={handleLogout} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#888888", fontSize: "12px", padding: "6px 14px", cursor: "pointer" }}>Sign Out</button>
         </div>
       </div>
+
+      {/* Corvus greeting panel */}
+      <CorvusDashGreeting isVIP={isVIP} name={sub?.customer_name ?? details?.customer_name ?? null} />
 
       {/* Tab navigation */}
       <TabBar tabs={tabs as { id: AnyTab; label: string }[]} active={activeTab} onSelect={navigateTab} />

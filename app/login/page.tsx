@@ -16,6 +16,9 @@ import {
   CORVUS_VIP_RETURNING,
   CORVUS_SESSION_EXPIRED,
   CORVUS_FORGOT_PASSWORD,
+  CORVUS_JOSHUA_LOGIN_FIRST,
+  CORVUS_JOSHUA_RETURNING,
+  CORVUS_JOSHUA_PASSWORD_INSTRUCTION,
 } from "@/lib/corvus-ui-strings";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -66,29 +69,45 @@ const btnPrimary = (disabled: boolean, color = "#00C2C7"): React.CSSProperties =
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function CorvusBubble({ line, accent = "#00C2C7" }: { line: string; accent?: string }) {
+// StarFoxPanel — replaces CorvusBubble with typewriter-animated Star Fox style panel.
+// Defined at module level (NOT inside LoginPage) to prevent unmount/remount on re-render.
+function StarFoxPanel({ line, gold = false }: { line: string; gold?: boolean }) {
+  const [displayed, setDisplayed] = useState("");
+  const lineRef = useRef(line);
+
+  useEffect(() => {
+    // Only restart typewriter if the line actually changed
+    if (line === lineRef.current && displayed.length > 0) return;
+    lineRef.current = line;
+    setDisplayed("");
+    if (!line) return;
+    let i = 0;
+    const id = setInterval(() => {
+      i++;
+      setDisplayed(line.slice(0, i));
+      if (i >= line.length) clearInterval(id);
+    }, 22);
+    return () => clearInterval(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [line]);
+
   return (
-    <div style={{
-      display: "flex", alignItems: "flex-start", gap: "14px",
-      background: "rgba(0,194,199,0.06)", border: `1px solid rgba(0,194,199,0.2)`,
-      borderLeft: `3px solid ${accent}`, borderRadius: "0 12px 12px 12px",
-      padding: "14px 18px", marginBottom: "20px",
-    }}>
-      <div style={{ position: "relative", width: "44px", height: "44px", flexShrink: 0 }}>
-        <Image
-          src="/corvus_still.png"
-          alt="Corvus"
-          fill
-          sizes="44px"
-          style={{ objectFit: "cover", borderRadius: "50%", border: `2px solid #B8922A` }}
-        />
+    <div className={`corvus-starfox-panel${gold ? " gold-accent" : ""}`}>
+      <div className="corvus-panel-frame">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/corvus_still.png" className="corvus-panel-image" alt="Corvus" />
+        <div className="corvus-panel-label">CORVUS</div>
+        <div className="corvus-panel-sublabel">RF INTELLIGENCE</div>
       </div>
-      <p style={{
-        fontStyle: "italic", color: "#F4F6F8", fontSize: "14px",
-        lineHeight: 1.6, margin: 0, paddingTop: "4px",
-      }}>
-        {line}
-      </p>
+      <div className="corvus-panel-speech">
+        <div className="corvus-speech-text">
+          {displayed}
+          {displayed.length < line.length && <span className="corvus-speech-cursor">▋</span>}
+        </div>
+        {displayed.length >= line.length && displayed.length > 0 && (
+          <span className="corvus-speech-cursor">▋</span>
+        )}
+      </div>
     </div>
   );
 }
@@ -113,27 +132,8 @@ function PasswordStrengthBar({ password }: { password: string }) {
   );
 }
 
-function SuccessFlash({ line, accent = "#00C2C7" }: { line: string; accent?: string }) {
-  return (
-    <div style={{
-      display: "flex", alignItems: "center", gap: "16px",
-      background: "rgba(0,194,199,0.1)", border: `1px solid ${accent}55`,
-      borderRadius: "12px", padding: "20px",
-    }}>
-      <div style={{ position: "relative", width: "48px", height: "48px", flexShrink: 0 }}>
-        <Image
-          src="/corvus_still.png"
-          alt="Corvus"
-          fill
-          sizes="48px"
-          style={{ objectFit: "cover", borderRadius: "50%", border: `2px solid #B8922A` }}
-        />
-      </div>
-      <p style={{ fontStyle: "italic", color: "#F4F6F8", fontSize: "14px", lineHeight: 1.6, margin: 0 }}>
-        {line}
-      </p>
-    </div>
-  );
+function SuccessFlash({ line, gold = false }: { line: string; gold?: boolean }) {
+  return <StarFoxPanel line={line} gold={gold} />;
 }
 
 // ─── Exempt codes ─────────────────────────────────────────────────────────────
@@ -217,12 +217,16 @@ export default function LoginPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [successLine, setSuccessLine] = useState("");
 
+  // Founder (Joshua) stats for personalized greeting
+  const founderGreetingRef = useRef<string>("");
+
   // Session expired
   const [sessionExpired, setSessionExpired] = useState(false);
 
   // Stable Corvus lines per step (pick once when step/code changes)
-  const corvusLineRef = useRef<string>("");
-  const instructionRef = useRef<string>("");
+  const corvusLineRef    = useRef<string>("");
+  const instructionRef   = useRef<string>("");
+  const sessionExpiredLineRef = useRef<string>("");
 
   useEffect(() => {
     // Read session expired flag
@@ -230,6 +234,7 @@ export default function LoginPage() {
       const expired = sessionStorage.getItem("corvus_session_expired");
       if (expired) {
         sessionStorage.removeItem("corvus_session_expired");
+        sessionExpiredLineRef.current = pick(CORVUS_SESSION_EXPIRED);
         setSessionExpired(true);
       }
     } catch { /* */ }
@@ -240,20 +245,56 @@ export default function LoginPage() {
     setShowForgot(false);
     setPwError("");
     // Pick new Corvus lines when step or pending code changes
-    if (step === "vip_create_password") {
+    if (step === "admin_password" && pendingCode === "OCWS-CORVUS-FOUNDER-JOSHUA") {
+      // Joshua founder greeting — fetched async below, use a placeholder meanwhile
+      if (!founderGreetingRef.current) {
+        corvusLineRef.current = pick(CORVUS_JOSHUA_LOGIN_FIRST);
+      } else {
+        corvusLineRef.current = founderGreetingRef.current;
+      }
+      instructionRef.current = pick(CORVUS_JOSHUA_PASSWORD_INSTRUCTION);
+    } else if (step === "vip_create_password") {
       const lines = CORVUS_VIP_FIRST_WELCOME[pendingCode] ?? CORVUS_FIRST_WELCOME;
       corvusLineRef.current = pick(lines);
+      instructionRef.current = pick(CORVUS_PASSWORD_INSTRUCTIONS);
     } else if (step === "vip_enter_password") {
       const lines = CORVUS_VIP_RETURNING[pendingCode] ?? CORVUS_RETURNING_WELCOME;
       corvusLineRef.current = pick(lines);
+      instructionRef.current = pick(CORVUS_PASSWORD_INSTRUCTIONS);
     } else if (step === "sub_create_password") {
       corvusLineRef.current = pick(CORVUS_FIRST_WELCOME);
+      instructionRef.current = pick(CORVUS_PASSWORD_INSTRUCTIONS);
     } else if (step === "sub_enter_password") {
       corvusLineRef.current = pick(sessionExpired ? CORVUS_SESSION_EXPIRED : CORVUS_RETURNING_WELCOME);
+      instructionRef.current = pick(CORVUS_PASSWORD_INSTRUCTIONS);
+    } else {
+      instructionRef.current = pick(CORVUS_PASSWORD_INSTRUCTIONS);
     }
-    instructionRef.current = pick(CORVUS_PASSWORD_INSTRUCTIONS);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, pendingCode]);
+
+  // Fetch founder stats when Joshua's code is detected — personalizes the greeting
+  useEffect(() => {
+    if (pendingCode !== "OCWS-CORVUS-FOUNDER-JOSHUA") return;
+    fetch("/api/analytics/founder-stats", {
+      headers: { "x-admin-key": ADMIN_KEY },
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then((data: { totalScans: number; newScans: number; activeSubscribers: number; pendingTestimonials: number } | null) => {
+        if (!data) return;
+        const lines = CORVUS_JOSHUA_RETURNING(
+          data.totalScans,
+          data.newScans,
+          data.activeSubscribers,
+          data.pendingTestimonials
+        );
+        founderGreetingRef.current = pick(lines);
+        // Update the active Corvus line so the panel re-animates with live stats
+        corvusLineRef.current = founderGreetingRef.current;
+      })
+      .catch(() => { /* non-fatal — uses CORVUS_JOSHUA_LOGIN_FIRST fallback */ });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingCode]);
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -303,6 +344,7 @@ export default function LoginPage() {
         try { localStorage.setItem("corvus_admin_auth", ADMIN_KEY); } catch { /* */ }
         router.push("/admin");
       } else if (data.type === "admin_first_factor") {
+        setPendingCode(upperRaw);
         setStep("admin_password");
       } else if (data.type === "founder") {
         // Exempt founding codes skip password entirely
@@ -434,12 +476,16 @@ export default function LoginPage() {
   // ── Admin password step ──────────────────────────────────────────────────────
 
   if (step === "admin_password") {
+    const isJoshua = pendingCode === "OCWS-CORVUS-FOUNDER-JOSHUA";
     return (
       <Shell accentColor="#B8922A">
+        {isJoshua && <StarFoxPanel line={corvusLineRef.current} gold={true} />}
+        {!isJoshua && (
         <div style={{ textAlign: "center", marginBottom: "24px" }}>
           <h1 style={{ color: "#ffffff", fontSize: "22px", fontWeight: 700, marginBottom: "4px" }}>Admin Authentication</h1>
           <p style={{ color: "#B8922A", fontSize: "12px" }}>Step 2 of 2</p>
         </div>
+        )}
         <div style={{ background: "#1A2332", border: "1px solid rgba(184,146,42,0.2)", borderRadius: "16px", padding: "32px" }}>
           <form onSubmit={handleAdminPassword}>
             <label style={{ display: "block", color: "#B8922A", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
@@ -480,10 +526,10 @@ export default function LoginPage() {
     return (
       <Shell accentColor="#D4AF37">
         {showSuccess
-          ? <SuccessFlash line={successLine} accent="#D4AF37" />
+          ? <SuccessFlash line={successLine} gold={true} />
           : (
           <>
-            <CorvusBubble line={corvusLineRef.current} accent="#D4AF37" />
+            <StarFoxPanel line={corvusLineRef.current} gold={true} />
             <div style={{ background: "#1A2332", border: "1px solid rgba(212,175,55,0.25)", borderRadius: "16px", padding: "28px 32px" }}>
               <p style={{ color: "#D4AF37", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>
                 VIP Founding Member
@@ -551,7 +597,7 @@ export default function LoginPage() {
   if (step === "vip_enter_password") {
     return (
       <Shell accentColor="#D4AF37">
-        <CorvusBubble line={corvusLineRef.current} accent="#D4AF37" />
+        <StarFoxPanel line={corvusLineRef.current} gold={true} />
         <div style={{ background: "#1A2332", border: "1px solid rgba(212,175,55,0.25)", borderRadius: "16px", padding: "28px 32px" }}>
           <p style={{ color: "#D4AF37", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>
             VIP Founding Member
@@ -624,7 +670,7 @@ export default function LoginPage() {
           ? <SuccessFlash line={successLine} />
           : (
           <>
-            <CorvusBubble line={corvusLineRef.current} />
+            <StarFoxPanel line={corvusLineRef.current} />
             <div style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "28px 32px" }}>
               <h1 style={{ color: "#ffffff", fontSize: "20px", fontWeight: 700, marginBottom: "4px" }}>Create Your Password</h1>
               <p style={{ color: "#888888", fontSize: "12px", fontFamily: "monospace", letterSpacing: "0.06em", marginBottom: "20px" }}>
@@ -687,7 +733,7 @@ export default function LoginPage() {
   if (step === "sub_enter_password") {
     return (
       <Shell>
-        <CorvusBubble line={corvusLineRef.current} />
+        <StarFoxPanel line={corvusLineRef.current} />
         <div style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "28px 32px" }}>
           <h1 style={{ color: "#ffffff", fontSize: "20px", fontWeight: 700, marginBottom: "20px" }}>Welcome Back</h1>
           {rateLimited ? (
@@ -751,7 +797,7 @@ export default function LoginPage() {
   return (
     <Shell>
       {sessionExpired && (
-        <CorvusBubble line={pick(CORVUS_SESSION_EXPIRED)} />
+        <StarFoxPanel line={sessionExpiredLineRef.current || pick(CORVUS_SESSION_EXPIRED)} />
       )}
       <div style={{ textAlign: "center", marginBottom: "24px" }}>
         <h1 style={{ color: "#ffffff", fontSize: "22px", fontWeight: 700, marginBottom: "8px" }}>Enter Your Access Code</h1>

@@ -32,41 +32,43 @@ export default function CorvusChatWrapper() {
 
   if (!subCode) return null;
 
-  // On the dashboard the Chat tab handles everything — show a redirect FAB
-  if (pathname === "/dashboard") {
+  // On dashboard/admin the Chat tab handles everything — show a tab-switching FAB
+  if (pathname === "/dashboard" || pathname === "/admin") {
+    const fabStyle: React.CSSProperties = {
+      position: "fixed",
+      bottom: "24px",
+      right: "24px",
+      zIndex: 9999,
+      width: "52px",
+      height: "52px",
+      borderRadius: "50%",
+      background: "linear-gradient(135deg,#00C2C7,#007A7E)",
+      boxShadow: "0 4px 20px rgba(0,194,199,0.35)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      border: "none",
+      cursor: "pointer",
+      transition: "transform 0.15s, box-shadow 0.15s",
+    };
     return (
-      <a
-        href="/dashboard#chat"
+      <button
         aria-label="Open Corvus Chat"
-        style={{
-          position: "fixed",
-          bottom: "24px",
-          right: "24px",
-          zIndex: 9999,
-          width: "52px",
-          height: "52px",
-          borderRadius: "50%",
-          background: "linear-gradient(135deg,#00C2C7,#007A7E)",
-          boxShadow: "0 4px 20px rgba(0,194,199,0.35)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          textDecoration: "none",
-          transition: "transform 0.15s, box-shadow 0.15s",
-        }}
+        style={fabStyle}
+        onClick={() => { window.location.hash = "chat"; }}
         onMouseEnter={e => {
-          (e.currentTarget as HTMLAnchorElement).style.transform = "scale(1.08)";
-          (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 6px 28px rgba(0,194,199,0.5)";
+          (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.08)";
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 28px rgba(0,194,199,0.5)";
         }}
         onMouseLeave={e => {
-          (e.currentTarget as HTMLAnchorElement).style.transform = "scale(1)";
-          (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 4px 20px rgba(0,194,199,0.35)";
+          (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 20px rgba(0,194,199,0.35)";
         }}
       >
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0D1520" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         </svg>
-      </a>
+      </button>
     );
   }
 

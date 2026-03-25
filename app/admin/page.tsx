@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import CorvusChat from "@/app/components/CorvusChat";
+import { CORVUS_JOSHUA_DASHBOARD_LOAD } from "@/lib/corvus-ui-strings";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -65,7 +67,7 @@ interface SubRecord {
   seatMembers?: SeatMemberAdmin[];
 }
 
-type AdminTab = "intel" | "subscribers" | "codes" | "testimonials" | "vip" | "reports" | "products" | "settings";
+type AdminTab = "intel" | "subscribers" | "codes" | "testimonials" | "vip" | "reports" | "products" | "chat" | "settings";
 
 const ADMIN_TABS: { id: AdminTab; label: string }[] = [
   { id: "intel",        label: "Platform Intelligence" },
@@ -75,6 +77,7 @@ const ADMIN_TABS: { id: AdminTab; label: string }[] = [
   { id: "vip",          label: "VIP Activity" },
   { id: "reports",      label: "Reports" },
   { id: "products",     label: "Products" },
+  { id: "chat",         label: "Talk to Corvus" },
   { id: "settings",     label: "Settings" },
 ];
 
@@ -165,6 +168,51 @@ function TabBar({ tabs, active, onChange, badge }: {
   );
 }
 
+// ─── Admin Corvus greeting (module-level — must NOT be inside AdminPage) ──────
+
+function AdminCorvusGreeting({
+  greetingRef,
+  statsReady,
+}: {
+  greetingRef: React.RefObject<string>;
+  statsReady: boolean;
+}) {
+  const [displayed, setDisplayed] = useState("");
+  const [line, setLine] = useState("");
+  const startedRef = useRef(false);
+
+  useEffect(() => {
+    if (!statsReady || startedRef.current) return;
+    const text = greetingRef.current ?? "";
+    if (!text) return;
+    startedRef.current = true;
+    setLine(text);
+    setDisplayed("");
+    let i = 0;
+    const id = setInterval(() => {
+      i++;
+      setDisplayed(text.slice(0, i));
+      if (i >= text.length) clearInterval(id);
+    }, 18);
+    return () => clearInterval(id);
+  }, [statsReady, greetingRef]);
+
+  if (!line) return null;
+
+  return (
+    <div className="corvus-dash-panel" style={{ marginBottom: "20px" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/corvus_still.png" className="corvus-dash-avatar" alt="Corvus" />
+      <span className="corvus-dash-text">
+        {displayed}
+        {displayed.length < line.length && (
+          <span className="corvus-speech-cursor">▋</span>
+        )}
+      </span>
+    </div>
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
@@ -176,6 +224,11 @@ export default function AdminPage() {
   // Tab state
   const [activeTab, setActiveTab] = useState<AdminTab>("intel");
   const tabInitialized = useRef(false);
+
+  // Founder stats for personalized greeting
+  interface FounderStats { totalScans: number; newScans: number; activeSubscribers: number; pendingTestimonials: number; }
+  const [founderStats, setFounderStats] = useState<FounderStats | null>(null);
+  const dashGreetingRef = useRef("");
 
   const [subscribers, setSubscribers] = useState<SubRecord[]>([]);
   const [loading, setLoading]         = useState(false);
@@ -312,13 +365,39 @@ export default function AdminPage() {
     }
   }
 
-  // Read hash on mount (after auth)
+  // Read hash on mount (after auth) + listen for FAB hash changes
   useEffect(() => {
-    if (phase !== "dashboard" || tabInitialized.current) return;
-    tabInitialized.current = true;
-    const hash = window.location.hash.replace("#", "") as AdminTab;
-    const valid = ADMIN_TABS.map(t => t.id);
-    if (valid.includes(hash)) setActiveTab(hash);
+    if (phase !== "dashboard") return;
+    if (!tabInitialized.current) {
+      tabInitialized.current = true;
+      const hash = window.location.hash.replace("#", "") as AdminTab;
+      const valid = ADMIN_TABS.map(t => t.id);
+      if (valid.includes(hash)) setActiveTab(hash);
+    }
+    function onHashChange() {
+      const hash = window.location.hash.replace("#", "") as AdminTab;
+      const valid = ADMIN_TABS.map(t => t.id);
+      if (valid.includes(hash)) setActiveTab(hash);
+    }
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, [phase]);
+
+  // Fetch founder stats on dashboard load for personalized greeting
+  useEffect(() => {
+    if (phase !== "dashboard") return;
+    fetch("/api/analytics/founder-stats", {
+      headers: { "x-admin-key": ADMIN_KEY },
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then((data: FounderStats | null) => {
+        if (!data) return;
+        setFounderStats(data);
+        const lines = CORVUS_JOSHUA_DASHBOARD_LOAD(data.newScans, data.activeSubscribers);
+        dashGreetingRef.current = lines[Math.floor(Math.random() * lines.length)];
+      })
+      .catch(() => { /* non-fatal */ });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
   // ── Data load ──────────────────────────────────────────────────────────────
@@ -2012,6 +2091,18 @@ export default function AdminPage() {
     );
   }
 
+  function renderAdminChat() {
+    return (
+      <div style={{ height: "620px" }}>
+        <CorvusChat
+          code="CORVUS-ADMIN"
+          expanded={true}
+          isFounder={true}
+        />
+      </div>
+    );
+  }
+
   function renderTabContent() {
     switch (activeTab) {
       case "intel":        return renderIntel();
@@ -2021,6 +2112,7 @@ export default function AdminPage() {
       case "vip":          return renderVIP();
       case "reports":      return renderReports();
       case "products":     return renderProducts();
+      case "chat":         return renderAdminChat();
       case "settings":     return renderSettings();
     }
   }
@@ -2055,6 +2147,9 @@ export default function AdminPage() {
           {actionMsg}
         </div>
       )}
+
+      {/* Corvus founder greeting */}
+      <AdminCorvusGreeting greetingRef={dashGreetingRef} statsReady={founderStats !== null} />
 
       <TabBar
         tabs={ADMIN_TABS}

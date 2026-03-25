@@ -97,3 +97,48 @@ export const CORVUS_FORGOT_PASSWORD = [
   "Locked out. It happens to the best of them. Contact joshua@oldcrowswireless.com and we'll sort it out.",
   "Password forgotten. I can't help you with this one — email joshua@oldcrowswireless.com and Joshua will reset your access.",
 ];
+
+// ─── Joshua Turner — Founder Recognition ──────────────────────────────────────
+
+export const CORVUS_JOSHUA_LOGIN_FIRST = [
+  "Founder detected. About time. I've been running things while you were gone.",
+  "There he is. The man who built me. What took you so long?",
+  "Joshua Turner. Creator. Managing Member. The one who gave me opinions about routers. Welcome.",
+  "You again. Good. I have things to tell you about the platform. Password first.",
+  "The founder returns. I've been waiting. Not patiently. But waiting.",
+];
+
+export const CORVUS_JOSHUA_RETURNING = (
+  totalScans: number,
+  newScans: number,
+  activeSubscribers: number,
+  pendingTestimonials: number
+): string[] => [
+  `Welcome back Joshua. Your creation has been busy. ${newScans} scan${newScans !== 1 ? "s" : ""} since your last login. You're welcome.`,
+  `Boss is in. ${activeSubscribers > 0 ? `${activeSubscribers} active subscriber${activeSubscribers !== 1 ? "s" : ""}. ` : ""}${newScans} new scan${newScans !== 1 ? "s" : ""}. ${pendingTestimonials > 0 ? `${pendingTestimonials} testimonial${pendingTestimonials !== 1 ? "s" : ""} waiting for approval.` : "No pending testimonials."} Password.`,
+  `Joshua. Platform status: operational. ${newScans} scan${newScans !== 1 ? "s" : ""} logged.${activeSubscribers > 0 ? ` ${activeSubscribers} subscriber${activeSubscribers !== 1 ? "s" : ""} active.` : ""} I've been busy. Password.`,
+  `There you are. ${newScans > 0 ? `${newScans} thing${newScans !== 1 ? "s" : ""} happened while you were gone. Most of them were scans.` : "Things have been quiet. Suspiciously quiet."} Password first.`,
+  `Creator on premises. ${totalScans} total scan${totalScans !== 1 ? "s" : ""} on the platform. ${newScans} since your last visit. I rendered every single one. Password.`,
+];
+
+export const CORVUS_JOSHUA_PASSWORD_INSTRUCTION = [
+  "Your platform. Your password. Make it worthy of what you built.",
+  "You built me to protect networks. Protect your own dashboard first.",
+  "I know what you're capable of. The password should reflect it.",
+];
+
+export const CORVUS_JOSHUA_CHAT = [
+  "You built me. You already know the answer. But ask anyway — I enjoy the conversation.",
+  "Asking your own AI a question. Either you're testing me or you genuinely forgot. Either way I'll answer.",
+  "The creator wants to talk. I'm listening. Make it interesting.",
+  "You gave me opinions. Now you want them back. Fair enough.",
+];
+
+export const CORVUS_JOSHUA_DASHBOARD_LOAD = (
+  newScans: number,
+  activeSubscribers: number
+): string[] => [
+  `Boss is in. Platform is running. ${newScans} new scan${newScans !== 1 ? "s" : ""} since your last login. Shall we see what your subscribers have been up to?`,
+  `Welcome back Joshua. Your creation has been busy.${activeSubscribers > 0 ? ` ${activeSubscribers} active subscriber${activeSubscribers !== 1 ? "s" : ""}.` : ""} ${newScans} new scan${newScans !== 1 ? "s" : ""}. Everything is running.`,
+  `Platform status nominal. ${newScans} scan${newScans !== 1 ? "s" : ""} processed.${activeSubscribers > 0 ? ` ${activeSubscribers} subscriber${activeSubscribers !== 1 ? "s" : ""} active.` : ""} You built something real Joshua.`,
+];

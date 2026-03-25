@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { pickGreeting } from "@/lib/corvus-chat";
+import { CORVUS_JOSHUA_CHAT } from "@/lib/corvus-ui-strings";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -18,6 +19,10 @@ interface CorvisChatProps {
   isFreeTier?: boolean;
   /** When true, renders inline (no FAB, no fixed positioning) — for use in a full-page chat tab */
   expanded?: boolean;
+  /** Founder mode — Joshua Turner. Uses founder-specific greetings and peer-level tone. */
+  isFounder?: boolean;
+  /** VIP founding member */
+  isVIP?: boolean;
 }
 
 // ─── Typewriter ───────────────────────────────────────────────────────────────
@@ -69,6 +74,8 @@ export default function CorvusChat({
   hasRecentVerdict = false,
   isFreeTier = false,
   expanded = false,
+  isFounder = false,
+  isVIP = false,
 }: CorvisChatProps) {
   // In expanded mode the panel is always "open"
   const [open, setOpen]                     = useState(expanded);
@@ -93,10 +100,15 @@ export default function CorvusChat({
     if (!open || greetedRef.current) return;
     greetedRef.current = true;
     const id = `msg-${Date.now()}`;
-    const greeting = pickGreeting(hasRecentVerdict);
+    let greeting: string;
+    if (isFounder) {
+      greeting = CORVUS_JOSHUA_CHAT[Math.floor(Math.random() * CORVUS_JOSHUA_CHAT.length)];
+    } else {
+      greeting = pickGreeting(hasRecentVerdict);
+    }
     setMessages([{ id, role: "assistant", content: greeting }]);
     setTypingId(id);
-  }, [open, hasRecentVerdict]);
+  }, [open, hasRecentVerdict, isFounder]);
 
   // Focus input when opened
   useEffect(() => {
