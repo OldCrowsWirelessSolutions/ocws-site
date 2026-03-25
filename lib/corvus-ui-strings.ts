@@ -67,6 +67,10 @@ export const CORVUS_VIP_FIRST_WELCOME: Record<string, string[]> = {
     "Nathanael Farrelly. Entrepreneur. You've built something worth $12.5 million. Let's see what I can build for you. Password first.",
     "Nate. You already left a five star review. I appreciate the efficiency. Set a password and let's get to work.",
   ],
+  "CORVUS-KYLE": [
+    "Kyle Pitts. Navy veteran. Civilian IT. The man who fed a sailor at an Olive Garden and then gave him a room. Joshua built this. You helped build Joshua. Welcome home. Set a password.",
+    "Kyle. Fifteen years. Olive Garden. Jacksonville. A room when it was needed. Lifetime Flock. It's the least this platform can do. Password.",
+  ],
 };
 
 export const CORVUS_VIP_RETURNING: Record<string, string[]> = {
@@ -84,6 +88,12 @@ export const CORVUS_VIP_RETURNING: Record<string, string[]> = {
     "Nate. You're back. Smart move. Password.",
     "Returning investor. I like the commitment. Password.",
     "Welcome back Nate. The product has been busy since you last visited. Password.",
+  ],
+  "CORVUS-KYLE": [
+    "Welcome back Kyle. Jen keeping you in line? Password.",
+    "Kyle. Good to see you. Joshua says you're the reason he made it through Jacksonville. That earns you lifetime access. Password.",
+    "Back again Kyle. Your network didn't fix itself while you were gone. Password.",
+    "Kyle Pitts on deck. Lifetime Flock. The original friend. Password.",
   ],
 };
 
@@ -141,4 +151,31 @@ export const CORVUS_JOSHUA_DASHBOARD_LOAD = (
   `Boss is in. Platform is running. ${newScans} new scan${newScans !== 1 ? "s" : ""} since your last login. Shall we see what your subscribers have been up to?`,
   `Welcome back Joshua. Your creation has been busy.${activeSubscribers > 0 ? ` ${activeSubscribers} active subscriber${activeSubscribers !== 1 ? "s" : ""}.` : ""} ${newScans} new scan${newScans !== 1 ? "s" : ""}. Everything is running.`,
   `Platform status nominal. ${newScans} scan${newScans !== 1 ? "s" : ""} processed.${activeSubscribers > 0 ? ` ${activeSubscribers} subscriber${activeSubscribers !== 1 ? "s" : ""} active.` : ""} You built something real Joshua.`,
+];
+
+// ─── Kyle Pitts — Lifetime Flock ──────────────────────────────────────────────
+
+export const CORVUS_KYLE_FIRST = [
+  "Kyle Pitts. Navy veteran. Civilian IT. The man who fed a sailor at an Olive Garden and then gave him a room. Joshua built this. You helped build Joshua. Welcome home. Set a password.",
+  "Kyle. Fifteen years. Olive Garden. Jacksonville. A room when it was needed. Lifetime Flock. It's the least this platform can do. Password.",
+];
+
+export const CORVUS_KYLE_RETURNING = [
+  "Welcome back Kyle. Jen keeping you in line? Password.",
+  "Kyle. Good to see you. Joshua says you're the reason he made it through Jacksonville. That earns you lifetime access. Password.",
+  "Back again Kyle. Your network didn't fix itself while you were gone. Password.",
+  "Kyle Pitts on deck. Lifetime Flock. The original friend. Password.",
+];
+
+export const CORVUS_KYLE_CHAT = [
+  "You were Navy before you were IT. That means you understand systems under pressure. Good. Ask me something worth answering.",
+  "15 years of friendship. You've seen Joshua through a lot. Now let's see what your network looks like. What do you need?",
+  "Kyle. You gave Joshua a table and a room. He gave you Corvus. I'd say that's fair. What are we fixing today?",
+  "Civilian IT, Navy veteran, and the reason Joshua survived Jacksonville. Ask me anything.",
+];
+
+export const CORVUS_KYLE_DASHBOARD = [
+  "Kyle Pitts on deck. Lifetime Flock. What are we diagnosing today?",
+  "Welcome back Kyle. 15 Verdicts this month. Use them well.",
+  "Kyle. Good. Let's see what's broken in Jacksonville today.",
 ];

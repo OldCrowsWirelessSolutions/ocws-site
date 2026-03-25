@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 import bcrypt from "bcryptjs";
 import redis from "@/lib/redis";
 
-const VIP_CODES = new Set(["CORVUS-NEST", "CORVUS-NATE", "CORVUS-MIKE", "CORVUS-ERIC"]);
+const VIP_CODES = new Set(["CORVUS-NEST", "CORVUS-NATE", "CORVUS-MIKE", "CORVUS-ERIC", "CORVUS-KYLE"]);
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_SECONDS = 60 * 60; // 1 hour
 

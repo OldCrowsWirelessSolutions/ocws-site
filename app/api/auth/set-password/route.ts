@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 import bcrypt from "bcryptjs";
 import redis from "@/lib/redis";
 
-const VIP_CODES = new Set(["CORVUS-NEST", "CORVUS-NATE", "CORVUS-MIKE", "CORVUS-ERIC"]);
+const VIP_CODES = new Set(["CORVUS-NEST", "CORVUS-NATE", "CORVUS-MIKE", "CORVUS-ERIC", "CORVUS-KYLE"]);
 
 export async function POST(req: Request) {
   let code: string, password: string;

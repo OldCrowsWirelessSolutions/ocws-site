@@ -16,12 +16,13 @@ const ADMIN_CODE = process.env.OCWS_ADMIN_SECRET ?? "SpectrumLife2026!!";
 // Admin first-factor code — starts two-step admin login flow.
 const ADMIN_FIRST_FACTOR_CODE = "OCWS-CORVUS-FOUNDER-JOSHUA";
 
-// Founding codes — unlimited, never expire, always nest tier, hardcoded server-side.
-const FOUNDING_CODES: Record<string, { tier: "nest"; name: string }> = {
+// Founding codes — unlimited (or lifetime flock for Kyle), never expire, hardcoded server-side.
+const FOUNDING_CODES: Record<string, { tier: "nest" | "flock"; name: string }> = {
   "CORVUS-NEST": { tier: "nest", name: "Joshua Turner" },
   "CORVUS-NATE": { tier: "nest", name: "Nathanael Farrelly" },
   "CORVUS-MIKE": { tier: "nest", name: "Mike Arbouret" },
   "CORVUS-ERIC": { tier: "nest", name: "Eric Mims" },
+  "CORVUS-KYLE": { tier: "flock", name: "Kyle Pitts" },
 };
 
 export async function POST(req: Request) {

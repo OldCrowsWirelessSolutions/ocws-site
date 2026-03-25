@@ -20,6 +20,9 @@ import {
   CORVUS_JOSHUA_RETURNING,
   CORVUS_JOSHUA_PASSWORD_INSTRUCTION,
 } from "@/lib/corvus-ui-strings";
+import TributeMessagePanel from "@/app/components/TributeMessage";
+import { TRIBUTE_MESSAGES } from "@/lib/tribute-messages";
+import type { TributeMessage } from "@/lib/tribute-messages";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -217,6 +220,11 @@ export default function LoginPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [successLine, setSuccessLine] = useState("");
 
+  // Tribute — one-time overlay shown on first login for founding friends
+  const [showTribute, setShowTribute]         = useState(false);
+  const [tributeMessage, setTributeMessage]   = useState<TributeMessage | null>(null);
+  const [tributeCode, setTributeCode]         = useState("");
+
   // Founder (Joshua) stats for personalized greeting
   const founderGreetingRef = useRef<string>("");
 
@@ -314,6 +322,46 @@ export default function LoginPage() {
     router.push("/dashboard");
   }
 
+  // Store code in localStorage then check if a one-time tribute should display.
+  // If tribute has already been shown (or code has no tribute), redirect normally.
+  async function maybeShowTribute(code: string) {
+    try {
+      localStorage.setItem("corvus_sub_code", code);
+      localStorage.setItem("corvus_session_ts", String(Date.now()));
+    } catch { /* */ }
+
+    const msg = TRIBUTE_MESSAGES[code];
+    if (msg) {
+      try {
+        const res = await fetch("/api/auth/check-tribute", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code }),
+        });
+        const data = await res.json() as { shown?: boolean };
+        if (!data.shown) {
+          setTributeCode(code);
+          setTributeMessage(msg);
+          setShowTribute(true);
+          return;
+        }
+      } catch { /* non-fatal — fall through to redirect */ }
+    }
+
+    router.push("/dashboard");
+  }
+
+  async function handleTributeDismiss() {
+    try {
+      await fetch("/api/auth/mark-tribute-shown", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: tributeCode }),
+      });
+    } catch { /* non-fatal */ }
+    router.push("/dashboard");
+  }
+
   async function flashSuccessAndRedirect(code: string) {
     const line = pick(CORVUS_PASSWORD_SUCCESS);
     setSuccessLine(line);
@@ -404,7 +452,12 @@ export default function LoginPage() {
       });
       const data = await res.json() as { ok?: boolean; error?: string };
       if (data.ok) {
-        await flashSuccessAndRedirect(pendingCode);
+        // Tribute codes skip the success flash and go straight to the tribute overlay
+        if (pendingCode in TRIBUTE_MESSAGES) {
+          await maybeShowTribute(pendingCode);
+        } else {
+          await flashSuccessAndRedirect(pendingCode);
+        }
       } else {
         setPwError(data.error ?? "Failed to set password.");
       }
@@ -425,7 +478,7 @@ export default function LoginPage() {
       });
       const data = await res.json() as { valid?: boolean; rateLimited?: boolean; error?: string };
       if (data.rateLimited) { setRateLimited(true); }
-      else if (data.valid) { storeAndRedirect(pendingCode); }
+      else if (data.valid) { await maybeShowTribute(pendingCode); }
       else { setPwError(pick(CORVUS_WRONG_PASSWORD)); }
     } catch { setPwError("Connection error. Please try again."); }
     finally { setPwLoading(false); }
@@ -471,6 +524,12 @@ export default function LoginPage() {
       else { setPwError(pick(CORVUS_WRONG_PASSWORD)); }
     } catch { setPwError("Connection error. Please try again."); }
     finally { setPwLoading(false); }
+  }
+
+  // ── Tribute overlay — one-time display for founding friends ──────────────────
+
+  if (showTribute && tributeMessage) {
+    return <TributeMessagePanel message={tributeMessage} onDismiss={handleTributeDismiss} />;
   }
 
   // ── Admin password step ──────────────────────────────────────────────────────

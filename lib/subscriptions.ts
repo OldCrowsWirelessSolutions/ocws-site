@@ -5,6 +5,7 @@
 
 import redis from "./redis";
 import { isVIPCode, getVIPCode, validateSubordinateCode } from "./vip-codes";
+import { isLifetimeCode, getLifetimeCode, getLifetimeCreditsRemaining } from "./lifetime-codes";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -115,6 +116,7 @@ const INTERNAL_CODES: Record<
   "CORVUS-NATE":      { type: "founder", name: "Nathanael Farrelly" },
   "CORVUS-ERIC":      { type: "founder", name: "Eric Mims" },
   "CORVUS-MIKE":      { type: "founder", name: "Mike Arbouret" },
+  "CORVUS-KYLE":      { type: "founder", name: "Kyle Pitts" },
   "LAUNCH50":         { type: "promo",   discount: 50,  label: "50% off" },
   "PENSACOLA25":      { type: "promo",   discount: 25,  label: "25% off" },
   "FIRSTCITY20":      { type: "promo",   discount: 20,  label: "20% off \u2014 First City Internet" },
@@ -222,7 +224,26 @@ export async function validateSubscriptionId(
 ): Promise<ValidationResult> {
   const code = input.trim().toUpperCase();
 
-  // 0. VIP codes (CORVUS-ERIC, CORVUS-MIKE, CORVUS-NATE)
+  // 0. Lifetime Flock codes (CORVUS-KYLE) — limited monthly credits from Redis
+  if (isLifetimeCode(code)) {
+    const member = getLifetimeCode(code)!;
+    const creditsRemaining = await getLifetimeCreditsRemaining(code);
+    return {
+      valid: true,
+      type: "vip",
+      customer_name: member.name,
+      verdicts_remaining: creditsRemaining,
+      verdicts_unlimited: false,
+      reckonings_remaining: { small: 1, standard: 0, commercial: 0 },
+      reckonings_unlimited: { small: false, standard: false, commercial: false },
+      vip_name: member.name,
+      vip_title: member.title,
+      vip_company: member.company,
+      vip_max_subordinates: 0,
+    };
+  }
+
+  // 0a. VIP codes (CORVUS-ERIC, CORVUS-MIKE, CORVUS-NATE) — unlimited
   if (isVIPCode(code)) {
     const vip = getVIPCode(code)!;
     return {

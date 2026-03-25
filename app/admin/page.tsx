@@ -230,6 +230,10 @@ export default function AdminPage() {
   const [founderStats, setFounderStats] = useState<FounderStats | null>(null);
   const dashGreetingRef = useRef("");
 
+  // Lifetime members (Kyle)
+  interface LifetimeMemberRecord { code: string; name: string; title: string; company: string; tier: string; creditsMonthly: number; creditsRemaining: number; seats: number; billing: string; note: string; }
+  const [lifetimeMembers, setLifetimeMembers] = useState<LifetimeMemberRecord[]>([]);
+
   const [subscribers, setSubscribers] = useState<SubRecord[]>([]);
   const [loading, setLoading]         = useState(false);
   const [loadError, setLoadError]     = useState("");
@@ -533,6 +537,18 @@ export default function AdminPage() {
     finally { setLoadingTestimonials(false); }
   }, []);
 
+  const loadLifetimeMembers = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/lifetime-members", {
+        headers: { "x-admin-key": ADMIN_KEY },
+      });
+      if (res.ok) {
+        const data = await res.json() as { members?: LifetimeMemberRecord[] };
+        setLifetimeMembers(data.members ?? []);
+      }
+    } catch { /* non-fatal */ }
+  }, []);
+
   function loadAll() {
     loadSubscribers();
     loadPromoCodes();
@@ -542,6 +558,7 @@ export default function AdminPage() {
     loadVipPasswords();
     loadPlatformAnalytics();
     loadChatAnalytics();
+    loadLifetimeMembers();
   }
 
   useEffect(() => {
@@ -1127,6 +1144,49 @@ export default function AdminPage() {
             </div>
           ))}
         </div>
+
+        {/* Lifetime Members */}
+        {lifetimeMembers.length > 0 && (
+          <div style={card}>
+            <p style={{ color: "#B8922A", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
+              Lifetime Members
+            </p>
+            {lifetimeMembers.map(m => (
+              <div key={m.code} style={{ background: "#0D1520", border: "1px solid rgba(184,146,42,0.2)", borderRadius: "10px", padding: "14px 16px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
+                  <div>
+                    <p style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, marginBottom: "2px" }}>{m.name}</p>
+                    <p style={{ color: "#555555", fontSize: "10px", fontFamily: "monospace", letterSpacing: "0.08em" }}>{m.code}</p>
+                    <p style={{ color: "#444444", fontSize: "10px", marginTop: "2px" }}>{m.title} · {m.company}</p>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <p style={{ color: "#B8922A", fontSize: "11px", fontWeight: 700, marginBottom: "2px", textTransform: "capitalize" }}>
+                      {m.tier} (Lifetime)
+                    </p>
+                    <p style={{ color: "#3DBA7A", fontSize: "11px" }}>Active — Lifetime</p>
+                  </div>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginBottom: "10px" }}>
+                  <div>
+                    <p style={{ color: "#444444", fontSize: "9px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "3px" }}>Credits Remaining</p>
+                    <p style={{ color: "#00C2C7", fontSize: "18px", fontWeight: 800, lineHeight: 1 }}>
+                      {m.creditsRemaining} <span style={{ color: "#333333", fontSize: "11px" }}>/ {m.creditsMonthly}</span>
+                    </p>
+                  </div>
+                  <div>
+                    <p style={{ color: "#444444", fontSize: "9px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "3px" }}>Seats</p>
+                    <p style={{ color: "#888888", fontSize: "14px", fontWeight: 700 }}>{m.seats}</p>
+                  </div>
+                  <div>
+                    <p style={{ color: "#444444", fontSize: "9px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "3px" }}>Billing</p>
+                    <p style={{ color: "#555555", fontSize: "12px" }}>Lifetime — No Charge</p>
+                  </div>
+                </div>
+                <p style={{ color: "#2a2a2a", fontSize: "10px", fontFamily: "monospace", fontStyle: "italic" }}>{m.note}</p>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Subscriber table */}
         <div style={card}>

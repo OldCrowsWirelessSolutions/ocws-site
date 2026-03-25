@@ -7,6 +7,7 @@ export const runtime = "nodejs";
 
 import { consumeCredit, validateSubscriptionId } from "@/lib/subscriptions";
 import type { ProductType } from "@/lib/subscriptions";
+import { decrementLifetimeCredit, isLifetimeCode } from "@/lib/lifetime-codes";
 
 const VALID_PRODUCT_TYPES: ProductType[] = [
   "verdict",
@@ -32,8 +33,20 @@ export async function POST(req: Request) {
       return Response.json({ success: false, error: "Invalid product_type." }, { status: 400 });
     }
 
+    // Lifetime Flock codes (CORVUS-KYLE) — limited monthly credits
+    if (isLifetimeCode(subscription_id) && product_type === "verdict") {
+      const result = await decrementLifetimeCredit(subscription_id);
+      return Response.json(result, { status: result.success ? 200 : 403 });
+    }
+
     // Re-validate subscription status before consuming any credit
     const validation = await validateSubscriptionId(subscription_id);
+
+    // Unlimited VIP codes (CORVUS-ERIC, CORVUS-MIKE, CORVUS-NATE) — no decrement needed
+    if (validation.valid && validation.type === "vip" && validation.verdicts_unlimited) {
+      return Response.json({ success: true });
+    }
+
     if (!validation.valid || validation.type !== "subscription") {
       return Response.json(
         { success: false, error: "Subscription is not valid or not active." },
