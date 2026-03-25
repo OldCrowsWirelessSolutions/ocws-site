@@ -88,8 +88,8 @@ const sectionLabel: React.CSSProperties = {
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
-type SubTab  = "overview" | "reports" | "analytics" | "credits" | "team" | "billing" | "chat";
-type VIPTab  = "overview" | "reports" | "analytics" | "codes"   | "team" | "chat";
+type SubTab  = "overview" | "reports" | "analytics" | "credits" | "team" | "billing" | "chat" | "products";
+type VIPTab  = "overview" | "reports" | "analytics" | "codes"   | "team" | "chat"  | "products";
 type AnyTab  = SubTab | VIPTab;
 
 // ─── TabBar ───────────────────────────────────────────────────────────────────
@@ -327,7 +327,18 @@ export default function DashboardPage() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem("corvus_sub_code");
-      if (saved) { loadDashboard(saved); } else { setPhase("auth"); }
+      if (!saved) { setPhase("auth"); return; }
+      // 24-hour session check
+      const ts = localStorage.getItem("corvus_session_ts");
+      const SESSION_TTL = 24 * 60 * 60 * 1000;
+      if (ts && Date.now() - parseInt(ts) > SESSION_TTL) {
+        localStorage.removeItem("corvus_sub_code");
+        localStorage.removeItem("corvus_session_ts");
+        try { sessionStorage.setItem("corvus_session_expired", "1"); } catch { /* */ }
+        window.location.href = "/login";
+        return;
+      }
+      loadDashboard(saved);
     } catch { setPhase("auth"); }
   }, [loadDashboard]);
 
@@ -353,7 +364,10 @@ export default function DashboardPage() {
       if (!data.valid || (data.type !== "subscription" && data.type !== "founder" && data.type !== "admin" && data.type !== "vip")) {
         setAuthError(data.error ?? "Invalid or inactive subscription."); return;
       }
-      try { localStorage.setItem("corvus_sub_code", code); } catch { /* */ }
+      try {
+        localStorage.setItem("corvus_sub_code", code);
+        localStorage.setItem("corvus_session_ts", String(Date.now()));
+      } catch { /* */ }
       setSub(data);
       if (data.type === "subscription") {
         try {
@@ -635,6 +649,7 @@ export default function DashboardPage() {
     { id: "credits",    label: "Buy Credits" },
     ...(hasTeam || isVIP ? [{ id: "team" as SubTab, label: "Team" }] : []),
     ...(isSubType ? [{ id: "billing" as SubTab, label: "Account & Billing" }] : []),
+    { id: "products",   label: "Products"    },
     { id: "chat",       label: "Corvus Chat" },
   ];
 
@@ -644,6 +659,7 @@ export default function DashboardPage() {
     { id: "analytics",  label: "Analytics"   },
     { id: "codes",      label: "Sub Codes"   },
     { id: "team",       label: "Team Activity" },
+    { id: "products",   label: "Products"    },
     { id: "chat",       label: "Corvus Chat" },
   ];
 
@@ -1383,6 +1399,166 @@ export default function DashboardPage() {
     );
   }
 
+  function renderProducts() {
+    const accentGold   = "#B8922A";
+    const accentCyan   = "#00C2C7";
+
+    interface Product {
+      id: string; name: string; tagline: string; description: string;
+      comingSoon?: boolean; requiresTier?: SubscriptionTier; accent: string; link?: string;
+    }
+
+    const products: Product[] = [
+      {
+        id: "verdict",
+        name: "Corvus' Verdict",
+        tagline: "Real-time RF intelligence scan",
+        description: "Instant wireless signal analysis — signal strength, interference sources, channel congestion, and actionable recommendations. Results in seconds.",
+        accent: accentCyan,
+        link: "/crows-eye",
+      },
+      {
+        id: "reckoning_small",
+        name: "Small Reckoning",
+        tagline: "Residential deep-dive survey",
+        description: "Comprehensive RF assessment for homes and small spaces up to ~2,500 sq ft. Includes interference mapping, channel analysis, and full PDF report.",
+        requiresTier: "flock",
+        accent: accentGold,
+        link: "/crows-eye",
+      },
+      {
+        id: "reckoning_standard",
+        name: "Standard Reckoning",
+        tagline: "Commercial baseline survey",
+        description: "Full RF baseline for offices and mid-size commercial spaces. Coverage gap analysis, multi-AP interference, tenant isolation, and remediation plan.",
+        requiresTier: "flock",
+        accent: accentGold,
+        link: "/crows-eye",
+      },
+      {
+        id: "reckoning_commercial",
+        name: "Commercial Reckoning",
+        tagline: "Enterprise RF baseline",
+        description: "Comprehensive enterprise-grade survey covering large facilities, multi-floor deployments, and complex RF environments. Full remediation roadmap included.",
+        requiresTier: "murder",
+        accent: "#9B1C1C",
+        link: "/crows-eye",
+      },
+      {
+        id: "hybrid",
+        name: "Hybrid Survey Mode",
+        tagline: "Cross-structure RF analysis",
+        description: "Analyze wireless environments that span multiple structures or mixed indoor/outdoor zones. Captures inter-building interference and coverage hand-off gaps.",
+        accent: accentCyan,
+        link: "/crows-eye",
+      },
+      {
+        id: "reckoning_pro",
+        name: "Pro Reckoning",
+        tagline: "Multi-site portfolio analysis",
+        description: "Unified RF assessment across multiple locations with comparative benchmarking, trend identification, and portfolio-level remediation prioritization.",
+        comingSoon: true,
+        accent: accentGold,
+      },
+      {
+        id: "historical",
+        name: "Historical Trend Analysis",
+        tagline: "RF environment over time",
+        description: "Track how your wireless environment evolves across multiple scans. Identify degradation patterns, seasonal interference, and infrastructure drift.",
+        comingSoon: true,
+        accent: accentCyan,
+      },
+      {
+        id: "api",
+        name: "API Access",
+        tagline: "Integrate Corvus into your stack",
+        description: "Programmatic access to Corvus scanning, report generation, and data export. Webhooks, JSON output, and SDK support for custom integrations.",
+        comingSoon: true,
+        accent: "#9B1C1C",
+      },
+    ];
+
+    const tierOrder: Record<SubscriptionTier, number> = { nest: 0, flock: 1, murder: 2 };
+    const userTierNum = tierOrder[tier] ?? 0;
+
+    function productAccess(p: Product): "available" | "upgrade" | "coming-soon" {
+      if (p.comingSoon) return "coming-soon";
+      if (isVIP) return "available";
+      if (!p.requiresTier) return "available";
+      return userTierNum >= tierOrder[p.requiresTier] ? "available" : "upgrade";
+    }
+
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+        <div style={card}>
+          <p style={sectionLabel}>Corvus Product Suite</p>
+          <p style={{ color: "#888888", fontSize: "13px", lineHeight: 1.6, marginBottom: "0" }}>
+            All products accessible through the{" "}
+            <a href="/crows-eye" style={{ color: accentCyan, textDecoration: "none" }}>Crow&rsquo;s Eye</a>{" "}
+            interface. Your subscription tier determines which assessments are included in your plan.
+          </p>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
+          {products.map(p => {
+            const access = productAccess(p);
+            const isAvail = access === "available";
+            const isComing = access === "coming-soon";
+            const isUpgrade = access === "upgrade";
+            return (
+              <div key={p.id} style={{
+                background: "#1A2332",
+                border: `1px solid ${isAvail ? `${p.accent}40` : "rgba(255,255,255,0.07)"}`,
+                borderRadius: "14px", padding: "20px",
+                opacity: isComing ? 0.65 : 1,
+                display: "flex", flexDirection: "column", gap: "10px",
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: isAvail ? p.accent : isComing ? "#555" : "#B8922A", marginTop: "4px", flexShrink: 0 }} />
+                  {isComing && (
+                    <span style={{ fontSize: "11px", background: "rgba(255,255,255,0.06)", color: "#888", borderRadius: "20px", padding: "2px 10px", fontFamily: "monospace" }}>
+                      🥚 Coming Soon
+                    </span>
+                  )}
+                  {isUpgrade && (
+                    <span style={{ fontSize: "10px", background: "rgba(184,146,42,0.12)", color: accentGold, border: `1px solid rgba(184,146,42,0.3)`, borderRadius: "20px", padding: "2px 10px", fontFamily: "monospace" }}>
+                      Upgrade Required
+                    </span>
+                  )}
+                  {isAvail && (
+                    <span style={{ fontSize: "10px", background: "rgba(74,222,128,0.1)", color: "#4ADE80", border: "1px solid rgba(74,222,128,0.25)", borderRadius: "20px", padding: "2px 10px", fontFamily: "monospace" }}>
+                      Included
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <p style={{ color: "#ffffff", fontSize: "15px", fontWeight: 700, margin: "0 0 2px" }}>{p.name}</p>
+                  <p style={{ color: p.accent, fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", margin: 0 }}>{p.tagline}</p>
+                </div>
+
+                <p style={{ color: "#888888", fontSize: "12px", lineHeight: 1.6, margin: 0 }}>{p.description}</p>
+
+                {isAvail && p.link && (
+                  <a href={p.link} onClick={handleGoToCrowsEye as React.MouseEventHandler<HTMLAnchorElement>}
+                    style={{ marginTop: "auto", display: "block", textAlign: "center", background: p.accent, color: p.accent === "#9B1C1C" ? "#ffffff" : "#0D1520", borderRadius: "8px", padding: "9px 16px", fontSize: "12px", fontWeight: 700, textDecoration: "none", cursor: "pointer" }}>
+                    Open in Crow&rsquo;s Eye →
+                  </a>
+                )}
+                {isUpgrade && (
+                  <button onClick={() => navigateTab("billing" as AnyTab)}
+                    style={{ marginTop: "auto", background: "rgba(184,146,42,0.1)", border: `1px solid rgba(184,146,42,0.3)`, color: accentGold, borderRadius: "8px", padding: "9px 16px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}>
+                    Upgrade Plan →
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   function renderTabContent() {
     if (isVIP) {
       switch (activeTab as VIPTab) {
@@ -1391,6 +1567,7 @@ export default function DashboardPage() {
         case "analytics":  return renderAnalytics();
         case "codes":      return renderVipCodes();
         case "team":       return renderVipTeamActivity();
+        case "products":   return renderProducts();
         case "chat":       return renderChat();
         default:           return renderOverview();
       }
@@ -1402,6 +1579,7 @@ export default function DashboardPage() {
       case "credits":    return renderCredits();
       case "team":       return renderTeam();
       case "billing":    return renderBilling();
+      case "products":   return renderProducts();
       case "chat":       return renderChat();
       default:           return renderOverview();
     }

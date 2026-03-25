@@ -1,5 +1,6 @@
 // app/api/auth/verify-password/route.ts
 // Verifies a bcrypt password for a VIP or subscriber code.
+// Rate limits to 5 failed attempts per hour per code.
 
 export const runtime = "nodejs";
 
@@ -7,6 +8,8 @@ import bcrypt from "bcryptjs";
 import redis from "@/lib/redis";
 
 const VIP_CODES = new Set(["CORVUS-NEST", "CORVUS-NATE", "CORVUS-MIKE", "CORVUS-ERIC"]);
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_SECONDS = 60 * 60; // 1 hour
 
 export async function POST(req: Request) {
   let code: string, password: string;
@@ -29,6 +32,16 @@ export async function POST(req: Request) {
     return Response.json({ valid: false });
   }
 
+  const attemptsKey = `auth:fail:${code}`;
+
+  // Check rate limit
+  try {
+    const attempts = await redis.get<number>(attemptsKey);
+    if ((attempts ?? 0) >= MAX_ATTEMPTS) {
+      return Response.json({ valid: false, rateLimited: true });
+    }
+  } catch { /* non-fatal — proceed */ }
+
   const redisKey = isVip ? `vip:${code}:password_hash` : `sub:${code}:password_hash`;
 
   try {
@@ -38,7 +51,19 @@ export async function POST(req: Request) {
       return Response.json({ valid: true, noPassword: true });
     }
     const match = await bcrypt.compare(password, hash);
-    return Response.json({ valid: match });
+
+    if (match) {
+      // Reset failed attempts on success
+      try { await redis.del(attemptsKey); } catch { /* non-fatal */ }
+      return Response.json({ valid: true });
+    } else {
+      // Increment failed attempts
+      try {
+        await redis.incr(attemptsKey);
+        await redis.expire(attemptsKey, LOCKOUT_SECONDS);
+      } catch { /* non-fatal */ }
+      return Response.json({ valid: false });
+    }
   } catch {
     return Response.json({ error: "Service unavailable" }, { status: 503 });
   }

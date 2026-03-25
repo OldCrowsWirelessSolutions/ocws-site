@@ -65,7 +65,7 @@ interface SubRecord {
   seatMembers?: SeatMemberAdmin[];
 }
 
-type AdminTab = "intel" | "subscribers" | "codes" | "testimonials" | "vip" | "reports" | "settings";
+type AdminTab = "intel" | "subscribers" | "codes" | "testimonials" | "vip" | "reports" | "products" | "settings";
 
 const ADMIN_TABS: { id: AdminTab; label: string }[] = [
   { id: "intel",        label: "Platform Intelligence" },
@@ -74,6 +74,7 @@ const ADMIN_TABS: { id: AdminTab; label: string }[] = [
   { id: "testimonials", label: "Testimonials" },
   { id: "vip",          label: "VIP Activity" },
   { id: "reports",      label: "Reports" },
+  { id: "products",     label: "Products" },
   { id: "settings",     label: "Settings" },
 ];
 
@@ -1864,6 +1865,149 @@ export default function AdminPage() {
     );
   }
 
+  function renderProducts() {
+    const accentGold = "#B8922A";
+    const accentCyan = "#00C2C7";
+
+    interface ProductDef {
+      id: string; name: string; tagline: string; description: string;
+      tiers: string[]; comingSoon?: boolean; accent: string;
+    }
+
+    const products: ProductDef[] = [
+      {
+        id: "verdict",
+        name: "Corvus' Verdict",
+        tagline: "Real-time RF intelligence scan",
+        description: "Instant wireless signal analysis — signal strength, interference, channel congestion, and actionable recommendations. Results in seconds.",
+        tiers: ["nest", "flock", "murder", "vip"],
+        accent: accentCyan,
+      },
+      {
+        id: "reckoning_small",
+        name: "Small Reckoning",
+        tagline: "Residential deep-dive survey",
+        description: "Comprehensive RF assessment for homes and small spaces. Interference mapping, channel analysis, and full PDF report.",
+        tiers: ["flock", "murder", "vip"],
+        accent: accentGold,
+      },
+      {
+        id: "reckoning_standard",
+        name: "Standard Reckoning",
+        tagline: "Commercial baseline survey",
+        description: "Full RF baseline for offices and mid-size commercial spaces. Multi-AP interference, tenant isolation, and remediation plan.",
+        tiers: ["flock", "murder", "vip"],
+        accent: accentGold,
+      },
+      {
+        id: "reckoning_commercial",
+        name: "Commercial Reckoning",
+        tagline: "Enterprise RF baseline",
+        description: "Enterprise-grade survey for large facilities, multi-floor deployments, and complex RF environments. Full remediation roadmap.",
+        tiers: ["murder", "vip"],
+        accent: "#9B1C1C",
+      },
+      {
+        id: "hybrid",
+        name: "Hybrid Survey Mode",
+        tagline: "Cross-structure RF analysis",
+        description: "Wireless environments spanning multiple structures or mixed indoor/outdoor zones. Inter-building interference and coverage hand-off analysis.",
+        tiers: ["nest", "flock", "murder", "vip"],
+        accent: accentCyan,
+      },
+      {
+        id: "reckoning_pro",
+        name: "Pro Reckoning",
+        tagline: "Multi-site portfolio analysis",
+        description: "Unified RF assessment across multiple locations with comparative benchmarking and portfolio-level remediation prioritization.",
+        tiers: [],
+        comingSoon: true,
+        accent: accentGold,
+      },
+      {
+        id: "historical",
+        name: "Historical Trend Analysis",
+        tagline: "RF environment over time",
+        description: "Track how wireless environments evolve across multiple scans. Degradation patterns, seasonal interference, and infrastructure drift.",
+        tiers: [],
+        comingSoon: true,
+        accent: accentCyan,
+      },
+      {
+        id: "api",
+        name: "API Access",
+        tagline: "Integrate Corvus into any stack",
+        description: "Programmatic access to Corvus scanning, report generation, and data export. Webhooks, JSON output, and SDK support.",
+        tiers: [],
+        comingSoon: true,
+        accent: "#9B1C1C",
+      },
+    ];
+
+    const adminCard: React.CSSProperties = {
+      background: "#1A2332", border: "1px solid rgba(255,255,255,0.07)",
+      borderRadius: "14px", padding: "20px",
+    };
+
+    const tierBadgeColor: Record<string, string> = {
+      nest: "#00C2C7", flock: "#B8922A", murder: "#9B1C1C", vip: "#D4AF37",
+    };
+
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+        <div style={adminCard}>
+          <p style={{ color: accentCyan, fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
+            Product Catalog
+          </p>
+          <p style={{ color: "#888888", fontSize: "13px", lineHeight: 1.6, margin: 0 }}>
+            Full catalog of Corvus products. Active products are live in Crow&rsquo;s Eye. Coming-soon items are roadmap items not yet in production.
+          </p>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "16px" }}>
+          {products.map(p => (
+            <div key={p.id} style={{
+              ...adminCard,
+              border: `1px solid ${p.comingSoon ? "rgba(255,255,255,0.07)" : `${p.accent}40`}`,
+              opacity: p.comingSoon ? 0.7 : 1,
+              display: "flex", flexDirection: "column", gap: "12px",
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div>
+                  <p style={{ color: "#ffffff", fontSize: "14px", fontWeight: 700, margin: "0 0 3px" }}>{p.name}</p>
+                  <p style={{ color: p.accent, fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", margin: 0 }}>{p.tagline}</p>
+                </div>
+                {p.comingSoon
+                  ? <span style={{ fontSize: "10px", background: "rgba(255,255,255,0.05)", color: "#888", borderRadius: "20px", padding: "2px 10px", fontFamily: "monospace", whiteSpace: "nowrap" }}>🥚 Coming Soon</span>
+                  : <span style={{ fontSize: "10px", background: "rgba(74,222,128,0.1)", color: "#4ADE80", border: "1px solid rgba(74,222,128,0.25)", borderRadius: "20px", padding: "2px 10px", fontFamily: "monospace", whiteSpace: "nowrap" }}>Live</span>
+                }
+              </div>
+
+              <p style={{ color: "#888888", fontSize: "12px", lineHeight: 1.6, margin: 0 }}>{p.description}</p>
+
+              {!p.comingSoon && (
+                <div>
+                  <p style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "6px" }}>Available on</p>
+                  <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                    {p.tiers.map(t => (
+                      <span key={t} style={{
+                        fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
+                        padding: "2px 10px", borderRadius: "20px",
+                        background: `${tierBadgeColor[t] ?? "#888"}22`,
+                        color: tierBadgeColor[t] ?? "#888",
+                        border: `1px solid ${tierBadgeColor[t] ?? "#888"}44`,
+                      }}>{t}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   function renderTabContent() {
     switch (activeTab) {
       case "intel":        return renderIntel();
@@ -1872,6 +2016,7 @@ export default function AdminPage() {
       case "testimonials": return renderTestimonials();
       case "vip":          return renderVIP();
       case "reports":      return renderReports();
+      case "products":     return renderProducts();
       case "settings":     return renderSettings();
     }
   }
