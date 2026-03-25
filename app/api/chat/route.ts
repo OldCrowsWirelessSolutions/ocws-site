@@ -136,8 +136,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ response: responseText, messagesRemaining });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error("[chat] CRASH:", msg);
-    return NextResponse.json({ error: `Chat failed: ${msg}` }, { status: 500 });
+    console.error("[chat]", err);
+    return NextResponse.json({ error: "Chat failed" }, { status: 500 });
   }
 }
