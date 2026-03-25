@@ -10,9 +10,29 @@ export type PromoType =
   | "reckoning_commercial"
   | "reckoning_pro";
 
+export type PromoProduct =
+  | "verdict"
+  | "reckoning_small"
+  | "reckoning_standard"
+  | "reckoning_commercial"
+  | "reckoning_pro"
+  | "all_reckonings"
+  | "both";
+
+export type ExpiryType =
+  | "single_use"
+  | "24h"
+  | "48h"
+  | "72h"
+  | "7d"
+  | "14d"
+  | "30d";
+
 export interface PromoCodeRecord {
   code: string;
-  type: PromoType;
+  type: PromoType;           // kept for backwards compat — maps to product
+  products: PromoProduct;
+  expiryType: ExpiryType;
   createdAt: string;
   createdBy: "admin";
   note: string;
@@ -32,26 +52,62 @@ function randomSuffix(len: number): string {
   ).join("");
 }
 
-function codePrefix(type: PromoType): string {
-  return type === "verdict" ? "OCWS-VERDICT" : "OCWS-RECKONING";
+function codePrefix(products: PromoProduct): string {
+  if (products === "verdict") return "OCWS-VERDICT";
+  if (products === "both" || products === "all_reckonings") return "OCWS-MULTI";
+  return "OCWS-RECKONING";
+}
+
+function expiryDuration(expiryType: ExpiryType): number | null {
+  // returns milliseconds to add, or null for single_use (no time limit)
+  switch (expiryType) {
+    case "single_use": return null;
+    case "24h": return 24 * 3600 * 1000;
+    case "48h": return 48 * 3600 * 1000;
+    case "72h": return 72 * 3600 * 1000;
+    case "7d":  return 7  * 86400 * 1000;
+    case "14d": return 14 * 86400 * 1000;
+    case "30d": return 30 * 86400 * 1000;
+  }
+}
+
+// Legacy type → products mapping
+function legacyTypeToProducts(type: PromoType): PromoProduct {
+  return type as PromoProduct;
 }
 
 export async function generatePromoCode(
   type: PromoType,
   note = "",
-  expiresAt?: string
+  expiresAt?: string,
+  products?: PromoProduct,
+  expiryType?: ExpiryType,
 ): Promise<string> {
-  const code = `${codePrefix(type)}-${randomSuffix(8)}`;
+  const resolvedProducts = products ?? legacyTypeToProducts(type);
+  const resolvedExpiryType = expiryType ?? "single_use";
+
+  // Calculate expiresAt from expiryType if not explicitly provided
+  let resolvedExpiresAt: string | null = expiresAt ?? null;
+  if (!resolvedExpiresAt && resolvedExpiryType !== "single_use") {
+    const ms = expiryDuration(resolvedExpiryType);
+    if (ms !== null) {
+      resolvedExpiresAt = new Date(Date.now() + ms).toISOString();
+    }
+  }
+
+  const code = `${codePrefix(resolvedProducts)}-${randomSuffix(8)}`;
   const record: PromoCodeRecord = {
     code,
     type,
+    products: resolvedProducts,
+    expiryType: resolvedExpiryType,
     createdAt: new Date().toISOString(),
     createdBy: "admin",
     note,
     used: false,
     usedAt: null,
     usedBy: null,
-    expiresAt: expiresAt ?? null,
+    expiresAt: resolvedExpiresAt,
   };
   await redis.set(`promo:${code}`, record);
   await redis.sadd("promo:index", code);
@@ -60,13 +116,17 @@ export async function generatePromoCode(
 
 export async function validatePromoCode(
   code: string
-): Promise<{ type: PromoType } | null> {
+): Promise<{ type: PromoType; products: PromoProduct } | null> {
   const record = await redis.get<PromoCodeRecord>(`promo:${code}`);
   if (!record) return null;
-  if (record.used) return null;
   if (record.deactivated) return null;
+  // Single-use check
+  if (record.expiryType === "single_use" && record.used) return null;
+  // Time-based check
   if (record.expiresAt && new Date() >= new Date(record.expiresAt)) return null;
-  return { type: record.type };
+  // Legacy: if neither single_use nor time-based expiry, fall back to old used flag
+  if (!record.expiryType && record.used) return null;
+  return { type: record.type, products: record.products ?? (record.type as PromoProduct) };
 }
 
 export async function redeemPromoCode(
@@ -74,14 +134,18 @@ export async function redeemPromoCode(
   usedBy?: string
 ): Promise<boolean> {
   const record = await redis.get<PromoCodeRecord>(`promo:${code}`);
-  if (!record || record.used || record.deactivated) return false;
+  if (!record || record.deactivated) return false;
   if (record.expiresAt && new Date() >= new Date(record.expiresAt)) return false;
-  await redis.set(`promo:${code}`, {
-    ...record,
-    used: true,
-    usedAt: new Date().toISOString(),
-    usedBy: usedBy ?? null,
-  });
+  // Only mark as used for single-use codes
+  if (record.expiryType === "single_use" || !record.expiryType) {
+    if (record.used) return false;
+    await redis.set(`promo:${code}`, {
+      ...record,
+      used: true,
+      usedAt: new Date().toISOString(),
+      usedBy: usedBy ?? null,
+    });
+  }
   return true;
 }
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { validatePromoCode, redeemPromoCode } from "@/lib/promo-codes";
-import { SEAT_PRICE_IDS } from "@/lib/price-map";
+import { SEAT_PRICE_IDS, FLOCK_SEAT_PRICES, MURDER_SEAT_PRICES } from "@/lib/price-map";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
   apiVersion: "2026-02-25.clover",
@@ -61,6 +61,10 @@ export async function POST(req: NextRequest) {
       amount?: number;
       discount_percent?: number;
       promoCode?: string;
+      honorCode?: string;
+      additionalSeats?: number;
+      tier?: string;
+      isAnnual?: boolean;
     };
 
     // Promo code bypass — validate, redeem, and return without creating a Stripe session
@@ -112,17 +116,45 @@ export async function POST(req: NextRequest) {
     const isSubscription = priceId ? (SUBSCRIPTION_PRICE_IDS.has(priceId) || SEAT_PRICE_IDS.includes(priceId)) : false;
     const mode = isSubscription ? "subscription" : "payment";
 
-    const session = await stripe.checkout.sessions.create({
+    // Build seat add-on line item if additional seats requested
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [lineItem];
+    const additionalSeats = typeof body.additionalSeats === "number" ? body.additionalSeats : 0;
+    if (additionalSeats > 0 && isSubscription) {
+      const tier = body.tier ?? "";
+      const isAnnual = body.isAnnual ?? false;
+      let seatPriceId: string | undefined;
+      if (tier === "flock" && FLOCK_SEAT_PRICES[additionalSeats]) {
+        seatPriceId = isAnnual
+          ? FLOCK_SEAT_PRICES[additionalSeats].annual
+          : FLOCK_SEAT_PRICES[additionalSeats].monthly;
+      } else if (tier === "murder" && MURDER_SEAT_PRICES[additionalSeats]) {
+        seatPriceId = isAnnual
+          ? MURDER_SEAT_PRICES[additionalSeats].annual
+          : MURDER_SEAT_PRICES[additionalSeats].monthly;
+      }
+      if (seatPriceId) {
+        lineItems.push({ price: seatPriceId, quantity: 1 });
+      }
+    }
+
+    // Honor discount coupon (CORVUS-HONOR)
+    const honorCouponId = process.env.STRIPE_HONOR_COUPON_ID;
+    const applyHonorCoupon = body.honorCode === "CORVUS-HONOR" && !!honorCouponId;
+
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ["card"],
       mode,
-      line_items: [lineItem],
+      line_items: lineItems,
       success_url: isSubscription
         ? `${origin}/dashboard?subscribed=true&session_id={CHECKOUT_SESSION_ID}`
         : `${origin}/crows-eye?verdict=unlocked&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: isSubscription
         ? `${origin}/?cancelled=true`
         : `${origin}/crows-eye?verdict=cancelled`,
-    });
+      ...(applyHonorCoupon ? { discounts: [{ coupon: honorCouponId! }] } : {}),
+    };
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     return NextResponse.json({ url: session.url });
   } catch (err) {

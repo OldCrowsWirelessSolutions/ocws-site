@@ -68,7 +68,7 @@ interface SubRecord {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const ADMIN_KEY = "SpectrumLife2026!!";
+const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY || "SpectrumLife2026!!";
 
 const TIER_COLORS: Record<SubscriptionTier, { bg: string; text: string }> = {
   nest:   { bg: "#00C2C7", text: "#0D1520" },
@@ -131,15 +131,28 @@ export default function AdminPage() {
   const [credFeedback, setCredFeedback]   = useState("");
 
   // Promo code generator
-  const [promoType, setPromoType]       = useState<PromoType>("verdict");
-  const [promoNote, setPromoNote]       = useState("");
-  const [promoExpires, setPromoExpires] = useState("");
+  type PromoProduct2 = "verdict" | "reckoning_small" | "reckoning_standard" | "reckoning_commercial" | "reckoning_pro" | "all_reckonings" | "both";
+  type ExpiryType2   = "single_use" | "24h" | "48h" | "72h" | "7d" | "14d" | "30d";
+  const [promoType, setPromoType]         = useState<PromoType>("verdict");
+  const [promoProducts, setPromoProducts] = useState<PromoProduct2>("verdict");
+  const [promoExpiryType, setPromoExpiryType] = useState<ExpiryType2>("single_use");
+  const [promoNote, setPromoNote]         = useState("");
+  const [promoExpires, setPromoExpires]   = useState("");
   const [generatingPromo, setGeneratingPromo]     = useState(false);
   const [generatedPromoCode, setGeneratedPromoCode] = useState("");
   const [promoGenError, setPromoGenError] = useState("");
-  const [promoCodes, setPromoCodes]     = useState<PromoCodeRecord[]>([]);
+  const [promoCodes, setPromoCodes]       = useState<PromoCodeRecord[]>([]);
   const [loadingPromos, setLoadingPromos] = useState(false);
-  const [promoCopied, setPromoCopied]   = useState(false);
+  const [promoCopied, setPromoCopied]     = useState(false);
+
+  // Testimonials
+  interface PendingTestimonial {
+    id: string; name: string; location: string; testimonial: string;
+    rating: number; email: string | null; submittedAt: string;
+  }
+  const [pendingTestimonials, setPendingTestimonials] = useState<PendingTestimonial[]>([]);
+  const [loadingTestimonials, setLoadingTestimonials] = useState(false);
+  const [testimonialMsg, setTestimonialMsg]           = useState("");
 
   // Action feedback
   const [actionMsg, setActionMsg] = useState("");
@@ -251,6 +264,20 @@ export default function AdminPage() {
     finally { setLoadingReports(false); }
   }, []);
 
+  const loadPendingTestimonials = useCallback(async () => {
+    setLoadingTestimonials(true);
+    try {
+      const res = await fetch("/api/admin/testimonials/pending", {
+        headers: { "x-admin-key": ADMIN_KEY },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPendingTestimonials(data.testimonials ?? []);
+      }
+    } catch { /* non-fatal */ }
+    finally { setLoadingTestimonials(false); }
+  }, []);
+
   useEffect(() => {
     try {
       if (localStorage.getItem("corvus_admin_auth") === ADMIN_KEY) {
@@ -258,9 +285,10 @@ export default function AdminPage() {
         loadSubscribers();
         loadPromoCodes();
         loadAdminReports();
+        loadPendingTestimonials();
       }
     } catch { /* */ }
-  }, [loadSubscribers, loadPromoCodes, loadAdminReports]);
+  }, [loadSubscribers, loadPromoCodes, loadAdminReports, loadPendingTestimonials]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -272,6 +300,7 @@ export default function AdminPage() {
       loadSubscribers();
       loadPromoCodes();
       loadAdminReports();
+      loadPendingTestimonials();
     } else {
       setAuthError("Incorrect password.");
     }
@@ -395,12 +424,22 @@ export default function AdminPage() {
     setPromoGenError("");
     setGeneratedPromoCode("");
     setPromoCopied(false);
+    // Derive legacy type from products
+    const derivedType: PromoType =
+      promoProducts === "verdict" ? "verdict"
+      : promoProducts === "reckoning_small" ? "reckoning_small"
+      : promoProducts === "reckoning_standard" ? "reckoning_standard"
+      : promoProducts === "reckoning_commercial" ? "reckoning_commercial"
+      : promoProducts === "reckoning_pro" ? "reckoning_pro"
+      : "verdict"; // fallback for multi-product codes
     try {
       const res = await fetch("/api/admin/promo/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
         body: JSON.stringify({
-          type: promoType,
+          type: derivedType,
+          products: promoProducts,
+          expiryType: promoExpiryType,
           note: promoNote.trim(),
           expiresAt: promoExpires ? new Date(promoExpires).toISOString() : undefined,
         }),
@@ -438,6 +477,35 @@ export default function AdminPage() {
   function flash(msg: string, _isError = false) {
     setActionMsg(msg);
     setTimeout(() => setActionMsg(""), 4000);
+  }
+
+  async function handleApproveTestimonial(id: string) {
+    try {
+      const res = await fetch("/api/admin/testimonials/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      setTestimonialMsg("Approved and published.");
+      setTimeout(() => setTestimonialMsg(""), 3000);
+      loadPendingTestimonials();
+    } catch { setTestimonialMsg("Approval failed."); setTimeout(() => setTestimonialMsg(""), 3000); }
+  }
+
+  async function handleDenyTestimonial(id: string, name: string) {
+    if (!confirm(`Deny and delete testimonial from ${name}? This cannot be undone.`)) return;
+    try {
+      const res = await fetch("/api/admin/testimonials/deny", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      setTestimonialMsg("Testimonial denied and deleted.");
+      setTimeout(() => setTestimonialMsg(""), 3000);
+      loadPendingTestimonials();
+    } catch { setTestimonialMsg("Denial failed."); setTimeout(() => setTestimonialMsg(""), 3000); }
   }
 
   // ── Stats ─────────────────────────────────────────────────────────────────
@@ -806,26 +874,90 @@ export default function AdminPage() {
         {/* Generator form + result */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: "16px", marginBottom: "20px" }}>
           <form onSubmit={handleGeneratePromo}>
-            <div style={{ marginBottom: "10px" }}>
-              <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Type</label>
-              <select value={promoType} onChange={e => setPromoType(e.target.value as PromoType)} style={{ ...inp }}>
-                <option value="verdict">Verdict</option>
-                <option value="reckoning_small">Small Reckoning</option>
-                <option value="reckoning_standard">Standard Reckoning</option>
-                <option value="reckoning_commercial">Commercial Reckoning</option>
-                <option value="reckoning_pro">Pro Reckoning</option>
-              </select>
+            {/* Expiry options */}
+            <div style={{ marginBottom: "14px" }}>
+              <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "8px" }}>Expiry</label>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "6px" }}>
+                {([
+                  { val: "single_use", label: "1 Use" },
+                  { val: "24h", label: "24h" },
+                  { val: "48h", label: "48h" },
+                  { val: "72h", label: "72h" },
+                  { val: "7d", label: "7 days" },
+                  { val: "14d", label: "14 days" },
+                  { val: "30d", label: "30 days" },
+                ] as { val: ExpiryType2; label: string }[]).map(({ val, label }) => (
+                  <button key={val} type="button" onClick={() => setPromoExpiryType(val)}
+                    style={{
+                      padding: "6px 4px", fontSize: "11px", fontWeight: 600, borderRadius: "6px", cursor: "pointer",
+                      background: promoExpiryType === val ? "rgba(0,194,199,0.15)" : "rgba(255,255,255,0.04)",
+                      border: `1px solid ${promoExpiryType === val ? "rgba(0,194,199,0.4)" : "rgba(255,255,255,0.08)"}`,
+                      color: promoExpiryType === val ? "#00C2C7" : "#888",
+                    }}>
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {/* Product selection */}
+            <div style={{ marginBottom: "14px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                <label style={{ color: "#555555", fontSize: "11px" }}>Product</label>
+                <div style={{ display: "flex", gap: "6px" }}>
+                  <button type="button" onClick={() => setPromoProducts("both")}
+                    style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "4px", cursor: "pointer", background: "rgba(184,146,42,0.1)", border: "1px solid rgba(184,146,42,0.3)", color: "#B8922A" }}>
+                    All
+                  </button>
+                  <button type="button" onClick={() => setPromoProducts("all_reckonings")}
+                    style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "4px", cursor: "pointer", background: "rgba(184,146,42,0.06)", border: "1px solid rgba(184,146,42,0.2)", color: "#888" }}>
+                    All Reckonings
+                  </button>
+                </div>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                {([
+                  { val: "verdict", label: "Single Verdict" },
+                  { val: "reckoning_small", label: "Small Reckoning" },
+                  { val: "reckoning_standard", label: "Standard Reckoning" },
+                  { val: "reckoning_commercial", label: "Commercial Reckoning" },
+                  { val: "reckoning_pro", label: "Pro Reckoning" },
+                  { val: "all_reckonings", label: "All Reckonings" },
+                  { val: "both", label: "Verdict + All Reckonings" },
+                ] as { val: PromoProduct2; label: string }[]).map(({ val, label }) => (
+                  <button key={val} type="button" onClick={() => setPromoProducts(val)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: "8px",
+                      padding: "7px 10px", fontSize: "12px", borderRadius: "7px", cursor: "pointer", textAlign: "left",
+                      background: promoProducts === val ? "rgba(0,194,199,0.12)" : "rgba(255,255,255,0.02)",
+                      border: `1px solid ${promoProducts === val ? "rgba(0,194,199,0.35)" : "rgba(255,255,255,0.07)"}`,
+                      color: promoProducts === val ? "#00C2C7" : "#888",
+                    }}>
+                    <span style={{ width: "14px", height: "14px", borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", background: promoProducts === val ? "#00C2C7" : "transparent", border: `2px solid ${promoProducts === val ? "#00C2C7" : "#444"}`, color: "#0D1520" }}>
+                      {promoProducts === val ? "✓" : ""}
+                    </span>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Note */}
             <div style={{ marginBottom: "10px" }}>
               <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Note (who is this for?)</label>
               <input type="text" value={promoNote} onChange={e => setPromoNote(e.target.value)}
                 placeholder="e.g. Reddit giveaway, Nate Farrelly" style={inp} />
             </div>
-            <div style={{ marginBottom: "14px" }}>
-              <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Expires (optional)</label>
-              <input type="datetime-local" value={promoExpires} onChange={e => setPromoExpires(e.target.value)}
-                style={{ ...inp, colorScheme: "dark" }} />
+
+            {/* Preview */}
+            <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", padding: "10px 14px", marginBottom: "12px" }}>
+              <p style={{ color: "#555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>Preview</p>
+              <p style={{ color: "#aaa", fontSize: "12px" }}>
+                Valid for: <span style={{ color: "#00C2C7" }}>{promoProducts.replace(/_/g, " ")}</span> ·{" "}
+                Expiry: <span style={{ color: "#00C2C7" }}>{promoExpiryType === "single_use" ? "1 use (no time limit)" : promoExpiryType}</span>
+              </p>
             </div>
+
             {promoGenError && <p style={{ color: "#F87171", fontSize: "12px", marginBottom: "8px" }}>{promoGenError}</p>}
             <button type="submit" disabled={generatingPromo}
               style={{ width: "100%", background: generatingPromo ? "#0D6E7A" : "#00C2C7", color: "#0D1520", border: "none", borderRadius: "8px", padding: "10px", fontSize: "13px", fontWeight: 700, cursor: generatingPromo ? "not-allowed" : "pointer" }}>
@@ -904,6 +1036,67 @@ export default function AdminPage() {
         )}
         {!loadingPromos && promoCodes.length === 0 && (
           <p style={{ color: "#333", fontSize: "13px", paddingTop: "8px" }}>No promo codes generated yet.</p>
+        )}
+      </div>
+
+      {/* ── Pending Testimonials ── */}
+      <div style={card}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", margin: 0 }}>
+              Pending Testimonials
+            </p>
+            {pendingTestimonials.length > 0 && (
+              <span style={{ background: "#B8922A", color: "#0D1520", fontSize: "10px", fontWeight: 800, padding: "2px 8px", borderRadius: "20px" }}>
+                {pendingTestimonials.length}
+              </span>
+            )}
+          </div>
+          <button
+            onClick={loadPendingTestimonials}
+            disabled={loadingTestimonials}
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#888888", fontSize: "12px", padding: "6px 14px", cursor: "pointer" }}>
+            {loadingTestimonials ? "Loading..." : "Refresh"}
+          </button>
+        </div>
+        {testimonialMsg && (
+          <p style={{ color: "#4ADE80", fontSize: "12px", marginBottom: "12px" }}>{testimonialMsg}</p>
+        )}
+        {loadingTestimonials ? (
+          <p style={{ color: "#555555", fontSize: "13px", fontFamily: "monospace" }}>Loading testimonials...</p>
+        ) : pendingTestimonials.length === 0 ? (
+          <p style={{ color: "#444444", fontSize: "13px" }}>No pending testimonials.</p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            {pendingTestimonials.map((t) => (
+              <div key={t.id} style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "18px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px", flexWrap: "wrap", gap: "8px" }}>
+                  <div>
+                    <span style={{ color: "#ffffff", fontSize: "13px", fontWeight: 700 }}>{t.name}</span>
+                    {t.location && <span style={{ color: "#555555", fontSize: "11px", marginLeft: "8px" }}>{t.location}</span>}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ color: "#B8922A", fontSize: "13px" }}>{"★".repeat(t.rating)}{"☆".repeat(5 - t.rating)}</span>
+                    <span style={{ color: "#444444", fontSize: "11px" }}>{new Date(t.submittedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                  </div>
+                </div>
+                <p style={{ color: "#aaaaaa", fontSize: "13px", lineHeight: 1.6, marginBottom: "14px", whiteSpace: "pre-wrap" }}>&ldquo;{t.testimonial}&rdquo;</p>
+                {t.email && <p style={{ color: "#444444", fontSize: "11px", marginBottom: "14px" }}>Email: {t.email}</p>}
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button
+                    onClick={() => handleApproveTestimonial(t.id)}
+                    style={{ background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.3)", borderRadius: "7px", color: "#4ADE80", fontSize: "12px", fontWeight: 700, padding: "7px 16px", cursor: "pointer" }}>
+                    ✓ Approve &amp; Publish
+                  </button>
+                  <button
+                    onClick={() => handleDenyTestimonial(t.id, t.name)}
+                    style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: "7px", color: "#F87171", fontSize: "12px", fontWeight: 600, padding: "7px 16px", cursor: "pointer" }}>
+                    ✕ Deny
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

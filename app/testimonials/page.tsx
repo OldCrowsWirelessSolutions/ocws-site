@@ -1,10 +1,32 @@
 // app/testimonials/page.tsx
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 function isEmail(s: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
+}
+
+interface TestimonialRecord {
+  id: string;
+  name: string;
+  location: string;
+  testimonial: string;
+  rating: number;
+  submittedAt: string;
+  approvedAt?: string;
+}
+
+function StarRow({ rating }: { rating: number }) {
+  return (
+    <div className="flex gap-0.5" aria-label={`${rating} out of 5 stars`}>
+      {[...Array(5)].map((_, i) => (
+        <svg key={i} width="16" height="16" viewBox="0 0 16 16" fill={i < rating ? "#B8922A" : "#2a2a2a"} xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 1l1.85 3.75 4.15.6-3 2.93.71 4.14L8 10.25l-3.71 1.97.71-4.14L2 5.35l4.15-.6L8 1z"/>
+        </svg>
+      ))}
+    </div>
+  );
 }
 
 export default function TestimonialsPage() {
@@ -16,6 +38,16 @@ export default function TestimonialsPage() {
   const [honeypot, setHoneypot] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+
+  // Approved testimonials from Redis
+  const [approved, setApproved] = useState<TestimonialRecord[]>([]);
+
+  useEffect(() => {
+    fetch("/api/testimonials/list")
+      .then((r) => r.json())
+      .then((d: { testimonials?: TestimonialRecord[] }) => setApproved(d.testimonials ?? []))
+      .catch(() => {});
+  }, []);
 
   const validationError = useMemo(() => {
     if (!tName.trim()) return "Please enter your name.";
@@ -73,7 +105,7 @@ export default function TestimonialsPage() {
         {/* Approved testimonials */}
         <div className="mt-10 mb-16 max-w-3xl space-y-6">
 
-          {/* Eric Mims — Featured */}
+          {/* Eric Mims — Featured (always shown) */}
           <div
             className="rounded-2xl p-8"
             style={{ background: "#1A2332", border: "1px solid rgba(184,146,42,0.35)", borderTop: "3px solid #B8922A" }}
@@ -111,6 +143,28 @@ export default function TestimonialsPage() {
             </div>
           </div>
 
+          {/* Approved testimonials from Redis */}
+          {approved.map((t) => (
+            <div
+              key={t.id}
+              className="rounded-2xl p-7"
+              style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderTop: "3px solid #0D6E7A" }}
+            >
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <StarRow rating={t.rating} />
+                <span className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
+                  {new Date(t.approvedAt ?? t.submittedAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+                </span>
+              </div>
+              <blockquote className="text-sm leading-relaxed mb-5" style={{ color: "rgba(255,255,255,0.78)" }}>
+                &ldquo;{t.testimonial}&rdquo;
+              </blockquote>
+              <div className="pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+                <p className="text-sm font-bold text-white">{t.name}</p>
+                {t.location && <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{t.location}</p>}
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Submission form */}

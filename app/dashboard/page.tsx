@@ -161,6 +161,11 @@ export default function DashboardPage() {
   const [expandedReport, setExpandedReport]     = useState<string | null>(null);
   const [isAdminView, setIsAdminView]           = useState(false);
 
+  // Subscription management state
+  const [subMgmtLoading, setSubMgmtLoading]   = useState<"pause30" | "pause60" | "cancel" | "reactivate" | null>(null);
+  const [subMgmtConfirm, setSubMgmtConfirm]   = useState<"pause30" | "pause60" | "cancel" | null>(null);
+  const [subMgmtFeedback, setSubMgmtFeedback] = useState("");
+
   // Team seat state
   interface SeatMember { email: string; name: string; addedAt: string; code: string; }
   interface SeatInfo {
@@ -445,6 +450,73 @@ export default function DashboardPage() {
       else { alert(data.error ?? "Failed to remove member."); }
     } catch { alert("Connection error."); }
     finally { setRemovingMember(null); }
+  }
+
+  // ── Subscription management handlers ───────────────────────────────────────
+
+  async function handlePause(days: 30 | 60) {
+    if (!storedCode) return;
+    const key = days === 30 ? "pause30" : "pause60";
+    setSubMgmtLoading(key);
+    setSubMgmtConfirm(null);
+    try {
+      const res = await fetch("/api/subscriptions/pause", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: storedCode, pauseDays: days }),
+      });
+      const data = await res.json() as { success?: boolean; resumesAt?: string; error?: string };
+      if (data.success) {
+        const resumeDate = data.resumesAt ? new Date(data.resumesAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "soon";
+        setSubMgmtFeedback(`Subscription paused. Resumes ${resumeDate}. You keep full access until your current billing period ends.`);
+        loadDashboard(storedCode);
+      } else {
+        setSubMgmtFeedback(data.error ?? "Failed to pause subscription.");
+      }
+    } catch { setSubMgmtFeedback("Connection error. Please try again."); }
+    finally { setSubMgmtLoading(null); }
+  }
+
+  async function handleCancel() {
+    if (!storedCode) return;
+    setSubMgmtLoading("cancel");
+    setSubMgmtConfirm(null);
+    try {
+      const res = await fetch("/api/subscriptions/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: storedCode }),
+      });
+      const data = await res.json() as { success?: boolean; accessUntil?: string; error?: string };
+      if (data.success) {
+        const accessDate = data.accessUntil ? new Date(data.accessUntil).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "your billing period end";
+        setSubMgmtFeedback(`Subscription cancelled. You have full access until ${accessDate}.`);
+        loadDashboard(storedCode);
+      } else {
+        setSubMgmtFeedback(data.error ?? "Failed to cancel subscription.");
+      }
+    } catch { setSubMgmtFeedback("Connection error. Please try again."); }
+    finally { setSubMgmtLoading(null); }
+  }
+
+  async function handleReactivate() {
+    if (!storedCode) return;
+    setSubMgmtLoading("reactivate");
+    try {
+      const res = await fetch("/api/subscriptions/reactivate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: storedCode }),
+      });
+      const data = await res.json() as { success?: boolean; error?: string };
+      if (data.success) {
+        setSubMgmtFeedback("Subscription reactivated. Welcome back!");
+        loadDashboard(storedCode);
+      } else {
+        setSubMgmtFeedback(data.error ?? "Failed to reactivate subscription.");
+      }
+    } catch { setSubMgmtFeedback("Connection error. Please try again."); }
+    finally { setSubMgmtLoading(null); }
   }
 
   // ── Loading ────────────────────────────────────────────────────────────────
@@ -1141,6 +1213,156 @@ export default function DashboardPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── Subscription Management ── */}
+      {isSubType && details && (
+        <div style={card}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+            <p style={{ ...sectionLabel, marginBottom: 0 }}>Subscription Management</p>
+            {/* Status badge */}
+            {(() => {
+              const st = details.status ?? "active";
+              const color = st === "active" ? "#4ADE80" : st === "paused" ? "#FBBF24" : st === "cancelling" ? "#F87171" : "#888888";
+              return (
+                <span style={{ color, background: `${color}18`, border: `1px solid ${color}40`, borderRadius: "20px", fontSize: "11px", fontWeight: 700, padding: "3px 10px", letterSpacing: "0.05em" }}>
+                  {st === "cancelling" ? "Cancelling" : st.charAt(0).toUpperCase() + st.slice(1)}
+                </span>
+              );
+            })()}
+          </div>
+
+          {subMgmtFeedback && (
+            <div style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.25)", borderRadius: "10px", padding: "12px 16px", marginBottom: "16px" }}>
+              <p style={{ color: "#00C2C7", fontSize: "13px", margin: 0 }}>{subMgmtFeedback}</p>
+            </div>
+          )}
+
+          {/* Confirmation modal overlay */}
+          {subMgmtConfirm && (
+            <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
+              <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "440px" }}>
+                {subMgmtConfirm === "pause30" || subMgmtConfirm === "pause60" ? (
+                  <>
+                    <p style={{ color: "#FBBF24", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "12px" }}>Pause Subscription</p>
+                    <p style={{ color: "#ffffff", fontSize: "14px", fontWeight: 600, marginBottom: "8px" }}>
+                      Pause for {subMgmtConfirm === "pause30" ? "30" : "60"} days?
+                    </p>
+                    <p style={{ color: "#888888", fontSize: "13px", marginBottom: "20px", lineHeight: 1.6 }}>
+                      Your subscription will pause and resume automatically. You keep full access until the end of your current billing period.
+                      {details.current_period_end && ` Current period ends ${fmtDate(details.current_period_end)}.`}
+                    </p>
+                    <div style={{ display: "flex", gap: "10px" }}>
+                      <button
+                        onClick={() => handlePause(subMgmtConfirm === "pause30" ? 30 : 60)}
+                        disabled={subMgmtLoading !== null}
+                        style={{ flex: 1, background: "#FBBF24", color: "#0D1520", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: 700, padding: "10px", cursor: "pointer" }}>
+                        {subMgmtLoading ? "Pausing…" : "Confirm Pause"}
+                      </button>
+                      <button onClick={() => setSubMgmtConfirm(null)}
+                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#888888", fontSize: "13px", padding: "10px 16px", cursor: "pointer" }}>
+                        Cancel
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p style={{ color: "#F87171", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "12px" }}>Cancel Subscription</p>
+                    <p style={{ color: "#ffffff", fontSize: "14px", fontWeight: 600, marginBottom: "8px" }}>Are you sure you want to cancel?</p>
+                    <p style={{ color: "#888888", fontSize: "13px", marginBottom: "20px", lineHeight: 1.6 }}>
+                      You&rsquo;ll keep full access until the end of your current billing period.
+                      {details.current_period_end && ` Access ends ${fmtDate(details.current_period_end)}.`}
+                      {" "}This cannot be undone unless you resubscribe.
+                    </p>
+                    <div style={{ display: "flex", gap: "10px" }}>
+                      <button
+                        onClick={handleCancel}
+                        disabled={subMgmtLoading !== null}
+                        style={{ flex: 1, background: "rgba(248,113,113,0.15)", border: "1px solid rgba(248,113,113,0.4)", color: "#F87171", borderRadius: "8px", fontSize: "13px", fontWeight: 700, padding: "10px", cursor: "pointer" }}>
+                        {subMgmtLoading ? "Cancelling…" : "Yes, Cancel"}
+                      </button>
+                      <button onClick={() => setSubMgmtConfirm(null)}
+                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#888888", fontSize: "13px", padding: "10px 16px", cursor: "pointer" }}>
+                        Keep My Subscription
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Active state */}
+          {(details.status === "active" || !details.status) && (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              {/* Pause block */}
+              <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "18px" }}>
+                <p style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>Need a break?</p>
+                <p style={{ color: "#888888", fontSize: "12px", marginBottom: "14px", lineHeight: 1.5 }}>Pause and keep access until the end of your billing period.</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <button
+                    onClick={() => setSubMgmtConfirm("pause30")}
+                    disabled={subMgmtLoading !== null}
+                    style={{ width: "100%", background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.3)", borderRadius: "8px", color: "#FBBF24", fontSize: "12px", fontWeight: 700, padding: "8px", cursor: "pointer" }}>
+                    Pause for 30 days
+                  </button>
+                  <button
+                    onClick={() => setSubMgmtConfirm("pause60")}
+                    disabled={subMgmtLoading !== null}
+                    style={{ width: "100%", background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.18)", borderRadius: "8px", color: "#FBBF24", fontSize: "12px", fontWeight: 600, padding: "8px", cursor: "pointer" }}>
+                    Pause for 60 days
+                  </button>
+                </div>
+              </div>
+              {/* Cancel block */}
+              <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "18px" }}>
+                <p style={{ color: "#888888", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>Cancel subscription</p>
+                <p style={{ color: "#666666", fontSize: "12px", marginBottom: "14px", lineHeight: 1.5 }}>Cancel anytime. Keep access until the end of your billing period.</p>
+                <button
+                  onClick={() => setSubMgmtConfirm("cancel")}
+                  disabled={subMgmtLoading !== null}
+                  style={{ width: "100%", background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: "8px", color: "#F87171", fontSize: "12px", fontWeight: 600, padding: "8px", cursor: "pointer" }}>
+                  Cancel Subscription
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Paused state */}
+          {(details.status as string) === "paused" && (
+            <div style={{ background: "#0D1520", border: "1px solid rgba(251,191,36,0.25)", borderRadius: "12px", padding: "20px" }}>
+              <p style={{ color: "#FBBF24", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>
+                Your subscription is paused.
+                {(details as unknown as { pausedUntil?: string }).pausedUntil && ` Resumes ${fmtDate((details as unknown as { pausedUntil?: string }).pausedUntil)}.`}
+              </p>
+              <p style={{ color: "#888888", fontSize: "12px", marginBottom: "16px" }}>
+                You have full access until {details.current_period_end ? fmtDate(details.current_period_end) : "the end of your billing period"}.
+              </p>
+              <button
+                onClick={handleReactivate}
+                disabled={subMgmtLoading === "reactivate"}
+                style={{ background: "#00C2C7", color: "#0D1520", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: 700, padding: "10px 20px", cursor: "pointer" }}>
+                {subMgmtLoading === "reactivate" ? "Reactivating…" : "Reactivate Now"}
+              </button>
+            </div>
+          )}
+
+          {/* Cancelling state */}
+          {(details.status as string) === "cancelling" && (
+            <div style={{ background: "#0D1520", border: "1px solid rgba(248,113,113,0.25)", borderRadius: "12px", padding: "20px" }}>
+              <p style={{ color: "#F87171", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>
+                Your subscription will end on {details.current_period_end ? fmtDate(details.current_period_end) : "your next billing date"}.
+              </p>
+              <p style={{ color: "#888888", fontSize: "12px", marginBottom: "16px" }}>You have full access until then.</p>
+              <button
+                onClick={handleReactivate}
+                disabled={subMgmtLoading === "reactivate"}
+                style={{ background: "rgba(0,194,199,0.1)", border: "1px solid rgba(0,194,199,0.3)", color: "#00C2C7", borderRadius: "8px", fontSize: "13px", fontWeight: 700, padding: "10px 20px", cursor: "pointer" }}>
+                {subMgmtLoading === "reactivate" ? "Reactivating…" : "Keep My Subscription"}
+              </button>
+            </div>
+          )}
         </div>
       )}
 

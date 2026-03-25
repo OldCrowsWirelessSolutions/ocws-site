@@ -467,7 +467,7 @@ export default function CrowsEyeClient() {
   const [promoCodeValidating, setPromoCodeValidating] = useState(false);
   const [promoCodeVisible, setPromoCodeVisible] = useState(false);
   const [showPromoField, setShowPromoField] = useState(false);
-  const [appliedPromoCode, setAppliedPromoCode] = useState<{ code: string; type: string } | null>(null);
+  const [appliedPromoCode, setAppliedPromoCode] = useState<{ code: string; type: string; discountPercent?: number } | null>(null);
 
   const [appliedCode, setAppliedCode] = useState<{
     type: "founder" | "admin" | "subscriber" | "promo";
@@ -840,6 +840,28 @@ export default function CrowsEyeClient() {
         return;
       }
     }
+    // Permanent discount code (e.g. CORVUS-HONOR) — redirect to Stripe with coupon applied
+    if (appliedPromoCode?.type === "discount") {
+      try {
+        const res = await fetch("/api/stripe/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ product, honorCode: appliedPromoCode.code }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (data.url) {
+          if (result) {
+            try { sessionStorage.setItem("corvus_pending_result", JSON.stringify(result)); } catch { /* ignore */ }
+          }
+          window.location.href = data.url;
+        } else {
+          setErrorMsg("Payment system unavailable. Please try again.");
+        }
+      } catch {
+        setErrorMsg("Payment system unavailable. Please try again.");
+      }
+      return;
+    }
     // Subscription credit coverage — consume server-side and unlock
     if (appliedCode?.type === "subscriber" && appliedSubscriptionId && isProductCovered()) {
       try {
@@ -1134,9 +1156,9 @@ export default function CrowsEyeClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: key }),
       });
-      const data = await res.json() as { valid?: boolean; type?: string };
+      const data = await res.json() as { valid?: boolean; type?: string; discountPercent?: number };
       if (data.valid && data.type) {
-        setAppliedPromoCode({ code: key, type: data.type });
+        setAppliedPromoCode({ code: key, type: data.type, discountPercent: data.discountPercent });
         setPromoCodeStatus("valid");
         setPromoCodeInput("");
         setShowPromoField(false);
@@ -1790,7 +1812,9 @@ export default function CrowsEyeClient() {
           >
             <div className="flex items-center justify-between">
               <span style={{ color: "#B8922A" }}>
-                ✓ Promo code applied — your {promoTypeLabel(appliedPromoCode.type)} is unlocked
+                {appliedPromoCode.type === "discount"
+                  ? `✓ ${appliedPromoCode.code} applied — ${appliedPromoCode.discountPercent ?? 20}% discount at checkout`
+                  : `✓ Promo code applied — your ${promoTypeLabel(appliedPromoCode.type)} is unlocked`}
               </span>
               <button
                 type="button"
@@ -1801,7 +1825,9 @@ export default function CrowsEyeClient() {
               </button>
             </div>
             <p className="mt-1 text-xs" style={{ color: "rgba(184,146,42,0.6)" }}>
-              Click the payment button below to redeem your promo code — no charge applied.
+              {appliedPromoCode.type === "discount"
+                ? "Click the payment button below — your discount will be applied at checkout."
+                : "Click the payment button below to redeem your promo code — no charge applied."}
             </p>
           </div>
         ) : showPromoField ? (

@@ -1,5 +1,6 @@
 // app/api/testimonial/route.ts
 import nodemailer from "nodemailer";
+import redis from "@/lib/redis";
 
 export const runtime = "nodejs";
 
@@ -38,6 +39,21 @@ export async function POST(req: Request) {
     if (email && !isEmail(email)) {
       return Response.json({ success: false, error: "Invalid email address." }, { status: 400 });
     }
+
+    // Store in Redis as pending
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const testimonialRecord = {
+      id,
+      name,
+      location,
+      testimonial,
+      rating: Math.max(1, Math.min(5, rating)),
+      email: email || null,
+      submittedAt: new Date().toISOString(),
+      status: "pending",
+    };
+    await redis.set(`testimonial:${id}`, testimonialRecord);
+    await redis.lpush("testimonials:pending", id);
 
     const to = process.env.OCWS_CONTACT_TO || "joshua@oldcrowswireless.com";
     const from = process.env.SMTP_FROM;
