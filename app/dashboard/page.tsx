@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import CorvusChat from "@/app/components/CorvusChat";
+
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -2208,15 +2208,6 @@ export default function DashboardPage() {
             <strong>VIP Founding Member access.</strong> Unlimited Verdicts and Reckonings are included at no charge. Billing details are not applicable for founding member codes.
           </p>
         </div>
-      )}
-      {/* Corvus Chat — floating, available to all dashboard users */}
-      {phase === "dashboard" && storedCode && (
-        <CorvusChat
-          code={storedCode}
-          comfortLevel={details?.tier === "nest" ? 1 : details?.tier === "murder" ? 4 : 2}
-          hasRecentVerdict={reports.length > 0}
-          isFreeTier={false}
-        />
       )}
 
     </div>

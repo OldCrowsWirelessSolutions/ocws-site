@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from "next";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import StickyQuoteCTA from "./components/StickyQuoteCTA";
+import CorvusChatWrapper from "./components/CorvusChatWrapper";
 
 export const metadata: Metadata = {
   title: "Old Crows Wireless Solutions (OCWS)",
@@ -35,6 +36,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* Footer */}
           <Footer />
         </div>
+
+        {/* Corvus chat — persists for authenticated subscribers across all pages */}
+        <CorvusChatWrapper />
       </body>
     </html>
   );

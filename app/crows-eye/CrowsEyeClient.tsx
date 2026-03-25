@@ -3198,13 +3198,13 @@ export default function CrowsEyeClient() {
         )}
       </div>
 
-      {/* Corvus Chat — appears after verdict reveals */}
-      {phase === "full_verdict" && (appliedSubscriptionId ?? appliedPromoCode?.code) && (
+      {/* Corvus Chat — free-tier promo users only (subscribers get it from the global layout) */}
+      {phase === "full_verdict" && appliedCode?.type === "promo" && appliedPromoCode?.code && (
         <CorvusChat
-          code={appliedSubscriptionId ?? appliedPromoCode?.code ?? ""}
+          code={appliedPromoCode.code}
           comfortLevel={itComfortLevel}
           hasRecentVerdict={true}
-          isFreeTier={appliedCode?.type === "promo"}
+          isFreeTier={true}
         />
       )}
 
