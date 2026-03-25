@@ -1,41 +1,54 @@
 // app/api/reports/save/route.ts
 // Called silently from CrowsEyeClient after each Verdict/Reckoning generation.
-// Validates the code, then saves the report to Redis.
+// Validates the code, determines tier-based retention, then saves (or skips).
 
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { saveReport, ReportRecord, ReportType, ReportSeverity } from "@/lib/reports";
 import { validateSubscriptionId } from "@/lib/subscriptions";
-import { validatePromoCode } from "@/lib/promo-codes";
 
-const FOUNDING_CODES = new Set(["CORVUS-NEST", "CORVUS-NATE", "CORVUS-MIKE", "CORVUS-ERIC"]);
+const RETENTION_BY_TIER: Record<string, number> = {
+  nest:   0,
+  flock:  180,
+  murder: 365,
+};
 
-async function isValidCode(code: string): Promise<boolean> {
-  if (!code) return false;
+/**
+ * Returns retention days for the code, or null if the code is invalid.
+ *   0    → valid code, but no storage (Nest / promo / bypass)
+ *   >0   → valid code, save with this TTL in days
+ *   null → unrecognised / invalid code
+ */
+async function getRetentionDays(code: string): Promise<number | null> {
+  if (!code) return null;
   const upper = code.toUpperCase();
 
-  // Admin / founding codes
-  if (upper === "OCWS2026" || FOUNDING_CODES.has(upper)) return true;
-  if (code === (process.env.OCWS_ADMIN_SECRET ?? "")) return true;
+  // Bypass codes (admin secret, founding NEST code) — valid but no storage
+  if (upper === "OCWS2026" || upper === "CORVUS-NEST") return 0;
+  if (process.env.OCWS_ADMIN_SECRET && code === process.env.OCWS_ADMIN_SECRET) return 0;
 
-  // Subscriber subscription ID
   try {
     const result = await validateSubscriptionId(upper);
-    if (result.valid) return true;
-  } catch { /* */ }
 
-  // Promo code (may already be used — that's OK, report still gets saved)
-  try {
-    const record = await import("@/lib/redis").then(m => m.default.get<{ used?: boolean }>(`promo:${upper}`));
-    if (record) return true;
-  } catch { /* */ }
+    if (!result.valid) {
+      // Already-used promo codes won't validate but the scan already happened.
+      // Check Redis directly; if the promo record exists, allow save with no retention.
+      try {
+        const redis = (await import("@/lib/redis")).default;
+        const record = await redis.get<{ used?: boolean }>(`promo:${upper}`);
+        if (record) return 0;
+      } catch { /* */ }
+      return null;
+    }
 
-  // Unused promo validation
-  const promo = await validatePromoCode(upper).catch(() => null);
-  if (promo) return true;
-
-  return false;
+    if (result.type === "vip")          return 365;
+    if (result.type === "subscription") return RETENTION_BY_TIER[result.tier ?? ""] ?? 0;
+    // promo, admin, founder → valid but no long-term storage
+    return 0;
+  } catch {
+    return null;
+  }
 }
 
 export async function POST(req: Request) {
@@ -43,14 +56,17 @@ export async function POST(req: Request) {
     const body = await req.json() as Partial<ReportRecord> & { codeUsed?: string };
     const code = String(body?.codeUsed ?? "").trim();
 
-    // Silently validate — don't block report saving for expired/used promo codes
-    // (the report generation already happened; just save it)
-    const valid = await isValidCode(code);
-    if (!valid) {
+    const retentionDays = await getRetentionDays(code);
+    if (retentionDays === null) {
       return NextResponse.json({ saved: false, error: "Invalid code" }, { status: 401 });
     }
 
     const reportId = body.reportId ?? `OCWS-RPT-${Date.now()}-${Math.random().toString(16).slice(2, 8).toUpperCase()}`;
+
+    // Nest / promo / bypass — no storage, but return reportId for analytics
+    if (retentionDays === 0) {
+      return NextResponse.json({ saved: false, skipped: true, reportId });
+    }
 
     const record: ReportRecord = {
       reportId,
@@ -66,7 +82,7 @@ export async function POST(req: Request) {
       pdfAvailable: body.pdfAvailable ?? false,
     };
 
-    await saveReport(reportId, record);
+    await saveReport(reportId, record, retentionDays);
     return NextResponse.json({ saved: true, reportId });
   } catch (err) {
     console.error("[reports/save]", err);

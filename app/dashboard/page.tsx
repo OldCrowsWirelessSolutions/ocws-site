@@ -1910,14 +1910,24 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* ── Past Reports ── */}
+      {/* ── Past Reports — hidden for Nest (no storage) ── */}
+      {!(sub?.type === "subscription" && sub?.tier === "nest") && (
       <div style={card}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px", flexWrap: "wrap", gap: "10px" }}>
           <p style={{ ...sectionLabel, marginBottom: 0 }}>Past Verdicts &amp; Reckonings</p>
           {reports.length > 0 && (
             <span style={{ color: "#555555", fontSize: "12px" }}>{reports.length} report{reports.length !== 1 ? "s" : ""}</span>
           )}
         </div>
+        {(sub?.type === "subscription" && sub?.tier === "flock") && (
+          <p style={{ color: "#888888", fontSize: "12px", marginBottom: "16px" }}>Reports stored for 6 months</p>
+        )}
+        {(sub?.type === "subscription" && sub?.tier === "murder") && (
+          <p style={{ color: "#888888", fontSize: "12px", marginBottom: "16px" }}>Reports stored for 12 months</p>
+        )}
+        {sub?.type === "vip" && (
+          <p style={{ color: "#888888", fontSize: "12px", marginBottom: "16px" }}>Reports stored for 12 months</p>
+        )}
 
         {reportsLoading ? (
           <p style={{ color: "#555555", fontSize: "13px", fontFamily: "monospace", letterSpacing: "0.1em" }}>
@@ -2064,6 +2074,7 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+      )}
 
       {/* ── Subscription ID ── */}
       <div style={card}>

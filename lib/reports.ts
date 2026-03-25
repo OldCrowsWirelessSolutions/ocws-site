@@ -36,13 +36,34 @@ const ALL_REPORTS_KEY  = "reports:all";
 
 // ─── Save ────────────────────────────────────────────────────────────────────
 
-export async function saveReport(reportId: string, data: ReportRecord): Promise<void> {
+/**
+ * Save a report. Pass retentionDays to apply a TTL:
+ *   0           → skip storage entirely (Nest / promo / bypass)
+ *   180 / 365   → save with that TTL in days
+ *   undefined   → save with no expiry (legacy / admin callers)
+ */
+export async function saveReport(
+  reportId: string,
+  data: ReportRecord,
+  retentionDays?: number,
+): Promise<void> {
+  if (retentionDays === 0) return; // no storage
+
   const ts = new Date(data.createdAt).getTime();
+  const ttlSeconds = retentionDays !== undefined ? retentionDays * 24 * 60 * 60 : undefined;
+
   await Promise.all([
-    redis.set(REPORT_KEY(reportId), data),
+    ttlSeconds !== undefined
+      ? redis.set(REPORT_KEY(reportId), data, { ex: ttlSeconds })
+      : redis.set(REPORT_KEY(reportId), data),
     redis.zadd(ALL_REPORTS_KEY, { score: ts, member: reportId }),
     ...(data.subscriptionId
-      ? [redis.zadd(SUB_REPORTS_KEY(data.subscriptionId), { score: ts, member: reportId })]
+      ? [
+          redis.zadd(SUB_REPORTS_KEY(data.subscriptionId), { score: ts, member: reportId }),
+          ...(ttlSeconds !== undefined
+            ? [redis.expire(SUB_REPORTS_KEY(data.subscriptionId), ttlSeconds)]
+            : []),
+        ]
       : []),
     ...(data.email
       ? [redis.zadd(EMAIL_REPORTS_KEY(data.email), { score: ts, member: reportId })]
