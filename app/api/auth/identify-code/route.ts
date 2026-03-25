@@ -46,7 +46,12 @@ export async function POST(req: Request) {
   // 2. Founding codes — hardcoded, unlimited, never expire
   const founding = FOUNDING_CODES[code];
   if (founding) {
-    return Response.json({ type: "founder", tier: founding.tier, name: founding.name });
+    let passwordSet = false;
+    try {
+      const hash = await redis.get<string>(`vip:${code}:password_hash`);
+      passwordSet = !!hash;
+    } catch { /* non-fatal */ }
+    return Response.json({ type: "founder", tier: founding.tier, name: founding.name, passwordSet });
   }
 
   // 3. Admin first-factor code — triggers two-step admin login
@@ -64,10 +69,16 @@ export async function POST(req: Request) {
     }>(`code:${code}`);
 
     if (record && record.active !== false) {
+      let passwordSet = false;
+      try {
+        const hash = await redis.get<string>(`sub:${code}:password_hash`);
+        passwordSet = !!hash;
+      } catch { /* non-fatal */ }
       return Response.json({
         type: "subscriber",
         tier: record.tier ?? null,
         subscriptionId: record.subscriptionId ?? code,
+        passwordSet,
       });
     }
   } catch {
@@ -89,8 +100,12 @@ export async function POST(req: Request) {
   // These go through the existing validate route on the dashboard, but we
   // can signal "subscriber" here so the login page stores and redirects
   if (/^OCWS-(NEST|FLOCK|MURDER)-[A-Z0-9]{8}$/.test(code)) {
-    // The dashboard's loadDashboard will validate fully — we just signal subscriber
-    return Response.json({ type: "subscriber", subscriptionId: code });
+    let passwordSet = false;
+    try {
+      const hash = await redis.get<string>(`sub:${code}:password_hash`);
+      passwordSet = !!hash;
+    } catch { /* non-fatal */ }
+    return Response.json({ type: "subscriber", subscriptionId: code, passwordSet });
   }
 
   return Response.json({ type: "invalid" });

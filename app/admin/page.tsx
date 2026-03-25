@@ -233,6 +233,8 @@ export default function AdminPage() {
   }
   const [vipData, setVipData]           = useState<VIPSubRecord[]>([]);
   const [loadingVip, setLoadingVip]     = useState(false);
+  const [vipPasswords, setVipPasswords] = useState<Record<string, boolean>>({});
+  const [resettingPw, setResettingPw]   = useState<string | null>(null);
 
   // Platform analytics
   interface DailyScanData { date: string; count: number; }
@@ -400,6 +402,18 @@ export default function AdminPage() {
     finally { setLoadingVip(false); }
   }, []);
 
+  const loadVipPasswords = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/vip/password-status", {
+        headers: { "x-admin-key": ADMIN_KEY },
+      });
+      if (res.ok) {
+        const data = await res.json() as { statuses?: Record<string, boolean> };
+        setVipPasswords(data.statuses ?? {});
+      }
+    } catch { /* non-fatal */ }
+  }, []);
+
   const loadPlatformAnalytics = useCallback(async () => {
     setLoadingPlatform(true);
     try {
@@ -445,6 +459,7 @@ export default function AdminPage() {
     loadAdminReports();
     loadPendingTestimonials();
     loadVipActivity();
+    loadVipPasswords();
     loadPlatformAnalytics();
     loadChatAnalytics();
   }
@@ -570,6 +585,29 @@ export default function AdminPage() {
       setImpersonateError("Connection error. Please try again.");
     } finally {
       setImpersonating(false);
+    }
+  }
+
+  async function handleResetVipPassword(code: string) {
+    if (!confirm(`Reset password for ${code}? They will be prompted to create a new password on next login.`)) return;
+    setResettingPw(code);
+    try {
+      const res = await fetch("/api/admin/vip/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+        body: JSON.stringify({ code }),
+      });
+      const data = await res.json() as { ok?: boolean; error?: string };
+      if (data.ok) {
+        flash(`Password reset for ${code}.`);
+        loadVipPasswords();
+      } else {
+        flash(data.error ?? "Reset failed.");
+      }
+    } catch {
+      flash("Connection error.");
+    } finally {
+      setResettingPw(null);
     }
   }
 
@@ -1598,6 +1636,41 @@ export default function AdminPage() {
               </p>
             </div>
           ))}
+        </div>
+
+        {/* Password status per VIP */}
+        <div style={{ background: "#0D1520", borderRadius: "10px", padding: "16px", marginBottom: "20px" }}>
+          <p style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "12px" }}>
+            Password Status
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {["CORVUS-NEST","CORVUS-NATE","CORVUS-MIKE","CORVUS-ERIC"].map((code) => {
+              const pwSet = vipPasswords[code];
+              const isResetting = resettingPw === code;
+              return (
+                <div key={code} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <span style={{ color: "#888888", fontFamily: "monospace", fontSize: "12px" }}>{code}</span>
+                    <span style={{
+                      fontSize: "10px", fontWeight: 700, padding: "2px 8px", borderRadius: "10px",
+                      background: pwSet ? "rgba(74,222,128,0.12)" : "rgba(255,255,255,0.06)",
+                      color: pwSet ? "#4ADE80" : "#555555",
+                    }}>
+                      {pwSet === undefined ? "—" : pwSet ? "Password Set" : "No Password"}
+                    </span>
+                  </div>
+                  {pwSet && (
+                    <button
+                      onClick={() => handleResetVipPassword(code)}
+                      disabled={isResetting}
+                      style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: "6px", color: "#F87171", fontSize: "11px", padding: "4px 12px", cursor: isResetting ? "not-allowed" : "pointer", opacity: isResetting ? 0.6 : 1 }}>
+                      {isResetting ? "Resetting…" : "Reset Password"}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {vipData.map((v) => v.subordinates.length > 0 && (
