@@ -105,7 +105,7 @@ const INTERNAL_CODES: Record<
     expires_at?: string; // ISO 8601 UTC — code invalid at or after this time
   }
 > = {
-  "OCWS2026":         { type: "admin",   name: "Joshua Turner" },
+  "CORVUS-FOUNDER-2026": { type: "admin",   name: "Joshua Turner" },
   "OCWS-ADMIN-2026":  { type: "admin",   name: "Joshua Turner" },
   "CORVUS-NEST":      { type: "founder", name: "Joshua Turner" },
   "CORVUS-TRY-9R4M":  { type: "founder", name: "Guest", expires_at: "2026-03-26T05:00:00.000Z" },

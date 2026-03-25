@@ -14,7 +14,7 @@ import { validatePromoCode } from "@/lib/promo-codes";
 const ADMIN_CODE = process.env.OCWS_ADMIN_SECRET ?? "SpectrumLife2026!!";
 
 // Crow's Eye bypass — valid ONLY on the Crow's Eye page, not for dashboard login.
-const CROWSEYE_BYPASS_CODE = "OCWS2026";
+const CROWSEYE_BYPASS_CODE = "CORVUS-FOUNDER-2026";
 
 // Founding codes — unlimited, never expire, always nest tier, hardcoded server-side.
 const FOUNDING_CODES: Record<string, { tier: "nest"; name: string }> = {

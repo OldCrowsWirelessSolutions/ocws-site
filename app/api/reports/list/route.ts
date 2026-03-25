@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     const code = rawCode.toUpperCase();
 
     // Admin sees everything — handled by /api/admin/reports/list instead
-    if (code === "OCWS2026" || FOUNDING_CODES.has(code) || rawCode === (process.env.OCWS_ADMIN_SECRET ?? "")) {
+    if (code === "CORVUS-FOUNDER-2026" || FOUNDING_CODES.has(code) || rawCode === (process.env.OCWS_ADMIN_SECRET ?? "")) {
       // Founding/admin codes: fetch by codeUsed index via subscriptionId=code
       const reports = await getReportsForSubscription(code);
       return NextResponse.json({ reports });

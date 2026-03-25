@@ -54,7 +54,7 @@ export default function LoginPage() {
         try { localStorage.setItem("corvus_sub_code", code); } catch { /* */ }
         router.push("/dashboard");
       } else if (data.type === "crowseye_bypass") {
-        // OCWS2026 is only valid on the Crow's Eye page
+        // CORVUS-FOUNDER-2026 is only valid on the Crow's Eye page
         setError("That code is for Crow's Eye only. Use it on the Crow's Eye page.");
       } else if (data.type === "promo") {
         setError("Promo codes are used on the Crow's Eye page, not here.");

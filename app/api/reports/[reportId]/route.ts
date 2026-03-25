@@ -13,7 +13,7 @@ const ADMIN_SECRET   = process.env.OCWS_ADMIN_SECRET ?? "";
 
 function isAdminOrFounding(code: string): boolean {
   const upper = code.toUpperCase();
-  return code === ADMIN_SECRET || upper === "OCWS2026" || FOUNDING_CODES.has(upper);
+  return code === ADMIN_SECRET || upper === "CORVUS-FOUNDER-2026" || FOUNDING_CODES.has(upper);
 }
 
 export async function GET(
