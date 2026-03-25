@@ -30,7 +30,9 @@ export default function CorvusChatWrapper() {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  if (!subCode) return null;
+  // Chat is admin/founder-only until full launch
+  const CHAT_ADMIN_CODES = new Set(["OCWS-CORVUS-FOUNDER-JOSHUA", "CORVUS-NEST", "CORVUS-ADMIN"]);
+  if (!subCode || !CHAT_ADMIN_CODES.has(subCode.toUpperCase())) return null;
 
   // On dashboard/admin the Chat tab handles everything — show a tab-switching FAB
   if (pathname === "/dashboard" || pathname === "/admin") {

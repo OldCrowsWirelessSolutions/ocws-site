@@ -697,6 +697,10 @@ export default function DashboardPage() {
   const hasTeam    = isSubType && (tier === "flock" || tier === "murder");
   const hasReports = !(isSubType && tier === "nest");
 
+  // Chat is admin/founder-only until full launch
+  const CHAT_ADMIN_CODES = new Set(["OCWS-CORVUS-FOUNDER-JOSHUA", "CORVUS-NEST", "CORVUS-ADMIN"]);
+  const chatEnabled = CHAT_ADMIN_CODES.has(storedCode.toUpperCase());
+
   // Tab definitions per user type
   const subTabs: { id: SubTab; label: string }[] = [
     { id: "overview",   label: "Overview"    },
@@ -706,7 +710,7 @@ export default function DashboardPage() {
     ...(hasTeam || isVIP ? [{ id: "team" as SubTab, label: "Team" }] : []),
     ...(isSubType ? [{ id: "billing" as SubTab, label: "Account & Billing" }] : []),
     { id: "products",   label: "Products"    },
-    { id: "chat",       label: "Ask Corvus"  },
+    ...(chatEnabled ? [{ id: "chat" as SubTab, label: "Ask Corvus" }] : []),
   ];
 
   const vipTabs: { id: VIPTab; label: string }[] = [
@@ -716,7 +720,7 @@ export default function DashboardPage() {
     { id: "codes",      label: "Sub Codes"   },
     { id: "team",       label: "Team Activity" },
     { id: "products",   label: "Products"    },
-    { id: "chat",       label: "Ask Corvus"  },
+    ...(chatEnabled ? [{ id: "chat" as VIPTab, label: "Ask Corvus" }] : []),
   ];
 
   const tabs = isVIP ? vipTabs : subTabs;
