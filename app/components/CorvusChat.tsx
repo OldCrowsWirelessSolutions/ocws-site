@@ -162,9 +162,12 @@ export default function CorvusChat({
         }
       } else if (data.error) {
         const errId = `msg-${Date.now()}-e`;
-        setMessages((prev) => [...prev, { id: errId, role: "assistant", content: "Corvus is temporarily unavailable. Try again in a moment." }]);
+        const errMsg = res.status === 401
+          ? "Your session code wasn't recognized. Try logging out and back in."
+          : "Corvus is temporarily unavailable. Try again in a moment.";
+        setMessages((prev) => [...prev, { id: errId, role: "assistant", content: errMsg }]);
         setTypingId(errId);
-        console.error("[CorvusChat] API error:", data.error);
+        console.error("[CorvusChat] API error:", res.status, data.error);
       }
     } catch (err) {
       console.error("[CorvusChat] fetch error:", err);

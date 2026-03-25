@@ -17,7 +17,6 @@ import {
 import { validateSubscriptionId } from "@/lib/subscriptions";
 import { recordChatEvent } from "@/lib/analytics";
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const FREE_MESSAGE_LIMIT = 3;
 
 type AccessLevel = "unlimited" | "free" | "denied";
@@ -59,6 +58,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing code or message" }, { status: 400 });
     }
 
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      console.error("[chat] ANTHROPIC_API_KEY is not set");
+      return NextResponse.json({ error: "Chat unavailable — API key not configured." }, { status: 500 });
+    }
+
     // ── Access check ─────────────────────────────────────────────────────────
     const access = await getAccessLevel(code);
     if (access === "denied") {
@@ -96,6 +101,7 @@ export async function POST(req: NextRequest) {
     const contextMessages = history.slice(-20).map((m) => ({ role: m.role, content: m.content }));
 
     // ── Call Anthropic ────────────────────────────────────────────────────────
+    const client = new Anthropic({ apiKey });
     const aiResponse = await client.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 1000,
