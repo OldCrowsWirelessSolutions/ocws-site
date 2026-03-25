@@ -1373,7 +1373,7 @@ export default function CrowsEyeClient() {
       sectionBar("CORVUS ANALYSIS");
       y += 6;
       const INNER_W = CW - 3 - 16;
-      const openW = wrap(`\u201C${result.corvus_opening}\u201D`, INNER_W);
+      fn("italic", 9); const openW = wrap(`\u201C${result.corvus_opening}\u201D`, INNER_W);
       const aH = th(openW.length, 9) + 24;
       ensure(aH + 4);
       sf(NAVYL); doc.rect(ML, y, CW, aH, "F");
@@ -1405,10 +1405,12 @@ export default function CrowsEyeClient() {
         const sc = SEV[f.severity] ?? GOLD;
         const CP = 12, CARD_IW = CW - 3 - CP * 2;
 
-        // Pre-wrap all text blocks
-        const titleW = wrap(f.title, CARD_IW - 58);
-        const descW  = wrap(f.description, CARD_IW);
-        const fixW   = wrap(`Fix: ${f.fix}`, CARD_IW);
+        // Pre-wrap all text blocks — font MUST be set before wrap() so jsPDF uses
+        // the correct character metrics; mismatch is the root cause of text overflow
+        fn("bold",   10); const titleW = wrap(f.title, CARD_IW - 58);
+        fn("normal",  9); const descW  = wrap(f.description, CARD_IW);
+        fn("normal",  9); const fixW   = wrap(`Fix: ${f.fix}`, CARD_IW);
+        fn("normal",  8);
         const stepsW: string[][] = f.steps?.length
           ? f.steps.map((s, si) => wrap(`${si + 1}.  ${s}`, CARD_IW - 10))
           : [];
@@ -1422,8 +1424,8 @@ export default function CrowsEyeClient() {
             ri.default_username ? `User: ${ri.default_username}` : "",
             ri.default_password ? `Pass: ${ri.default_password}` : "",
           ].filter(Boolean).join("   \u00B7   ");
-          routerW = wrap(rtxt, CARD_IW - 16);
-          if (f.login_disclaimer) disclaimerW = wrap(f.login_disclaimer, CARD_IW - 16);
+          fn("normal", 8.5); routerW = wrap(rtxt, CARD_IW - 16);
+          if (f.login_disclaimer) { fn("normal", 7.5); disclaimerW = wrap(f.login_disclaimer, CARD_IW - 16); }
           rBoxH = th(routerW.length, 8.5)
             + (disclaimerW.length ? 4 + th(disclaimerW.length, 7.5) : 0)
             + 16;
@@ -1486,7 +1488,7 @@ export default function CrowsEyeClient() {
       sectionBar("RECOMMENDATIONS");
       y += 8;
       result.recommendations.forEach((rec, i) => {
-        const rW = wrap(rec, CW - 28);
+        fn("normal", 9); const rW = wrap(rec, CW - 28);
         const rH = th(rW.length, 9) + 8;
         ensure(rH + 4);
         sf(TEAL); doc.circle(ML + 9, y + rH / 2, 7, "F");
@@ -1497,7 +1499,7 @@ export default function CrowsEyeClient() {
 
       // Corvus final word
       y += 10;
-      const fwW = wrap(`\u201C${result.corvus_summary}\u201D`, CW - 24);
+      fn("italic", 9); const fwW = wrap(`\u201C${result.corvus_summary}\u201D`, CW - 24);
       const fwH = th(fwW.length, 9) + 28;
       ensure(fwH + 8);
       sf(NAVYL); doc.rect(ML, y, CW, fwH, "F");
@@ -1521,7 +1523,7 @@ export default function CrowsEyeClient() {
         ];
 
         for (const { label, value } of csaFields) {
-          const valW = wrap(value, CW - 16);
+          fn("normal", 9); const valW = wrap(value, CW - 16);
           const blockH = th(1, 7) + 4 + th(valW.length, 9) + 12;
           ensure(blockH + 4);
           sf(NAVYL); doc.rect(ML, y, CW, blockH, "F");
@@ -1533,7 +1535,7 @@ export default function CrowsEyeClient() {
 
         // Corvus assessment of cross-structure situation
         y += 4;
-        const csaAssessW = wrap(`\u201C${csa.corvus_assessment}\u201D`, CW - 24);
+        fn("italic", 9); const csaAssessW = wrap(`\u201C${csa.corvus_assessment}\u201D`, CW - 24);
         const csaAssessH = th(csaAssessW.length, 9) + 28;
         ensure(csaAssessH + 8);
         sf(NAVYL); doc.rect(ML, y, CW, csaAssessH, "F");
@@ -1573,7 +1575,8 @@ export default function CrowsEyeClient() {
         sf(NAVYL); doc.rect(ML, y, CW, DR_H, "F");
         sf(TEAL);  doc.rect(ML, y, 3, DR_H, "F");
         st(GOLD);  fn("bold", 7);    txt("IDENTIFIED DEVICE", ML + 10, y + 9, 7);
-        st(WHITE); fn("bold", 10);   txt(`${deviceLabel}${deviceType}`, ML + 10, y + 21, 10);
+        fn("bold", 10); const deviceLabelW = wrap(`${deviceLabel}${deviceType}`, CW - 28);
+        st(WHITE); txt(deviceLabelW, ML + 10, y + 21, 10);
         st(CYAN);  fn("normal", 8.5);
         doc.textWithLink("View Official Manual \u2192", ML + 10, y + 38, { url: manualUrl });
         st(MGRAY); fn("normal", 7);  txt(manualUrl, ML + 10, y + 48, 7);
