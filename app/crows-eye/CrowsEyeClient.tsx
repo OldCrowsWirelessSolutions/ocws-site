@@ -994,6 +994,25 @@ export default function CrowsEyeClient() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     }).catch(() => { /* silently ignore */ });
+
+    // Analytics recording — fire and forget
+    fetch("/api/analytics/record", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        code: codeUsed,
+        product: reportType,
+        locationName: locationName.slice(0, 200),
+        locationState: state.trim().slice(0, 50),
+        findingCount: result.full_findings?.length ?? result.problems_found ?? 0,
+        criticalCount: result.critical_count ?? 0,
+        warningCount: result.warning_count ?? 0,
+        goodCount: (result.full_findings?.length ?? 0) - (result.critical_count ?? 0) - (result.warning_count ?? 0),
+        severity,
+        itComfortLevel: itComfortLevel ?? 2,
+        reportId,
+      }),
+    }).catch(() => { /* silently ignore */ });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, result]);
 

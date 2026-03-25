@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
     "@stripe/stripe-js": "^8.11.0",
     "@upstash/redis": "^1.37.0",
     "googleapis": "^171.4.0",

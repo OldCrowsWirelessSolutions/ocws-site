@@ -54,7 +54,7 @@ interface ReckoningPricing {
 
 interface ValidationResult {
   valid: boolean;
-  type: "subscription" | "founder" | "admin" | "promo" | null;
+  type: "subscription" | "founder" | "admin" | "promo" | "vip" | null;
   tier?: SubscriptionTier;
   customer_name?: string;
   verdicts_remaining?: number;
@@ -208,6 +208,19 @@ export default function DashboardPage() {
   const [inviteError, setInviteError]           = useState("");
   const [removingMember, setRemovingMember]     = useState<string | null>(null);
 
+  // Analytics state
+  interface CodeSummary {
+    code: string; totalScans: number; lastScan: string | null;
+    productBreakdown: Record<string, number>;
+    severityBreakdown: Record<string, number>;
+    avgFindingsPerScan: number; totalCritical: number;
+    dailyScans?: { date: string; count: number }[];
+  }
+  const [myAnalytics, setMyAnalytics]             = useState<CodeSummary | null>(null);
+  const [analyticsLoading, setAnalyticsLoading]   = useState(false);
+  const [analyticsNarrative, setAnalyticsNarrative] = useState("");
+  const [narrativeLoading, setNarrativeLoading]   = useState(false);
+
   // ── Auth + load ────────────────────────────────────────────────────────────
 
   const loadReports = useCallback(async (code: string) => {
@@ -282,6 +295,23 @@ export default function DashboardPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const loadMyAnalytics = useCallback(async (code: string) => {
+    setAnalyticsLoading(true);
+    try {
+      const res = await fetch("/api/analytics/code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      if (res.ok) {
+        const data = await res.json() as { summary?: CodeSummary };
+        setMyAnalytics(data.summary ?? null);
+      }
+    } catch { /* non-fatal */ }
+    finally { setAnalyticsLoading(false); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const loadDashboard = useCallback(async (code: string) => {
     setValidating(true);
     try {
@@ -322,6 +352,7 @@ export default function DashboardPage() {
       setStoredCode(code);
       setPhase("dashboard");
       loadReports(code);
+      loadMyAnalytics(code);
 
       if (data.type === "vip") {
         loadVipSubordinates(code);
@@ -338,7 +369,7 @@ export default function DashboardPage() {
     } finally {
       setValidating(false);
     }
-  }, [loadReports, loadSeatInfo, loadVipSubordinates, loadVipTeamActivity, loadTeamActivity]);
+  }, [loadReports, loadSeatInfo, loadVipSubordinates, loadVipTeamActivity, loadTeamActivity, loadMyAnalytics]);
 
   useEffect(() => {
     try {
@@ -571,6 +602,27 @@ export default function DashboardPage() {
       else { alert(data.error ?? "Failed to remove member."); }
     } catch { alert("Connection error."); }
     finally { setRemovingMember(null); }
+  }
+
+  // ── Analytics handlers ──────────────────────────────────────────────────────
+
+  async function handleGetMyNarrative() {
+    if (!myAnalytics || !storedCode) return;
+    setNarrativeLoading(true);
+    setAnalyticsNarrative("");
+    try {
+      const res = await fetch("/api/analytics/corvus-narrative", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scope: sub?.type === "vip" ? "vip" : "code", data: myAnalytics }),
+      });
+      const data = await res.json() as { narrative?: string };
+      setAnalyticsNarrative(data.narrative ?? "No briefing returned.");
+    } catch {
+      setAnalyticsNarrative("Failed to reach Corvus. Try again.");
+    } finally {
+      setNarrativeLoading(false);
+    }
   }
 
   // ── Subscription management handlers ───────────────────────────────────────
@@ -1613,6 +1665,100 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* ── My Analytics ── */}
+      <div style={card}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+          <div>
+            <p style={{ ...sectionLabel, marginBottom: 0 }}>My Analytics</p>
+            <p style={{ color: "#555555", fontSize: "11px", marginTop: "4px" }}>Your usage history with Corvus</p>
+          </div>
+          <button
+            onClick={() => loadMyAnalytics(storedCode)}
+            disabled={analyticsLoading}
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px", color: "#888888", fontSize: "12px", padding: "7px 14px", cursor: "pointer" }}>
+            {analyticsLoading ? "Loading…" : "↻ Refresh"}
+          </button>
+        </div>
+
+        {analyticsLoading && <p style={{ color: "#444444", fontSize: "13px" }}>Loading analytics…</p>}
+
+        {!analyticsLoading && myAnalytics && (
+          <>
+            {/* Stats row */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: "12px", marginBottom: "20px" }}>
+              {([
+                { label: "Total Scans",      value: myAnalytics.totalScans,         color: "#00C2C7" },
+                { label: "Critical Findings",value: myAnalytics.totalCritical,       color: "#F87171" },
+                { label: "Avg Findings",     value: myAnalytics.avgFindingsPerScan.toFixed(1), color: "#aaaaaa" },
+                { label: "Last Scan",        value: myAnalytics.lastScan ? new Date(myAnalytics.lastScan).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—", color: "#555555" },
+              ] as { label: string; value: string | number; color: string }[]).map(({ label, value, color }) => (
+                <div key={label} style={{ background: "#0D1520", borderRadius: "10px", padding: "14px 16px" }}>
+                  <p style={{ color: "#333", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>{label}</p>
+                  <p style={{ color, fontSize: "22px", fontWeight: 800, lineHeight: 1 }}>{value}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Product & Severity breakdowns */}
+            {(Object.keys(myAnalytics.productBreakdown ?? {}).length > 0 || Object.keys(myAnalytics.severityBreakdown ?? {}).length > 0) && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "20px" }}>
+                {Object.keys(myAnalytics.productBreakdown ?? {}).length > 0 && (
+                  <div style={{ background: "#0D1520", borderRadius: "10px", padding: "14px 16px" }}>
+                    <p style={{ color: "#444", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "10px" }}>By Product</p>
+                    {Object.entries(myAnalytics.productBreakdown).map(([k, v]) => (
+                      <div key={k} style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+                        <span style={{ color: "#888888", fontSize: "12px" }}>{k.replace(/_/g, " ")}</span>
+                        <span style={{ color: "#ffffff", fontSize: "12px", fontWeight: 700, fontFamily: "monospace" }}>{v}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {Object.keys(myAnalytics.severityBreakdown ?? {}).length > 0 && (
+                  <div style={{ background: "#0D1520", borderRadius: "10px", padding: "14px 16px" }}>
+                    <p style={{ color: "#444", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "10px" }}>By Severity</p>
+                    {[["critical","#F87171"],["warning","#FBBF24"],["info","#4ADE80"]].map(([k, color]) => (
+                      <div key={k} style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+                        <span style={{ color: "#888888", fontSize: "12px", textTransform: "capitalize" }}>{k}</span>
+                        <span style={{ color, fontSize: "12px", fontWeight: 700, fontFamily: "monospace" }}>{(myAnalytics.severityBreakdown ?? {})[k] ?? 0}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Corvus narrative */}
+            <div style={{ background: "#0D1520", borderRadius: "10px", padding: "20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: analyticsNarrative ? "16px" : "0" }}>
+                <p style={{ color: "#B8922A", fontSize: "10px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>Corvus Take on My Usage</p>
+                <button
+                  onClick={handleGetMyNarrative}
+                  disabled={narrativeLoading}
+                  style={{ background: narrativeLoading ? "rgba(184,146,42,0.06)" : "rgba(184,146,42,0.1)", border: "1px solid rgba(184,146,42,0.25)", borderRadius: "8px", color: "#B8922A", fontSize: "12px", padding: "7px 14px", cursor: narrativeLoading ? "not-allowed" : "pointer" }}>
+                  {narrativeLoading ? "Corvus is thinking…" : "Get Corvus' Take"}
+                </button>
+              </div>
+              {analyticsNarrative && (
+                <p style={{ color: "#aaaaaa", fontSize: "13px", lineHeight: 1.7, whiteSpace: "pre-wrap", margin: 0 }}>
+                  {analyticsNarrative}
+                </p>
+              )}
+              {!analyticsNarrative && !narrativeLoading && (
+                <p style={{ color: "#2a2a2a", fontSize: "12px", fontStyle: "italic" }}>
+                  Click to get Corvus&#39; take on your usage patterns.
+                </p>
+              )}
+            </div>
+          </>
+        )}
+
+        {!analyticsLoading && !myAnalytics && (
+          <p style={{ color: "#333333", fontSize: "13px", fontStyle: "italic" }}>
+            No scan history yet. Run your first Verdict or Reckoning to start tracking.
+          </p>
+        )}
+      </div>
 
       {/* ── Subscription Management ── */}
       {isSubType && details && (

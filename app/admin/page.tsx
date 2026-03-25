@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -170,6 +170,25 @@ export default function AdminPage() {
   const [vipData, setVipData]           = useState<VIPSubRecord[]>([]);
   const [loadingVip, setLoadingVip]     = useState(false);
 
+  // Platform analytics
+  interface DailyScanData { date: string; count: number; }
+  interface PlatformAnalytics {
+    totalScans: number;
+    scansToday: number;
+    activeSubscriptions: number;
+    activeCodes: number;
+    totalCritical: number;
+    dailyScans: DailyScanData[];
+    productBreakdown: Record<string, number>;
+    severityBreakdown: Record<string, number>;
+    tierBreakdown: Record<string, number>;
+  }
+  const [platformAnalytics, setPlatformAnalytics]   = useState<PlatformAnalytics | null>(null);
+  const [loadingPlatform, setLoadingPlatform]       = useState(false);
+  const [platformNarrative, setPlatformNarrative]   = useState("");
+  const [loadingNarrative, setLoadingNarrative]     = useState(false);
+  const chartsInitRef = useRef(false);
+
   // Action feedback
   const [actionMsg, setActionMsg] = useState("");
 
@@ -294,6 +313,20 @@ export default function AdminPage() {
     finally { setLoadingVip(false); }
   }, []);
 
+  const loadPlatformAnalytics = useCallback(async () => {
+    setLoadingPlatform(true);
+    try {
+      const res = await fetch("/api/analytics/platform", {
+        headers: { "x-admin-key": ADMIN_KEY },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPlatformAnalytics(data.analytics ?? null);
+      }
+    } catch { /* non-fatal */ }
+    finally { setLoadingPlatform(false); }
+  }, []);
+
   const loadPendingTestimonials = useCallback(async () => {
     setLoadingTestimonials(true);
     try {
@@ -317,9 +350,82 @@ export default function AdminPage() {
         loadAdminReports();
         loadPendingTestimonials();
         loadVipActivity();
+        loadPlatformAnalytics();
       }
     } catch { /* */ }
-  }, [loadSubscribers, loadPromoCodes, loadAdminReports, loadPendingTestimonials, loadVipActivity]);
+  }, [loadSubscribers, loadPromoCodes, loadAdminReports, loadPendingTestimonials, loadVipActivity, loadPlatformAnalytics]);
+
+  // Chart.js rendering when platform analytics load
+  useEffect(() => {
+    if (!platformAnalytics) return;
+
+    function renderCharts() {
+      if (!platformAnalytics) return;
+      type ChartType = { new (el: HTMLCanvasElement, cfg: unknown): { destroy(): void } };
+      const ChartJS = (window as unknown as { Chart?: ChartType }).Chart;
+      if (!ChartJS) return;
+
+      // Destroy previous chart instances if any (stored on canvas element)
+      type CanvasWithChart = HTMLCanvasElement & { _chartInstance?: { destroy(): void } };
+      ["chart-daily-scans","chart-products","chart-severity","chart-tiers"].forEach((id) => {
+        const el = document.getElementById(id) as CanvasWithChart | null;
+        if (el?._chartInstance) { el._chartInstance.destroy(); el._chartInstance = undefined; }
+      });
+
+      const daily = platformAnalytics.dailyScans ?? [];
+      const dailyEl = document.getElementById("chart-daily-scans") as CanvasWithChart | null;
+      if (dailyEl) {
+        dailyEl._chartInstance = new ChartJS(dailyEl, {
+          type: "line",
+          data: { labels: daily.map((d) => d.date.slice(5)), datasets: [{ label: "Scans", data: daily.map((d) => d.count), borderColor: "#00C2C7", backgroundColor: "rgba(0,194,199,0.08)", tension: 0.3, fill: true, pointRadius: 3 }] },
+          options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: "#555" }, grid: { color: "rgba(255,255,255,0.04)" } }, y: { ticks: { color: "#555" }, grid: { color: "rgba(255,255,255,0.04)" }, beginAtZero: true } } },
+        });
+      }
+
+      const prod = platformAnalytics.productBreakdown ?? {};
+      const prodLabels = Object.keys(prod);
+      const prodEl = document.getElementById("chart-products") as CanvasWithChart | null;
+      if (prodEl && prodLabels.length) {
+        prodEl._chartInstance = new ChartJS(prodEl, {
+          type: "doughnut",
+          data: { labels: prodLabels, datasets: [{ data: prodLabels.map((k) => prod[k]), backgroundColor: ["#00C2C7","#B8922A","#9B1C1C","#4ADE80","#FBBF24"], borderWidth: 0 }] },
+          options: { responsive: true, plugins: { legend: { labels: { color: "#888", font: { size: 10 } } } } },
+        });
+      }
+
+      const sev = platformAnalytics.severityBreakdown ?? {};
+      const sevEl = document.getElementById("chart-severity") as CanvasWithChart | null;
+      if (sevEl) {
+        sevEl._chartInstance = new ChartJS(sevEl, {
+          type: "bar",
+          data: { labels: ["Critical","Warning","Info"], datasets: [{ data: [sev.critical ?? 0, sev.warning ?? 0, sev.info ?? 0], backgroundColor: ["rgba(239,68,68,0.6)","rgba(234,179,8,0.6)","rgba(34,197,94,0.6)"], borderRadius: 4 }] },
+          options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: "#555" }, grid: { display: false } }, y: { ticks: { color: "#555" }, grid: { color: "rgba(255,255,255,0.04)" }, beginAtZero: true } } },
+        });
+      }
+
+      const tiers = platformAnalytics.tierBreakdown ?? {};
+      const tierLabels = Object.keys(tiers);
+      const tierEl = document.getElementById("chart-tiers") as CanvasWithChart | null;
+      if (tierEl && tierLabels.length) {
+        tierEl._chartInstance = new ChartJS(tierEl, {
+          type: "doughnut",
+          data: { labels: tierLabels, datasets: [{ data: tierLabels.map((k) => tiers[k]), backgroundColor: ["#00C2C7","#B8922A","#9B1C1C","#aaaaaa"], borderWidth: 0 }] },
+          options: { responsive: true, plugins: { legend: { labels: { color: "#888", font: { size: 10 } } } } },
+        });
+      }
+    }
+
+    // If Chart.js already loaded, render immediately; otherwise load from CDN first
+    if ((window as unknown as { Chart?: unknown }).Chart) {
+      renderCharts();
+    } else if (!chartsInitRef.current) {
+      chartsInitRef.current = true;
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js";
+      script.onload = renderCharts;
+      document.head.appendChild(script);
+    }
+  }, [platformAnalytics]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -333,6 +439,7 @@ export default function AdminPage() {
       loadAdminReports();
       loadPendingTestimonials();
       loadVipActivity();
+      loadPlatformAnalytics();
     } else {
       setAuthError("Incorrect password.");
     }
@@ -532,6 +639,25 @@ export default function AdminPage() {
     } finally {
       setRevoking(false);
       setTimeout(() => setRevokeResult(""), 6000);
+    }
+  }
+
+  async function handleGetPlatformNarrative() {
+    if (!platformAnalytics) return;
+    setLoadingNarrative(true);
+    setPlatformNarrative("");
+    try {
+      const res = await fetch("/api/analytics/corvus-narrative", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scope: "platform", data: platformAnalytics }),
+      });
+      const data = await res.json() as { narrative?: string };
+      setPlatformNarrative(data.narrative ?? "No briefing returned.");
+    } catch {
+      setPlatformNarrative("Failed to reach Corvus. Try again.");
+    } finally {
+      setLoadingNarrative(false);
     }
   }
 
@@ -1371,6 +1497,83 @@ export default function AdminPage() {
           Opens subscriber&rsquo;s dashboard in a new tab. Admin session is preserved in this tab.
           A gold banner will appear in the new tab indicating admin view.
         </p>
+      </div>
+
+      {/* ── Platform Intelligence ── */}
+      <div style={card}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+          <div>
+            <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>Platform Intelligence</p>
+            <p style={{ color: "#555555", fontSize: "12px" }}>30-day usage analytics across all subscribers</p>
+          </div>
+          <button onClick={loadPlatformAnalytics} disabled={loadingPlatform}
+            style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "8px", color: "#00C2C7", fontSize: "12px", padding: "7px 14px", cursor: "pointer" }}>
+            {loadingPlatform ? "Loading…" : "↻ Refresh"}
+          </button>
+        </div>
+
+        {/* Stats row */}
+        {platformAnalytics && (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: "12px", marginBottom: "24px" }}>
+            {([
+              { label: "Total Scans",      value: platformAnalytics.totalScans,          color: "#00C2C7" },
+              { label: "Scans Today",      value: platformAnalytics.scansToday,          color: "#4ADE80" },
+              { label: "Active Subs",      value: platformAnalytics.activeSubscriptions, color: "#B8922A" },
+              { label: "Active Codes",     value: platformAnalytics.activeCodes,         color: "#aaaaaa" },
+              { label: "Critical Findings",value: platformAnalytics.totalCritical,       color: "#F87171" },
+            ] as { label: string; value: number; color: string }[]).map(({ label, value, color }) => (
+              <div key={label} style={{ background: "#0D1520", borderRadius: "10px", padding: "14px 16px" }}>
+                <p style={{ color: "#444", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>{label}</p>
+                <p style={{ color, fontSize: "26px", fontWeight: 800, lineHeight: 1 }}>{value}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Charts grid */}
+        {platformAnalytics && (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: "16px", marginBottom: "24px" }}>
+            <div style={{ background: "#0D1520", borderRadius: "10px", padding: "16px" }}>
+              <p style={{ color: "#555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "12px" }}>Daily Scans (30 days)</p>
+              <canvas id="chart-daily-scans" style={{ maxHeight: "160px" }} />
+            </div>
+            <div style={{ background: "#0D1520", borderRadius: "10px", padding: "16px" }}>
+              <p style={{ color: "#555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "12px" }}>Product Breakdown</p>
+              <canvas id="chart-products" style={{ maxHeight: "160px" }} />
+            </div>
+            <div style={{ background: "#0D1520", borderRadius: "10px", padding: "16px" }}>
+              <p style={{ color: "#555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "12px" }}>Severity Distribution</p>
+              <canvas id="chart-severity" style={{ maxHeight: "160px" }} />
+            </div>
+            <div style={{ background: "#0D1520", borderRadius: "10px", padding: "16px" }}>
+              <p style={{ color: "#555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "12px" }}>Scans by Tier</p>
+              <canvas id="chart-tiers" style={{ maxHeight: "160px" }} />
+            </div>
+          </div>
+        )}
+
+        {/* Corvus Platform Briefing */}
+        <div style={{ background: "#0D1520", borderRadius: "10px", padding: "20px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: platformNarrative ? "16px" : "0" }}>
+            <p style={{ color: "#B8922A", fontSize: "10px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>Corvus Platform Briefing</p>
+            <button
+              onClick={handleGetPlatformNarrative}
+              disabled={loadingNarrative || !platformAnalytics}
+              style={{ background: loadingNarrative ? "rgba(184,146,42,0.08)" : "rgba(184,146,42,0.12)", border: "1px solid rgba(184,146,42,0.3)", borderRadius: "8px", color: "#B8922A", fontSize: "12px", padding: "7px 16px", cursor: loadingNarrative || !platformAnalytics ? "not-allowed" : "pointer", opacity: !platformAnalytics ? 0.4 : 1 }}>
+              {loadingNarrative ? "Corvus is thinking…" : "Get Corvus' Briefing"}
+            </button>
+          </div>
+          {platformNarrative && (
+            <p style={{ color: "#aaaaaa", fontSize: "13px", lineHeight: 1.7, whiteSpace: "pre-wrap", margin: 0 }}>
+              {platformNarrative}
+            </p>
+          )}
+          {!platformNarrative && !loadingNarrative && (
+            <p style={{ color: "#333333", fontSize: "12px", fontStyle: "italic" }}>
+              {platformAnalytics ? "Click the button to get Corvus' intelligence briefing on platform activity." : "Load analytics data first."}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* ── All Reports ── */}
