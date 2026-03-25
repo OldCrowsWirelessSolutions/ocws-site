@@ -78,8 +78,45 @@ export const MONTHLY_CREDITS: Record<string, number> = {
 export const TIER_SEATS: Record<string, number> = {
   nest:   1,
   flock:  5,
-  murder: 3,
+  murder: 15,
 };
+
+// ─── Seat add-on prices ───────────────────────────────────────────────────────
+
+export const FLOCK_SEAT_PRICES: Record<number, { monthly: string; annual: string; monthlyPrice: number; annualPrice: number }> = {
+  1: { monthly: process.env.PRICE_FLOCK_SEAT_1_MONTHLY!, annual: process.env.PRICE_FLOCK_SEAT_1_ANNUAL!, monthlyPrice: 25,  annualPrice: 240 },
+  2: { monthly: process.env.PRICE_FLOCK_SEAT_2_MONTHLY!, annual: process.env.PRICE_FLOCK_SEAT_2_ANNUAL!, monthlyPrice: 45,  annualPrice: 432 },
+  3: { monthly: process.env.PRICE_FLOCK_SEAT_3_MONTHLY!, annual: process.env.PRICE_FLOCK_SEAT_3_ANNUAL!, monthlyPrice: 60,  annualPrice: 576 },
+  4: { monthly: process.env.PRICE_FLOCK_SEAT_4_MONTHLY!, annual: process.env.PRICE_FLOCK_SEAT_4_ANNUAL!, monthlyPrice: 75,  annualPrice: 720 },
+};
+
+export const MURDER_SEAT_PRICES: Record<number, { monthly: string; annual: string; monthlyPrice: number; annualPrice: number }> = {
+  1:  { monthly: process.env.PRICE_MURDER_SEAT_1_MONTHLY!,  annual: process.env.PRICE_MURDER_SEAT_1_ANNUAL!,  monthlyPrice: 75,  annualPrice: 720  },
+  2:  { monthly: process.env.PRICE_MURDER_SEAT_2_MONTHLY!,  annual: process.env.PRICE_MURDER_SEAT_2_ANNUAL!,  monthlyPrice: 140, annualPrice: 1344 },
+  3:  { monthly: process.env.PRICE_MURDER_SEAT_3_MONTHLY!,  annual: process.env.PRICE_MURDER_SEAT_3_ANNUAL!,  monthlyPrice: 195, annualPrice: 1872 },
+  4:  { monthly: process.env.PRICE_MURDER_SEAT_4_MONTHLY!,  annual: process.env.PRICE_MURDER_SEAT_4_ANNUAL!,  monthlyPrice: 240, annualPrice: 2304 },
+  5:  { monthly: process.env.PRICE_MURDER_SEAT_5_MONTHLY!,  annual: process.env.PRICE_MURDER_SEAT_5_ANNUAL!,  monthlyPrice: 275, annualPrice: 2640 },
+  6:  { monthly: process.env.PRICE_MURDER_SEAT_6_MONTHLY!,  annual: process.env.PRICE_MURDER_SEAT_6_ANNUAL!,  monthlyPrice: 300, annualPrice: 2880 },
+  7:  { monthly: process.env.PRICE_MURDER_SEAT_7_MONTHLY!,  annual: process.env.PRICE_MURDER_SEAT_7_ANNUAL!,  monthlyPrice: 315, annualPrice: 3024 },
+  8:  { monthly: process.env.PRICE_MURDER_SEAT_8_MONTHLY!,  annual: process.env.PRICE_MURDER_SEAT_8_ANNUAL!,  monthlyPrice: 320, annualPrice: 3072 },
+  9:  { monthly: process.env.PRICE_MURDER_SEAT_9_MONTHLY!,  annual: process.env.PRICE_MURDER_SEAT_9_ANNUAL!,  monthlyPrice: 325, annualPrice: 3120 },
+  10: { monthly: process.env.PRICE_MURDER_SEAT_10_MONTHLY!, annual: process.env.PRICE_MURDER_SEAT_10_ANNUAL!, monthlyPrice: 330, annualPrice: 3168 },
+};
+
+// ─── Seat rules by tier ───────────────────────────────────────────────────────
+
+export const SEAT_RULES: Record<string, { included: number; maxAdditional: number; maxTotal: number; upgradeRequired: string | null }> = {
+  nest:   { included: 1, maxAdditional: 0,  maxTotal: 1,  upgradeRequired: "flock"  },
+  flock:  { included: 1, maxAdditional: 4,  maxTotal: 5,  upgradeRequired: "murder" },
+  murder: { included: 5, maxAdditional: 10, maxTotal: 15, upgradeRequired: null     },
+};
+
+// ─── All seat price IDs (for subscription mode detection) ────────────────────
+
+export const SEAT_PRICE_IDS: string[] = [
+  ...Object.values(FLOCK_SEAT_PRICES).flatMap(p => [p.monthly, p.annual].filter(Boolean)),
+  ...Object.values(MURDER_SEAT_PRICES).flatMap(p => [p.monthly, p.annual].filter(Boolean)),
+];
 
 // ─── Credit pricing by tier ──────────────────────────────────────────────────
 

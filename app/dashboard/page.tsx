@@ -161,6 +161,24 @@ export default function DashboardPage() {
   const [expandedReport, setExpandedReport]     = useState<string | null>(null);
   const [isAdminView, setIsAdminView]           = useState(false);
 
+  // Team seat state
+  interface SeatMember { email: string; name: string; addedAt: string; code: string; }
+  interface SeatInfo {
+    tier: string; includedSeats: number; additionalSeats: number;
+    totalSeats: number; maxTotal: number; maxAdditional: number;
+    upgradeRequired: string | null; members: SeatMember[];
+  }
+  const [seatInfo, setSeatInfo]                 = useState<SeatInfo | null>(null);
+  const [seatBillingPeriod, setSeatBillingPeriod] = useState<"monthly" | "annual">("monthly");
+  const [seatAddCount, setSeatAddCount]         = useState(1);
+  const [buyingSeats, setBuyingSeats]           = useState(false);
+  const [showInviteModal, setShowInviteModal]   = useState(false);
+  const [inviteName, setInviteName]             = useState("");
+  const [inviteEmail, setInviteEmail]           = useState("");
+  const [inviting, setInviting]                 = useState(false);
+  const [inviteError, setInviteError]           = useState("");
+  const [removingMember, setRemovingMember]     = useState<string | null>(null);
+
   // ── Auth + load ────────────────────────────────────────────────────────────
 
   const loadReports = useCallback(async (code: string) => {
@@ -177,6 +195,23 @@ export default function DashboardPage() {
       }
     } catch { /* non-fatal */ }
     finally { setReportsLoading(false); }
+  }, []);
+
+  const loadSeatInfo = useCallback(async (code: string) => {
+    try {
+      const res = await fetch("/api/subscriptions/seat-info", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      if (res.ok) {
+        const data = await res.json() as SeatInfo;
+        setSeatInfo(data);
+        // Reset seat add count to a valid value for this tier
+        setSeatAddCount(1);
+      }
+    } catch { /* non-fatal */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadDashboard = useCallback(async (code: string) => {
@@ -219,13 +254,14 @@ export default function DashboardPage() {
       setStoredCode(code);
       setPhase("dashboard");
       loadReports(code);
+      loadSeatInfo(code);
     } catch {
       setAuthError("Connection error. Please try again.");
       setPhase("auth");
     } finally {
       setValidating(false);
     }
-  }, [loadReports]);
+  }, [loadReports, loadSeatInfo]);
 
   useEffect(() => {
     try {
@@ -352,6 +388,63 @@ export default function DashboardPage() {
     } finally {
       setBuyingReckoning(null);
     }
+  }
+
+  // ── Seat handlers ──────────────────────────────────────────────────────────
+
+  async function handleBuySeats() {
+    if (buyingSeats || !storedCode) return;
+    setBuyingSeats(true);
+    try {
+      const res = await fetch("/api/subscriptions/buy-seats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: storedCode, additionalSeats: seatAddCount, billingPeriod: seatBillingPeriod }),
+      });
+      const data = await res.json() as { url?: string; error?: string };
+      if (data.url) { window.location.href = data.url; }
+      else { alert(data.error ?? "Could not start checkout. Please try again."); }
+    } catch { alert("Connection error. Please try again."); }
+    finally { setBuyingSeats(false); }
+  }
+
+  async function handleInviteMember() {
+    if (inviting || !storedCode) return;
+    setInviteError("");
+    setInviting(true);
+    try {
+      const res = await fetch("/api/subscriptions/invite-seat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: storedCode, memberName: inviteName, memberEmail: inviteEmail }),
+      });
+      const data = await res.json() as { ok?: boolean; seatCode?: string; error?: string };
+      if (data.ok) {
+        setShowInviteModal(false);
+        setInviteName(""); setInviteEmail("");
+        await loadSeatInfo(storedCode);
+      } else {
+        setInviteError(data.error ?? "Failed to invite member.");
+      }
+    } catch { setInviteError("Connection error. Please try again."); }
+    finally { setInviting(false); }
+  }
+
+  async function handleRemoveMember(memberEmail: string) {
+    if (removingMember || !storedCode) return;
+    if (!confirm(`Remove ${memberEmail} from your team? Their access code will be deactivated.`)) return;
+    setRemovingMember(memberEmail);
+    try {
+      const res = await fetch("/api/subscriptions/remove-seat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: storedCode, memberEmail }),
+      });
+      const data = await res.json() as { ok?: boolean; error?: string };
+      if (data.ok) { await loadSeatInfo(storedCode); }
+      else { alert(data.error ?? "Failed to remove member."); }
+    } catch { alert("Connection error."); }
+    finally { setRemovingMember(null); }
   }
 
   // ── Loading ────────────────────────────────────────────────────────────────
@@ -651,20 +744,29 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Seats (subscription only) */}
-        {isSubType && sub?.seat_limit && (
+        {/* Team Seats compact tile */}
+        {isSubType && seatInfo && (
           <div style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "24px" }}>
             <p style={{ color: "#888888", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
-              Devices (Seats)
+              Team Seats
             </p>
             <p style={{ color: "#ffffff", fontSize: "52px", fontWeight: 800, lineHeight: 1, marginBottom: "4px" }}>
-              {sub.seats_used ?? 0}
+              {seatInfo.totalSeats}
             </p>
             <p style={{ color: "#888888", fontSize: "12px", marginBottom: "12px" }}>
-              of {sub.seat_limit} seat{sub.seat_limit !== 1 ? "s" : ""} registered
+              of {seatInfo.maxTotal} maximum
             </p>
+            {/* Progress bar */}
+            <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: "4px", height: "4px", marginBottom: "12px" }}>
+              <div style={{
+                background: seatInfo.totalSeats >= seatInfo.maxTotal ? "#F87171" : "#00C2C7",
+                borderRadius: "4px", height: "4px",
+                width: `${Math.min(100, (seatInfo.totalSeats / seatInfo.maxTotal) * 100)}%`,
+                transition: "width 0.3s",
+              }} />
+            </div>
             <p style={{ color: "#555555", fontSize: "11px", lineHeight: 1.6 }}>
-              Each browser or device using this ID occupies one seat.
+              {seatInfo.includedSeats} included · {seatInfo.additionalSeats} purchased
             </p>
           </div>
         )}
@@ -817,6 +919,228 @@ export default function DashboardPage() {
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── Team Seats Management ── */}
+      {isSubType && seatInfo && (
+        <div style={card}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+            <p style={{ ...sectionLabel, marginBottom: 0 }}>
+              Team Seats — {seatInfo.totalSeats} of {seatInfo.maxTotal} maximum
+            </p>
+            {tier !== "nest" && seatInfo.totalSeats < seatInfo.maxTotal && (
+              <button
+                onClick={() => { setShowInviteModal(true); setInviteError(""); }}
+                style={{
+                  background: "rgba(0,194,199,0.1)", border: "1px solid rgba(0,194,199,0.3)",
+                  borderRadius: "8px", color: "#00C2C7", fontSize: "12px", fontWeight: 600,
+                  padding: "7px 14px", cursor: "pointer",
+                }}>
+                + Invite Team Member
+              </button>
+            )}
+          </div>
+
+          {tier === "nest" ? (
+            /* Nest: upgrade prompt */
+            <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "20px", textAlign: "center" }}>
+              <p style={{ color: "#ffffff", fontSize: "14px", fontWeight: 600, marginBottom: "8px" }}>Your plan includes 1 seat.</p>
+              <p style={{ color: "#888888", fontSize: "13px", marginBottom: "16px" }}>
+                Need more seats? Upgrade to Flock to add up to 4 additional team members.
+              </p>
+              <a href="/#pricing" style={{
+                display: "inline-block", background: "#B8922A", color: "#0D1520",
+                borderRadius: "8px", fontSize: "13px", fontWeight: 700, padding: "9px 20px", textDecoration: "none",
+              }}>
+                Upgrade to Flock →
+              </a>
+            </div>
+          ) : (
+            <>
+              {/* Progress bar */}
+              <div style={{ marginBottom: "20px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+                  <span style={{ color: "#888888", fontSize: "12px" }}>
+                    {seatInfo.members.length} member{seatInfo.members.length !== 1 ? "s" : ""} invited · {seatInfo.totalSeats - seatInfo.members.length - 1} seat{seatInfo.totalSeats - seatInfo.members.length - 1 !== 1 ? "s" : ""} open
+                  </span>
+                  <span style={{ color: "#555555", fontSize: "12px" }}>{seatInfo.totalSeats} / {seatInfo.maxTotal}</span>
+                </div>
+                <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: "4px", height: "6px" }}>
+                  <div style={{
+                    background: seatInfo.totalSeats >= seatInfo.maxTotal ? "#F87171" : "#00C2C7",
+                    borderRadius: "4px", height: "6px",
+                    width: `${Math.min(100, (seatInfo.totalSeats / seatInfo.maxTotal) * 100)}%`,
+                    transition: "width 0.3s",
+                  }} />
+                </div>
+              </div>
+
+              {/* Seat members list */}
+              {seatInfo.members.length > 0 && (
+                <div style={{ marginBottom: "20px" }}>
+                  {seatInfo.members.map((m) => (
+                    <div key={m.email} style={{
+                      display: "flex", alignItems: "center", justifyContent: "space-between",
+                      padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.05)",
+                    }}>
+                      <div>
+                        <p style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, margin: 0 }}>{m.name}</p>
+                        <p style={{ color: "#555555", fontSize: "11px", margin: "2px 0 0" }}>{m.email}</p>
+                        <p style={{ color: "#333333", fontSize: "10px", fontFamily: "monospace", margin: "2px 0 0" }}>{m.code}</p>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveMember(m.email)}
+                        disabled={removingMember === m.email}
+                        style={{
+                          background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)",
+                          borderRadius: "6px", color: "#F87171", fontSize: "11px",
+                          padding: "4px 10px", cursor: removingMember ? "not-allowed" : "pointer",
+                        }}>
+                        {removingMember === m.email ? "Removing…" : "Remove"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Add more seats */}
+              {seatInfo.totalSeats < seatInfo.maxTotal ? (
+                <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "16px" }}>
+                  <p style={{ color: "#888888", fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "12px" }}>
+                    Add More Seats
+                  </p>
+                  <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap", marginBottom: "12px" }}>
+                    {/* Seat count dropdown */}
+                    <select
+                      value={seatAddCount}
+                      onChange={(e) => setSeatAddCount(Number(e.target.value))}
+                      style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#ffffff", fontSize: "13px", padding: "8px 12px", cursor: "pointer" }}
+                    >
+                      {Array.from({ length: seatInfo.maxAdditional - seatInfo.additionalSeats }, (_, i) => i + 1).map(n => {
+                        const priceMap = tier === "flock"
+                          ? { 1: 25, 2: 45, 3: 60, 4: 75 } as Record<number, number>
+                          : { 1: 75, 2: 140, 3: 195, 4: 240, 5: 275, 6: 300, 7: 315, 8: 320, 9: 325, 10: 330 } as Record<number, number>;
+                        const price = priceMap[n] ?? 0;
+                        return (
+                          <option key={n} value={n}>
+                            {n} seat{n !== 1 ? "s" : ""} (+${seatBillingPeriod === "annual" ? Math.round(price * 12 * 0.8) : price}/{seatBillingPeriod === "annual" ? "yr" : "mo"})
+                          </option>
+                        );
+                      })}
+                    </select>
+                    {/* Billing toggle */}
+                    <div style={{ display: "flex", borderRadius: "8px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
+                      {(["monthly", "annual"] as const).map(p => (
+                        <button key={p} type="button" onClick={() => setSeatBillingPeriod(p)}
+                          style={{
+                            padding: "8px 14px", fontSize: "12px", fontWeight: 600, border: "none", cursor: "pointer",
+                            background: seatBillingPeriod === p ? "rgba(0,194,199,0.15)" : "rgba(255,255,255,0.04)",
+                            color: seatBillingPeriod === p ? "#00C2C7" : "rgba(255,255,255,0.5)",
+                          }}>
+                          {p.charAt(0).toUpperCase() + p.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                    {seatBillingPeriod === "annual" && (
+                      <span style={{ color: "#4ADE80", fontSize: "11px", fontWeight: 600 }}>Save 20%</span>
+                    )}
+                  </div>
+                  <button
+                    onClick={handleBuySeats}
+                    disabled={buyingSeats}
+                    style={{
+                      background: buyingSeats ? "#0D6E7A" : "#00C2C7", color: "#0D1520",
+                      border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: 700,
+                      padding: "10px 20px", cursor: buyingSeats ? "not-allowed" : "pointer",
+                    }}>
+                    {buyingSeats ? "Redirecting…" : "Add Seats"}
+                  </button>
+                </div>
+              ) : (
+                <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "16px", textAlign: "center" }}>
+                  {tier === "flock" ? (
+                    <>
+                      <p style={{ color: "#888888", fontSize: "13px", marginBottom: "12px" }}>
+                        Maximum seats reached. Need more? Upgrade to Murder for up to 15 seats.
+                      </p>
+                      <a href="/#pricing" style={{
+                        display: "inline-block", background: "rgba(155,28,28,0.15)", border: "1px solid rgba(155,28,28,0.3)",
+                        borderRadius: "8px", color: "#F87171", fontSize: "12px", fontWeight: 600,
+                        padding: "7px 16px", textDecoration: "none",
+                      }}>
+                        Upgrade to Murder →
+                      </a>
+                    </>
+                  ) : (
+                    <p style={{ color: "#888888", fontSize: "13px" }}>Maximum seat capacity reached.</p>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* ── Invite Member Modal ── */}
+      {showInviteModal && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 1000,
+          display: "flex", alignItems: "center", justifyContent: "center", padding: "24px",
+        }}>
+          <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "420px" }}>
+            <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
+              Invite Team Member
+            </p>
+            <div style={{ marginBottom: "12px" }}>
+              <label style={{ color: "#888888", fontSize: "12px", display: "block", marginBottom: "6px" }}>Name</label>
+              <input
+                type="text"
+                value={inviteName}
+                onChange={e => setInviteName(e.target.value)}
+                placeholder="Jane Smith"
+                style={{ ...inputStyle }}
+              />
+            </div>
+            <div style={{ marginBottom: "16px" }}>
+              <label style={{ color: "#888888", fontSize: "12px", display: "block", marginBottom: "6px" }}>Email</label>
+              <input
+                type="email"
+                value={inviteEmail}
+                onChange={e => setInviteEmail(e.target.value)}
+                placeholder="jane@company.com"
+                style={{ ...inputStyle }}
+              />
+            </div>
+            {inviteError && (
+              <p style={{ color: "#F87171", fontSize: "12px", marginBottom: "12px" }}>{inviteError}</p>
+            )}
+            <p style={{ color: "#555555", fontSize: "11px", marginBottom: "16px", lineHeight: 1.6 }}>
+              A personal access code will be generated and sent to their email.
+            </p>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button
+                onClick={handleInviteMember}
+                disabled={inviting || !inviteName.trim() || !inviteEmail.trim()}
+                style={{
+                  flex: 1, background: inviting ? "#0D6E7A" : "#00C2C7", color: "#0D1520",
+                  border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: 700,
+                  padding: "10px", cursor: inviting || !inviteName.trim() || !inviteEmail.trim() ? "not-allowed" : "pointer",
+                  opacity: !inviteName.trim() || !inviteEmail.trim() ? 0.5 : 1,
+                }}>
+                {inviting ? "Sending…" : "Send Invite"}
+              </button>
+              <button
+                onClick={() => { setShowInviteModal(false); setInviteError(""); setInviteName(""); setInviteEmail(""); }}
+                style={{
+                  background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: "8px", color: "#888888", fontSize: "13px",
+                  padding: "10px 16px", cursor: "pointer",
+                }}>
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -1028,12 +1352,12 @@ export default function DashboardPage() {
         </div>
         {tier === "flock" && (
           <p style={{ color: "#888888", fontSize: "12px" }}>
-            Share with your team — up to {sub?.seat_limit ?? 5} seats on your Flock plan.
+            1 seat included — add up to 4 more in Team Seats below.
           </p>
         )}
         {tier === "murder" && (
           <p style={{ color: "#888888", fontSize: "12px" }}>
-            Share this code with your team — up to {sub?.seat_limit ?? 3} devices on your plan.
+            5 seats included — add up to 10 more in Team Seats below (15 maximum).
           </p>
         )}
         {tier === "nest" && (

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { validatePromoCode, redeemPromoCode } from "@/lib/promo-codes";
+import { SEAT_PRICE_IDS } from "@/lib/price-map";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
   apiVersion: "2026-02-25.clover",
@@ -108,7 +109,7 @@ export async function POST(req: NextRequest) {
       };
     }
 
-    const isSubscription = priceId ? SUBSCRIPTION_PRICE_IDS.has(priceId) : false;
+    const isSubscription = priceId ? (SUBSCRIPTION_PRICE_IDS.has(priceId) || SEAT_PRICE_IDS.includes(priceId)) : false;
     const mode = isSubscription ? "subscription" : "payment";
 
     const session = await stripe.checkout.sessions.create({

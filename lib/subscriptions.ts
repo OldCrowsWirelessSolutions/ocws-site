@@ -82,7 +82,7 @@ export const TIER_ENTITLEMENTS: Record<
   murder: {
     verdicts_per_month: 999999,
     reckonings_per_month: { small: 999999, standard: 10, commercial: 3 },
-    seat_limit: 3,
+    seat_limit: 15,
   },
 };
 
@@ -504,4 +504,69 @@ export async function registerDevice(
   await redis.set(REDIS_KEYS.device(token), record);
 
   return { success: true, seats_used: existing.length + 1, seat_limit: ent.seat_limit };
+}
+
+// ─── Named seat management ────────────────────────────────────────────────────
+// Tracks purchased additional seats and named seat members separately from
+// the device-token system above. Redis keys:
+//   sub:{subId}:seat_count   → number of additional purchased seats
+//   sub:{subId}:seat_members → JSON array of SeatMember
+
+export interface SeatMember {
+  email: string;
+  name: string;
+  addedAt: string;
+  code: string; // subscriber code generated for this seat
+}
+
+const SEAT_COUNT_KEY   = (subId: string) => `sub:${subId}:seat_count`;
+const SEAT_MEMBERS_KEY = (subId: string) => `sub:${subId}:seat_members`;
+
+/** Returns the number of additional purchased seats (0 if none bought yet). */
+export async function getSeatCount(subscriptionId: string): Promise<number> {
+  const val = await redis.get<number>(SEAT_COUNT_KEY(subscriptionId));
+  return val ?? 0;
+}
+
+/** Increments purchased seat count. Returns the new total additional seats. */
+export async function addSeats(subscriptionId: string, count: number): Promise<number> {
+  const current = await getSeatCount(subscriptionId);
+  const next = current + count;
+  await redis.set(SEAT_COUNT_KEY(subscriptionId), next);
+  return next;
+}
+
+/** Decrements purchased seat count (floors at 0). Returns new total. */
+export async function removeSeats(subscriptionId: string, count: number): Promise<number> {
+  const current = await getSeatCount(subscriptionId);
+  const next = Math.max(0, current - count);
+  await redis.set(SEAT_COUNT_KEY(subscriptionId), next);
+  return next;
+}
+
+/** Returns all named seat members for a subscription. */
+export async function getSeatMembers(subscriptionId: string): Promise<SeatMember[]> {
+  const raw = await redis.get<SeatMember[]>(SEAT_MEMBERS_KEY(subscriptionId));
+  return raw ?? [];
+}
+
+/** Adds a named seat member. */
+export async function addSeatMember(
+  subscriptionId: string,
+  member: SeatMember
+): Promise<void> {
+  const current = await getSeatMembers(subscriptionId);
+  // Prevent duplicate email
+  const filtered = current.filter(m => m.email.toLowerCase() !== member.email.toLowerCase());
+  await redis.set(SEAT_MEMBERS_KEY(subscriptionId), [...filtered, member]);
+}
+
+/** Removes a seat member by email. */
+export async function removeSeatMember(
+  subscriptionId: string,
+  email: string
+): Promise<void> {
+  const current = await getSeatMembers(subscriptionId);
+  const filtered = current.filter(m => m.email.toLowerCase() !== email.toLowerCase());
+  await redis.set(SEAT_MEMBERS_KEY(subscriptionId), filtered);
 }

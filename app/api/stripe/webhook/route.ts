@@ -16,6 +16,7 @@ import {
   getSubscriptionByEmail,
   updateSubscription,
   resetPeriodCredits,
+  addSeats,
   TIER_ENTITLEMENTS,
 } from "@/lib/subscriptions";
 import { CREDITS_BY_PRICE } from "@/lib/price-map";
@@ -337,6 +338,22 @@ export async function POST(req: NextRequest) {
               });
               console.log(`[webhook] credit_purchase: +${credits} credits → ${subId}`);
             }
+          }
+        } else if (metaType === "seat_purchase") {
+          const subId          = session.metadata?.subscriptionId;
+          const additionalSeats = Number(session.metadata?.additionalSeats ?? 0);
+          if (subId && additionalSeats > 0) {
+            await addSeats(subId, additionalSeats);
+            // Log seat purchase in usage history
+            const histKey = `sub:${subId}:seat_history`;
+            await redis.lpush(histKey, JSON.stringify({
+              type:         "seat_purchase",
+              seats:        additionalSeats,
+              billingPeriod: session.metadata?.billingPeriod ?? "monthly",
+              session_id:   session.id,
+              timestamp:    new Date().toISOString(),
+            }));
+            console.log(`[webhook] seat_purchase: +${additionalSeats} seats → ${subId}`);
           }
         } else if (metaType === "reckoning_purchase") {
           const subId         = session.metadata?.subscriptionId;

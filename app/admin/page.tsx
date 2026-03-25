@@ -46,6 +46,8 @@ const PROMO_STATUS_COLORS: Record<PromoStatus, string> = {
   deactivated: "#F87171",
 };
 
+interface SeatMemberAdmin { email: string; name: string; addedAt: string; code: string; }
+
 interface SubRecord {
   subscription_id: string;
   customer_email: string;
@@ -59,6 +61,9 @@ interface SubRecord {
   current_period_end: string | null;
   created_at: string;
   stripe_subscription_id: string | null;
+  // Seat data loaded separately
+  additionalSeats?: number;
+  seatMembers?: SeatMemberAdmin[];
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -166,6 +171,7 @@ export default function AdminPage() {
   const [allReports, setAllReports]           = useState<AdminReportRecord[]>([]);
   const [loadingReports, setLoadingReports]   = useState(false);
   const [expandedAdminReport, setExpandedAdminReport] = useState<string | null>(null);
+  const [expandedSubscriber, setExpandedSubscriber]   = useState<string | null>(null);
 
   // Remote access / impersonation
   const [impersonateCode, setImpersonateCode]       = useState("");
@@ -184,7 +190,31 @@ export default function AdminPage() {
       });
       if (!res.ok) throw new Error("Unauthorized");
       const data = await res.json();
-      setSubscribers(data.subscribers ?? []);
+      const subs: SubRecord[] = data.subscribers ?? [];
+
+      // Load seat data for Flock/Murder subscribers in parallel
+      const withSeats = await Promise.all(
+        subs.map(async (s) => {
+          if (s.tier !== "flock" && s.tier !== "murder") return s;
+          try {
+            const seatRes = await fetch("/api/subscriptions/seat-info", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ code: s.subscription_id }),
+            });
+            if (seatRes.ok) {
+              const seatData = await seatRes.json() as {
+                additionalSeats: number;
+                members: SeatMemberAdmin[];
+              };
+              return { ...s, additionalSeats: seatData.additionalSeats, seatMembers: seatData.members };
+            }
+          } catch { /* non-fatal */ }
+          return s;
+        })
+      );
+
+      setSubscribers(withSeats);
     } catch {
       setLoadError("Failed to load subscribers. Check connection.");
     } finally {
@@ -547,7 +577,7 @@ export default function AdminPage() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px", minWidth: "700px" }}>
               <thead>
                 <tr>
-                  {["Email", "Name", "Tier", "Status", "Credits Left", "Code", "Joined", "Actions"].map(h => (
+                  {["Email", "Name", "Tier", "Status", "Credits Left", "Seats", "Code", "Joined", "Actions"].map(h => (
                     <th key={h} style={{ color: "#444444", fontWeight: 600, textAlign: "left", padding: "6px 10px", borderBottom: "1px solid rgba(255,255,255,0.06)", whiteSpace: "nowrap" }}>
                       {h}
                     </th>
@@ -555,54 +585,102 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {subscribers.map(sub => (
-                  <tr key={sub.subscription_id} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
-                    <td style={{ color: "#aaaaaa", padding: "10px", maxWidth: "180px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {sub.customer_email}
-                    </td>
-                    <td style={{ color: "#888888", padding: "10px", maxWidth: "140px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {sub.customer_name}
-                    </td>
-                    <td style={{ padding: "10px" }}>
-                      <span style={{
-                        background: TIER_COLORS[sub.tier].bg, color: TIER_COLORS[sub.tier].text,
-                        fontSize: "9px", fontWeight: 800, letterSpacing: "0.1em",
-                        padding: "2px 8px", borderRadius: "20px",
-                      }}>
-                        {sub.tier.toUpperCase()}
-                      </span>
-                    </td>
-                    <td style={{ padding: "10px" }}>
-                      <span style={{ color: STATUS_COLORS[sub.status], fontSize: "11px", fontWeight: 600 }}>
-                        {sub.status}
-                      </span>
-                    </td>
-                    <td style={{ color: "#ffffff", padding: "10px", fontFamily: "monospace", fontWeight: 700 }}>
-                      {creditsLeft(sub)}
-                    </td>
-                    <td style={{ color: "#555555", padding: "10px", fontFamily: "monospace", fontSize: "11px", whiteSpace: "nowrap" }}>
-                      {sub.subscription_id}
-                    </td>
-                    <td style={{ color: "#444444", padding: "10px", whiteSpace: "nowrap" }}>
-                      {fmtDate(sub.created_at, true)}
-                    </td>
-                    <td style={{ padding: "10px" }}>
-                      <button
-                        onClick={() => handleDeactivate(sub.subscription_id)}
-                        disabled={sub.status === "cancelled" || sub.status === "expired"}
-                        style={{
-                          background: "rgba(248,113,113,0.08)",
-                          border: "1px solid rgba(248,113,113,0.2)",
-                          borderRadius: "6px",
-                          color: (sub.status === "cancelled" || sub.status === "expired") ? "#444444" : "#F87171",
-                          fontSize: "11px", padding: "4px 10px",
-                          cursor: (sub.status === "cancelled" || sub.status === "expired") ? "not-allowed" : "pointer",
-                        }}>
-                        Deactivate
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {subscribers.map(sub => {
+                  const seatRules = { nest: { included: 1, max: 1 }, flock: { included: 1, max: 5 }, murder: { included: 5, max: 15 } }[sub.tier] ?? { included: 1, max: 1 };
+                  const totalSeats = seatRules.included + (sub.additionalSeats ?? 0);
+                  const isExpanded = expandedSubscriber === sub.subscription_id;
+                  return (
+                    <>
+                      <tr key={sub.subscription_id} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)", cursor: "pointer" }}
+                        onClick={() => setExpandedSubscriber(isExpanded ? null : sub.subscription_id)}>
+                        <td style={{ color: "#aaaaaa", padding: "10px", maxWidth: "180px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {sub.customer_email}
+                        </td>
+                        <td style={{ color: "#888888", padding: "10px", maxWidth: "140px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {sub.customer_name}
+                        </td>
+                        <td style={{ padding: "10px" }}>
+                          <span style={{
+                            background: TIER_COLORS[sub.tier].bg, color: TIER_COLORS[sub.tier].text,
+                            fontSize: "9px", fontWeight: 800, letterSpacing: "0.1em",
+                            padding: "2px 8px", borderRadius: "20px",
+                          }}>
+                            {sub.tier.toUpperCase()}
+                          </span>
+                        </td>
+                        <td style={{ padding: "10px" }}>
+                          <span style={{ color: STATUS_COLORS[sub.status], fontSize: "11px", fontWeight: 600 }}>
+                            {sub.status}
+                          </span>
+                        </td>
+                        <td style={{ color: "#ffffff", padding: "10px", fontFamily: "monospace", fontWeight: 700 }}>
+                          {creditsLeft(sub)}
+                        </td>
+                        <td style={{ color: "#aaaaaa", padding: "10px", fontFamily: "monospace", fontSize: "11px" }}>
+                          {(sub.tier === "flock" || sub.tier === "murder") ? (
+                            <span title={`${sub.additionalSeats ?? 0} purchased + ${seatRules.included} included`}>
+                              {totalSeats}/{seatRules.max}
+                              {(sub.seatMembers?.length ?? 0) > 0 && (
+                                <span style={{ color: "#00C2C7", marginLeft: "4px" }}>
+                                  ({sub.seatMembers?.length} member{sub.seatMembers?.length !== 1 ? "s" : ""})
+                                </span>
+                              )}
+                            </span>
+                          ) : "1/1"}
+                        </td>
+                        <td style={{ color: "#555555", padding: "10px", fontFamily: "monospace", fontSize: "11px", whiteSpace: "nowrap" }}>
+                          {sub.subscription_id}
+                        </td>
+                        <td style={{ color: "#444444", padding: "10px", whiteSpace: "nowrap" }}>
+                          {fmtDate(sub.created_at, true)}
+                        </td>
+                        <td style={{ padding: "10px" }}>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDeactivate(sub.subscription_id); }}
+                            disabled={sub.status === "cancelled" || sub.status === "expired"}
+                            style={{
+                              background: "rgba(248,113,113,0.08)",
+                              border: "1px solid rgba(248,113,113,0.2)",
+                              borderRadius: "6px",
+                              color: (sub.status === "cancelled" || sub.status === "expired") ? "#444444" : "#F87171",
+                              fontSize: "11px", padding: "4px 10px",
+                              cursor: (sub.status === "cancelled" || sub.status === "expired") ? "not-allowed" : "pointer",
+                            }}>
+                            Deactivate
+                          </button>
+                        </td>
+                      </tr>
+                      {isExpanded && (
+                        <tr key={`${sub.subscription_id}-exp`}>
+                          <td colSpan={9} style={{ padding: "0 10px 12px", background: "rgba(0,0,0,0.2)" }}>
+                            <div style={{ padding: "12px", borderRadius: "8px", background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)" }}>
+                              <p style={{ color: "#00C2C7", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>
+                                Seat Detail — {sub.tier.toUpperCase()}
+                              </p>
+                              <p style={{ color: "#888888", fontSize: "11px", marginBottom: "8px" }}>
+                                {seatRules.included} included + {sub.additionalSeats ?? 0} purchased = {totalSeats} total (max {seatRules.max})
+                              </p>
+                              {(sub.seatMembers?.length ?? 0) > 0 ? (
+                                <div>
+                                  {sub.seatMembers!.map(m => (
+                                    <div key={m.email} style={{ display: "flex", gap: "16px", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,0.04)", flexWrap: "wrap" }}>
+                                      <span style={{ color: "#ffffff", fontSize: "12px", fontWeight: 600, minWidth: "120px" }}>{m.name}</span>
+                                      <span style={{ color: "#888888", fontSize: "11px", minWidth: "160px" }}>{m.email}</span>
+                                      <span style={{ color: "#00C2C7", fontSize: "11px", fontFamily: "monospace" }}>{m.code}</span>
+                                      <span style={{ color: "#444444", fontSize: "10px" }}>{m.addedAt ? new Date(m.addedAt).toLocaleDateString() : ""}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p style={{ color: "#444444", fontSize: "12px" }}>No seat members invited yet.</p>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  );
+                })}
               </tbody>
             </table>
           </div>
