@@ -492,3 +492,30 @@ body {
   background: rgba(0, 194, 199, 0.1);
   border-color: rgba(0, 194, 199, 0.5);
 }
+
+/* ============================================================
+   Audio Toggle
+   ============================================================ */
+.audio-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid rgba(0, 194, 199, 0.2);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.audio-toggle-btn:hover {
+  background: rgba(0, 194, 199, 0.08);
+  border-color: rgba(0, 194, 199, 0.4);
+}
+
+.audio-toggle-label {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.52rem;
+  color: #888888;
+  letter-spacing: 0.1em;
+}

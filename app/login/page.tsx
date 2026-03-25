@@ -23,6 +23,7 @@ import {
 import TributeMessagePanel from "@/app/components/TributeMessage";
 import { TRIBUTE_MESSAGES } from "@/lib/tribute-messages";
 import type { TributeMessage } from "@/lib/tribute-messages";
+import { speakCorvus } from "@/lib/elevenlabs";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -98,7 +99,7 @@ function StarFoxPanel({ line, gold = false }: { line: string; gold?: boolean }) 
     <div className={`corvus-starfox-panel${gold ? " gold-accent" : ""}`}>
       <div className="corvus-panel-frame">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/corvus_still.png" className="corvus-panel-image" alt="Corvus" />
+        <img src="/corvus_still.png" className="corvus-panel-image" alt="Corvus" style={{ cursor: "pointer" }} onClick={() => speakCorvus(lineRef.current)} />
         <div className="corvus-panel-label">CORVUS</div>
         <div className="corvus-panel-sublabel">RF INTELLIGENCE</div>
       </div>
@@ -244,6 +245,7 @@ export default function LoginPage() {
         sessionStorage.removeItem("corvus_session_expired");
         sessionExpiredLineRef.current = pick(CORVUS_SESSION_EXPIRED);
         setSessionExpired(true);
+        speakCorvus(sessionExpiredLineRef.current);
       }
     } catch { /* */ }
   }, []);
@@ -261,20 +263,25 @@ export default function LoginPage() {
         corvusLineRef.current = founderGreetingRef.current;
       }
       instructionRef.current = pick(CORVUS_JOSHUA_PASSWORD_INSTRUCTION);
+      speakCorvus(corvusLineRef.current);
     } else if (step === "vip_create_password") {
       const lines = CORVUS_VIP_FIRST_WELCOME[pendingCode] ?? CORVUS_FIRST_WELCOME;
       corvusLineRef.current = pick(lines);
       instructionRef.current = pick(CORVUS_PASSWORD_INSTRUCTIONS);
+      speakCorvus(corvusLineRef.current);
     } else if (step === "vip_enter_password") {
       const lines = CORVUS_VIP_RETURNING[pendingCode] ?? CORVUS_RETURNING_WELCOME;
       corvusLineRef.current = pick(lines);
       instructionRef.current = pick(CORVUS_PASSWORD_INSTRUCTIONS);
+      speakCorvus(corvusLineRef.current);
     } else if (step === "sub_create_password") {
       corvusLineRef.current = pick(CORVUS_FIRST_WELCOME);
       instructionRef.current = pick(CORVUS_PASSWORD_INSTRUCTIONS);
+      speakCorvus(corvusLineRef.current);
     } else if (step === "sub_enter_password") {
       corvusLineRef.current = pick(sessionExpired ? CORVUS_SESSION_EXPIRED : CORVUS_RETURNING_WELCOME);
       instructionRef.current = pick(CORVUS_PASSWORD_INSTRUCTIONS);
+      speakCorvus(corvusLineRef.current);
     } else {
       instructionRef.current = pick(CORVUS_PASSWORD_INSTRUCTIONS);
     }
@@ -364,6 +371,7 @@ export default function LoginPage() {
     const line = pick(CORVUS_PASSWORD_SUCCESS);
     setSuccessLine(line);
     setShowSuccess(true);
+    speakCorvus(line);
     setTimeout(() => storeAndRedirect(code), 1600);
   }
 
@@ -475,9 +483,9 @@ export default function LoginPage() {
         body: JSON.stringify({ code: pendingCode, password: pw }),
       });
       const data = await res.json() as { valid?: boolean; rateLimited?: boolean; error?: string };
-      if (data.rateLimited) { setRateLimited(true); }
+      if (data.rateLimited) { setRateLimited(true); speakCorvus(pick(CORVUS_RATE_LIMITED)); }
       else if (data.valid) { await maybeShowTribute(pendingCode); }
-      else { setPwError(pick(CORVUS_WRONG_PASSWORD)); }
+      else { const errLine = pick(CORVUS_WRONG_PASSWORD); setPwError(errLine); speakCorvus(errLine); }
     } catch { setPwError("Connection error. Please try again."); }
     finally { setPwLoading(false); }
   }
@@ -517,9 +525,9 @@ export default function LoginPage() {
         body: JSON.stringify({ code: pendingSubscriptionId, password: pw }),
       });
       const data = await res.json() as { valid?: boolean; rateLimited?: boolean; error?: string };
-      if (data.rateLimited) { setRateLimited(true); }
+      if (data.rateLimited) { setRateLimited(true); speakCorvus(pick(CORVUS_RATE_LIMITED)); }
       else if (data.valid) { storeAndRedirect(pendingSubscriptionId); }
-      else { setPwError(pick(CORVUS_WRONG_PASSWORD)); }
+      else { const errLine = pick(CORVUS_WRONG_PASSWORD); setPwError(errLine); speakCorvus(errLine); }
     } catch { setPwError("Connection error. Please try again."); }
     finally { setPwLoading(false); }
   }

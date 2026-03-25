@@ -7,8 +7,7 @@
 
 import { useState, useEffect } from "react";
 import type { TributeMessage } from "@/lib/tribute-messages";
-
-const VOICE_ENABLED = process.env.NEXT_PUBLIC_ELEVENLABS_ENABLED === "true";
+import { speakCorvus } from "@/lib/elevenlabs";
 
 interface TributeProps {
   message: TributeMessage;
@@ -34,15 +33,19 @@ export default function TributeMessagePanel({ message, onDismiss }: TributeProps
       if (i >= message.message.length) {
         clearInterval(id);
         setDone(true);
+        // Standard: speak after typewriter completes; fullscreen: speak on start (below)
+        if (message.style === "standard") {
+          speakCorvus(message.message);
+        }
         // Standard: show Continue immediately; fullscreen: 1.5s pause for gravitas
         const delay = message.style === "fullscreen" ? 1500 : 0;
         setTimeout(() => setShowBtn(true), delay);
       }
     }, speed);
 
-    // Voice: plays while typewriter animates (when ElevenLabs is wired up)
-    if (VOICE_ENABLED && message.style === "fullscreen") {
-      // speakCorvus(message.message) — activate when NEXT_PUBLIC_ELEVENLABS_ENABLED=true
+    // Fullscreen: voice plays while typewriter animates simultaneously
+    if (message.style === "fullscreen") {
+      speakCorvus(message.message);
     }
 
     return () => clearInterval(id);

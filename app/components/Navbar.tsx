@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { getApprovedEndorsements } from "@/lib/endorsements";
+import AudioToggle from "@/app/components/AudioToggle";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -234,6 +235,9 @@ export default function Navbar() {
                       </Link>
                     )}
                     <div className="mx-3 my-1 border-t border-white/10" />
+                    <div className="px-3 py-2">
+                      <AudioToggle />
+                    </div>
                     <button
                       type="button"
                       onClick={handleLogout}
@@ -382,6 +386,9 @@ export default function Navbar() {
                         <span>⚙️</span> Admin
                       </Link>
                     )}
+                    <div className="px-3 py-2">
+                      <AudioToggle />
+                    </div>
                     <button
                       type="button"
                       onClick={() => { setOpen(false); handleLogout(); }}

@@ -20,6 +20,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
+        {/* Set default audio preference on first visit */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function() {
+            if (!localStorage.getItem('corvus_audio')) {
+              var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+              localStorage.setItem('corvus_audio', isMobile ? 'false' : 'true');
+            }
+          })();
+        ` }} />
         {/* Global background styling */}
         <div className="ocws-bg">
           {/* Top navigation */}

@@ -15,6 +15,8 @@ import {
   CORVUS_TEAM_LEAD_DASHBOARD_BRIEF,
 } from "@/lib/corvus-ui-strings";
 import type { TeamReport } from "@/lib/team-reporting";
+import { speakCorvus } from "@/lib/elevenlabs";
+import AudioToggle from "@/app/components/AudioToggle";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -194,6 +196,7 @@ function CorvusDashGreeting(props: DashGreetingProps) {
     }
 
     lineRef.current = line;
+    speakCorvus(line); // fire and forget
     setDisplayed("");
     let i = 0;
     const id = setInterval(() => {
@@ -208,7 +211,7 @@ function CorvusDashGreeting(props: DashGreetingProps) {
   return (
     <div className="corvus-dash-panel" style={{ marginBottom: "16px" }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/corvus_still.png" className="corvus-dash-avatar" alt="Corvus" />
+      <img src="/corvus_still.png" className="corvus-dash-avatar" alt="Corvus" style={{ cursor: "pointer" }} onClick={() => speakCorvus(lineRef.current)} />
       <span className="corvus-dash-text">
         {displayed}
         <span className="corvus-speech-cursor">▋</span>
@@ -1922,6 +1925,7 @@ export default function DashboardPage() {
             <span style={{ color: "#ffffff", fontSize: "13px", fontFamily: "monospace", letterSpacing: "0.08em" }}>{codeVisible ? storedCode : "••••••••••••••"}</span>
             <button onClick={() => setCodeVisible(v => !v)} style={{ background: "none", border: "none", color: "#00C2C7", fontSize: "11px", cursor: "pointer", padding: "2px 6px" }}>{codeVisible ? "Hide" : "Show"}</button>
           </div>
+          <AudioToggle />
           <button onClick={handleLogout} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#888888", fontSize: "12px", padding: "6px 14px", cursor: "pointer" }}>Sign Out</button>
         </div>
       </div>

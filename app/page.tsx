@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import TiersSection from "./components/TiersSection";
 import FAQPreview from "./components/FAQPreview";
+import CorvusClickableImage from "./components/CorvusClickableImage";
 import { getApprovedEndorsements } from "@/lib/endorsements";
 
 export const metadata = {
@@ -140,9 +141,7 @@ export default function HomePage() {
           <div className="flex flex-col md:flex-row gap-12 items-center">
             {/* Image */}
             <div className="shrink-0 w-full md:w-auto flex justify-center">
-              <Image
-                src="/corvus_still.png"
-                alt="Corvus"
+              <CorvusClickableImage
                 width={380}
                 height={480}
                 className="rounded-2xl object-cover"

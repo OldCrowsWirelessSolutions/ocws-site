@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { pickGreeting } from "@/lib/corvus-chat";
 import { CORVUS_JOSHUA_CHAT } from "@/lib/corvus-ui-strings";
+import { speakCorvus } from "@/lib/elevenlabs";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -108,6 +109,7 @@ export default function CorvusChat({
     }
     setMessages([{ id, role: "assistant", content: greeting }]);
     setTypingId(id);
+    speakCorvus(greeting);
   }, [open, hasRecentVerdict, isFounder]);
 
   // Focus input when opened
@@ -141,12 +143,14 @@ export default function CorvusChat({
       if (data.limited) {
         // Show limit message as Corvus message + upgrade prompt
         const limitId = `msg-${Date.now()}-l`;
+        const limitMsg = "That's your third free question. I have more answers but they require a subscription. $20 a month. Worth it.";
         setMessages((prev) => [...prev, {
           id: limitId,
           role: "assistant",
-          content: "That's your third free question. I have more answers but they require a subscription. $20 a month. Worth it.",
+          content: limitMsg,
         }]);
         setTypingId(limitId);
+        speakCorvus(limitMsg);
         setLimited(true);
         setMessagesRemaining(0);
         setUpgradeMsg(data.message ?? "");
@@ -157,6 +161,10 @@ export default function CorvusChat({
         const aiId = `msg-${Date.now()}-a`;
         setMessages((prev) => [...prev, { id: aiId, role: "assistant", content: data.response! }]);
         setTypingId(aiId);
+        // Truncate to first 2 sentences for audio
+        const sentences = data.response.split(/[.!?]+/).filter(Boolean);
+        const audioText = sentences.slice(0, 2).join('. ').trim() + '.';
+        speakCorvus(audioText);
         if (data.messagesRemaining !== undefined) {
           setMessagesRemaining(data.messagesRemaining);
         }

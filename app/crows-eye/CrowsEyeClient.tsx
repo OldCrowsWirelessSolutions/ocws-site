@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import CorvusChat from "@/app/components/CorvusChat";
+import { speakCorvus } from "@/lib/elevenlabs";
+import AudioToggle from "@/app/components/AudioToggle";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -852,6 +854,8 @@ export default function CrowsEyeClient() {
       }
 
       setResult(data);
+      // Speak Corvus opening line when analysis completes
+      if (data.corvus_opening) speakCorvus(data.corvus_opening);
       if (isBypassCode(appliedCode)) {
         setPhase("full_verdict");
         setVerdictStep(0);
@@ -1772,6 +1776,9 @@ export default function CrowsEyeClient() {
           you have a Wi-Fi problem, Corvus can read your environment and tell you
           exactly what&rsquo;s wrong.
         </p>
+        <div className="flex justify-center mt-4">
+          <AudioToggle />
+        </div>
       </div>
 
       {/* ── SUBSCRIPTION ID INPUT ────────────────────────────────────────── */}
