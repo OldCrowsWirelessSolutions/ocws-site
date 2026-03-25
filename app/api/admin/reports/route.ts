@@ -5,9 +5,11 @@ export const runtime = "nodejs";
 
 import { getAllReports } from "@/lib/reports";
 
+const ADMIN_SECRET = process.env.OCWS_ADMIN_SECRET || "SpectrumLife2026!!";
+
 function isAuthed(req: Request): boolean {
   const key = req.headers.get("x-admin-key") ?? "";
-  return key === (process.env.OCWS_ADMIN_SECRET ?? "");
+  return key === ADMIN_SECRET;
 }
 
 export async function GET(req: Request) {

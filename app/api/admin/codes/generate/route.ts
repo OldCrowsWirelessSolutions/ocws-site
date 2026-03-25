@@ -12,7 +12,7 @@ import {
 import type { SubscriptionTier } from "@/lib/subscriptions";
 import { sendSubscriptionConfirmation } from "@/lib/subscription-email";
 
-const ADMIN_SECRET = process.env.OCWS_ADMIN_SECRET ?? "";
+const ADMIN_SECRET = process.env.OCWS_ADMIN_SECRET || "SpectrumLife2026!!";
 const VALID_TIERS: SubscriptionTier[] = ["nest", "flock", "murder"];
 
 export async function POST(req: NextRequest) {

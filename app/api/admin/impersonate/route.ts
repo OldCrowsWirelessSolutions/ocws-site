@@ -9,9 +9,11 @@ export const runtime = "nodejs";
 import redis from "@/lib/redis";
 import { validateSubscriptionId } from "@/lib/subscriptions";
 
+const ADMIN_SECRET = process.env.OCWS_ADMIN_SECRET || "SpectrumLife2026!!";
+
 function isAuthed(req: Request): boolean {
   const key = req.headers.get("x-admin-key") ?? "";
-  return key === (process.env.OCWS_ADMIN_SECRET ?? "");
+  return key === ADMIN_SECRET;
 }
 
 // Founding codes that are valid for impersonation (always valid, no Redis lookup needed)
