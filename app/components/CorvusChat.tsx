@@ -162,10 +162,7 @@ export default function CorvusChat({
         }
       } else if (data.error) {
         const errId = `msg-${Date.now()}-e`;
-        const errMsg = res.status === 401
-          ? "Your session code wasn't recognized. Try logging out and back in."
-          : "Corvus is temporarily unavailable. Try again in a moment.";
-        setMessages((prev) => [...prev, { id: errId, role: "assistant", content: errMsg }]);
+        setMessages((prev) => [...prev, { id: errId, role: "assistant", content: `[DEBUG] ${data.error}` }]);
         setTypingId(errId);
         console.error("[CorvusChat] API error:", res.status, data.error);
       }
