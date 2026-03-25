@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     // ── Access check ─────────────────────────────────────────────────────────
     const access = await getAccessLevel(code);
     if (access === "denied") {
-      return NextResponse.json({ error: "Invalid or inactive code" }, { status: 401 });
+      return NextResponse.json({ error: `Invalid or inactive code: "${code}"` }, { status: 401 });
     }
 
     if (access === "free") {
