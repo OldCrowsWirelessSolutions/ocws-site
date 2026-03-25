@@ -72,7 +72,7 @@ function fmtDate(iso: string | null | undefined) {
 const inputStyle: React.CSSProperties = {
   width: "100%", boxSizing: "border-box", background: "#0D1520",
   border: "1px solid rgba(255,255,255,0.12)", borderRadius: "10px",
-  padding: "12px 14px", color: "#ffffff", fontSize: "14px",
+  padding: "12px 14px", color: "#ffffff", fontSize: "16px",
   fontFamily: "monospace", letterSpacing: "0.08em", outline: "none",
 };
 
@@ -609,7 +609,7 @@ export default function DashboardPage() {
           </div>
           <form onSubmit={handleLoginWrapped} style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "32px" }}>
             <label style={{ display: "block", color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>Subscription ID</label>
-            <input type="password" autoComplete="off" placeholder="OCWS-NEST-XXXXXXXX" value={codeInput} onChange={e => setCodeInput(e.target.value)}
+            <input type="password" autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="text" placeholder="OCWS-NEST-XXXXXXXX" value={codeInput} onChange={e => setCodeInput(e.target.value)}
               style={{ ...inputStyle, marginBottom: authError ? "8px" : "20px" }} />
             {authError && <p style={{ color: "#F87171", fontSize: "12px", marginBottom: "16px" }}>{authError}</p>}
             <button type="submit" disabled={validating || !codeInput.trim()}
@@ -1653,11 +1653,11 @@ export default function DashboardPage() {
             <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>Invite Team Member</p>
             <div style={{ marginBottom: "12px" }}>
               <label style={{ color: "#888888", fontSize: "12px", display: "block", marginBottom: "6px" }}>Name</label>
-              <input type="text" value={inviteName} onChange={e => setInviteName(e.target.value)} placeholder="Jane Smith" style={inputStyle} />
+              <input type="text" value={inviteName} onChange={e => setInviteName(e.target.value)} placeholder="Jane Smith" autoComplete="off" autoCorrect="off" spellCheck={false} style={inputStyle} />
             </div>
             <div style={{ marginBottom: "16px" }}>
               <label style={{ color: "#888888", fontSize: "12px", display: "block", marginBottom: "6px" }}>Email</label>
-              <input type="email" value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} placeholder="jane@company.com" style={inputStyle} />
+              <input type="email" value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} placeholder="jane@company.com" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} inputMode="email" style={inputStyle} />
             </div>
             {inviteError && <p style={{ color: "#F87171", fontSize: "12px", marginBottom: "12px" }}>{inviteError}</p>}
             <p style={{ color: "#555555", fontSize: "11px", marginBottom: "16px", lineHeight: 1.6 }}>A personal access code will be generated and sent to their email.</p>

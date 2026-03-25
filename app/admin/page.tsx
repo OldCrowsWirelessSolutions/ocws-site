@@ -857,7 +857,7 @@ export default function AdminPage() {
     borderRadius: "7px",
     color: "#ffffff",
     padding: "9px 11px",
-    fontSize: "13px",
+    fontSize: "16px",
     outline: "none",
   };
 
@@ -885,6 +885,8 @@ export default function AdminPage() {
             <input
               type="password"
               autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
               value={password}
               onChange={e => setPassword(e.target.value)}
               style={{ ...inp, marginBottom: authError ? "8px" : "16px" }}
@@ -1222,6 +1224,7 @@ export default function AdminPage() {
                 <input
                   type={impersonateVisible ? "text" : "password"}
                   placeholder="OCWS-NEST-XXXXXXXX or CORVUS-NEST"
+                  autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="text"
                   value={impersonateCode}
                   onChange={e => setImpersonateCode(e.target.value)}
                   style={{ ...inp, paddingRight: "60px" }}
@@ -1284,12 +1287,12 @@ export default function AdminPage() {
               <div style={{ marginBottom: "11px" }}>
                 <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Email *</label>
                 <input type="email" value={genEmail} onChange={e => setGenEmail(e.target.value)}
-                  placeholder="subscriber@example.com" style={inp} required />
+                  placeholder="subscriber@example.com" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} inputMode="email" style={inp} required />
               </div>
               <div style={{ marginBottom: "11px" }}>
                 <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Name (optional)</label>
                 <input type="text" value={genName} onChange={e => setGenName(e.target.value)}
-                  placeholder="Full name" style={inp} />
+                  placeholder="Full name" autoComplete="off" autoCorrect="off" spellCheck={false} style={inp} />
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
                 <input type="checkbox" id="sendEmail" checked={sendEmail} onChange={e => setSendEmail(e.target.checked)}
@@ -1321,7 +1324,7 @@ export default function AdminPage() {
               <div style={{ marginBottom: "11px" }}>
                 <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Subscription ID</label>
                 <input type="text" value={credSubId} onChange={e => setCredSubId(e.target.value)}
-                  placeholder="OCWS-NEST-XXXXXXXX" style={{ ...inp, fontFamily: "monospace" }} />
+                  placeholder="OCWS-NEST-XXXXXXXX" autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="text" style={{ ...inp, fontFamily: "monospace" }} />
               </div>
               <div style={{ marginBottom: "16px" }}>
                 <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Credits to Add</label>
@@ -1359,6 +1362,7 @@ export default function AdminPage() {
               value={revokeInput}
               onChange={e => setRevokeInput(e.target.value)}
               placeholder="Enter code to revoke (e.g. CORVUS-SUB-X7K2M9)"
+              autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="text"
               style={{ ...inp, flex: 1, minWidth: "240px" }}
             />
             <button
@@ -1461,7 +1465,7 @@ export default function AdminPage() {
               <div style={{ marginBottom: "10px" }}>
                 <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Note (who is this for?)</label>
                 <input type="text" value={promoNote} onChange={e => setPromoNote(e.target.value)}
-                  placeholder="e.g. Reddit giveaway, Nate Farrelly" style={inp} />
+                  placeholder="e.g. Reddit giveaway, Nate Farrelly" autoComplete="off" autoCorrect="off" spellCheck={false} style={inp} />
               </div>
 
               <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", padding: "10px 14px", marginBottom: "12px" }}>

@@ -124,6 +124,10 @@ export default function RecoverCodePage() {
                 onChange={(e) => { setEmail(e.target.value); setStatus("idle"); setErrorMsg(""); }}
                 placeholder="you@example.com"
                 autoComplete="email"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
+                inputMode="email"
                 required
                 style={{
                   width: "100%",
@@ -133,7 +137,7 @@ export default function RecoverCodePage() {
                   borderRadius: "10px",
                   padding: "12px 14px",
                   color: "#ffffff",
-                  fontSize: "14px",
+                  fontSize: "16px",
                   outline: "none",
                   marginBottom: status === "error" ? "8px" : "20px",
                 }}

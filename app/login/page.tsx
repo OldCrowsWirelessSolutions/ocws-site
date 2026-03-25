@@ -53,7 +53,7 @@ const STRENGTH_WIDTH: Record<string, string> = {
 const inputStyle: React.CSSProperties = {
   width: "100%", boxSizing: "border-box", background: "#0D1520",
   border: "1px solid rgba(255,255,255,0.12)", borderRadius: "10px",
-  padding: "12px 14px", color: "#ffffff", fontSize: "14px",
+  padding: "12px 14px", color: "#ffffff", fontSize: "16px",
   fontFamily: "monospace", letterSpacing: "0.08em", outline: "none",
 };
 
@@ -155,6 +155,30 @@ type LoginStep =
   | "vip_enter_password"
   | "sub_create_password"
   | "sub_enter_password";
+
+// ─── Shell (module-level — must NOT be defined inside LoginPage or it remounts
+//     on every keystroke, dismissing the mobile keyboard) ─────────────────────
+
+function Shell({ children, accentColor = "#00C2C7" }: { children: React.ReactNode; accentColor?: string }) {
+  return (
+    <div style={{ minHeight: "75vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
+      <div style={{ width: "100%", maxWidth: "440px" }}>
+        <div style={{ textAlign: "center", marginBottom: "28px" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "14px", marginBottom: "16px" }}>
+            <div style={{ position: "relative", width: "48px", height: "48px", flexShrink: 0 }}>
+              <Image src="/OCWS_Logo_Transparent.png" alt="OCWS" fill sizes="48px" style={{ objectFit: "contain" }} priority />
+            </div>
+            <div style={{ textAlign: "left" }}>
+              <p style={{ color: "#ffffff", fontSize: "17px", fontWeight: 700, margin: 0 }}>Corvus Dashboard</p>
+              <p style={{ color: accentColor, fontSize: "11px", margin: 0 }}>Old Crows Wireless Solutions</p>
+            </div>
+          </div>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
@@ -407,29 +431,6 @@ export default function LoginPage() {
     finally { setPwLoading(false); }
   }
 
-  // ── Shell ────────────────────────────────────────────────────────────────────
-
-  function Shell({ children, accentColor = "#00C2C7" }: { children: React.ReactNode; accentColor?: string }) {
-    return (
-      <div style={{ minHeight: "75vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
-        <div style={{ width: "100%", maxWidth: "440px" }}>
-          <div style={{ textAlign: "center", marginBottom: "28px" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "14px", marginBottom: "16px" }}>
-              <div style={{ position: "relative", width: "48px", height: "48px", flexShrink: 0 }}>
-                <Image src="/OCWS_Logo_Transparent.png" alt="OCWS" fill sizes="48px" style={{ objectFit: "contain" }} priority />
-              </div>
-              <div style={{ textAlign: "left" }}>
-                <p style={{ color: "#ffffff", fontSize: "17px", fontWeight: 700, margin: 0 }}>Corvus Dashboard</p>
-                <p style={{ color: accentColor, fontSize: "11px", margin: 0 }}>Old Crows Wireless Solutions</p>
-              </div>
-            </div>
-          </div>
-          {children}
-        </div>
-      </div>
-    );
-  }
-
   // ── Admin password step ──────────────────────────────────────────────────────
 
   if (step === "admin_password") {
@@ -447,7 +448,7 @@ export default function LoginPage() {
             <div style={{ position: "relative", marginBottom: adminPwError ? "8px" : "20px" }}>
               <input
                 type={adminPwVisible ? "text" : "password"}
-                autoComplete="off" autoCapitalize="none"
+                autoComplete="off" autoCapitalize="off" autoCorrect="off"
                 placeholder="Admin password"
                 value={adminPw} onChange={e => setAdminPw(e.target.value)}
                 style={{ ...inputStyle, paddingRight: "60px" }}
@@ -500,7 +501,7 @@ export default function LoginPage() {
                   </label>
                   <div style={{ position: "relative" }}>
                     <input
-                      type={pwVisible ? "text" : "password"} autoComplete="new-password"
+                      type={pwVisible ? "text" : "password"} autoComplete="new-password" autoCorrect="off" autoCapitalize="off"
                       placeholder="At least 8 characters"
                       value={pw} onChange={e => setPw(e.target.value)}
                       style={{ ...inputStyle, paddingRight: "60px" }}
@@ -518,7 +519,7 @@ export default function LoginPage() {
                     Confirm Password
                   </label>
                   <input
-                    type={pwVisible ? "text" : "password"} autoComplete="new-password"
+                    type={pwVisible ? "text" : "password"} autoComplete="new-password" autoCorrect="off" autoCapitalize="off"
                     placeholder="Repeat password"
                     value={pwConfirm} onChange={e => setPwConfirm(e.target.value)}
                     style={inputStyle}
@@ -572,7 +573,7 @@ export default function LoginPage() {
               </label>
               <div style={{ position: "relative", marginBottom: "8px" }}>
                 <input
-                  type={pwVisible ? "text" : "password"} autoComplete="current-password"
+                  type={pwVisible ? "text" : "password"} autoComplete="current-password" autoCorrect="off" autoCapitalize="off"
                   placeholder="Your password"
                   value={pw} onChange={e => setPw(e.target.value)}
                   style={{ ...inputStyle, paddingRight: "60px" }}
@@ -636,7 +637,7 @@ export default function LoginPage() {
                   </label>
                   <div style={{ position: "relative" }}>
                     <input
-                      type={pwVisible ? "text" : "password"} autoComplete="new-password"
+                      type={pwVisible ? "text" : "password"} autoComplete="new-password" autoCorrect="off" autoCapitalize="off"
                       placeholder="At least 8 characters"
                       value={pw} onChange={e => setPw(e.target.value)}
                       style={{ ...inputStyle, paddingRight: "60px" }}
@@ -654,7 +655,7 @@ export default function LoginPage() {
                     Confirm Password
                   </label>
                   <input
-                    type={pwVisible ? "text" : "password"} autoComplete="new-password"
+                    type={pwVisible ? "text" : "password"} autoComplete="new-password" autoCorrect="off" autoCapitalize="off"
                     placeholder="Repeat password"
                     value={pwConfirm} onChange={e => setPwConfirm(e.target.value)}
                     style={inputStyle}
@@ -703,7 +704,7 @@ export default function LoginPage() {
               </label>
               <div style={{ position: "relative", marginBottom: "8px" }}>
                 <input
-                  type={pwVisible ? "text" : "password"} autoComplete="current-password"
+                  type={pwVisible ? "text" : "password"} autoComplete="current-password" autoCorrect="off" autoCapitalize="off"
                   placeholder="Your password"
                   value={pw} onChange={e => setPw(e.target.value)}
                   style={{ ...inputStyle, paddingRight: "60px" }}
@@ -764,7 +765,7 @@ export default function LoginPage() {
           <div style={{ position: "relative", marginBottom: error ? "8px" : "20px" }}>
             <input
               type={codeVisible ? "text" : "password"}
-              autoComplete="off" autoCapitalize="none" spellCheck={false}
+              autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="text"
               placeholder="OCWS-NEST-XXXXXXXX"
               value={codeInput} onChange={e => setCodeInput(e.target.value)}
               style={{ ...inputStyle, paddingRight: "60px" }}
