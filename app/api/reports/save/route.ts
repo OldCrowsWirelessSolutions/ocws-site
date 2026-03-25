@@ -25,7 +25,7 @@ async function getRetentionDays(code: string): Promise<number | null> {
   const upper = code.toUpperCase();
 
   // Bypass codes (admin secret, founding NEST code) — valid but no storage
-  if (upper === "CORVUS-FOUNDER-2026" || upper === "CORVUS-NEST") return 0;
+  if (upper === "OCWS-CORVUS-FOUNDER-JOSHUA" || upper === "CORVUS-NEST") return 0;
   if (process.env.OCWS_ADMIN_SECRET && code === process.env.OCWS_ADMIN_SECRET) return 0;
 
   try {

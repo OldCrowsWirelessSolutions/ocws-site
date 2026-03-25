@@ -27,7 +27,7 @@ async function getAccessLevel(code: string): Promise<AccessLevel> {
   const upper = code.toUpperCase();
 
   // Admin / bypass
-  if (upper === "CORVUS-FOUNDER-2026" || upper === "CORVUS-NEST") return "unlimited";
+  if (upper === "OCWS-CORVUS-FOUNDER-JOSHUA" || upper === "CORVUS-NEST") return "unlimited";
   if (process.env.OCWS_ADMIN_SECRET && code === process.env.OCWS_ADMIN_SECRET) return "unlimited";
 
   try {

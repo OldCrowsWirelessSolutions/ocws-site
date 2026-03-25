@@ -19,12 +19,22 @@ const inputStyle: React.CSSProperties = {
   outline: "none",
 };
 
+const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY || "SpectrumLife2026!!";
+
 export default function LoginPage() {
   const router = useRouter();
+
+  // Step 1 state
   const [codeInput, setCodeInput]       = useState("");
   const [codeVisible, setCodeVisible]   = useState(false);
   const [loading, setLoading]           = useState(false);
   const [error, setError]               = useState("");
+
+  // Two-factor admin step
+  const [adminStep, setAdminStep]       = useState<"code" | "password">("code");
+  const [passwordInput, setPasswordInput] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,7 +50,7 @@ export default function LoginPage() {
         body: JSON.stringify({ code: raw }),
       });
       const data = await res.json() as {
-        type: "admin" | "subscriber" | "founder" | "crowseye_bypass" | "promo" | "invalid";
+        type: "admin" | "admin_first_factor" | "subscriber" | "founder" | "promo" | "invalid";
         tier?: string;
         subscriptionId?: string;
       };
@@ -48,14 +58,14 @@ export default function LoginPage() {
       if (data.type === "admin") {
         try { localStorage.setItem("corvus_admin_auth", "true"); } catch { /* */ }
         router.push("/admin");
+      } else if (data.type === "admin_first_factor") {
+        // Two-factor admin flow: code matched, now need password
+        setAdminStep("password");
       } else if (data.type === "subscriber" || data.type === "founder") {
         // Store the code so the dashboard auto-authenticates
         const code = data.type === "subscriber" ? (data.subscriptionId ?? raw.toUpperCase()) : raw.toUpperCase();
         try { localStorage.setItem("corvus_sub_code", code); } catch { /* */ }
         router.push("/dashboard");
-      } else if (data.type === "crowseye_bypass") {
-        // CORVUS-FOUNDER-2026 is only valid on the Crow's Eye page
-        setError("That code is for Crow's Eye only. Use it on the Crow's Eye page.");
       } else if (data.type === "promo") {
         setError("Promo codes are used on the Crow's Eye page, not here.");
       } else {
@@ -67,6 +77,166 @@ export default function LoginPage() {
       setLoading(false);
     }
   }
+
+  function handlePasswordSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!passwordInput) return;
+    setPasswordError("");
+    if (passwordInput === ADMIN_KEY) {
+      try { localStorage.setItem("corvus_admin_auth", "true"); } catch { /* */ }
+      router.push("/admin");
+    } else {
+      setPasswordError("Invalid admin password.");
+    }
+  }
+
+  // ── Password step ──────────────────────────────────────────────────────────
+
+  if (adminStep === "password") {
+    return (
+      <div style={{
+        minHeight: "75vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px",
+      }}>
+        <div style={{ width: "100%", maxWidth: "440px" }}>
+
+          {/* Header */}
+          <div style={{ textAlign: "center", marginBottom: "32px" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "14px", marginBottom: "16px" }}>
+              <div style={{ position: "relative", width: "48px", height: "48px", flexShrink: 0 }}>
+                <Image
+                  src="/OCWS_Logo_Transparent.png"
+                  alt="Old Crows Wireless Solutions"
+                  fill
+                  sizes="48px"
+                  style={{ objectFit: "contain" }}
+                  priority
+                />
+              </div>
+              <div style={{ textAlign: "left" }}>
+                <p style={{ color: "#ffffff", fontSize: "17px", fontWeight: 700, margin: 0 }}>
+                  Admin Authentication
+                </p>
+                <p style={{ color: "#B8922A", fontSize: "11px", margin: 0 }}>
+                  Step 2 of 2
+                </p>
+              </div>
+            </div>
+            <h1 style={{ color: "#ffffff", fontSize: "22px", fontWeight: 700, marginBottom: "8px" }}>
+              Admin Authentication
+            </h1>
+            <p style={{ color: "#888888", fontSize: "13px" }}>
+              Enter your admin password to continue
+            </p>
+          </div>
+
+          {/* Form */}
+          <div style={{
+            background: "#1A2332",
+            border: "1px solid rgba(184,146,42,0.2)",
+            borderRadius: "16px",
+            padding: "32px",
+          }}>
+            <form onSubmit={handlePasswordSubmit}>
+              <label style={{
+                display: "block",
+                color: "#B8922A",
+                fontSize: "11px",
+                fontWeight: 700,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                marginBottom: "8px",
+              }}>
+                Admin Password
+              </label>
+
+              <div style={{ position: "relative", marginBottom: passwordError ? "8px" : "20px" }}>
+                <input
+                  type={passwordVisible ? "text" : "password"}
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  placeholder="Admin password"
+                  value={passwordInput}
+                  onChange={e => setPasswordInput(e.target.value)}
+                  style={{ ...inputStyle, paddingRight: "60px" }}
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => setPasswordVisible(v => !v)}
+                  style={{
+                    position: "absolute",
+                    right: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    color: "#555555",
+                    fontSize: "11px",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                    letterSpacing: "0.05em",
+                    padding: "4px",
+                  }}
+                >
+                  {passwordVisible ? "Hide" : "Show"}
+                </button>
+              </div>
+
+              {passwordError && (
+                <p style={{ color: "#F87171", fontSize: "12px", marginBottom: "16px", lineHeight: 1.5 }}>
+                  {passwordError}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={!passwordInput}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  background: !passwordInput ? "#0D6E7A" : "#B8922A",
+                  color: "#0D1520",
+                  borderRadius: "10px",
+                  border: "none",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  cursor: !passwordInput ? "not-allowed" : "pointer",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                Access Admin Dashboard
+              </button>
+            </form>
+          </div>
+
+          {/* Back link */}
+          <div style={{ textAlign: "center", marginTop: "20px" }}>
+            <button
+              onClick={() => { setAdminStep("code"); setPasswordInput(""); setPasswordError(""); }}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#00C2C7",
+                fontSize: "12px",
+                cursor: "pointer",
+                padding: 0,
+              }}
+            >
+              ← Back
+            </button>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  // ── Code step (default) ────────────────────────────────────────────────────
 
   return (
     <div style={{

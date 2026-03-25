@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import TiersSection from "./components/TiersSection";
 import FAQPreview from "./components/FAQPreview";
+import { getApprovedEndorsements } from "@/lib/endorsements";
 
 export const metadata = {
   title: "Old Crows Wireless Solutions — Corvus sees what your ISP won't tell you.",
@@ -11,6 +12,7 @@ export const metadata = {
 };
 
 export default function HomePage() {
+  const endorsements = getApprovedEndorsements();
   return (
     <>
       {/* ── SECTION 1: HERO ── */}
@@ -193,6 +195,107 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ── SECTION 3b: ENDORSEMENTS (only renders when endorsements exist) ── */}
+      {endorsements.length > 0 && (
+        <section className="py-20" style={{ background: "#1A2332" }}>
+          <div className="ocws-container">
+            <div className="text-center mb-12">
+              <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#B8922A", letterSpacing: "0.18em" }}>
+                Professional Endorsements
+              </p>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                Trusted by Professionals
+              </h2>
+              <p className="text-base" style={{ color: "#aaa" }}>
+                The people who have seen what Corvus can do.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-10">
+              {endorsements.map((e) => {
+                const initials = e.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+                return (
+                  <div
+                    key={e.id}
+                    className="rounded-2xl p-6 flex flex-col"
+                    style={{
+                      background: "#0D1520",
+                      border: "1px solid rgba(184,146,42,0.3)",
+                    }}
+                  >
+                    {/* Header */}
+                    <div className="flex items-center gap-4 mb-4">
+                      {e.photoUrl ? (
+                        <Image
+                          src={e.photoUrl}
+                          alt={e.name}
+                          width={52}
+                          height={52}
+                          className="rounded-full object-cover shrink-0"
+                          style={{ width: "52px", height: "52px" }}
+                        />
+                      ) : (
+                        <div
+                          className="rounded-full flex items-center justify-center shrink-0 text-sm font-bold"
+                          style={{
+                            width: "52px", height: "52px",
+                            background: "linear-gradient(135deg, #B8922A, #D4AF37)",
+                            color: "#0D1520",
+                          }}
+                        >
+                          {initials}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-white font-bold text-base leading-tight">{e.name}</p>
+                          {e.linkedinUrl && (
+                            <a
+                              href={e.linkedinUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label={`${e.name} on LinkedIn`}
+                              style={{ color: "#0077B5", flexShrink: 0 }}
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                              </svg>
+                            </a>
+                          )}
+                        </div>
+                        <p className="text-sm font-medium" style={{ color: "#00C2C7" }}>{e.title}</p>
+                        <p className="text-xs" style={{ color: "#666" }}>{e.company}</p>
+                      </div>
+                    </div>
+
+                    {/* Quote */}
+                    <blockquote
+                      className="flex-1 text-sm leading-relaxed italic pl-4"
+                      style={{
+                        color: "#cccccc",
+                        borderLeft: "3px solid #B8922A",
+                      }}
+                    >
+                      &ldquo;{e.quote}&rdquo;
+                    </blockquote>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="text-center">
+              <Link
+                href="/endorsements"
+                className="text-sm font-semibold"
+                style={{ color: "#B8922A" }}
+              >
+                See all endorsements →
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── SECTION 4: TIERS (client component for modal) ── */}
       <TiersSection />

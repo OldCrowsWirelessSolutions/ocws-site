@@ -13,8 +13,8 @@ import { validatePromoCode } from "@/lib/promo-codes";
 // NOTE: NOT uppercased before comparison because it contains special chars.
 const ADMIN_CODE = process.env.OCWS_ADMIN_SECRET ?? "SpectrumLife2026!!";
 
-// Crow's Eye bypass — valid ONLY on the Crow's Eye page, not for dashboard login.
-const CROWSEYE_BYPASS_CODE = "CORVUS-FOUNDER-2026";
+// Admin first-factor code — starts two-step admin login flow.
+const ADMIN_FIRST_FACTOR_CODE = "OCWS-CORVUS-FOUNDER-JOSHUA";
 
 // Founding codes — unlimited, never expire, always nest tier, hardcoded server-side.
 const FOUNDING_CODES: Record<string, { tier: "nest"; name: string }> = {
@@ -49,9 +49,9 @@ export async function POST(req: Request) {
     return Response.json({ type: "founder", tier: founding.tier, name: founding.name });
   }
 
-  // 3. Crow's Eye bypass — valid only on Crow's Eye page, not here
-  if (code === CROWSEYE_BYPASS_CODE) {
-    return Response.json({ type: "crowseye_bypass" });
+  // 3. Admin first-factor code — triggers two-step admin login
+  if (code === ADMIN_FIRST_FACTOR_CODE) {
+    return Response.json({ type: "admin_first_factor" });
   }
 
   // 4. Generated subscriber codes — Redis key: code:{code}

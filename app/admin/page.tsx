@@ -61,10 +61,21 @@ interface SubRecord {
   current_period_end: string | null;
   created_at: string;
   stripe_subscription_id: string | null;
-  // Seat data loaded separately
   additionalSeats?: number;
   seatMembers?: SeatMemberAdmin[];
 }
+
+type AdminTab = "intel" | "subscribers" | "codes" | "testimonials" | "vip" | "reports" | "settings";
+
+const ADMIN_TABS: { id: AdminTab; label: string }[] = [
+  { id: "intel",        label: "Platform Intelligence" },
+  { id: "subscribers",  label: "Subscribers" },
+  { id: "codes",        label: "Codes & Promos" },
+  { id: "testimonials", label: "Testimonials" },
+  { id: "vip",          label: "VIP Activity" },
+  { id: "reports",      label: "Reports" },
+  { id: "settings",     label: "Settings" },
+];
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -103,6 +114,56 @@ function creditsLeft(sub: SubRecord): string {
   return String(Math.max(0, monthly - sub.verdicts_used) + sub.extra_verdict_credits);
 }
 
+// ─── Tab Bar ─────────────────────────────────────────────────────────────────
+
+function TabBar({ tabs, active, onChange, badge }: {
+  tabs: { id: AdminTab; label: string }[];
+  active: AdminTab;
+  onChange: (t: AdminTab) => void;
+  badge?: Partial<Record<AdminTab, number>>;
+}) {
+  return (
+    <div style={{ overflowX: "auto", marginBottom: "28px" }}>
+      <div style={{ display: "flex", gap: "4px", borderBottom: "1px solid rgba(255,255,255,0.08)", paddingBottom: "0", minWidth: "max-content" }}>
+        {tabs.map((t) => {
+          const isActive = t.id === active;
+          const count = badge?.[t.id];
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => onChange(t.id)}
+              style={{
+                padding: "10px 16px",
+                fontSize: "12px",
+                fontWeight: isActive ? 700 : 500,
+                color: isActive ? "#00C2C7" : "#555555",
+                background: "transparent",
+                border: "none",
+                borderBottom: isActive ? "2px solid #00C2C7" : "2px solid transparent",
+                cursor: "pointer",
+                transition: "color 0.15s",
+                whiteSpace: "nowrap",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                marginBottom: "-1px",
+              }}
+            >
+              {t.label}
+              {count != null && count > 0 && (
+                <span style={{ background: "#B8922A", color: "#0D1520", fontSize: "9px", fontWeight: 800, padding: "1px 6px", borderRadius: "20px" }}>
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
@@ -110,6 +171,10 @@ export default function AdminPage() {
   const [phase, setPhase]       = useState<"auth" | "dashboard">("auth");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState("");
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState<AdminTab>("intel");
+  const tabInitialized = useRef(false);
 
   const [subscribers, setSubscribers] = useState<SubRecord[]>([]);
   const [loading, setLoading]         = useState(false);
@@ -133,7 +198,6 @@ export default function AdminPage() {
   // Promo code generator
   type PromoProduct2 = "verdict" | "reckoning_small" | "reckoning_standard" | "reckoning_commercial" | "reckoning_pro" | "all_reckonings" | "both";
   type ExpiryType2   = "single_use" | "24h" | "48h" | "72h" | "7d" | "14d" | "30d";
-  const [promoType, setPromoType]         = useState<PromoType>("verdict");
   const [promoProducts, setPromoProducts] = useState<PromoProduct2>("verdict");
   const [promoExpiryType, setPromoExpiryType] = useState<ExpiryType2>("single_use");
   const [promoNote, setPromoNote]         = useState("");
@@ -236,6 +300,24 @@ export default function AdminPage() {
   const [impersonating, setImpersonating]           = useState(false);
   const [impersonateError, setImpersonateError]     = useState("");
 
+  // ── Tab navigation ─────────────────────────────────────────────────────────
+
+  function navigateTab(t: AdminTab) {
+    setActiveTab(t);
+    if (typeof window !== "undefined") {
+      window.history.replaceState(null, "", `#${t}`);
+    }
+  }
+
+  // Read hash on mount (after auth)
+  useEffect(() => {
+    if (phase !== "dashboard" || tabInitialized.current) return;
+    tabInitialized.current = true;
+    const hash = window.location.hash.replace("#", "") as AdminTab;
+    const valid = ADMIN_TABS.map(t => t.id);
+    if (valid.includes(hash)) setActiveTab(hash);
+  }, [phase]);
+
   // ── Data load ──────────────────────────────────────────────────────────────
 
   const loadSubscribers = useCallback(async () => {
@@ -249,7 +331,6 @@ export default function AdminPage() {
       const data = await res.json();
       const subs: SubRecord[] = data.subscribers ?? [];
 
-      // Load seat data for Flock/Murder subscribers in parallel
       const withSeats = await Promise.all(
         subs.map(async (s) => {
           if (s.tier !== "flock" && s.tier !== "murder") return s;
@@ -287,11 +368,8 @@ export default function AdminPage() {
       });
       const data = await res.json();
       setPromoCodes(data.codes ?? []);
-    } catch {
-      // non-fatal
-    } finally {
-      setLoadingPromos(false);
-    }
+    } catch { /* non-fatal */ }
+    finally { setLoadingPromos(false); }
   }, []);
 
   const loadAdminReports = useCallback(async () => {
@@ -361,20 +439,25 @@ export default function AdminPage() {
     finally { setLoadingTestimonials(false); }
   }, []);
 
+  function loadAll() {
+    loadSubscribers();
+    loadPromoCodes();
+    loadAdminReports();
+    loadPendingTestimonials();
+    loadVipActivity();
+    loadPlatformAnalytics();
+    loadChatAnalytics();
+  }
+
   useEffect(() => {
     try {
       if (localStorage.getItem("corvus_admin_auth") === ADMIN_KEY) {
         setPhase("dashboard");
-        loadSubscribers();
-        loadPromoCodes();
-        loadAdminReports();
-        loadPendingTestimonials();
-        loadVipActivity();
-        loadPlatformAnalytics();
-        loadChatAnalytics();
+        loadAll();
       }
     } catch { /* */ }
-  }, [loadSubscribers, loadPromoCodes, loadAdminReports, loadPendingTestimonials, loadVipActivity, loadPlatformAnalytics, loadChatAnalytics]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Chart.js rendering when platform analytics load
   useEffect(() => {
@@ -386,7 +469,6 @@ export default function AdminPage() {
       const ChartJS = (window as unknown as { Chart?: ChartType }).Chart;
       if (!ChartJS) return;
 
-      // Destroy previous chart instances if any (stored on canvas element)
       type CanvasWithChart = HTMLCanvasElement & { _chartInstance?: { destroy(): void } };
       ["chart-daily-scans","chart-products","chart-severity","chart-tiers"].forEach((id) => {
         const el = document.getElementById(id) as CanvasWithChart | null;
@@ -436,7 +518,6 @@ export default function AdminPage() {
       }
     }
 
-    // If Chart.js already loaded, render immediately; otherwise load from CDN first
     if ((window as unknown as { Chart?: unknown }).Chart) {
       renderCharts();
     } else if (!chartsInitRef.current) {
@@ -455,13 +536,7 @@ export default function AdminPage() {
     if (password === ADMIN_KEY) {
       try { localStorage.setItem("corvus_admin_auth", ADMIN_KEY); } catch { /* */ }
       setPhase("dashboard");
-      loadSubscribers();
-      loadPromoCodes();
-      loadAdminReports();
-      loadPendingTestimonials();
-      loadVipActivity();
-      loadPlatformAnalytics();
-      loadChatAnalytics();
+      loadAll();
     } else {
       setAuthError("Incorrect password.");
     }
@@ -482,8 +557,6 @@ export default function AdminPage() {
       const data = await res.json() as { valid?: boolean; subscriptionId?: string };
       if (data.valid) {
         const subCode = data.subscriptionId ?? code;
-        // Set in new tab's localStorage — opening a new tab shares localStorage within same origin
-        // We set the values now and then open the tab
         try {
           localStorage.setItem("corvus_sub_code", subCode);
           localStorage.setItem("corvus_admin_impersonating", "true");
@@ -585,14 +658,13 @@ export default function AdminPage() {
     setPromoGenError("");
     setGeneratedPromoCode("");
     setPromoCopied(false);
-    // Derive legacy type from products
     const derivedType: PromoType =
       promoProducts === "verdict" ? "verdict"
       : promoProducts === "reckoning_small" ? "reckoning_small"
       : promoProducts === "reckoning_standard" ? "reckoning_standard"
       : promoProducts === "reckoning_commercial" ? "reckoning_commercial"
       : promoProducts === "reckoning_pro" ? "reckoning_pro"
-      : "verdict"; // fallback for multi-product codes
+      : "verdict";
     try {
       const res = await fetch("/api/admin/promo/generate", {
         method: "POST",
@@ -722,7 +794,7 @@ export default function AdminPage() {
   const active             = subscribers.filter(s => s.status === "active");
   const promoActive        = promoCodes.filter(p => getPromoStatus(p) === "active").length;
   const promoUsed          = promoCodes.filter(p => p.used).length;
-  const promoDeactivated   = promoCodes.filter(p => p.deactivated && !p.used).length;
+  const promoDeactivated   = promoCodes.filter(p => (p.deactivated ?? false) && !p.used).length;
   const totalConsumed      = subscribers.reduce((n, s) => n + s.verdicts_used, 0);
   const recentActivity     = [...subscribers]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -789,312 +861,717 @@ export default function AdminPage() {
     );
   }
 
-  // ── Dashboard ─────────────────────────────────────────────────────────────
+  // ── Tab content renderers ─────────────────────────────────────────────────
 
-  return (
-    <div style={{ maxWidth: "1140px", margin: "0 auto", padding: "32px 16px 64px" }}>
-
-      {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px", flexWrap: "wrap", gap: "12px" }}>
-        <div>
-          <p style={{ color: "#00C2C7", fontSize: "10px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "4px" }}>
-            Old Crows Wireless Solutions
-          </p>
-          <h1 style={{ color: "#ffffff", fontSize: "22px", fontWeight: 800, margin: 0 }}>Admin Dashboard</h1>
-        </div>
-        <div style={{ display: "flex", gap: "8px" }}>
-          <button onClick={loadSubscribers} disabled={loading}
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#888888", fontSize: "12px", padding: "7px 14px", cursor: "pointer" }}>
-            {loading ? "Loading…" : "↻ Refresh"}
-          </button>
-          <button onClick={handleLogout}
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#888888", fontSize: "12px", padding: "7px 14px", cursor: "pointer" }}>
-            Sign Out
-          </button>
-        </div>
-      </div>
-
-      {actionMsg && (
-        <div style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.25)", borderRadius: "8px", padding: "10px 16px", marginBottom: "16px", color: "#00C2C7", fontSize: "13px" }}>
-          {actionMsg}
-        </div>
-      )}
-
-      {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: "14px", marginBottom: "24px" }}>
-        {([
-          { label: "Active Subscribers", value: active.length,        color: "#00C2C7" },
-          { label: "Total Subscribers",  value: subscribers.length,   color: "#aaaaaa" },
-          { label: "Credits Consumed",   value: totalConsumed,        color: "#B8922A" },
-          { label: "Revenue",            value: "$—",                 color: "#444444" },
-        ] as { label: string; value: string | number; color: string }[]).map(({ label, value, color }) => (
-          <div key={label} style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "18px 20px" }}>
-            <p style={{ color: "#444444", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>{label}</p>
-            <p style={{ color, fontSize: "30px", fontWeight: 800, lineHeight: 1 }}>{value}</p>
+  function renderIntel() {
+    return (
+      <>
+        {/* Platform Intelligence */}
+        <div style={card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+            <div>
+              <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>Platform Intelligence</p>
+              <p style={{ color: "#555555", fontSize: "12px" }}>30-day usage analytics across all subscribers</p>
+            </div>
+            <button onClick={loadPlatformAnalytics} disabled={loadingPlatform}
+              style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "8px", color: "#00C2C7", fontSize: "12px", padding: "7px 14px", cursor: "pointer" }}>
+              {loadingPlatform ? "Loading…" : "↻ Refresh"}
+            </button>
           </div>
-        ))}
-      </div>
 
-      {/* Subscriber table */}
-      <div style={card}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-          <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>
-            Subscribers ({subscribers.length})
-          </p>
+          {platformAnalytics && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: "12px", marginBottom: "24px" }}>
+              {([
+                { label: "Total Scans",       value: platformAnalytics.totalScans,          color: "#00C2C7" },
+                { label: "Scans Today",       value: platformAnalytics.scansToday,          color: "#4ADE80" },
+                { label: "Active Subs",       value: platformAnalytics.activeSubscriptions, color: "#B8922A" },
+                { label: "Active Codes",      value: platformAnalytics.activeCodes,         color: "#aaaaaa" },
+                { label: "Critical Findings", value: platformAnalytics.totalCritical,       color: "#F87171" },
+              ] as { label: string; value: number; color: string }[]).map(({ label, value, color }) => (
+                <div key={label} style={{ background: "#0D1520", borderRadius: "10px", padding: "14px 16px" }}>
+                  <p style={{ color: "#444", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>{label}</p>
+                  <p style={{ color, fontSize: "26px", fontWeight: 800, lineHeight: 1 }}>{value}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {platformAnalytics && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: "16px", marginBottom: "24px" }}>
+              <div style={{ background: "#0D1520", borderRadius: "10px", padding: "16px" }}>
+                <p style={{ color: "#555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "12px" }}>Daily Scans (30 days)</p>
+                <canvas id="chart-daily-scans" style={{ maxHeight: "160px" }} />
+              </div>
+              <div style={{ background: "#0D1520", borderRadius: "10px", padding: "16px" }}>
+                <p style={{ color: "#555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "12px" }}>Product Breakdown</p>
+                <canvas id="chart-products" style={{ maxHeight: "160px" }} />
+              </div>
+              <div style={{ background: "#0D1520", borderRadius: "10px", padding: "16px" }}>
+                <p style={{ color: "#555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "12px" }}>Severity Distribution</p>
+                <canvas id="chart-severity" style={{ maxHeight: "160px" }} />
+              </div>
+              <div style={{ background: "#0D1520", borderRadius: "10px", padding: "16px" }}>
+                <p style={{ color: "#555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "12px" }}>Scans by Tier</p>
+                <canvas id="chart-tiers" style={{ maxHeight: "160px" }} />
+              </div>
+            </div>
+          )}
+
+          <div style={{ background: "#0D1520", borderRadius: "10px", padding: "20px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: platformNarrative ? "16px" : "0" }}>
+              <p style={{ color: "#B8922A", fontSize: "10px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>Corvus Platform Briefing</p>
+              <button
+                onClick={handleGetPlatformNarrative}
+                disabled={loadingNarrative || !platformAnalytics}
+                style={{ background: loadingNarrative ? "rgba(184,146,42,0.08)" : "rgba(184,146,42,0.12)", border: "1px solid rgba(184,146,42,0.3)", borderRadius: "8px", color: "#B8922A", fontSize: "12px", padding: "7px 16px", cursor: loadingNarrative || !platformAnalytics ? "not-allowed" : "pointer", opacity: !platformAnalytics ? 0.4 : 1 }}>
+                {loadingNarrative ? "Corvus is thinking…" : "Get Corvus' Briefing"}
+              </button>
+            </div>
+            {platformNarrative && (
+              <p style={{ color: "#aaaaaa", fontSize: "13px", lineHeight: 1.7, whiteSpace: "pre-wrap", margin: 0 }}>
+                {platformNarrative}
+              </p>
+            )}
+            {!platformNarrative && !loadingNarrative && (
+              <p style={{ color: "#333333", fontSize: "12px", fontStyle: "italic" }}>
+                {platformAnalytics ? "Click the button to get Corvus' intelligence briefing on platform activity." : "Load analytics data first."}
+              </p>
+            )}
+          </div>
         </div>
 
-        {loadError && (
-          <p style={{ color: "#F87171", fontSize: "13px", marginBottom: "12px" }}>{loadError}</p>
-        )}
+        {/* Chat Intelligence */}
+        <div style={card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+            <div>
+              <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>Chat Intelligence</p>
+              <p style={{ color: "#555555", fontSize: "12px" }}>Corvus AI chat usage across all subscribers</p>
+            </div>
+            <button onClick={loadChatAnalytics} disabled={loadingChat}
+              style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "8px", color: "#00C2C7", fontSize: "12px", padding: "7px 14px", cursor: "pointer" }}>
+              {loadingChat ? "Loading…" : "↻ Refresh"}
+            </button>
+          </div>
+          {chatAnalytics ? (
+            <>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: "12px", marginBottom: "20px" }}>
+                {([
+                  { label: "Total Messages", value: chatAnalytics.totalMessages,    color: "#00C2C7" },
+                  { label: "Today",          value: chatAnalytics.messagesToday,    color: "#4ADE80" },
+                  { label: "This Week",      value: chatAnalytics.messagesThisWeek, color: "#B8922A" },
+                ] as { label: string; value: number; color: string }[]).map(({ label, value, color }) => (
+                  <div key={label} style={{ background: "#0D1520", borderRadius: "10px", padding: "14px 16px" }}>
+                    <p style={{ color: "#444", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>{label}</p>
+                    <p style={{ color, fontSize: "26px", fontWeight: 800, lineHeight: 1 }}>{value}</p>
+                  </div>
+                ))}
+              </div>
+              {chatAnalytics.topChatters.length > 0 && (
+                <div style={{ background: "#0D1520", borderRadius: "10px", padding: "16px" }}>
+                  <p style={{ color: "#555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "12px" }}>Top Chatters</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                    {chatAnalytics.topChatters.slice(0, 5).map(({ code, count }) => (
+                      <div key={code} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ color: "#888888", fontFamily: "monospace", fontSize: "12px" }}>{code}</span>
+                        <span style={{ color: "#00C2C7", fontSize: "12px", fontWeight: 700 }}>{count} msg{count !== 1 ? "s" : ""}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <p style={{ color: "#333333", fontSize: "12px", fontStyle: "italic" }}>
+              {loadingChat ? "Loading chat analytics…" : "No chat data yet."}
+            </p>
+          )}
+        </div>
+      </>
+    );
+  }
 
-        {subscribers.length === 0 && !loading ? (
-          <p style={{ color: "#444444", fontSize: "13px", padding: "16px 0" }}>No subscribers found.</p>
-        ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px", minWidth: "700px" }}>
-              <thead>
-                <tr>
-                  {["Email", "Name", "Tier", "Status", "Credits Left", "Seats", "Code", "Joined", "Actions"].map(h => (
-                    <th key={h} style={{ color: "#444444", fontWeight: 600, textAlign: "left", padding: "6px 10px", borderBottom: "1px solid rgba(255,255,255,0.06)", whiteSpace: "nowrap" }}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {subscribers.map(sub => {
-                  const seatRules = { nest: { included: 1, max: 1 }, flock: { included: 1, max: 5 }, murder: { included: 5, max: 15 } }[sub.tier] ?? { included: 1, max: 1 };
-                  const totalSeats = seatRules.included + (sub.additionalSeats ?? 0);
-                  const isExpanded = expandedSubscriber === sub.subscription_id;
-                  return (
-                    <>
-                      <tr key={sub.subscription_id} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)", cursor: "pointer" }}
-                        onClick={() => setExpandedSubscriber(isExpanded ? null : sub.subscription_id)}>
-                        <td style={{ color: "#aaaaaa", padding: "10px", maxWidth: "180px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {sub.customer_email}
-                        </td>
-                        <td style={{ color: "#888888", padding: "10px", maxWidth: "140px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {sub.customer_name}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          <span style={{
-                            background: TIER_COLORS[sub.tier].bg, color: TIER_COLORS[sub.tier].text,
-                            fontSize: "9px", fontWeight: 800, letterSpacing: "0.1em",
-                            padding: "2px 8px", borderRadius: "20px",
-                          }}>
-                            {sub.tier.toUpperCase()}
-                          </span>
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          <span style={{ color: STATUS_COLORS[sub.status], fontSize: "11px", fontWeight: 600 }}>
-                            {sub.status}
-                          </span>
-                        </td>
-                        <td style={{ color: "#ffffff", padding: "10px", fontFamily: "monospace", fontWeight: 700 }}>
-                          {creditsLeft(sub)}
-                        </td>
-                        <td style={{ color: "#aaaaaa", padding: "10px", fontFamily: "monospace", fontSize: "11px" }}>
-                          {(sub.tier === "flock" || sub.tier === "murder") ? (
-                            <span title={`${sub.additionalSeats ?? 0} purchased + ${seatRules.included} included`}>
-                              {totalSeats}/{seatRules.max}
-                              {(sub.seatMembers?.length ?? 0) > 0 && (
-                                <span style={{ color: "#00C2C7", marginLeft: "4px" }}>
-                                  ({sub.seatMembers?.length} member{sub.seatMembers?.length !== 1 ? "s" : ""})
-                                </span>
-                              )}
+  function renderSubscribers() {
+    return (
+      <>
+        {/* Summary stats */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: "14px", marginBottom: "24px" }}>
+          {([
+            { label: "Active Subscribers", value: active.length,      color: "#00C2C7" },
+            { label: "Total Subscribers",  value: subscribers.length, color: "#aaaaaa" },
+            { label: "Credits Consumed",   value: totalConsumed,      color: "#B8922A" },
+            { label: "Revenue",            value: "$—",               color: "#444444" },
+          ] as { label: string; value: string | number; color: string }[]).map(({ label, value, color }) => (
+            <div key={label} style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "18px 20px" }}>
+              <p style={{ color: "#444444", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>{label}</p>
+              <p style={{ color, fontSize: "30px", fontWeight: 800, lineHeight: 1 }}>{value}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Subscriber table */}
+        <div style={card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>
+              Subscribers ({subscribers.length})
+            </p>
+            <button onClick={loadSubscribers} disabled={loading}
+              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#888888", fontSize: "12px", padding: "7px 14px", cursor: "pointer" }}>
+              {loading ? "Loading…" : "↻ Refresh"}
+            </button>
+          </div>
+
+          {loadError && (
+            <p style={{ color: "#F87171", fontSize: "13px", marginBottom: "12px" }}>{loadError}</p>
+          )}
+
+          {subscribers.length === 0 && !loading ? (
+            <p style={{ color: "#444444", fontSize: "13px", padding: "16px 0" }}>No subscribers found.</p>
+          ) : (
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px", minWidth: "700px" }}>
+                <thead>
+                  <tr>
+                    {["Email", "Name", "Tier", "Status", "Credits Left", "Seats", "Code", "Joined", "Actions"].map(h => (
+                      <th key={h} style={{ color: "#444444", fontWeight: 600, textAlign: "left", padding: "6px 10px", borderBottom: "1px solid rgba(255,255,255,0.06)", whiteSpace: "nowrap" }}>
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {subscribers.map(sub => {
+                    const seatRules = { nest: { included: 1, max: 1 }, flock: { included: 1, max: 5 }, murder: { included: 5, max: 15 } }[sub.tier] ?? { included: 1, max: 1 };
+                    const totalSeats = seatRules.included + (sub.additionalSeats ?? 0);
+                    const isExpanded = expandedSubscriber === sub.subscription_id;
+                    return (
+                      <>
+                        <tr key={sub.subscription_id} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)", cursor: "pointer" }}
+                          onClick={() => setExpandedSubscriber(isExpanded ? null : sub.subscription_id)}>
+                          <td style={{ color: "#aaaaaa", padding: "10px", maxWidth: "180px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {sub.customer_email}
+                          </td>
+                          <td style={{ color: "#888888", padding: "10px", maxWidth: "140px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {sub.customer_name}
+                          </td>
+                          <td style={{ padding: "10px" }}>
+                            <span style={{ background: TIER_COLORS[sub.tier].bg, color: TIER_COLORS[sub.tier].text, fontSize: "9px", fontWeight: 800, letterSpacing: "0.1em", padding: "2px 8px", borderRadius: "20px" }}>
+                              {sub.tier.toUpperCase()}
                             </span>
-                          ) : "1/1"}
-                        </td>
-                        <td style={{ color: "#555555", padding: "10px", fontFamily: "monospace", fontSize: "11px", whiteSpace: "nowrap" }}>
-                          {sub.subscription_id}
-                        </td>
-                        <td style={{ color: "#444444", padding: "10px", whiteSpace: "nowrap" }}>
-                          {fmtDate(sub.created_at, true)}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleDeactivate(sub.subscription_id); }}
-                            disabled={sub.status === "cancelled" || sub.status === "expired"}
-                            style={{
-                              background: "rgba(248,113,113,0.08)",
-                              border: "1px solid rgba(248,113,113,0.2)",
-                              borderRadius: "6px",
-                              color: (sub.status === "cancelled" || sub.status === "expired") ? "#444444" : "#F87171",
-                              fontSize: "11px", padding: "4px 10px",
-                              cursor: (sub.status === "cancelled" || sub.status === "expired") ? "not-allowed" : "pointer",
-                            }}>
-                            Deactivate
-                          </button>
-                        </td>
-                      </tr>
-                      {isExpanded && (
-                        <tr key={`${sub.subscription_id}-exp`}>
-                          <td colSpan={9} style={{ padding: "0 10px 12px", background: "rgba(0,0,0,0.2)" }}>
-                            <div style={{ padding: "12px", borderRadius: "8px", background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)" }}>
-                              <p style={{ color: "#00C2C7", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>
-                                Seat Detail — {sub.tier.toUpperCase()}
-                              </p>
-                              <p style={{ color: "#888888", fontSize: "11px", marginBottom: "8px" }}>
-                                {seatRules.included} included + {sub.additionalSeats ?? 0} purchased = {totalSeats} total (max {seatRules.max})
-                              </p>
-                              {(sub.seatMembers?.length ?? 0) > 0 ? (
-                                <div>
-                                  {sub.seatMembers!.map(m => (
-                                    <div key={m.email} style={{ display: "flex", gap: "16px", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,0.04)", flexWrap: "wrap" }}>
-                                      <span style={{ color: "#ffffff", fontSize: "12px", fontWeight: 600, minWidth: "120px" }}>{m.name}</span>
-                                      <span style={{ color: "#888888", fontSize: "11px", minWidth: "160px" }}>{m.email}</span>
-                                      <span style={{ color: "#00C2C7", fontSize: "11px", fontFamily: "monospace" }}>{m.code}</span>
-                                      <span style={{ color: "#444444", fontSize: "10px" }}>{m.addedAt ? new Date(m.addedAt).toLocaleDateString() : ""}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <p style={{ color: "#444444", fontSize: "12px" }}>No seat members invited yet.</p>
-                              )}
-                            </div>
+                          </td>
+                          <td style={{ padding: "10px" }}>
+                            <span style={{ color: STATUS_COLORS[sub.status], fontSize: "11px", fontWeight: 600 }}>
+                              {sub.status}
+                            </span>
+                          </td>
+                          <td style={{ color: "#ffffff", padding: "10px", fontFamily: "monospace", fontWeight: 700 }}>
+                            {creditsLeft(sub)}
+                          </td>
+                          <td style={{ color: "#aaaaaa", padding: "10px", fontFamily: "monospace", fontSize: "11px" }}>
+                            {(sub.tier === "flock" || sub.tier === "murder") ? (
+                              <span title={`${sub.additionalSeats ?? 0} purchased + ${seatRules.included} included`}>
+                                {totalSeats}/{seatRules.max}
+                                {(sub.seatMembers?.length ?? 0) > 0 && (
+                                  <span style={{ color: "#00C2C7", marginLeft: "4px" }}>
+                                    ({sub.seatMembers?.length} member{sub.seatMembers?.length !== 1 ? "s" : ""})
+                                  </span>
+                                )}
+                              </span>
+                            ) : "1/1"}
+                          </td>
+                          <td style={{ color: "#555555", padding: "10px", fontFamily: "monospace", fontSize: "11px", whiteSpace: "nowrap" }}>
+                            {sub.subscription_id}
+                          </td>
+                          <td style={{ color: "#444444", padding: "10px", whiteSpace: "nowrap" }}>
+                            {fmtDate(sub.created_at, true)}
+                          </td>
+                          <td style={{ padding: "10px" }}>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleDeactivate(sub.subscription_id); }}
+                              disabled={sub.status === "cancelled" || sub.status === "expired"}
+                              style={{
+                                background: "rgba(248,113,113,0.08)",
+                                border: "1px solid rgba(248,113,113,0.2)",
+                                borderRadius: "6px",
+                                color: (sub.status === "cancelled" || sub.status === "expired") ? "#444444" : "#F87171",
+                                fontSize: "11px", padding: "4px 10px",
+                                cursor: (sub.status === "cancelled" || sub.status === "expired") ? "not-allowed" : "pointer",
+                              }}>
+                              Deactivate
+                            </button>
                           </td>
                         </tr>
-                      )}
-                    </>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Code management + Add credits */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: "16px", marginBottom: "20px" }}>
-
-        {/* Generate code */}
-        <div style={card}>
-          <p style={{ color: "#B8922A", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
-            Generate Subscription Code
-          </p>
-          <form onSubmit={handleGenerate}>
-            <div style={{ marginBottom: "11px" }}>
-              <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Tier</label>
-              <select value={genTier} onChange={e => setGenTier(e.target.value as SubscriptionTier)}
-                style={{ ...inp }}>
-                <option value="nest">Nest — $20/mo</option>
-                <option value="flock">Flock — $100/mo</option>
-                <option value="murder">Murder — $950/mo</option>
-              </select>
-            </div>
-            <div style={{ marginBottom: "11px" }}>
-              <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Email *</label>
-              <input type="email" value={genEmail} onChange={e => setGenEmail(e.target.value)}
-                placeholder="subscriber@example.com" style={inp} required />
-            </div>
-            <div style={{ marginBottom: "11px" }}>
-              <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Name (optional)</label>
-              <input type="text" value={genName} onChange={e => setGenName(e.target.value)}
-                placeholder="Full name" style={inp} />
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
-              <input type="checkbox" id="sendEmail" checked={sendEmail} onChange={e => setSendEmail(e.target.checked)}
-                style={{ accentColor: "#00C2C7" }} />
-              <label htmlFor="sendEmail" style={{ color: "#888888", fontSize: "12px", cursor: "pointer" }}>
-                Send confirmation email
-              </label>
-            </div>
-            {genError && <p style={{ color: "#F87171", fontSize: "12px", marginBottom: "8px" }}>{genError}</p>}
-            <button type="submit" disabled={generating || !genEmail.trim()}
-              style={{
-                width: "100%",
-                background: generating || !genEmail.trim() ? "#0D6E7A" : "#B8922A",
-                color: "#0D1520", border: "none", borderRadius: "8px", padding: "10px",
-                fontSize: "13px", fontWeight: 700,
-                cursor: generating || !genEmail.trim() ? "not-allowed" : "pointer",
-              }}>
-              {generating ? "Generating…" : "Generate Code"}
-            </button>
-          </form>
-          {generatedCode && (
-            <div style={{ marginTop: "14px", background: "#0D1520", border: "1px solid #0D6E7A", borderRadius: "8px", padding: "14px", textAlign: "center" }}>
-              <p style={{ color: "#555555", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "6px" }}>Generated Code</p>
-              <p style={{ color: "#00C2C7", fontSize: "15px", fontFamily: "monospace", fontWeight: 700 }}>{generatedCode}</p>
+                        {isExpanded && (
+                          <tr key={`${sub.subscription_id}-exp`}>
+                            <td colSpan={9} style={{ padding: "0 10px 12px", background: "rgba(0,0,0,0.2)" }}>
+                              <div style={{ padding: "12px", borderRadius: "8px", background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)" }}>
+                                <p style={{ color: "#00C2C7", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>
+                                  Seat Detail — {sub.tier.toUpperCase()}
+                                </p>
+                                <p style={{ color: "#888888", fontSize: "11px", marginBottom: "8px" }}>
+                                  {seatRules.included} included + {sub.additionalSeats ?? 0} purchased = {totalSeats} total (max {seatRules.max})
+                                </p>
+                                {(sub.seatMembers?.length ?? 0) > 0 ? (
+                                  <div>
+                                    {sub.seatMembers!.map(m => (
+                                      <div key={m.email} style={{ display: "flex", gap: "16px", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,0.04)", flexWrap: "wrap" }}>
+                                        <span style={{ color: "#ffffff", fontSize: "12px", fontWeight: 600, minWidth: "120px" }}>{m.name}</span>
+                                        <span style={{ color: "#888888", fontSize: "11px", minWidth: "160px" }}>{m.email}</span>
+                                        <span style={{ color: "#00C2C7", fontSize: "11px", fontFamily: "monospace" }}>{m.code}</span>
+                                        <span style={{ color: "#444444", fontSize: "10px" }}>{m.addedAt ? new Date(m.addedAt).toLocaleDateString() : ""}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p style={{ color: "#444444", fontSize: "12px" }}>No seat members invited yet.</p>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
 
-        {/* Add credits */}
+        {/* Recent activity */}
         <div style={card}>
           <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
-            Add Verdict Credits
+            Recent Activity
           </p>
-          <form onSubmit={handleAddCredits}>
-            <div style={{ marginBottom: "11px" }}>
-              <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Subscription ID</label>
-              <input type="text" value={credSubId} onChange={e => setCredSubId(e.target.value)}
-                placeholder="OCWS-NEST-XXXXXXXX" style={{ ...inp, fontFamily: "monospace" }} />
+          {recentActivity.length === 0 ? (
+            <p style={{ color: "#444444", fontSize: "13px" }}>No activity yet.</p>
+          ) : (
+            <div>
+              {recentActivity.map(sub => (
+                <div key={sub.subscription_id} style={{ display: "flex", alignItems: "center", gap: "14px", padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.04)", flexWrap: "wrap" }}>
+                  <span style={{ color: "#444444", fontSize: "11px", minWidth: "110px", whiteSpace: "nowrap" }}>
+                    {fmtDate(sub.created_at, true)}
+                  </span>
+                  <span style={{ color: "#888888", fontSize: "12px", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: "120px" }}>
+                    {sub.customer_email}
+                  </span>
+                  <span style={{ background: TIER_COLORS[sub.tier].bg, color: TIER_COLORS[sub.tier].text, fontSize: "9px", fontWeight: 800, letterSpacing: "0.1em", padding: "2px 7px", borderRadius: "20px", flexShrink: 0 }}>
+                    {sub.tier.toUpperCase()}
+                  </span>
+                  <span style={{ color: STATUS_COLORS[sub.status], fontSize: "11px", fontWeight: 600, flexShrink: 0 }}>
+                    {sub.status}
+                  </span>
+                </div>
+              ))}
             </div>
-            <div style={{ marginBottom: "16px" }}>
-              <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Credits to Add</label>
-              <input type="number" min="1" max="500" value={credAmount}
-                onChange={e => setCredAmount(e.target.value)} style={inp} />
+          )}
+        </div>
+
+        {/* Remote Dashboard Access */}
+        <div style={card}>
+          <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "12px" }}>
+            Remote Dashboard Access
+          </p>
+          <p style={{ color: "#888888", fontSize: "13px", marginBottom: "20px" }}>
+            Log in to any subscriber dashboard for support or verification.
+          </p>
+          <form onSubmit={handleImpersonate} style={{ display: "flex", flexDirection: "column", gap: "12px", maxWidth: "480px" }}>
+            <div>
+              <label style={{ display: "block", color: "#888888", fontSize: "11px", fontWeight: 600, marginBottom: "6px" }}>
+                Subscriber Code
+              </label>
+              <div style={{ position: "relative" }}>
+                <input
+                  type={impersonateVisible ? "text" : "password"}
+                  placeholder="OCWS-NEST-XXXXXXXX or CORVUS-NEST"
+                  value={impersonateCode}
+                  onChange={e => setImpersonateCode(e.target.value)}
+                  style={{ ...inp, paddingRight: "60px" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setImpersonateVisible(v => !v)}
+                  style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#555", fontSize: "11px", cursor: "pointer" }}
+                >
+                  {impersonateVisible ? "Hide" : "Show"}
+                </button>
+              </div>
             </div>
-            {credFeedback && (
-              <p style={{ color: credFeedback.startsWith("✓") ? "#4ADE80" : "#F87171", fontSize: "12px", marginBottom: "8px" }}>
-                {credFeedback}
-              </p>
+            {impersonateError && (
+              <p style={{ color: "#F87171", fontSize: "12px" }}>{impersonateError}</p>
             )}
-            <button type="submit" disabled={addingCredits || !credSubId.trim()}
+            <button
+              type="submit"
+              disabled={impersonating || !impersonateCode.trim()}
               style={{
-                width: "100%",
-                background: addingCredits || !credSubId.trim() ? "#0D6E7A" : "#00C2C7",
-                color: "#0D1520", border: "none", borderRadius: "8px", padding: "10px",
+                padding: "10px 20px",
+                background: impersonating || !impersonateCode.trim() ? "#0D6E7A" : "#00C2C7",
+                color: "#0D1520", border: "none", borderRadius: "8px",
                 fontSize: "13px", fontWeight: 700,
-                cursor: addingCredits || !credSubId.trim() ? "not-allowed" : "pointer",
-              }}>
-              {addingCredits ? "Adding…" : "Add Credits"}
+                cursor: impersonating || !impersonateCode.trim() ? "not-allowed" : "pointer",
+                alignSelf: "flex-start",
+              }}
+            >
+              {impersonating ? "Connecting..." : "Access Dashboard"}
             </button>
           </form>
-          <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", marginTop: "20px", paddingTop: "14px" }}>
-            <p style={{ color: "#444444", fontSize: "11px", lineHeight: 1.6 }}>
-              Added credits are non-expiring and deplete before the subscriber&rsquo;s monthly allotment.
+          <p style={{ color: "#444444", fontSize: "11px", marginTop: "14px", lineHeight: 1.6 }}>
+            Opens subscriber&rsquo;s dashboard in a new tab. Admin session is preserved in this tab.
+            A gold banner will appear in the new tab indicating admin view.
+          </p>
+        </div>
+      </>
+    );
+  }
+
+  function renderCodes() {
+    return (
+      <>
+        {/* Generate + Credits */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: "16px", marginBottom: "20px" }}>
+          {/* Generate subscription code */}
+          <div style={card}>
+            <p style={{ color: "#B8922A", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
+              Generate Subscription Code
             </p>
+            <form onSubmit={handleGenerate}>
+              <div style={{ marginBottom: "11px" }}>
+                <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Tier</label>
+                <select value={genTier} onChange={e => setGenTier(e.target.value as SubscriptionTier)} style={{ ...inp }}>
+                  <option value="nest">Nest — $20/mo</option>
+                  <option value="flock">Flock — $100/mo</option>
+                  <option value="murder">Murder — $950/mo</option>
+                </select>
+              </div>
+              <div style={{ marginBottom: "11px" }}>
+                <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Email *</label>
+                <input type="email" value={genEmail} onChange={e => setGenEmail(e.target.value)}
+                  placeholder="subscriber@example.com" style={inp} required />
+              </div>
+              <div style={{ marginBottom: "11px" }}>
+                <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Name (optional)</label>
+                <input type="text" value={genName} onChange={e => setGenName(e.target.value)}
+                  placeholder="Full name" style={inp} />
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
+                <input type="checkbox" id="sendEmail" checked={sendEmail} onChange={e => setSendEmail(e.target.checked)}
+                  style={{ accentColor: "#00C2C7" }} />
+                <label htmlFor="sendEmail" style={{ color: "#888888", fontSize: "12px", cursor: "pointer" }}>
+                  Send confirmation email
+                </label>
+              </div>
+              {genError && <p style={{ color: "#F87171", fontSize: "12px", marginBottom: "8px" }}>{genError}</p>}
+              <button type="submit" disabled={generating || !genEmail.trim()}
+                style={{ width: "100%", background: generating || !genEmail.trim() ? "#0D6E7A" : "#B8922A", color: "#0D1520", border: "none", borderRadius: "8px", padding: "10px", fontSize: "13px", fontWeight: 700, cursor: generating || !genEmail.trim() ? "not-allowed" : "pointer" }}>
+                {generating ? "Generating…" : "Generate Code"}
+              </button>
+            </form>
+            {generatedCode && (
+              <div style={{ marginTop: "14px", background: "#0D1520", border: "1px solid #0D6E7A", borderRadius: "8px", padding: "14px", textAlign: "center" }}>
+                <p style={{ color: "#555555", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "6px" }}>Generated Code</p>
+                <p style={{ color: "#00C2C7", fontSize: "15px", fontFamily: "monospace", fontWeight: 700 }}>{generatedCode}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Add credits */}
+          <div style={card}>
+            <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
+              Add Verdict Credits
+            </p>
+            <form onSubmit={handleAddCredits}>
+              <div style={{ marginBottom: "11px" }}>
+                <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Subscription ID</label>
+                <input type="text" value={credSubId} onChange={e => setCredSubId(e.target.value)}
+                  placeholder="OCWS-NEST-XXXXXXXX" style={{ ...inp, fontFamily: "monospace" }} />
+              </div>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Credits to Add</label>
+                <input type="number" min="1" max="500" value={credAmount}
+                  onChange={e => setCredAmount(e.target.value)} style={inp} />
+              </div>
+              {credFeedback && (
+                <p style={{ color: credFeedback.startsWith("✓") ? "#4ADE80" : "#F87171", fontSize: "12px", marginBottom: "8px" }}>
+                  {credFeedback}
+                </p>
+              )}
+              <button type="submit" disabled={addingCredits || !credSubId.trim()}
+                style={{ width: "100%", background: addingCredits || !credSubId.trim() ? "#0D6E7A" : "#00C2C7", color: "#0D1520", border: "none", borderRadius: "8px", padding: "10px", fontSize: "13px", fontWeight: 700, cursor: addingCredits || !credSubId.trim() ? "not-allowed" : "pointer" }}>
+                {addingCredits ? "Adding…" : "Add Credits"}
+              </button>
+            </form>
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", marginTop: "20px", paddingTop: "14px" }}>
+              <p style={{ color: "#444444", fontSize: "11px", lineHeight: 1.6 }}>
+                Added credits are non-expiring and deplete before the subscriber&rsquo;s monthly allotment.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* ── Code Revocation ── */}
-      <div style={card}>
-        <p style={{ color: "#F87171", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "6px" }}>
-          Revoke Any Code
-        </p>
-        <p style={{ color: "#888888", fontSize: "12px", marginBottom: "16px" }}>
-          Immediately deactivate any subscriber, subordinate, or promo code.
-        </p>
-        <form onSubmit={handleRevokeCode} style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-          <input
-            value={revokeInput}
-            onChange={e => setRevokeInput(e.target.value)}
-            placeholder="Enter code to revoke (e.g. CORVUS-SUB-X7K2M9)"
-            style={{ ...inp, flex: 1, minWidth: "240px" }}
-          />
-          <button
-            type="submit"
-            disabled={revoking || !revokeInput.trim()}
-            style={{
-              background: revoking || !revokeInput.trim() ? "rgba(248,113,113,0.1)" : "rgba(248,113,113,0.15)",
-              border: "1px solid rgba(248,113,113,0.4)",
-              borderRadius: "8px", color: "#F87171", fontSize: "13px", fontWeight: 700,
-              padding: "9px 20px", cursor: revoking || !revokeInput.trim() ? "not-allowed" : "pointer",
-              opacity: !revokeInput.trim() ? 0.5 : 1,
-            }}>
-            {revoking ? "Revoking…" : "Revoke Code"}
-          </button>
-        </form>
-        {revokeResult && (
-          <p style={{ marginTop: "12px", fontSize: "13px", color: revokeResult.startsWith("✓") ? "#4ADE80" : "#F87171" }}>
-            {revokeResult}
+        {/* Code revocation */}
+        <div style={card}>
+          <p style={{ color: "#F87171", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "6px" }}>
+            Revoke Any Code
           </p>
+          <p style={{ color: "#888888", fontSize: "12px", marginBottom: "16px" }}>
+            Immediately deactivate any subscriber, subordinate, or promo code.
+          </p>
+          <form onSubmit={handleRevokeCode} style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <input
+              value={revokeInput}
+              onChange={e => setRevokeInput(e.target.value)}
+              placeholder="Enter code to revoke (e.g. CORVUS-SUB-X7K2M9)"
+              style={{ ...inp, flex: 1, minWidth: "240px" }}
+            />
+            <button
+              type="submit"
+              disabled={revoking || !revokeInput.trim()}
+              style={{
+                background: revoking || !revokeInput.trim() ? "rgba(248,113,113,0.1)" : "rgba(248,113,113,0.15)",
+                border: "1px solid rgba(248,113,113,0.4)",
+                borderRadius: "8px", color: "#F87171", fontSize: "13px", fontWeight: 700,
+                padding: "9px 20px", cursor: revoking || !revokeInput.trim() ? "not-allowed" : "pointer",
+                opacity: !revokeInput.trim() ? 0.5 : 1,
+              }}>
+              {revoking ? "Revoking…" : "Revoke Code"}
+            </button>
+          </form>
+          {revokeResult && (
+            <p style={{ marginTop: "12px", fontSize: "13px", color: revokeResult.startsWith("✓") ? "#4ADE80" : "#F87171" }}>
+              {revokeResult}
+            </p>
+          )}
+        </div>
+
+        {/* Promo code generator */}
+        <div style={card}>
+          <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
+            One-Time Promo Codes
+          </p>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: "10px", marginBottom: "20px" }}>
+            {([
+              { label: "Total",       value: promoCodes.length, color: "#aaaaaa" },
+              { label: "Active",      value: promoActive,       color: "#4ADE80" },
+              { label: "Used",        value: promoUsed,         color: "#888888" },
+              { label: "Deactivated", value: promoDeactivated,  color: "#F87171" },
+            ] as { label: string; value: number; color: string }[]).map(({ label, value, color }) => (
+              <div key={label} style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "12px 14px" }}>
+                <p style={{ color: "#444", fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>{label}</p>
+                <p style={{ color, fontSize: "22px", fontWeight: 800, lineHeight: 1 }}>{value}</p>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: "16px", marginBottom: "20px" }}>
+            <form onSubmit={handleGeneratePromo}>
+              <div style={{ marginBottom: "14px" }}>
+                <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "8px" }}>Expiry</label>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "6px" }}>
+                  {([
+                    { val: "single_use", label: "1 Use" },
+                    { val: "24h",  label: "24h" },
+                    { val: "48h",  label: "48h" },
+                    { val: "72h",  label: "72h" },
+                    { val: "7d",   label: "7 days" },
+                    { val: "14d",  label: "14 days" },
+                    { val: "30d",  label: "30 days" },
+                  ] as { val: ExpiryType2; label: string }[]).map(({ val, label }) => (
+                    <button key={val} type="button" onClick={() => setPromoExpiryType(val)}
+                      style={{ padding: "6px 4px", fontSize: "11px", fontWeight: 600, borderRadius: "6px", cursor: "pointer", background: promoExpiryType === val ? "rgba(0,194,199,0.15)" : "rgba(255,255,255,0.04)", border: `1px solid ${promoExpiryType === val ? "rgba(0,194,199,0.4)" : "rgba(255,255,255,0.08)"}`, color: promoExpiryType === val ? "#00C2C7" : "#888" }}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: "14px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                  <label style={{ color: "#555555", fontSize: "11px" }}>Product</label>
+                  <div style={{ display: "flex", gap: "6px" }}>
+                    <button type="button" onClick={() => setPromoProducts("both")}
+                      style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "4px", cursor: "pointer", background: "rgba(184,146,42,0.1)", border: "1px solid rgba(184,146,42,0.3)", color: "#B8922A" }}>
+                      All
+                    </button>
+                    <button type="button" onClick={() => setPromoProducts("all_reckonings")}
+                      style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "4px", cursor: "pointer", background: "rgba(184,146,42,0.06)", border: "1px solid rgba(184,146,42,0.2)", color: "#888" }}>
+                      All Reckonings
+                    </button>
+                  </div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  {([
+                    { val: "verdict",              label: "Single Verdict" },
+                    { val: "reckoning_small",      label: "Small Reckoning" },
+                    { val: "reckoning_standard",   label: "Standard Reckoning" },
+                    { val: "reckoning_commercial", label: "Commercial Reckoning" },
+                    { val: "reckoning_pro",        label: "Pro Reckoning" },
+                    { val: "all_reckonings",       label: "All Reckonings" },
+                    { val: "both",                 label: "Verdict + All Reckonings" },
+                  ] as { val: PromoProduct2; label: string }[]).map(({ val, label }) => (
+                    <button key={val} type="button" onClick={() => setPromoProducts(val)}
+                      style={{ display: "flex", alignItems: "center", gap: "8px", padding: "7px 10px", fontSize: "12px", borderRadius: "7px", cursor: "pointer", textAlign: "left", background: promoProducts === val ? "rgba(0,194,199,0.12)" : "rgba(255,255,255,0.02)", border: `1px solid ${promoProducts === val ? "rgba(0,194,199,0.35)" : "rgba(255,255,255,0.07)"}`, color: promoProducts === val ? "#00C2C7" : "#888" }}>
+                      <span style={{ width: "14px", height: "14px", borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", background: promoProducts === val ? "#00C2C7" : "transparent", border: `2px solid ${promoProducts === val ? "#00C2C7" : "#444"}`, color: "#0D1520" }}>
+                        {promoProducts === val ? "✓" : ""}
+                      </span>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: "10px" }}>
+                <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Note (who is this for?)</label>
+                <input type="text" value={promoNote} onChange={e => setPromoNote(e.target.value)}
+                  placeholder="e.g. Reddit giveaway, Nate Farrelly" style={inp} />
+              </div>
+
+              <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", padding: "10px 14px", marginBottom: "12px" }}>
+                <p style={{ color: "#555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>Preview</p>
+                <p style={{ color: "#aaa", fontSize: "12px" }}>
+                  Valid for: <span style={{ color: "#00C2C7" }}>{promoProducts.replace(/_/g, " ")}</span> ·{" "}
+                  Expiry: <span style={{ color: "#00C2C7" }}>{promoExpiryType === "single_use" ? "1 use (no time limit)" : promoExpiryType}</span>
+                </p>
+              </div>
+
+              {promoGenError && <p style={{ color: "#F87171", fontSize: "12px", marginBottom: "8px" }}>{promoGenError}</p>}
+              <button type="submit" disabled={generatingPromo}
+                style={{ width: "100%", background: generatingPromo ? "#0D6E7A" : "#00C2C7", color: "#0D1520", border: "none", borderRadius: "8px", padding: "10px", fontSize: "13px", fontWeight: 700, cursor: generatingPromo ? "not-allowed" : "pointer" }}>
+                {generatingPromo ? "Generating…" : "Generate Code"}
+              </button>
+            </form>
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {generatedPromoCode ? (
+                <div style={{ background: "#0D1520", border: "1px solid #0D6E7A", borderRadius: "12px", padding: "20px 24px", textAlign: "center", width: "100%" }}>
+                  <p style={{ color: "#444", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "10px" }}>Generated Code</p>
+                  <p style={{ color: "#00C2C7", fontSize: "17px", fontFamily: "monospace", fontWeight: 800, letterSpacing: "0.08em", marginBottom: "14px", wordBreak: "break-all" }}>
+                    {generatedPromoCode}
+                  </p>
+                  <button
+                    onClick={() => { navigator.clipboard.writeText(generatedPromoCode).then(() => { setPromoCopied(true); setTimeout(() => setPromoCopied(false), 2000); }); }}
+                    style={{ background: promoCopied ? "rgba(74,222,128,0.15)" : "rgba(0,194,199,0.1)", border: `1px solid ${promoCopied ? "rgba(74,222,128,0.4)" : "rgba(0,194,199,0.3)"}`, borderRadius: "7px", color: promoCopied ? "#4ADE80" : "#00C2C7", fontSize: "12px", fontWeight: 600, padding: "7px 18px", cursor: "pointer" }}>
+                    {promoCopied ? "✓ Copied" : "Copy to Clipboard"}
+                  </button>
+                </div>
+              ) : (
+                <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "12px", padding: "20px 24px", textAlign: "center", width: "100%" }}>
+                  <p style={{ color: "#333", fontSize: "13px" }}>Generated code will appear here</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {promoCodes.length > 0 && (
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px", minWidth: "700px" }}>
+                <thead>
+                  <tr>
+                    {["Code", "Type", "Note", "Created", "Expires", "Status", "Used By", "Actions"].map(h => (
+                      <th key={h} style={{ color: "#444", fontWeight: 600, textAlign: "left", padding: "6px 10px", borderBottom: "1px solid rgba(255,255,255,0.06)", whiteSpace: "nowrap" }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {promoCodes.map(p => {
+                    const status = getPromoStatus(p);
+                    return (
+                      <tr key={p.code} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
+                        <td style={{ color: "#00C2C7", padding: "10px", fontFamily: "monospace", fontSize: "11px", whiteSpace: "nowrap" }}>{p.code}</td>
+                        <td style={{ color: "#aaa", padding: "10px", whiteSpace: "nowrap" }}>{PROMO_TYPE_LABELS[p.type]}</td>
+                        <td style={{ color: "#666", padding: "10px", maxWidth: "160px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.note || "—"}</td>
+                        <td style={{ color: "#444", padding: "10px", whiteSpace: "nowrap" }}>{fmtDate(p.createdAt, true)}</td>
+                        <td style={{ color: "#444", padding: "10px", whiteSpace: "nowrap" }}>{p.expiresAt ? fmtDate(p.expiresAt, true) : "—"}</td>
+                        <td style={{ padding: "10px" }}>
+                          <span style={{ color: PROMO_STATUS_COLORS[status], fontSize: "11px", fontWeight: 600 }}>{status}</span>
+                        </td>
+                        <td style={{ color: "#555", padding: "10px", fontSize: "11px", maxWidth: "140px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {p.usedBy ?? (p.usedAt ? fmtDate(p.usedAt, true) : "—")}
+                        </td>
+                        <td style={{ padding: "10px" }}>
+                          <button
+                            onClick={() => handleDeactivatePromo(p.code)}
+                            disabled={status !== "active"}
+                            style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: "6px", color: status === "active" ? "#F87171" : "#444", fontSize: "11px", padding: "4px 10px", cursor: status === "active" ? "pointer" : "not-allowed" }}>
+                            Deactivate
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {!loadingPromos && promoCodes.length === 0 && (
+            <p style={{ color: "#333", fontSize: "13px", paddingTop: "8px" }}>No promo codes generated yet.</p>
+          )}
+        </div>
+      </>
+    );
+  }
+
+  function renderTestimonials() {
+    return (
+      <div style={card}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", margin: 0 }}>
+              Pending Testimonials
+            </p>
+            {pendingTestimonials.length > 0 && (
+              <span style={{ background: "#B8922A", color: "#0D1520", fontSize: "10px", fontWeight: 800, padding: "2px 8px", borderRadius: "20px" }}>
+                {pendingTestimonials.length}
+              </span>
+            )}
+          </div>
+          <button onClick={loadPendingTestimonials} disabled={loadingTestimonials}
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#888888", fontSize: "12px", padding: "6px 14px", cursor: "pointer" }}>
+            {loadingTestimonials ? "Loading..." : "Refresh"}
+          </button>
+        </div>
+        {testimonialMsg && (
+          <p style={{ color: "#4ADE80", fontSize: "12px", marginBottom: "12px" }}>{testimonialMsg}</p>
+        )}
+        {loadingTestimonials ? (
+          <p style={{ color: "#555555", fontSize: "13px", fontFamily: "monospace" }}>Loading testimonials...</p>
+        ) : pendingTestimonials.length === 0 ? (
+          <p style={{ color: "#444444", fontSize: "13px" }}>No pending testimonials.</p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            {pendingTestimonials.map((t) => (
+              <div key={t.id} style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "18px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px", flexWrap: "wrap", gap: "8px" }}>
+                  <div>
+                    <span style={{ color: "#ffffff", fontSize: "13px", fontWeight: 700 }}>{t.name}</span>
+                    {t.location && <span style={{ color: "#555555", fontSize: "11px", marginLeft: "8px" }}>{t.location}</span>}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ color: "#B8922A", fontSize: "13px" }}>{"★".repeat(t.rating)}{"☆".repeat(5 - t.rating)}</span>
+                    <span style={{ color: "#444444", fontSize: "11px" }}>{new Date(t.submittedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                  </div>
+                </div>
+                <p style={{ color: "#aaaaaa", fontSize: "13px", lineHeight: 1.6, marginBottom: "14px", whiteSpace: "pre-wrap" }}>&ldquo;{t.testimonial}&rdquo;</p>
+                {t.email && <p style={{ color: "#444444", fontSize: "11px", marginBottom: "14px" }}>Email: {t.email}</p>}
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button onClick={() => handleApproveTestimonial(t.id)}
+                    style={{ background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.3)", borderRadius: "7px", color: "#4ADE80", fontSize: "12px", fontWeight: 700, padding: "7px 16px", cursor: "pointer" }}>
+                    ✓ Approve &amp; Publish
+                  </button>
+                  <button onClick={() => handleDenyTestimonial(t.id, t.name)}
+                    style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: "7px", color: "#F87171", fontSize: "12px", fontWeight: 600, padding: "7px 16px", cursor: "pointer" }}>
+                    ✕ Deny
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
+    );
+  }
 
-      {/* ── VIP Activity ── */}
+  function renderVIP() {
+    return (
       <div style={card}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px", flexWrap: "wrap", gap: "8px" }}>
           <p style={{ color: "#D4AF37", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>
@@ -1106,7 +1583,6 @@ export default function AdminPage() {
           </button>
         </div>
 
-        {/* VIP stats row */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: "12px", marginBottom: "20px" }}>
           <div style={{ background: "#0D1520", border: "1px solid rgba(212,175,55,0.2)", borderRadius: "10px", padding: "14px 16px" }}>
             <p style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>Total Active Sub Codes</p>
@@ -1124,7 +1600,6 @@ export default function AdminPage() {
           ))}
         </div>
 
-        {/* Subordinate table per VIP */}
         {vipData.map((v) => v.subordinates.length > 0 && (
           <div key={v.vipCode} style={{ marginBottom: "20px" }}>
             <p style={{ color: "#888888", fontSize: "12px", fontWeight: 700, marginBottom: "10px" }}>{v.vipName} ({v.vipCode})</p>
@@ -1156,7 +1631,6 @@ export default function AdminPage() {
                           {s.active && !isExpired && (
                             <button
                               onClick={async () => {
-                                setRevokeInput(s.code);
                                 await fetch("/api/admin/codes/revoke", {
                                   method: "POST",
                                   headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
@@ -1183,490 +1657,21 @@ export default function AdminPage() {
           <p style={{ color: "#444444", fontSize: "13px" }}>No active subordinate codes issued yet.</p>
         )}
       </div>
+    );
+  }
 
-      {/* Promo Code Generator */}
-      <div style={card}>
-        <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
-          One-Time Promo Codes
-        </p>
-
-        {/* Stats row */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: "10px", marginBottom: "20px" }}>
-          {([
-            { label: "Total",       value: promoCodes.length, color: "#aaaaaa" },
-            { label: "Active",      value: promoActive,       color: "#4ADE80" },
-            { label: "Used",        value: promoUsed,         color: "#888888" },
-            { label: "Deactivated", value: promoDeactivated,  color: "#F87171" },
-          ] as { label: string; value: number; color: string }[]).map(({ label, value, color }) => (
-            <div key={label} style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "12px 14px" }}>
-              <p style={{ color: "#444", fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>{label}</p>
-              <p style={{ color, fontSize: "22px", fontWeight: 800, lineHeight: 1 }}>{value}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Generator form + result */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: "16px", marginBottom: "20px" }}>
-          <form onSubmit={handleGeneratePromo}>
-            {/* Expiry options */}
-            <div style={{ marginBottom: "14px" }}>
-              <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "8px" }}>Expiry</label>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "6px" }}>
-                {([
-                  { val: "single_use", label: "1 Use" },
-                  { val: "24h", label: "24h" },
-                  { val: "48h", label: "48h" },
-                  { val: "72h", label: "72h" },
-                  { val: "7d", label: "7 days" },
-                  { val: "14d", label: "14 days" },
-                  { val: "30d", label: "30 days" },
-                ] as { val: ExpiryType2; label: string }[]).map(({ val, label }) => (
-                  <button key={val} type="button" onClick={() => setPromoExpiryType(val)}
-                    style={{
-                      padding: "6px 4px", fontSize: "11px", fontWeight: 600, borderRadius: "6px", cursor: "pointer",
-                      background: promoExpiryType === val ? "rgba(0,194,199,0.15)" : "rgba(255,255,255,0.04)",
-                      border: `1px solid ${promoExpiryType === val ? "rgba(0,194,199,0.4)" : "rgba(255,255,255,0.08)"}`,
-                      color: promoExpiryType === val ? "#00C2C7" : "#888",
-                    }}>
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Product selection */}
-            <div style={{ marginBottom: "14px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
-                <label style={{ color: "#555555", fontSize: "11px" }}>Product</label>
-                <div style={{ display: "flex", gap: "6px" }}>
-                  <button type="button" onClick={() => setPromoProducts("both")}
-                    style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "4px", cursor: "pointer", background: "rgba(184,146,42,0.1)", border: "1px solid rgba(184,146,42,0.3)", color: "#B8922A" }}>
-                    All
-                  </button>
-                  <button type="button" onClick={() => setPromoProducts("all_reckonings")}
-                    style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "4px", cursor: "pointer", background: "rgba(184,146,42,0.06)", border: "1px solid rgba(184,146,42,0.2)", color: "#888" }}>
-                    All Reckonings
-                  </button>
-                </div>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                {([
-                  { val: "verdict", label: "Single Verdict" },
-                  { val: "reckoning_small", label: "Small Reckoning" },
-                  { val: "reckoning_standard", label: "Standard Reckoning" },
-                  { val: "reckoning_commercial", label: "Commercial Reckoning" },
-                  { val: "reckoning_pro", label: "Pro Reckoning" },
-                  { val: "all_reckonings", label: "All Reckonings" },
-                  { val: "both", label: "Verdict + All Reckonings" },
-                ] as { val: PromoProduct2; label: string }[]).map(({ val, label }) => (
-                  <button key={val} type="button" onClick={() => setPromoProducts(val)}
-                    style={{
-                      display: "flex", alignItems: "center", gap: "8px",
-                      padding: "7px 10px", fontSize: "12px", borderRadius: "7px", cursor: "pointer", textAlign: "left",
-                      background: promoProducts === val ? "rgba(0,194,199,0.12)" : "rgba(255,255,255,0.02)",
-                      border: `1px solid ${promoProducts === val ? "rgba(0,194,199,0.35)" : "rgba(255,255,255,0.07)"}`,
-                      color: promoProducts === val ? "#00C2C7" : "#888",
-                    }}>
-                    <span style={{ width: "14px", height: "14px", borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", background: promoProducts === val ? "#00C2C7" : "transparent", border: `2px solid ${promoProducts === val ? "#00C2C7" : "#444"}`, color: "#0D1520" }}>
-                      {promoProducts === val ? "✓" : ""}
-                    </span>
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Note */}
-            <div style={{ marginBottom: "10px" }}>
-              <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Note (who is this for?)</label>
-              <input type="text" value={promoNote} onChange={e => setPromoNote(e.target.value)}
-                placeholder="e.g. Reddit giveaway, Nate Farrelly" style={inp} />
-            </div>
-
-            {/* Preview */}
-            <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", padding: "10px 14px", marginBottom: "12px" }}>
-              <p style={{ color: "#555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>Preview</p>
-              <p style={{ color: "#aaa", fontSize: "12px" }}>
-                Valid for: <span style={{ color: "#00C2C7" }}>{promoProducts.replace(/_/g, " ")}</span> ·{" "}
-                Expiry: <span style={{ color: "#00C2C7" }}>{promoExpiryType === "single_use" ? "1 use (no time limit)" : promoExpiryType}</span>
-              </p>
-            </div>
-
-            {promoGenError && <p style={{ color: "#F87171", fontSize: "12px", marginBottom: "8px" }}>{promoGenError}</p>}
-            <button type="submit" disabled={generatingPromo}
-              style={{ width: "100%", background: generatingPromo ? "#0D6E7A" : "#00C2C7", color: "#0D1520", border: "none", borderRadius: "8px", padding: "10px", fontSize: "13px", fontWeight: 700, cursor: generatingPromo ? "not-allowed" : "pointer" }}>
-              {generatingPromo ? "Generating…" : "Generate Code"}
-            </button>
-          </form>
-
-          {/* Generated code display */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-            {generatedPromoCode ? (
-              <div style={{ background: "#0D1520", border: "1px solid #0D6E7A", borderRadius: "12px", padding: "20px 24px", textAlign: "center", width: "100%" }}>
-                <p style={{ color: "#444", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "10px" }}>Generated Code</p>
-                <p style={{ color: "#00C2C7", fontSize: "17px", fontFamily: "monospace", fontWeight: 800, letterSpacing: "0.08em", marginBottom: "14px", wordBreak: "break-all" }}>
-                  {generatedPromoCode}
-                </p>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(generatedPromoCode).then(() => {
-                      setPromoCopied(true);
-                      setTimeout(() => setPromoCopied(false), 2000);
-                    });
-                  }}
-                  style={{ background: promoCopied ? "rgba(74,222,128,0.15)" : "rgba(0,194,199,0.1)", border: `1px solid ${promoCopied ? "rgba(74,222,128,0.4)" : "rgba(0,194,199,0.3)"}`, borderRadius: "7px", color: promoCopied ? "#4ADE80" : "#00C2C7", fontSize: "12px", fontWeight: 600, padding: "7px 18px", cursor: "pointer" }}>
-                  {promoCopied ? "✓ Copied" : "Copy to Clipboard"}
-                </button>
-              </div>
-            ) : (
-              <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "12px", padding: "20px 24px", textAlign: "center", width: "100%" }}>
-                <p style={{ color: "#333", fontSize: "13px" }}>Generated code will appear here</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Codes table */}
-        {promoCodes.length > 0 && (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px", minWidth: "700px" }}>
-              <thead>
-                <tr>
-                  {["Code", "Type", "Note", "Created", "Expires", "Status", "Used By", "Actions"].map(h => (
-                    <th key={h} style={{ color: "#444", fontWeight: 600, textAlign: "left", padding: "6px 10px", borderBottom: "1px solid rgba(255,255,255,0.06)", whiteSpace: "nowrap" }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {promoCodes.map(p => {
-                  const status = getPromoStatus(p);
-                  return (
-                    <tr key={p.code} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
-                      <td style={{ color: "#00C2C7", padding: "10px", fontFamily: "monospace", fontSize: "11px", whiteSpace: "nowrap" }}>{p.code}</td>
-                      <td style={{ color: "#aaa", padding: "10px", whiteSpace: "nowrap" }}>{PROMO_TYPE_LABELS[p.type]}</td>
-                      <td style={{ color: "#666", padding: "10px", maxWidth: "160px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.note || "—"}</td>
-                      <td style={{ color: "#444", padding: "10px", whiteSpace: "nowrap" }}>{fmtDate(p.createdAt, true)}</td>
-                      <td style={{ color: "#444", padding: "10px", whiteSpace: "nowrap" }}>{p.expiresAt ? fmtDate(p.expiresAt, true) : "—"}</td>
-                      <td style={{ padding: "10px" }}>
-                        <span style={{ color: PROMO_STATUS_COLORS[status], fontSize: "11px", fontWeight: 600 }}>{status}</span>
-                      </td>
-                      <td style={{ color: "#555", padding: "10px", fontSize: "11px", maxWidth: "140px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {p.usedBy ?? (p.usedAt ? fmtDate(p.usedAt, true) : "—")}
-                      </td>
-                      <td style={{ padding: "10px" }}>
-                        <button
-                          onClick={() => handleDeactivatePromo(p.code)}
-                          disabled={status !== "active"}
-                          style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: "6px", color: status === "active" ? "#F87171" : "#444", fontSize: "11px", padding: "4px 10px", cursor: status === "active" ? "pointer" : "not-allowed" }}>
-                          Deactivate
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-        {!loadingPromos && promoCodes.length === 0 && (
-          <p style={{ color: "#333", fontSize: "13px", paddingTop: "8px" }}>No promo codes generated yet.</p>
-        )}
-      </div>
-
-      {/* ── Pending Testimonials ── */}
-      <div style={card}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", margin: 0 }}>
-              Pending Testimonials
-            </p>
-            {pendingTestimonials.length > 0 && (
-              <span style={{ background: "#B8922A", color: "#0D1520", fontSize: "10px", fontWeight: 800, padding: "2px 8px", borderRadius: "20px" }}>
-                {pendingTestimonials.length}
-              </span>
-            )}
-          </div>
-          <button
-            onClick={loadPendingTestimonials}
-            disabled={loadingTestimonials}
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#888888", fontSize: "12px", padding: "6px 14px", cursor: "pointer" }}>
-            {loadingTestimonials ? "Loading..." : "Refresh"}
-          </button>
-        </div>
-        {testimonialMsg && (
-          <p style={{ color: "#4ADE80", fontSize: "12px", marginBottom: "12px" }}>{testimonialMsg}</p>
-        )}
-        {loadingTestimonials ? (
-          <p style={{ color: "#555555", fontSize: "13px", fontFamily: "monospace" }}>Loading testimonials...</p>
-        ) : pendingTestimonials.length === 0 ? (
-          <p style={{ color: "#444444", fontSize: "13px" }}>No pending testimonials.</p>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            {pendingTestimonials.map((t) => (
-              <div key={t.id} style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "18px" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px", flexWrap: "wrap", gap: "8px" }}>
-                  <div>
-                    <span style={{ color: "#ffffff", fontSize: "13px", fontWeight: 700 }}>{t.name}</span>
-                    {t.location && <span style={{ color: "#555555", fontSize: "11px", marginLeft: "8px" }}>{t.location}</span>}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ color: "#B8922A", fontSize: "13px" }}>{"★".repeat(t.rating)}{"☆".repeat(5 - t.rating)}</span>
-                    <span style={{ color: "#444444", fontSize: "11px" }}>{new Date(t.submittedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
-                  </div>
-                </div>
-                <p style={{ color: "#aaaaaa", fontSize: "13px", lineHeight: 1.6, marginBottom: "14px", whiteSpace: "pre-wrap" }}>&ldquo;{t.testimonial}&rdquo;</p>
-                {t.email && <p style={{ color: "#444444", fontSize: "11px", marginBottom: "14px" }}>Email: {t.email}</p>}
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <button
-                    onClick={() => handleApproveTestimonial(t.id)}
-                    style={{ background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.3)", borderRadius: "7px", color: "#4ADE80", fontSize: "12px", fontWeight: 700, padding: "7px 16px", cursor: "pointer" }}>
-                    ✓ Approve &amp; Publish
-                  </button>
-                  <button
-                    onClick={() => handleDenyTestimonial(t.id, t.name)}
-                    style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: "7px", color: "#F87171", fontSize: "12px", fontWeight: 600, padding: "7px 16px", cursor: "pointer" }}>
-                    ✕ Deny
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Recent activity */}
-      <div style={card}>
-        <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
-          Recent Activity
-        </p>
-        {recentActivity.length === 0 ? (
-          <p style={{ color: "#444444", fontSize: "13px" }}>No activity yet.</p>
-        ) : (
-          <div>
-            {recentActivity.map(sub => (
-              <div key={sub.subscription_id} style={{ display: "flex", alignItems: "center", gap: "14px", padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.04)", flexWrap: "wrap" }}>
-                <span style={{ color: "#444444", fontSize: "11px", minWidth: "110px", whiteSpace: "nowrap" }}>
-                  {fmtDate(sub.created_at, true)}
-                </span>
-                <span style={{ color: "#888888", fontSize: "12px", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: "120px" }}>
-                  {sub.customer_email}
-                </span>
-                <span style={{
-                  background: TIER_COLORS[sub.tier].bg, color: TIER_COLORS[sub.tier].text,
-                  fontSize: "9px", fontWeight: 800, letterSpacing: "0.1em",
-                  padding: "2px 7px", borderRadius: "20px", flexShrink: 0,
-                }}>
-                  {sub.tier.toUpperCase()}
-                </span>
-                <span style={{ color: STATUS_COLORS[sub.status], fontSize: "11px", fontWeight: 600, flexShrink: 0 }}>
-                  {sub.status}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* ── Remote Dashboard Access ── */}
-      <div style={card}>
-        <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "12px" }}>
-          Remote Dashboard Access
-        </p>
-        <p style={{ color: "#888888", fontSize: "13px", marginBottom: "20px" }}>
-          Log in to any subscriber dashboard for support or verification.
-        </p>
-        <form onSubmit={handleImpersonate} style={{ display: "flex", flexDirection: "column", gap: "12px", maxWidth: "480px" }}>
-          <div>
-            <label style={{ display: "block", color: "#888888", fontSize: "11px", fontWeight: 600, marginBottom: "6px" }}>
-              Subscriber Code
-            </label>
-            <div style={{ position: "relative" }}>
-              <input
-                type={impersonateVisible ? "text" : "password"}
-                placeholder="OCWS-NEST-XXXXXXXX or CORVUS-NEST"
-                value={impersonateCode}
-                onChange={e => setImpersonateCode(e.target.value)}
-                style={{ ...inp, paddingRight: "60px" }}
-              />
-              <button
-                type="button"
-                onClick={() => setImpersonateVisible(v => !v)}
-                style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#555", fontSize: "11px", cursor: "pointer" }}
-              >
-                {impersonateVisible ? "Hide" : "Show"}
-              </button>
-            </div>
-          </div>
-          {impersonateError && (
-            <p style={{ color: "#F87171", fontSize: "12px" }}>{impersonateError}</p>
-          )}
-          <button
-            type="submit"
-            disabled={impersonating || !impersonateCode.trim()}
-            style={{
-              padding: "10px 20px",
-              background: impersonating || !impersonateCode.trim() ? "#0D6E7A" : "#00C2C7",
-              color: "#0D1520", border: "none", borderRadius: "8px",
-              fontSize: "13px", fontWeight: 700,
-              cursor: impersonating || !impersonateCode.trim() ? "not-allowed" : "pointer",
-              alignSelf: "flex-start",
-            }}
-          >
-            {impersonating ? "Connecting..." : "Access Dashboard"}
-          </button>
-        </form>
-        <p style={{ color: "#444444", fontSize: "11px", marginTop: "14px", lineHeight: 1.6 }}>
-          Opens subscriber&rsquo;s dashboard in a new tab. Admin session is preserved in this tab.
-          A gold banner will appear in the new tab indicating admin view.
-        </p>
-      </div>
-
-      {/* ── Platform Intelligence ── */}
-      <div style={card}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
-          <div>
-            <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>Platform Intelligence</p>
-            <p style={{ color: "#555555", fontSize: "12px" }}>30-day usage analytics across all subscribers</p>
-          </div>
-          <button onClick={loadPlatformAnalytics} disabled={loadingPlatform}
-            style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "8px", color: "#00C2C7", fontSize: "12px", padding: "7px 14px", cursor: "pointer" }}>
-            {loadingPlatform ? "Loading…" : "↻ Refresh"}
-          </button>
-        </div>
-
-        {/* Stats row */}
-        {platformAnalytics && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: "12px", marginBottom: "24px" }}>
-            {([
-              { label: "Total Scans",      value: platformAnalytics.totalScans,          color: "#00C2C7" },
-              { label: "Scans Today",      value: platformAnalytics.scansToday,          color: "#4ADE80" },
-              { label: "Active Subs",      value: platformAnalytics.activeSubscriptions, color: "#B8922A" },
-              { label: "Active Codes",     value: platformAnalytics.activeCodes,         color: "#aaaaaa" },
-              { label: "Critical Findings",value: platformAnalytics.totalCritical,       color: "#F87171" },
-            ] as { label: string; value: number; color: string }[]).map(({ label, value, color }) => (
-              <div key={label} style={{ background: "#0D1520", borderRadius: "10px", padding: "14px 16px" }}>
-                <p style={{ color: "#444", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>{label}</p>
-                <p style={{ color, fontSize: "26px", fontWeight: 800, lineHeight: 1 }}>{value}</p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Charts grid */}
-        {platformAnalytics && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: "16px", marginBottom: "24px" }}>
-            <div style={{ background: "#0D1520", borderRadius: "10px", padding: "16px" }}>
-              <p style={{ color: "#555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "12px" }}>Daily Scans (30 days)</p>
-              <canvas id="chart-daily-scans" style={{ maxHeight: "160px" }} />
-            </div>
-            <div style={{ background: "#0D1520", borderRadius: "10px", padding: "16px" }}>
-              <p style={{ color: "#555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "12px" }}>Product Breakdown</p>
-              <canvas id="chart-products" style={{ maxHeight: "160px" }} />
-            </div>
-            <div style={{ background: "#0D1520", borderRadius: "10px", padding: "16px" }}>
-              <p style={{ color: "#555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "12px" }}>Severity Distribution</p>
-              <canvas id="chart-severity" style={{ maxHeight: "160px" }} />
-            </div>
-            <div style={{ background: "#0D1520", borderRadius: "10px", padding: "16px" }}>
-              <p style={{ color: "#555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "12px" }}>Scans by Tier</p>
-              <canvas id="chart-tiers" style={{ maxHeight: "160px" }} />
-            </div>
-          </div>
-        )}
-
-        {/* Corvus Platform Briefing */}
-        <div style={{ background: "#0D1520", borderRadius: "10px", padding: "20px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: platformNarrative ? "16px" : "0" }}>
-            <p style={{ color: "#B8922A", fontSize: "10px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>Corvus Platform Briefing</p>
-            <button
-              onClick={handleGetPlatformNarrative}
-              disabled={loadingNarrative || !platformAnalytics}
-              style={{ background: loadingNarrative ? "rgba(184,146,42,0.08)" : "rgba(184,146,42,0.12)", border: "1px solid rgba(184,146,42,0.3)", borderRadius: "8px", color: "#B8922A", fontSize: "12px", padding: "7px 16px", cursor: loadingNarrative || !platformAnalytics ? "not-allowed" : "pointer", opacity: !platformAnalytics ? 0.4 : 1 }}>
-              {loadingNarrative ? "Corvus is thinking…" : "Get Corvus' Briefing"}
-            </button>
-          </div>
-          {platformNarrative && (
-            <p style={{ color: "#aaaaaa", fontSize: "13px", lineHeight: 1.7, whiteSpace: "pre-wrap", margin: 0 }}>
-              {platformNarrative}
-            </p>
-          )}
-          {!platformNarrative && !loadingNarrative && (
-            <p style={{ color: "#333333", fontSize: "12px", fontStyle: "italic" }}>
-              {platformAnalytics ? "Click the button to get Corvus' intelligence briefing on platform activity." : "Load analytics data first."}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* ── Chat Intelligence ── */}
-      <div style={card}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
-          <div>
-            <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>Chat Intelligence</p>
-            <p style={{ color: "#555555", fontSize: "12px" }}>Corvus AI chat usage across all subscribers</p>
-          </div>
-          <button onClick={loadChatAnalytics} disabled={loadingChat}
-            style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "8px", color: "#00C2C7", fontSize: "12px", padding: "7px 14px", cursor: "pointer" }}>
-            {loadingChat ? "Loading…" : "↻ Refresh"}
-          </button>
-        </div>
-        {chatAnalytics ? (
-          <>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: "12px", marginBottom: "20px" }}>
-              {([
-                { label: "Total Messages",  value: chatAnalytics.totalMessages,    color: "#00C2C7" },
-                { label: "Today",           value: chatAnalytics.messagesToday,    color: "#4ADE80" },
-                { label: "This Week",       value: chatAnalytics.messagesThisWeek, color: "#B8922A" },
-              ] as { label: string; value: number; color: string }[]).map(({ label, value, color }) => (
-                <div key={label} style={{ background: "#0D1520", borderRadius: "10px", padding: "14px 16px" }}>
-                  <p style={{ color: "#444", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>{label}</p>
-                  <p style={{ color, fontSize: "26px", fontWeight: 800, lineHeight: 1 }}>{value}</p>
-                </div>
-              ))}
-            </div>
-            {chatAnalytics.topChatters.length > 0 && (
-              <div style={{ background: "#0D1520", borderRadius: "10px", padding: "16px" }}>
-                <p style={{ color: "#555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "12px" }}>Top Chatters</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  {chatAnalytics.topChatters.slice(0, 5).map(({ code, count }) => (
-                    <div key={code} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ color: "#888888", fontFamily: "monospace", fontSize: "12px" }}>{code}</span>
-                      <span style={{ color: "#00C2C7", fontSize: "12px", fontWeight: 700 }}>{count} msg{count !== 1 ? "s" : ""}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        ) : (
-          <p style={{ color: "#333333", fontSize: "12px", fontStyle: "italic" }}>
-            {loadingChat ? "Loading chat analytics…" : "No chat data yet."}
-          </p>
-        )}
-      </div>
-
-      {/* ── All Reports ── */}
+  function renderReports() {
+    return (
       <div style={card}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
           <div>
             <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>All Reports</p>
-            <p style={{ color: "#555555", fontSize: "12px", marginTop: "-12px" }}>
+            <p style={{ color: "#555555", fontSize: "12px" }}>
               {allReports.length} total across all subscribers
             </p>
           </div>
-          <button
-            onClick={loadAdminReports}
-            disabled={loadingReports}
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "8px",
-              color: "#888888",
-              fontSize: "12px",
-              padding: "6px 14px",
-              cursor: loadingReports ? "not-allowed" : "pointer",
-            }}
-          >
+          <button onClick={loadAdminReports} disabled={loadingReports}
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#888888", fontSize: "12px", padding: "6px 14px", cursor: loadingReports ? "not-allowed" : "pointer" }}>
             {loadingReports ? "Loading..." : "Refresh"}
           </button>
         </div>
@@ -1681,12 +1686,7 @@ export default function AdminPage() {
               <thead>
                 <tr>
                   {["Report ID", "Type", "Code Used", "Location", "Date", "Findings", "Severity"].map(h => (
-                    <th key={h} style={{
-                      color: "#555555", fontSize: "10px", fontWeight: 700,
-                      letterSpacing: "0.12em", textTransform: "uppercase",
-                      padding: "8px 10px", textAlign: "left",
-                      borderBottom: "1px solid rgba(255,255,255,0.06)",
-                    }}>
+                    <th key={h} style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", padding: "8px 10px", textAlign: "left", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
                       {h}
                     </th>
                   ))}
@@ -1721,12 +1721,7 @@ export default function AdminPage() {
                         {r.findingCount}
                       </td>
                       <td style={{ padding: "10px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                        <span style={{
-                          fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em",
-                          padding: "2px 7px", borderRadius: "20px",
-                          background: r.severity === "critical" ? "rgba(239,68,68,0.12)" : r.severity === "warning" ? "rgba(234,179,8,0.12)" : "rgba(34,197,94,0.12)",
-                          color: r.severity === "critical" ? "#f87171" : r.severity === "warning" ? "#fbbf24" : "#4ade80",
-                        }}>
+                        <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", padding: "2px 7px", borderRadius: "20px", background: r.severity === "critical" ? "rgba(239,68,68,0.12)" : r.severity === "warning" ? "rgba(234,179,8,0.12)" : "rgba(34,197,94,0.12)", color: r.severity === "critical" ? "#f87171" : r.severity === "warning" ? "#fbbf24" : "#4ade80" }}>
                           {r.severity.toUpperCase()}
                         </span>
                       </td>
@@ -1740,14 +1735,11 @@ export default function AdminPage() {
                             <div style={{ background: "#0D1520", borderRadius: "8px", padding: "12px 14px" }}>
                               {parsed.full_findings?.map((f, i) => (
                                 <div key={i} style={{ marginBottom: "8px" }}>
-                                  <span style={{
-                                    color: f.severity === "CRITICAL" ? "#f87171" : f.severity === "GOOD" ? "#4ade80" : "#fbbf24",
-                                    fontSize: "9px", fontWeight: 700, marginRight: "8px"
-                                  }}>
+                                  <span style={{ color: f.severity === "CRITICAL" ? "#f87171" : f.severity === "GOOD" ? "#4ade80" : "#fbbf24", fontSize: "9px", fontWeight: 700, marginRight: "8px" }}>
                                     {f.severity}
                                   </span>
                                   <span style={{ color: "#ffffff", fontSize: "12px", fontWeight: 600 }}>{f.title}</span>
-                                  <p style={{ color: "#555555", fontSize: "11px", marginTop: "2px", marginLeft: "0" }}>{f.description}</p>
+                                  <p style={{ color: "#555555", fontSize: "11px", marginTop: "2px" }}>{f.description}</p>
                                 </div>
                               )) ?? <p style={{ color: "#555555", fontSize: "12px" }}>No findings stored.</p>}
                             </div>
@@ -1762,6 +1754,94 @@ export default function AdminPage() {
           </div>
         )}
       </div>
+    );
+  }
+
+  function renderSettings() {
+    return (
+      <div style={card}>
+        <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
+          Settings
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div style={{ background: "#0D1520", borderRadius: "10px", padding: "20px" }}>
+            <p style={{ color: "#888888", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>Admin Session</p>
+            <p style={{ color: "#555555", fontSize: "12px", marginBottom: "14px" }}>
+              You are authenticated as the platform administrator.
+            </p>
+            <button onClick={handleLogout}
+              style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: "8px", color: "#F87171", fontSize: "13px", fontWeight: 600, padding: "9px 20px", cursor: "pointer" }}>
+              Sign Out
+            </button>
+          </div>
+
+          <div style={{ background: "#0D1520", borderRadius: "10px", padding: "20px" }}>
+            <p style={{ color: "#888888", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>Refresh All Data</p>
+            <p style={{ color: "#555555", fontSize: "12px", marginBottom: "14px" }}>
+              Pull fresh data from Redis across all admin panels.
+            </p>
+            <button
+              onClick={() => { loadAll(); flash("All data refreshed."); }}
+              style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "8px", color: "#00C2C7", fontSize: "13px", fontWeight: 600, padding: "9px 20px", cursor: "pointer" }}>
+              ↻ Refresh All
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function renderTabContent() {
+    switch (activeTab) {
+      case "intel":        return renderIntel();
+      case "subscribers":  return renderSubscribers();
+      case "codes":        return renderCodes();
+      case "testimonials": return renderTestimonials();
+      case "vip":          return renderVIP();
+      case "reports":      return renderReports();
+      case "settings":     return renderSettings();
+    }
+  }
+
+  // ── Dashboard ─────────────────────────────────────────────────────────────
+
+  return (
+    <div style={{ maxWidth: "1140px", margin: "0 auto", padding: "32px 16px 64px" }}>
+
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px", flexWrap: "wrap", gap: "12px" }}>
+        <div>
+          <p style={{ color: "#00C2C7", fontSize: "10px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "4px" }}>
+            Old Crows Wireless Solutions
+          </p>
+          <h1 style={{ color: "#ffffff", fontSize: "22px", fontWeight: 800, margin: 0 }}>Admin Dashboard</h1>
+        </div>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button onClick={() => navigateTab("settings")}
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#888888", fontSize: "12px", padding: "7px 14px", cursor: "pointer" }}>
+            Settings
+          </button>
+          <button onClick={handleLogout}
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#888888", fontSize: "12px", padding: "7px 14px", cursor: "pointer" }}>
+            Sign Out
+          </button>
+        </div>
+      </div>
+
+      {actionMsg && (
+        <div style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.25)", borderRadius: "8px", padding: "10px 16px", marginBottom: "16px", color: "#00C2C7", fontSize: "13px" }}>
+          {actionMsg}
+        </div>
+      )}
+
+      <TabBar
+        tabs={ADMIN_TABS}
+        active={activeTab}
+        onChange={navigateTab}
+        badge={{ testimonials: pendingTestimonials.length }}
+      />
+
+      {renderTabContent()}
 
     </div>
   );

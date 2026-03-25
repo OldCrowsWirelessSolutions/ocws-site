@@ -16,6 +16,8 @@ interface CorvisChatProps {
   comfortLevel?: number;
   hasRecentVerdict?: boolean;
   isFreeTier?: boolean;
+  /** When true, renders inline (no FAB, no fixed positioning) — for use in a full-page chat tab */
+  expanded?: boolean;
 }
 
 // ─── Typewriter ───────────────────────────────────────────────────────────────
@@ -66,8 +68,10 @@ export default function CorvusChat({
   comfortLevel = 2,
   hasRecentVerdict = false,
   isFreeTier = false,
+  expanded = false,
 }: CorvisChatProps) {
-  const [open, setOpen]                     = useState(false);
+  // In expanded mode the panel is always "open"
+  const [open, setOpen]                     = useState(expanded);
   const [messages, setMessages]             = useState<Message[]>([]);
   const [input, setInput]                   = useState("");
   const [loading, setLoading]               = useState(false);
@@ -179,7 +183,19 @@ export default function CorvusChat({
 
   // ── Styles ────────────────────────────────────────────────────────────────
 
-  const panelStyle: React.CSSProperties = {
+  const panelStyle: React.CSSProperties = expanded ? {
+    // Inline expanded mode — fills the container
+    position: "relative",
+    width: "100%",
+    height: "100%",
+    minHeight: "480px",
+    background: "#0D1520",
+    border: "1.5px solid rgba(0,194,199,0.35)",
+    borderRadius: "16px",
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden",
+  } : {
     position: "fixed",
     bottom: "80px",
     right: "20px",
@@ -248,6 +264,83 @@ export default function CorvusChat({
     color: "#0D1520",
     fontWeight: 900,
   };
+
+  if (expanded) {
+    // Inline / full-page mode — render panel directly, no FAB
+    return (
+      <div style={panelStyle} role="region" aria-label="Corvus Chat">
+        {/* Header */}
+        <div style={headerStyle}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "16px" }}>🐦‍⬛</span>
+            <span style={{ color: "#D4AF37", fontFamily: "monospace", fontSize: "12px", fontWeight: 700, letterSpacing: "0.2em" }}>
+              CORVUS · CHAT
+            </span>
+          </div>
+          <button
+            onClick={clearConversation}
+            style={{ background: "none", border: "none", color: "#555", fontSize: "11px", cursor: "pointer", padding: 0, letterSpacing: "0.05em" }}
+          >
+            Clear
+          </button>
+        </div>
+
+        {messagesRemaining !== null && !limited && (
+          <div style={{ background: "rgba(184,146,42,0.06)", borderBottom: "1px solid rgba(184,146,42,0.12)", padding: "6px 14px", fontSize: "11px", color: "#B8922A", fontFamily: "monospace", flexShrink: 0 }}>
+            {messagesRemaining} of {3} free messages remaining
+          </div>
+        )}
+
+        <div style={messagesAreaStyle}>
+          {messages.map((msg) => {
+            const isUser = msg.role === "user";
+            const isTyping = typingId === msg.id;
+            return (
+              <div key={msg.id} style={{ display: "flex", flexDirection: isUser ? "row-reverse" : "row", alignItems: "flex-start", gap: "8px" }}>
+                {!isUser && (
+                  <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "rgba(0,194,199,0.12)", border: "1px solid rgba(0,194,199,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", flexShrink: 0, marginTop: "2px" }}>
+                    🐦
+                  </div>
+                )}
+                <div style={{ maxWidth: "80%", padding: "9px 13px", borderRadius: isUser ? "14px 14px 4px 14px" : "14px 14px 14px 4px", background: isUser ? "rgba(0,194,199,0.15)" : "#0a1018", border: isUser ? "1px solid rgba(0,194,199,0.25)" : "1px solid rgba(255,255,255,0.06)", borderLeft: !isUser ? "2.5px solid rgba(0,194,199,0.4)" : undefined, color: isUser ? "#e0f7f8" : "#cccccc", fontSize: "13.5px", lineHeight: 1.55, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                  {isTyping ? <TypewriterText text={msg.content} speed={14} onDone={() => setTypingId(null)} /> : msg.content}
+                </div>
+              </div>
+            );
+          })}
+          {loading && (
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "rgba(0,194,199,0.12)", border: "1px solid rgba(0,194,199,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", flexShrink: 0 }}>🐦</div>
+              <div style={{ padding: "9px 13px", background: "#0a1018", border: "1px solid rgba(255,255,255,0.06)", borderLeft: "2.5px solid rgba(0,194,199,0.4)", borderRadius: "14px 14px 14px 4px", fontSize: "13px" }}>
+                <ThinkingDots />
+              </div>
+            </div>
+          )}
+          {limited && (
+            <div style={{ background: "rgba(184,146,42,0.08)", border: "1px solid rgba(184,146,42,0.2)", borderRadius: "12px", padding: "14px 16px", marginTop: "4px" }}>
+              <p style={{ color: "#B8922A", fontSize: "12px", marginBottom: "10px" }}>{upgradeMsg || "Subscribe for unlimited access to Corvus."}</p>
+              <a href="/#pricing" style={{ display: "inline-block", background: "rgba(184,146,42,0.15)", border: "1px solid rgba(184,146,42,0.3)", color: "#D4AF37", fontSize: "12px", fontWeight: 700, padding: "7px 16px", borderRadius: "8px", textDecoration: "none" }}>
+                Subscribe to Nest — $20/mo →
+              </a>
+            </div>
+          )}
+          <div ref={bottomRef} />
+        </div>
+
+        <div style={inputBarStyle}>
+          <input ref={inputRef} type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} disabled={loading || limited} placeholder={limited ? "Subscribe to continue…" : "Ask Corvus…"}
+            style={{ flex: 1, background: "#0D1520", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "8px", padding: "9px 12px", color: "#ffffff", fontSize: "13px", outline: "none", fontFamily: "inherit", opacity: limited ? 0.4 : 1 }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,194,199,0.5)"; }}
+            onBlur={(e)  => { e.currentTarget.style.borderColor = "rgba(0,194,199,0.2)"; }}
+          />
+          <button onClick={sendMessage} disabled={loading || limited || !input.trim()}
+            style={{ background: loading || limited || !input.trim() ? "rgba(0,194,199,0.08)" : "#00C2C7", border: "none", borderRadius: "8px", width: "38px", height: "38px", display: "flex", alignItems: "center", justifyContent: "center", cursor: loading || limited || !input.trim() ? "not-allowed" : "pointer", flexShrink: 0, transition: "background 0.15s", color: loading || limited || !input.trim() ? "rgba(0,194,199,0.4)" : "#0D1520", fontSize: "16px", fontWeight: 700 }}
+            aria-label="Send"
+          >→</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
