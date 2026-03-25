@@ -224,6 +224,63 @@ export async function getPlatformAnalytics(days = 30): Promise<PlatformAnalytics
   };
 }
 
+// ─── Chat analytics ───────────────────────────────────────────────────────────
+
+const CHAT_TOTAL_KEY      = "analytics:chat:total";
+const CHAT_DAILY_KEY      = (date: string) => `analytics:chat:daily:${date}`;
+const CHAT_CODES_KEY      = "analytics:chat:codes"; // sorted set code → total messages
+
+export async function recordChatEvent(code: string): Promise<void> {
+  const today = new Date().toISOString().slice(0, 10);
+  await Promise.all([
+    redis.incr(CHAT_TOTAL_KEY),
+    redis.incr(CHAT_DAILY_KEY(today)),
+    redis.zincrby(CHAT_CODES_KEY, 1, code),
+  ]);
+}
+
+export interface ChatAnalytics {
+  totalMessages: number;
+  messagesToday: number;
+  messagesThisWeek: number;
+  topChatters: Array<{ code: string; count: number }>;
+}
+
+export async function getChatAnalytics(): Promise<ChatAnalytics> {
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Weekly dates
+  const weekDates: string[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    weekDates.push(d.toISOString().slice(0, 10));
+  }
+
+  const [totalRaw, todayRaw, weekCounts, topRaw] = await Promise.all([
+    redis.get<number>(CHAT_TOTAL_KEY),
+    redis.get<number>(CHAT_DAILY_KEY(today)),
+    Promise.all(weekDates.map((date) => redis.get<number>(CHAT_DAILY_KEY(date)))),
+    redis.zrange(CHAT_CODES_KEY, 0, 9, { rev: true, withScores: true }),
+  ]);
+
+  const messagesThisWeek = (weekCounts as (number | null)[]).reduce<number>((sum, v) => sum + (v ?? 0), 0);
+
+  // topRaw from withScores is [member, score, member, score, ...]
+  const topChatters: Array<{ code: string; count: number }> = [];
+  const arr = topRaw as (string | number)[];
+  for (let i = 0; i < arr.length; i += 2) {
+    topChatters.push({ code: String(arr[i]), count: Number(arr[i + 1]) });
+  }
+
+  return {
+    totalMessages: Number(totalRaw ?? 0),
+    messagesToday: Number(todayRaw ?? 0),
+    messagesThisWeek,
+    topChatters,
+  };
+}
+
 // ─── Daily scans helper ───────────────────────────────────────────────────────
 
 export async function getDailyScans(days = 30): Promise<DailyScanData[]> {

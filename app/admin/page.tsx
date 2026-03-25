@@ -189,6 +189,15 @@ export default function AdminPage() {
   const [loadingNarrative, setLoadingNarrative]     = useState(false);
   const chartsInitRef = useRef(false);
 
+  interface ChatAnalytics {
+    totalMessages: number;
+    messagesToday: number;
+    messagesThisWeek: number;
+    topChatters: Array<{ code: string; count: number }>;
+  }
+  const [chatAnalytics, setChatAnalytics]   = useState<ChatAnalytics | null>(null);
+  const [loadingChat, setLoadingChat]       = useState(false);
+
   // Action feedback
   const [actionMsg, setActionMsg] = useState("");
 
@@ -327,6 +336,17 @@ export default function AdminPage() {
     finally { setLoadingPlatform(false); }
   }, []);
 
+  const loadChatAnalytics = useCallback(async () => {
+    setLoadingChat(true);
+    try {
+      const res = await fetch("/api/analytics/chat", {
+        headers: { "x-admin-key": ADMIN_KEY },
+      });
+      if (res.ok) setChatAnalytics(await res.json());
+    } catch { /* non-fatal */ }
+    finally { setLoadingChat(false); }
+  }, []);
+
   const loadPendingTestimonials = useCallback(async () => {
     setLoadingTestimonials(true);
     try {
@@ -351,9 +371,10 @@ export default function AdminPage() {
         loadPendingTestimonials();
         loadVipActivity();
         loadPlatformAnalytics();
+        loadChatAnalytics();
       }
     } catch { /* */ }
-  }, [loadSubscribers, loadPromoCodes, loadAdminReports, loadPendingTestimonials, loadVipActivity, loadPlatformAnalytics]);
+  }, [loadSubscribers, loadPromoCodes, loadAdminReports, loadPendingTestimonials, loadVipActivity, loadPlatformAnalytics, loadChatAnalytics]);
 
   // Chart.js rendering when platform analytics load
   useEffect(() => {
@@ -440,6 +461,7 @@ export default function AdminPage() {
       loadPendingTestimonials();
       loadVipActivity();
       loadPlatformAnalytics();
+      loadChatAnalytics();
     } else {
       setAuthError("Incorrect password.");
     }
@@ -1574,6 +1596,53 @@ export default function AdminPage() {
             </p>
           )}
         </div>
+      </div>
+
+      {/* ── Chat Intelligence ── */}
+      <div style={card}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+          <div>
+            <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>Chat Intelligence</p>
+            <p style={{ color: "#555555", fontSize: "12px" }}>Corvus AI chat usage across all subscribers</p>
+          </div>
+          <button onClick={loadChatAnalytics} disabled={loadingChat}
+            style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "8px", color: "#00C2C7", fontSize: "12px", padding: "7px 14px", cursor: "pointer" }}>
+            {loadingChat ? "Loading…" : "↻ Refresh"}
+          </button>
+        </div>
+        {chatAnalytics ? (
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: "12px", marginBottom: "20px" }}>
+              {([
+                { label: "Total Messages",  value: chatAnalytics.totalMessages,    color: "#00C2C7" },
+                { label: "Today",           value: chatAnalytics.messagesToday,    color: "#4ADE80" },
+                { label: "This Week",       value: chatAnalytics.messagesThisWeek, color: "#B8922A" },
+              ] as { label: string; value: number; color: string }[]).map(({ label, value, color }) => (
+                <div key={label} style={{ background: "#0D1520", borderRadius: "10px", padding: "14px 16px" }}>
+                  <p style={{ color: "#444", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>{label}</p>
+                  <p style={{ color, fontSize: "26px", fontWeight: 800, lineHeight: 1 }}>{value}</p>
+                </div>
+              ))}
+            </div>
+            {chatAnalytics.topChatters.length > 0 && (
+              <div style={{ background: "#0D1520", borderRadius: "10px", padding: "16px" }}>
+                <p style={{ color: "#555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "12px" }}>Top Chatters</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  {chatAnalytics.topChatters.slice(0, 5).map(({ code, count }) => (
+                    <div key={code} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ color: "#888888", fontFamily: "monospace", fontSize: "12px" }}>{code}</span>
+                      <span style={{ color: "#00C2C7", fontSize: "12px", fontWeight: 700 }}>{count} msg{count !== 1 ? "s" : ""}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <p style={{ color: "#333333", fontSize: "12px", fontStyle: "italic" }}>
+            {loadingChat ? "Loading chat analytics…" : "No chat data yet."}
+          </p>
+        )}
       </div>
 
       {/* ── All Reports ── */}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import CorvusChat from "@/app/components/CorvusChat";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -3197,6 +3198,15 @@ export default function CrowsEyeClient() {
         )}
       </div>
 
+      {/* Corvus Chat — appears after verdict reveals */}
+      {phase === "full_verdict" && (appliedSubscriptionId ?? appliedPromoCode?.code) && (
+        <CorvusChat
+          code={appliedSubscriptionId ?? appliedPromoCode?.code ?? ""}
+          comfortLevel={itComfortLevel}
+          hasRecentVerdict={true}
+          isFreeTier={appliedCode?.type === "promo"}
+        />
+      )}
 
     </div>
   );
