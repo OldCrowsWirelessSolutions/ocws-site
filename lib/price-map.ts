@@ -23,6 +23,8 @@ export const PRICE_MAP = {
   FLOCK_ANNUAL:               process.env.PRICE_FLOCK_ANNUAL!,
   MURDER_MONTHLY:             process.env.PRICE_MURDER_MONTHLY!,
   MURDER_ANNUAL:              process.env.PRICE_MURDER_ANNUAL!,
+  FLOCK_TEAM_LEAD_MONTHLY:    process.env.PRICE_FLOCK_TEAM_LEAD_MONTHLY!,
+  FLOCK_TEAM_LEAD_ANNUAL:     process.env.PRICE_FLOCK_TEAM_LEAD_ANNUAL!,
 
   // Nest subscriber rates (credits reuse public pricing; reckoning is discounted)
   EXTRA_CREDIT_NEST:          process.env.PRICE_EXTRA_CREDIT!,
@@ -48,6 +50,8 @@ export const SUBSCRIPTION_PRICE_IDS = [
   process.env.PRICE_FLOCK_ANNUAL!,
   process.env.PRICE_MURDER_MONTHLY!,
   process.env.PRICE_MURDER_ANNUAL!,
+  process.env.PRICE_FLOCK_TEAM_LEAD_MONTHLY!,
+  process.env.PRICE_FLOCK_TEAM_LEAD_ANNUAL!,
 ];
 
 // ─── Credits awarded per price ID (for webhook credit fulfillment) ────────────
@@ -109,6 +113,13 @@ export const SEAT_RULES: Record<string, { included: number; maxAdditional: numbe
   nest:   { included: 1, maxAdditional: 0,  maxTotal: 1,  upgradeRequired: "flock"  },
   flock:  { included: 1, maxAdditional: 4,  maxTotal: 5,  upgradeRequired: "murder" },
   murder: { included: 5, maxAdditional: 10, maxTotal: 15, upgradeRequired: null     },
+};
+
+// ─── Flock Team Lead add-on pricing ──────────────────────────────────────────
+
+export const FLOCK_TEAM_LEAD_PRICING = {
+  monthly: { priceId: process.env.PRICE_FLOCK_TEAM_LEAD_MONTHLY!, price: 35 },
+  annual:  { priceId: process.env.PRICE_FLOCK_TEAM_LEAD_ANNUAL!,  price: 300 },
 };
 
 // ─── All seat price IDs (for subscription mode detection) ────────────────────

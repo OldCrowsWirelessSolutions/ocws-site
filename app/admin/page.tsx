@@ -154,6 +154,22 @@ export default function AdminPage() {
   const [loadingTestimonials, setLoadingTestimonials] = useState(false);
   const [testimonialMsg, setTestimonialMsg]           = useState("");
 
+  // Code revocation
+  const [revokeInput, setRevokeInput]   = useState("");
+  const [revoking, setRevoking]         = useState(false);
+  const [revokeResult, setRevokeResult] = useState("");
+
+  // VIP activity
+  interface VIPSubRecord {
+    vipCode: string; vipName: string; maxSubordinates: number;
+    subordinates: {
+      code: string; issuedAt: string; expiresAt: string;
+      expiryType: string; active: boolean; usageCount: number;
+    }[];
+  }
+  const [vipData, setVipData]           = useState<VIPSubRecord[]>([]);
+  const [loadingVip, setLoadingVip]     = useState(false);
+
   // Action feedback
   const [actionMsg, setActionMsg] = useState("");
 
@@ -264,6 +280,20 @@ export default function AdminPage() {
     finally { setLoadingReports(false); }
   }, []);
 
+  const loadVipActivity = useCallback(async () => {
+    setLoadingVip(true);
+    try {
+      const res = await fetch("/api/admin/vip/activity", {
+        headers: { "x-admin-key": ADMIN_KEY },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setVipData(data.vips ?? []);
+      }
+    } catch { /* non-fatal */ }
+    finally { setLoadingVip(false); }
+  }, []);
+
   const loadPendingTestimonials = useCallback(async () => {
     setLoadingTestimonials(true);
     try {
@@ -286,9 +316,10 @@ export default function AdminPage() {
         loadPromoCodes();
         loadAdminReports();
         loadPendingTestimonials();
+        loadVipActivity();
       }
     } catch { /* */ }
-  }, [loadSubscribers, loadPromoCodes, loadAdminReports, loadPendingTestimonials]);
+  }, [loadSubscribers, loadPromoCodes, loadAdminReports, loadPendingTestimonials, loadVipActivity]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -301,6 +332,7 @@ export default function AdminPage() {
       loadPromoCodes();
       loadAdminReports();
       loadPendingTestimonials();
+      loadVipActivity();
     } else {
       setAuthError("Incorrect password.");
     }
@@ -471,6 +503,35 @@ export default function AdminPage() {
       loadPromoCodes();
     } catch (e: unknown) {
       flash(e instanceof Error ? e.message : "Deactivation failed.", true);
+    }
+  }
+
+  async function handleRevokeCode(e: React.FormEvent) {
+    e.preventDefault();
+    const code = revokeInput.trim().toUpperCase();
+    if (!code) return;
+    setRevoking(true);
+    setRevokeResult("");
+    try {
+      const res = await fetch("/api/admin/codes/revoke", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+        body: JSON.stringify({ code }),
+      });
+      const data = await res.json() as { revoked?: boolean; codeType?: string; error?: string };
+      if (data.revoked) {
+        setRevokeResult(`✓ Code ${code} revoked (${data.codeType ?? "unknown type"}).`);
+        setRevokeInput("");
+        loadSubscribers();
+        loadVipActivity();
+      } else {
+        setRevokeResult(`✗ ${data.error ?? "Code not found in system."}`);
+      }
+    } catch {
+      setRevokeResult("✗ Connection error. Please try again.");
+    } finally {
+      setRevoking(false);
+      setTimeout(() => setRevokeResult(""), 6000);
     }
   }
 
@@ -848,6 +909,131 @@ export default function AdminPage() {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* ── Code Revocation ── */}
+      <div style={card}>
+        <p style={{ color: "#F87171", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "6px" }}>
+          Revoke Any Code
+        </p>
+        <p style={{ color: "#888888", fontSize: "12px", marginBottom: "16px" }}>
+          Immediately deactivate any subscriber, subordinate, or promo code.
+        </p>
+        <form onSubmit={handleRevokeCode} style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+          <input
+            value={revokeInput}
+            onChange={e => setRevokeInput(e.target.value)}
+            placeholder="Enter code to revoke (e.g. CORVUS-SUB-X7K2M9)"
+            style={{ ...inp, flex: 1, minWidth: "240px" }}
+          />
+          <button
+            type="submit"
+            disabled={revoking || !revokeInput.trim()}
+            style={{
+              background: revoking || !revokeInput.trim() ? "rgba(248,113,113,0.1)" : "rgba(248,113,113,0.15)",
+              border: "1px solid rgba(248,113,113,0.4)",
+              borderRadius: "8px", color: "#F87171", fontSize: "13px", fontWeight: 700,
+              padding: "9px 20px", cursor: revoking || !revokeInput.trim() ? "not-allowed" : "pointer",
+              opacity: !revokeInput.trim() ? 0.5 : 1,
+            }}>
+            {revoking ? "Revoking…" : "Revoke Code"}
+          </button>
+        </form>
+        {revokeResult && (
+          <p style={{ marginTop: "12px", fontSize: "13px", color: revokeResult.startsWith("✓") ? "#4ADE80" : "#F87171" }}>
+            {revokeResult}
+          </p>
+        )}
+      </div>
+
+      {/* ── VIP Activity ── */}
+      <div style={card}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px", flexWrap: "wrap", gap: "8px" }}>
+          <p style={{ color: "#D4AF37", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>
+            VIP Founding Members
+          </p>
+          <button onClick={loadVipActivity} disabled={loadingVip}
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "7px", color: "#888888", fontSize: "11px", padding: "5px 12px", cursor: "pointer" }}>
+            {loadingVip ? "Loading…" : "↻ Refresh"}
+          </button>
+        </div>
+
+        {/* VIP stats row */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: "12px", marginBottom: "20px" }}>
+          <div style={{ background: "#0D1520", border: "1px solid rgba(212,175,55,0.2)", borderRadius: "10px", padding: "14px 16px" }}>
+            <p style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>Total Active Sub Codes</p>
+            <p style={{ color: "#D4AF37", fontSize: "24px", fontWeight: 800, margin: 0 }}>
+              {vipData.reduce((n, v) => n + v.subordinates.length, 0)}
+            </p>
+          </div>
+          {vipData.map((v) => (
+            <div key={v.vipCode} style={{ background: "#0D1520", border: "1px solid rgba(212,175,55,0.15)", borderRadius: "10px", padding: "14px 16px" }}>
+              <p style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "4px" }}>{v.vipName.split(" ")[0]}</p>
+              <p style={{ color: "#D4AF37", fontSize: "20px", fontWeight: 800, margin: 0 }}>
+                {v.subordinates.length}<span style={{ color: "#555555", fontSize: "12px" }}> / {v.maxSubordinates}</span>
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Subordinate table per VIP */}
+        {vipData.map((v) => v.subordinates.length > 0 && (
+          <div key={v.vipCode} style={{ marginBottom: "20px" }}>
+            <p style={{ color: "#888888", fontSize: "12px", fontWeight: 700, marginBottom: "10px" }}>{v.vipName} ({v.vipCode})</p>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
+                <thead>
+                  <tr>
+                    {["Code", "Issued", "Expires", "Type", "Uses", "Status", "Actions"].map(h => (
+                      <th key={h} style={{ color: "#444444", fontWeight: 600, textAlign: "left", padding: "6px 10px", borderBottom: "1px solid rgba(255,255,255,0.06)", whiteSpace: "nowrap" }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {v.subordinates.map((s) => {
+                    const isExpired = new Date() >= new Date(s.expiresAt);
+                    return (
+                      <tr key={s.code} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
+                        <td style={{ color: "#ffffff", padding: "8px 10px", fontFamily: "monospace", fontSize: "11px" }}>{s.code}</td>
+                        <td style={{ color: "#888888", padding: "8px 10px" }}>{new Date(s.issuedAt).toLocaleDateString()}</td>
+                        <td style={{ color: "#888888", padding: "8px 10px" }}>{new Date(s.expiresAt).toLocaleDateString()}</td>
+                        <td style={{ color: "#888888", padding: "8px 10px", fontFamily: "monospace" }}>{s.expiryType}</td>
+                        <td style={{ color: "#ffffff", padding: "8px 10px", fontFamily: "monospace" }}>{s.usageCount}</td>
+                        <td style={{ padding: "8px 10px" }}>
+                          <span style={{ fontSize: "10px", fontWeight: 700, padding: "2px 7px", borderRadius: "10px", background: isExpired ? "rgba(85,85,85,0.15)" : "rgba(74,222,128,0.12)", color: isExpired ? "#555555" : "#4ADE80" }}>
+                            {isExpired ? "Expired" : "Active"}
+                          </span>
+                        </td>
+                        <td style={{ padding: "8px 10px" }}>
+                          {s.active && !isExpired && (
+                            <button
+                              onClick={async () => {
+                                setRevokeInput(s.code);
+                                await fetch("/api/admin/codes/revoke", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+                                  body: JSON.stringify({ code: s.code }),
+                                });
+                                loadVipActivity();
+                                flash(`Revoked: ${s.code}`);
+                              }}
+                              style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: "5px", color: "#F87171", fontSize: "10px", padding: "3px 8px", cursor: "pointer" }}>
+                              Revoke
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
+
+        {vipData.every(v => v.subordinates.length === 0) && !loadingVip && (
+          <p style={{ color: "#444444", fontSize: "13px" }}>No active subordinate codes issued yet.</p>
+        )}
       </div>
 
       {/* Promo Code Generator */}

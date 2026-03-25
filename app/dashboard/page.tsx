@@ -161,6 +161,30 @@ export default function DashboardPage() {
   const [expandedReport, setExpandedReport]     = useState<string | null>(null);
   const [isAdminView, setIsAdminView]           = useState(false);
 
+  // ── VIP subordinate types ──────────────────────────────────────────────────
+  interface SubordinateRecord {
+    code: string; issuedBy: string; issuedByName: string;
+    issuedAt: string; expiresAt: string; expiryType: string;
+    active: boolean; usageCount: number; lastUsed: string | null;
+  }
+
+  // VIP state
+  const [vipSubordinates, setVipSubordinates]           = useState<SubordinateRecord[]>([]);
+  const [vipTeamActivity, setVipTeamActivity]           = useState<ReportRecord[]>([]);
+  const [vipLoadingSubordinates, setVipLoadingSubordinates] = useState(false);
+  const [vipLoadingActivity, setVipLoadingActivity]     = useState(false);
+  const [vipSubExpiryType, setVipSubExpiryType]         = useState("24h");
+  const [vipGenerating, setVipGenerating]               = useState(false);
+  const [vipGeneratedCode, setVipGeneratedCode]         = useState("");
+  const [vipCopied, setVipCopied]                       = useState(false);
+
+  // Team Lead state (Flock/Murder subscribers)
+  const [teamLeadActive, setTeamLeadActive]             = useState(false);
+  const [teamActivity, setTeamActivity]                 = useState<ReportRecord[]>([]);
+  const [teamActivityLoading, setTeamActivityLoading]   = useState(false);
+  const [buyingTeamLead, setBuyingTeamLead]             = useState(false);
+  const [teamLeadBilling, setTeamLeadBilling]           = useState<"monthly" | "annual">("monthly");
+
   // Subscription management state
   const [subMgmtLoading, setSubMgmtLoading]   = useState<"pause30" | "pause60" | "cancel" | "reactivate" | null>(null);
   const [subMgmtConfirm, setSubMgmtConfirm]   = useState<"pause30" | "pause60" | "cancel" | null>(null);
@@ -202,6 +226,45 @@ export default function DashboardPage() {
     finally { setReportsLoading(false); }
   }, []);
 
+  const loadVipSubordinates = useCallback(async (code: string) => {
+    setVipLoadingSubordinates(true);
+    try {
+      const res = await fetch("/api/vip/subordinates", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      if (res.ok) { const d = await res.json(); setVipSubordinates(d.subordinates ?? []); }
+    } catch { /* */ }
+    finally { setVipLoadingSubordinates(false); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const loadVipTeamActivity = useCallback(async (code: string) => {
+    setVipLoadingActivity(true);
+    try {
+      const res = await fetch("/api/vip/team-activity", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      if (res.ok) { const d = await res.json(); setVipTeamActivity(d.reports ?? []); }
+    } catch { /* */ }
+    finally { setVipLoadingActivity(false); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const loadTeamActivity = useCallback(async (code: string) => {
+    setTeamActivityLoading(true);
+    try {
+      const res = await fetch("/api/subscriptions/team-activity", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      if (res.ok) { const d = await res.json(); setTeamActivity(d.reports ?? []); setTeamLeadActive(true); }
+    } catch { /* */ }
+    finally { setTeamActivityLoading(false); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const loadSeatInfo = useCallback(async (code: string) => {
     try {
       const res = await fetch("/api/subscriptions/seat-info", {
@@ -229,7 +292,7 @@ export default function DashboardPage() {
       });
       const data: ValidationResult = await res.json();
 
-      if (!data.valid || (data.type !== "subscription" && data.type !== "founder" && data.type !== "admin")) {
+      if (!data.valid || (data.type !== "subscription" && data.type !== "founder" && data.type !== "admin" && data.type !== "vip")) {
         setAuthError(data.error ?? "Invalid or inactive subscription.");
         try { localStorage.removeItem("corvus_sub_code"); } catch { /* */ }
         setPhase("auth");
@@ -259,14 +322,23 @@ export default function DashboardPage() {
       setStoredCode(code);
       setPhase("dashboard");
       loadReports(code);
-      loadSeatInfo(code);
+
+      if (data.type === "vip") {
+        loadVipSubordinates(code);
+        loadVipTeamActivity(code);
+      } else {
+        loadSeatInfo(code);
+        if (data.type === "subscription" && (data.tier === "flock" || data.tier === "murder")) {
+          loadTeamActivity(code);
+        }
+      }
     } catch {
       setAuthError("Connection error. Please try again.");
       setPhase("auth");
     } finally {
       setValidating(false);
     }
-  }, [loadReports, loadSeatInfo]);
+  }, [loadReports, loadSeatInfo, loadVipSubordinates, loadVipTeamActivity, loadTeamActivity]);
 
   useEffect(() => {
     try {
@@ -303,7 +375,7 @@ export default function DashboardPage() {
       });
       const data: ValidationResult = await res.json();
 
-      if (!data.valid || (data.type !== "subscription" && data.type !== "founder" && data.type !== "admin")) {
+      if (!data.valid || (data.type !== "subscription" && data.type !== "founder" && data.type !== "admin" && data.type !== "vip")) {
         setAuthError(data.error ?? "Invalid or inactive subscription.");
         return;
       }
@@ -395,7 +467,56 @@ export default function DashboardPage() {
     }
   }
 
-  // ── Seat handlers ──────────────────────────────────────────────────────────
+  // ── VIP handlers ───────────────────────────────────────────────────────────
+
+  async function handleGenerateSubordinate() {
+    if (vipGenerating || !storedCode) return;
+    setVipGenerating(true);
+    setVipGeneratedCode("");
+    setVipCopied(false);
+    try {
+      const res  = await fetch("/api/vip/generate-subordinate", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: storedCode, expiryType: vipSubExpiryType }),
+      });
+      const data = await res.json() as { code?: string; error?: string };
+      if (data.code) {
+        setVipGeneratedCode(data.code);
+        await loadVipSubordinates(storedCode);
+      } else {
+        alert(data.error ?? "Failed to generate code.");
+      }
+    } catch { alert("Connection error. Please try again."); }
+    finally { setVipGenerating(false); }
+  }
+
+  async function handleRevokeSubordinate(subCode: string) {
+    if (!confirm(`Revoke ${subCode}? This will immediately invalidate the code.`)) return;
+    try {
+      await fetch("/api/vip/revoke-subordinate", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: storedCode, subCode }),
+      });
+      await loadVipSubordinates(storedCode);
+    } catch { alert("Connection error."); }
+  }
+
+  async function handleUpgradeTeamLead() {
+    if (buyingTeamLead || !storedCode) return;
+    setBuyingTeamLead(true);
+    try {
+      const res  = await fetch("/api/subscriptions/upgrade-team-lead", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: storedCode, billingPeriod: teamLeadBilling }),
+      });
+      const data = await res.json() as { url?: string; error?: string };
+      if (data.url)  window.location.href = data.url;
+      else           alert(data.error ?? "Could not start checkout. Please try again.");
+    } catch { alert("Connection error. Please try again."); }
+    finally { setBuyingTeamLead(false); }
+  }
+
+  // ── Seat handlers ───────────────────────────────────────────────────────────
 
   async function handleBuySeats() {
     if (buyingSeats || !storedCode) return;
@@ -606,6 +727,7 @@ export default function DashboardPage() {
 
   // ── Dashboard ─────────────────────────────────────────────────────────────
 
+  const isVIP       = sub?.type === "vip";
   const tier        = sub?.tier ?? "nest";
   const tc          = TIER_CONFIG[tier];
   const isUnlimited = sub?.verdicts_unlimited ?? false;
@@ -683,6 +805,33 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* ── VIP Gold Banner ── */}
+      {isVIP && (
+        <div style={{
+          background: "linear-gradient(135deg, #B8922A 0%, #D4AF37 50%, #B8922A 100%)",
+          borderRadius: "12px",
+          padding: "18px 24px",
+          marginBottom: "24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "10px",
+        }}>
+          <div>
+            <p style={{ color: "#0D1520", fontSize: "13px", fontWeight: 800, letterSpacing: "0.1em", margin: "0 0 4px" }}>
+              👑 VIP ACCESS — {(sub as { vip_name?: string })?.vip_name} · {(sub as { vip_title?: string })?.vip_title}
+            </p>
+            <p style={{ color: "rgba(13,21,32,0.7)", fontSize: "12px", margin: 0 }}>
+              {(sub as { vip_company?: string })?.vip_company} · Unlimited Verdicts · Unlimited Reckonings · Team Lead
+            </p>
+          </div>
+          <span style={{ color: "#0D1520", fontSize: "11px", fontWeight: 700, background: "rgba(0,0,0,0.12)", borderRadius: "20px", padding: "4px 12px" }}>
+            FOUNDING MEMBER
+          </span>
+        </div>
+      )}
+
       {/* ── Header ── */}
       <div style={{
         ...card,
@@ -701,14 +850,26 @@ export default function DashboardPage() {
               <span style={{ color: "#ffffff", fontSize: "18px", fontWeight: 700 }}>
                 {sub?.customer_name ?? details?.customer_name ?? "Subscriber"}
               </span>
-              <span style={{
-                background: tc.color, color: tc.textColor,
-                fontSize: "10px", fontWeight: 800, letterSpacing: "0.18em",
-                padding: "3px 10px", borderRadius: "20px",
-              }}>
-                {tc.label}
-              </span>
-              {!isSubType && (sub?.type === "admin" || sub?.type === "founder") && (
+              {!isVIP && (
+                <span style={{
+                  background: tc.color, color: tc.textColor,
+                  fontSize: "10px", fontWeight: 800, letterSpacing: "0.18em",
+                  padding: "3px 10px", borderRadius: "20px",
+                }}>
+                  {tc.label}
+                </span>
+              )}
+              {isVIP && (
+                <span style={{
+                  background: "linear-gradient(90deg, #B8922A, #D4AF37)",
+                  color: "#0D1520",
+                  fontSize: "10px", fontWeight: 800, letterSpacing: "0.18em",
+                  padding: "3px 10px", borderRadius: "20px",
+                }}>
+                  VIP
+                </span>
+              )}
+              {!isSubType && !isVIP && (sub?.type === "admin" || sub?.type === "founder") && (
                 <span style={{
                   background: "rgba(184,146,42,0.15)", color: "#B8922A",
                   fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em",
@@ -843,6 +1004,154 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* ── VIP Subordinate Code Manager ── */}
+      {isVIP && (
+        <div style={card}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+            <p style={{ ...sectionLabel, marginBottom: 0, color: "#D4AF37" }}>Subordinate Code Manager</p>
+            <span style={{ color: "#888888", fontSize: "12px" }}>
+              {vipSubordinates.length} of {(sub as { vip_max_subordinates?: number })?.vip_max_subordinates ?? 5} active
+            </span>
+          </div>
+
+          {/* Active codes list */}
+          {vipLoadingSubordinates ? (
+            <p style={{ color: "#555555", fontSize: "13px", fontFamily: "monospace", letterSpacing: "0.1em" }}>Loading codes...</p>
+          ) : vipSubordinates.length > 0 ? (
+            <div style={{ marginBottom: "24px" }}>
+              {vipSubordinates.map((s) => {
+                const isExpired = new Date() >= new Date(s.expiresAt);
+                return (
+                  <div key={s.code} style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "12px 0", borderBottom: "1px solid rgba(255,255,255,0.05)",
+                    flexWrap: "wrap", gap: "10px",
+                  }}>
+                    <div>
+                      <p style={{ color: "#ffffff", fontSize: "13px", fontFamily: "monospace", fontWeight: 600, margin: 0 }}>{s.code}</p>
+                      <p style={{ color: "#555555", fontSize: "11px", margin: "3px 0 0" }}>
+                        Issued {new Date(s.issuedAt).toLocaleDateString()} · Expires {new Date(s.expiresAt).toLocaleDateString()} · {s.expiryType} · {s.usageCount} use{s.usageCount !== 1 ? "s" : ""}
+                      </p>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{
+                        fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", padding: "2px 8px", borderRadius: "20px",
+                        background: isExpired ? "rgba(85,85,85,0.15)" : "rgba(74,222,128,0.12)",
+                        color: isExpired ? "#555555" : "#4ADE80",
+                        border: `1px solid ${isExpired ? "rgba(85,85,85,0.25)" : "rgba(74,222,128,0.25)"}`,
+                      }}>
+                        {isExpired ? "EXPIRED" : "ACTIVE"}
+                      </span>
+                      <button
+                        onClick={() => handleRevokeSubordinate(s.code)}
+                        style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: "6px", color: "#F87171", fontSize: "11px", padding: "4px 10px", cursor: "pointer" }}>
+                        Revoke
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p style={{ color: "#555555", fontSize: "13px", marginBottom: "20px" }}>No active subordinate codes. Generate one below.</p>
+          )}
+
+          {/* Generate new code */}
+          {vipSubordinates.length < ((sub as { vip_max_subordinates?: number })?.vip_max_subordinates ?? 5) ? (
+            <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "18px" }}>
+              <p style={{ color: "#888888", fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "14px" }}>
+                Generate New Subordinate Code
+              </p>
+              <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap", marginBottom: "14px" }}>
+                <select
+                  value={vipSubExpiryType}
+                  onChange={(e) => setVipSubExpiryType(e.target.value)}
+                  style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#ffffff", fontSize: "13px", padding: "8px 12px", cursor: "pointer" }}
+                >
+                  <option value="1_use">1 use only</option>
+                  <option value="24h">24 hours</option>
+                  <option value="48h">48 hours</option>
+                  <option value="72h">72 hours</option>
+                  <option value="7d">7 days</option>
+                  <option value="14d">14 days</option>
+                  <option value="30d">30 days</option>
+                </select>
+                <button
+                  onClick={handleGenerateSubordinate}
+                  disabled={vipGenerating}
+                  style={{
+                    background: vipGenerating ? "#0D6E7A" : "#D4AF37", color: "#0D1520",
+                    border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: 700,
+                    padding: "9px 20px", cursor: vipGenerating ? "not-allowed" : "pointer",
+                  }}>
+                  {vipGenerating ? "Generating…" : "Generate Code"}
+                </button>
+              </div>
+
+              {vipGeneratedCode && (
+                <div style={{ background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.3)", borderRadius: "10px", padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+                  <p style={{ color: "#D4AF37", fontSize: "14px", fontFamily: "monospace", fontWeight: 700, margin: 0, letterSpacing: "0.08em" }}>
+                    {vipGeneratedCode}
+                  </p>
+                  <button
+                    onClick={() => { navigator.clipboard.writeText(vipGeneratedCode); setVipCopied(true); setTimeout(() => setVipCopied(false), 2000); }}
+                    style={{ background: "rgba(212,175,55,0.15)", border: "1px solid rgba(212,175,55,0.4)", borderRadius: "6px", color: "#D4AF37", fontSize: "11px", fontWeight: 700, padding: "6px 12px", cursor: "pointer" }}>
+                    {vipCopied ? "Copied!" : "Copy"}
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "16px", textAlign: "center" }}>
+              <p style={{ color: "#888888", fontSize: "13px" }}>
+                Maximum 5 active subordinate codes. Revoke one to generate another.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── VIP Team Activity ── */}
+      {isVIP && (
+        <div style={card}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+            <p style={{ ...sectionLabel, marginBottom: 0, color: "#D4AF37" }}>Team Activity</p>
+            {vipTeamActivity.length > 0 && (
+              <span style={{ color: "#555555", fontSize: "12px" }}>{vipTeamActivity.length} report{vipTeamActivity.length !== 1 ? "s" : ""}</span>
+            )}
+          </div>
+
+          {vipLoadingActivity ? (
+            <p style={{ color: "#555555", fontSize: "13px", fontFamily: "monospace", letterSpacing: "0.1em" }}>Loading activity...</p>
+          ) : vipTeamActivity.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "24px 16px" }}>
+              <p style={{ color: "#555555", fontSize: "13px" }}>No subordinate scans yet.</p>
+              <p style={{ color: "#444444", fontSize: "12px", marginTop: "6px" }}>Scans from subordinate codes will appear here in real time.</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {vipTeamActivity.slice(0, 20).map((r) => {
+                const sev = SEVERITY_COLORS[r.severity] ?? SEVERITY_COLORS.info;
+                return (
+                  <div key={r.reportId} style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+                    <div>
+                      <p style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, margin: 0 }}>{r.locationName || "Unknown Location"}</p>
+                      <p style={{ color: "#555555", fontSize: "11px", margin: "3px 0 0" }}>
+                        {new Date(r.createdAt).toLocaleDateString()} · {REPORT_TYPE_LABELS[r.type]} · {r.findingCount} finding{r.findingCount !== 1 ? "s" : ""}
+                        {r.codeUsed && <span style={{ marginLeft: "8px", color: "#333333", fontFamily: "monospace" }}>{r.codeUsed.replace(/[A-Z0-9]{4}$/, "••••")}</span>}
+                      </p>
+                    </div>
+                    <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", padding: "2px 8px", borderRadius: "20px", background: sev.bg, color: sev.color, border: `1px solid ${sev.border}` }}>
+                      {r.severity.toUpperCase()}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Buy More Verdicts ── */}
       {isSubType && (
@@ -1149,6 +1458,95 @@ export default function DashboardPage() {
                   )}
                 </div>
               )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* ── Team Lead / Team Activity (Flock + Murder) ── */}
+      {isSubType && (tier === "flock" || tier === "murder") && (
+        <div style={card}>
+          {tier === "murder" || teamLeadActive ? (
+            // Murder: Team Lead included. Flock with active Team Lead: show activity
+            <>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+                <div>
+                  <p style={{ ...sectionLabel, marginBottom: 0 }}>Team Activity</p>
+                  {tier === "murder" && <p style={{ color: "#555555", fontSize: "11px", marginTop: "4px" }}>Team Lead included with Murder tier</p>}
+                </div>
+                {teamActivity.length > 0 && (
+                  <span style={{ color: "#555555", fontSize: "12px" }}>{teamActivity.length} report{teamActivity.length !== 1 ? "s" : ""}</span>
+                )}
+              </div>
+
+              {teamActivityLoading ? (
+                <p style={{ color: "#555555", fontSize: "13px", fontFamily: "monospace", letterSpacing: "0.1em" }}>Loading activity...</p>
+              ) : teamActivity.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "24px 16px" }}>
+                  <p style={{ color: "#555555", fontSize: "13px" }}>No team scans yet.</p>
+                  <p style={{ color: "#444444", fontSize: "12px", marginTop: "6px" }}>Invite team members and their scans will appear here.</p>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  {teamActivity.slice(0, 20).map((r) => {
+                    const sev = SEVERITY_COLORS[r.severity] ?? SEVERITY_COLORS.info;
+                    return (
+                      <div key={r.reportId} style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+                        <div>
+                          <p style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, margin: 0 }}>{r.locationName || "Unknown Location"}</p>
+                          <p style={{ color: "#555555", fontSize: "11px", margin: "3px 0 0" }}>
+                            {new Date(r.createdAt).toLocaleDateString()} · {REPORT_TYPE_LABELS[r.type]} · {r.findingCount} finding{r.findingCount !== 1 ? "s" : ""}
+                          </p>
+                        </div>
+                        <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", padding: "2px 8px", borderRadius: "20px", background: sev.bg, color: sev.color, border: `1px solid ${sev.border}` }}>
+                          {r.severity.toUpperCase()}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          ) : (
+            // Flock without Team Lead: show upgrade prompt
+            <>
+              <p style={{ ...sectionLabel, marginBottom: "8px" }}>Team Lead</p>
+              <p style={{ color: "#888888", fontSize: "13px", marginBottom: "16px", lineHeight: 1.6 }}>
+                See everything your team runs. All reports from all seats flow into a single dashboard. Get instant visibility across your entire Flock subscription.
+              </p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "18px" }}>
+                {(["monthly", "annual"] as const).map((p) => (
+                  <div
+                    key={p}
+                    onClick={() => setTeamLeadBilling(p)}
+                    style={{
+                      background: teamLeadBilling === p ? "rgba(0,194,199,0.08)" : "#0D1520",
+                      border: `1px solid ${teamLeadBilling === p ? "rgba(0,194,199,0.4)" : "rgba(255,255,255,0.08)"}`,
+                      borderRadius: "12px", padding: "16px", textAlign: "center", cursor: "pointer",
+                    }}
+                  >
+                    <p style={{ color: "#888888", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>
+                      {p === "monthly" ? "Monthly" : "Annual"}
+                    </p>
+                    <p style={{ color: teamLeadBilling === p ? "#00C2C7" : "#ffffff", fontSize: "24px", fontWeight: 800, lineHeight: 1, marginBottom: "4px" }}>
+                      {p === "monthly" ? "+$35/mo" : "+$300/yr"}
+                    </p>
+                    {p === "annual" && (
+                      <p style={{ color: "#4ADE80", fontSize: "10px" }}>save $120</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={handleUpgradeTeamLead}
+                disabled={buyingTeamLead}
+                style={{
+                  background: buyingTeamLead ? "#0D6E7A" : "#00C2C7", color: "#0D1520",
+                  border: "none", borderRadius: "10px", fontSize: "13px", fontWeight: 700,
+                  padding: "11px 24px", cursor: buyingTeamLead ? "not-allowed" : "pointer",
+                }}>
+                {buyingTeamLead ? "Redirecting…" : "Upgrade to Team Lead →"}
+              </button>
             </>
           )}
         </div>
@@ -1633,13 +2031,23 @@ export default function DashboardPage() {
       )}
 
       {/* Bypass code notice */}
-      {!isSubType && (sub?.type === "admin" || sub?.type === "founder") && (
+      {!isSubType && !isVIP && (sub?.type === "admin" || sub?.type === "founder") && (
         <div style={{
           background: "rgba(184,146,42,0.06)", border: "1px solid rgba(184,146,42,0.2)",
           borderRadius: "12px", padding: "16px 20px",
         }}>
           <p style={{ color: "#B8922A", fontSize: "12px", lineHeight: 1.6 }}>
             <strong>Bypass access active.</strong> This is an {sub.type} code. Full account and billing details are not displayed for bypass codes. All Crow&rsquo;s Eye features are available.
+          </p>
+        </div>
+      )}
+      {isVIP && (
+        <div style={{
+          background: "rgba(212,175,55,0.06)", border: "1px solid rgba(212,175,55,0.2)",
+          borderRadius: "12px", padding: "16px 20px",
+        }}>
+          <p style={{ color: "#D4AF37", fontSize: "12px", lineHeight: 1.6 }}>
+            <strong>VIP Founding Member access.</strong> Unlimited Verdicts and Reckonings are included at no charge. Billing details are not applicable for founding member codes.
           </p>
         </div>
       )}

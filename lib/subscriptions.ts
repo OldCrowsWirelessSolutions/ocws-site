@@ -4,6 +4,7 @@
 // only stores what is safe to display.
 
 import redis from "./redis";
+import { isVIPCode, getVIPCode, validateSubordinateCode } from "./vip-codes";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -34,7 +35,7 @@ export interface SubscriptionRecord {
 
 export interface ValidationResult {
   valid: boolean;
-  type: "subscription" | "founder" | "admin" | "promo" | null;
+  type: "subscription" | "founder" | "admin" | "promo" | "vip" | null;
   tier?: SubscriptionTier;
   customer_name?: string;
   verdicts_remaining?: number;       // 999 = unlimited
@@ -47,6 +48,11 @@ export interface ValidationResult {
   seat_limit?: number;
   seats_used?: number;
   seat_token?: string;               // assigned/confirmed device token
+  // VIP fields
+  vip_name?: string;
+  vip_title?: string;
+  vip_company?: string;
+  vip_max_subordinates?: number;
   error?: string;
 }
 
@@ -215,6 +221,41 @@ export async function validateSubscriptionId(
   input: string
 ): Promise<ValidationResult> {
   const code = input.trim().toUpperCase();
+
+  // 0. VIP codes (CORVUS-ERIC, CORVUS-MIKE, CORVUS-NATE)
+  if (isVIPCode(code)) {
+    const vip = getVIPCode(code)!;
+    return {
+      valid: true,
+      type: "vip",
+      customer_name: vip.name,
+      verdicts_remaining: 999999,
+      verdicts_unlimited: true,
+      reckonings_remaining: { small: 999999, standard: 999999, commercial: 999999 },
+      reckonings_unlimited: { small: true, standard: true, commercial: true },
+      vip_name: vip.name,
+      vip_title: vip.title,
+      vip_company: vip.company,
+      vip_max_subordinates: vip.maxSubordinates,
+    };
+  }
+
+  // 0b. Subordinate codes (CORVUS-SUB-XXXXXX) — issued by VIP members
+  if (code.startsWith("CORVUS-SUB-")) {
+    const subRecord = await validateSubordinateCode(code);
+    if (!subRecord) {
+      return { valid: false, type: null, error: "Subordinate code is invalid, expired, or already used." };
+    }
+    return {
+      valid: true,
+      type: "founder",
+      customer_name: `Guest (via ${subRecord.issuedByName})`,
+      verdicts_remaining: 999999,
+      verdicts_unlimited: true,
+      reckonings_remaining: { small: 0, standard: 0, commercial: 0 },
+      reckonings_unlimited: { small: false, standard: false, commercial: false },
+    };
+  }
 
   // 1. Internal codes (admin, founder, promo) — checked first
   const internal = INTERNAL_CODES[code];

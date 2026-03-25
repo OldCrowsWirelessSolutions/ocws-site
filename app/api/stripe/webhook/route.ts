@@ -355,6 +355,21 @@ export async function POST(req: NextRequest) {
             }));
             console.log(`[webhook] seat_purchase: +${additionalSeats} seats → ${subId}`);
           }
+        } else if (metaType === "team_lead_upgrade") {
+          const subId        = session.metadata?.subscriptionId;
+          const billingPeriod = session.metadata?.billingPeriod ?? "monthly";
+          if (subId) {
+            await redis.set(`sub:${subId}:team_lead`, "true");
+            await redis.set(`sub:${subId}:team_lead_billing`, billingPeriod);
+            const histKey = `sub:${subId}:team_lead_history`;
+            await redis.lpush(histKey, JSON.stringify({
+              type:        "team_lead_upgrade",
+              billingPeriod,
+              session_id:  session.id,
+              timestamp:   new Date().toISOString(),
+            }));
+            console.log(`[webhook] team_lead_upgrade: ${subId}`);
+          }
         } else if (metaType === "reckoning_purchase") {
           const subId         = session.metadata?.subscriptionId;
           const reckoningType = session.metadata?.reckoningType;
