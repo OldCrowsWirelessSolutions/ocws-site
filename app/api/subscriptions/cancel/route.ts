@@ -30,9 +30,9 @@ export async function POST(req: NextRequest) {
       cancel_at_period_end: true,
     });
 
-    const stripeSubResponse = await stripe.subscriptions.retrieve(sub.stripe_subscription_id);
-    const stripeSub = stripeSubResponse as Stripe.Subscription;
-    const accessUntil = new Date((stripeSub.current_period_end ?? 0) * 1000).toISOString();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const stripeSubResponse = await stripe.subscriptions.retrieve(sub.stripe_subscription_id) as any;
+    const accessUntil = new Date((stripeSubResponse.current_period_end ?? 0) * 1000).toISOString();
 
     await updateSubscription(code, {
       status: "cancelling" as never,
