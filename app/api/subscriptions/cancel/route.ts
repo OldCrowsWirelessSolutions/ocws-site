@@ -26,10 +26,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No Stripe subscription found" }, { status: 400 });
     }
 
-    const stripeSub = await stripe.subscriptions.update(sub.stripe_subscription_id, {
+    await stripe.subscriptions.update(sub.stripe_subscription_id, {
       cancel_at_period_end: true,
     });
 
+    const stripeSub = await stripe.subscriptions.retrieve(sub.stripe_subscription_id);
     const accessUntil = new Date(stripeSub.current_period_end * 1000).toISOString();
 
     await updateSubscription(code, {
