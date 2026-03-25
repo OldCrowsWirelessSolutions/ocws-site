@@ -448,7 +448,52 @@ export default function HomePage() {
             </h2>
           </div>
 
+          {/* Eric Mims — Featured pull quote */}
+          <div
+            className="rounded-2xl p-6 mb-8 max-w-4xl"
+            style={{ background: "rgba(184,146,42,0.06)", border: "1px solid rgba(184,146,42,0.25)", borderLeft: "4px solid #B8922A" }}
+          >
+            <p className="text-base md:text-lg leading-relaxed italic mb-4" style={{ color: "rgba(255,255,255,0.85)" }}>
+              &ldquo;In under 5 minutes it produced actionable guidance. Wish I&rsquo;d had this in 2003 rolling out 802.11g.&rdquo;
+            </p>
+            <p className="text-sm font-semibold" style={{ color: "#B8922A" }}>
+              — Eric Mims, San Antonio TX &nbsp;&middot;&nbsp; 30+ years IT experience
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
+            {/* Eric Mims — Full testimonial */}
+            <div
+              className="rounded-2xl p-7 flex flex-col gap-4"
+              style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.08)", borderTop: "3px solid #B8922A" }}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex gap-0.5" aria-label="5 out of 5 stars">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} width="16" height="16" viewBox="0 0 16 16" fill="#B8922A" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M8 1l1.85 3.75 4.15.6-3 2.93.71 4.14L8 10.25l-3.71 1.97.71-4.14L2 5.35l4.15-.6L8 1z"/>
+                    </svg>
+                  ))}
+                </div>
+                <span
+                  className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                  style={{ background: "rgba(184,146,42,0.1)", border: "1px solid rgba(184,146,42,0.25)", color: "#B8922A" }}
+                >
+                  Crow&rsquo;s Eye
+                </span>
+              </div>
+              <blockquote className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.75)" }}>
+                &ldquo;Corvus impressed me. I&rsquo;ve been in IT &gt;30 years and in under 5 minutes it produced actionable guidance. It reads what&rsquo;s visible on-air, flags co-channel contention, explains impact, and recommends fixes. Wish I&rsquo;d had this in 2003 rolling out 802.11g. Hats off to Josh and Old Crows Wireless.&rdquo;
+              </blockquote>
+              <div className="flex items-center justify-between pt-1" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+                <div>
+                  <p className="text-sm font-semibold text-white">Eric Mims</p>
+                  <p className="text-xs" style={{ color: "#B8922A" }}>San Antonio, TX · 30+ yrs IT</p>
+                </div>
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>March 2026</p>
+              </div>
+            </div>
+
             {/* Nate Farrelly — Google Review */}
             <div
               className="rounded-2xl p-7 flex flex-col gap-4"
@@ -494,13 +539,20 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="mt-8">
+          <div className="mt-8 flex gap-6 flex-wrap items-center">
             <Link
               href="/testimonials"
               className="text-sm font-semibold transition"
               style={{ color: "#00C2C7" }}
             >
-              Submit your own review →
+              Read more reviews →
+            </Link>
+            <Link
+              href="/testimonials#submit"
+              className="text-sm transition"
+              style={{ color: "rgba(255,255,255,0.4)" }}
+            >
+              Submit your own review
             </Link>
           </div>
         </div>

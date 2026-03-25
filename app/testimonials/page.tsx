@@ -70,22 +70,51 @@ export default function TestimonialsPage() {
           </p>
         </div>
 
-        {/* Empty state */}
-        <div
-          className="rounded-2xl p-10 text-center mb-16 mt-8"
-          style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)" }}
-        >
-          <p className="text-5xl mb-4">🐦‍⬛</p>
-          <p className="text-xl font-bold text-white mb-2">
-            Verdicts are being rendered.
-          </p>
-          <p className="text-base" style={{ color: "#888" }}>
-            Testimonials coming soon. Corvus doesn&rsquo;t rush. Neither do we.
-          </p>
+        {/* Approved testimonials */}
+        <div className="mt-10 mb-16 max-w-3xl space-y-6">
+
+          {/* Eric Mims — Featured */}
+          <div
+            className="rounded-2xl p-8"
+            style={{ background: "#1A2332", border: "1px solid rgba(184,146,42,0.35)", borderTop: "3px solid #B8922A" }}
+          >
+            {/* Stars + badge */}
+            <div className="flex items-center justify-between gap-3 mb-5">
+              <div className="flex gap-0.5" aria-label="5 out of 5 stars">
+                {[...Array(5)].map((_, i) => (
+                  <svg key={i} width="18" height="18" viewBox="0 0 16 16" fill="#B8922A" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 1l1.85 3.75 4.15.6-3 2.93.71 4.14L8 10.25l-3.71 1.97.71-4.14L2 5.35l4.15-.6L8 1z"/>
+                  </svg>
+                ))}
+              </div>
+              <span
+                className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                style={{ background: "rgba(184,146,42,0.12)", border: "1px solid rgba(184,146,42,0.3)", color: "#B8922A" }}
+              >
+                ★ Featured
+              </span>
+            </div>
+
+            {/* Pull quote */}
+            <blockquote className="text-sm leading-relaxed mb-6" style={{ color: "rgba(255,255,255,0.82)" }}>
+              &ldquo;Corvus impressed me. I&rsquo;ve been in IT &gt;30 years (including leading network infrastructure teams), and in under 5 minutes it ingested three Wi-Fi analyzer scans from my small-office WLAN and produced actionable guidance. It reads what&rsquo;s visible on-air&mdash;SSIDs/BSSIDs, RSSI, channels, and 2.4&thinsp;GHz vs 5&thinsp;GHz&mdash;flags likely co-channel contention, explains impact, and recommends fixes (e.g., channel/band changes). It also validates what&rsquo;s already solid so you can keep it stable. Wish I&rsquo;d had this in 2003 rolling out 802.11g. Hats off to Josh and Old Crows Wireless.&rdquo;
+            </blockquote>
+
+            {/* Reviewer */}
+            <div className="flex items-end justify-between gap-4 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+              <div>
+                <p className="text-sm font-bold text-white">Eric Mims</p>
+                <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>San Antonio, TX</p>
+                <p className="text-xs mt-1" style={{ color: "#B8922A" }}>30+ years IT experience · Network infrastructure lead</p>
+              </div>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>March 2026</p>
+            </div>
+          </div>
+
         </div>
 
         {/* Submission form */}
-        <div className="max-w-2xl">
+        <div id="submit" className="max-w-2xl">
           <h2 className="text-2xl font-bold text-white mb-2">Share your experience.</h2>
           <p className="text-sm mb-8" style={{ color: "#888" }}>
             Used Crow&rsquo;s Eye or worked with OCWS? We&rsquo;d love to hear about it.
