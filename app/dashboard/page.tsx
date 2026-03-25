@@ -388,19 +388,17 @@ export default function DashboardPage() {
     try {
       const res = await fetch("/api/team/report", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, interval, withBriefing: true }),
+        body: JSON.stringify({ code, interval }),
       });
       if (res.ok) {
         const d = await res.json();
         setTeamReport(d.report ?? null);
-        setTeamReportBriefing(d.briefing ?? "");
+        // briefing is now embedded in report.corvusBriefing; keep teamReportBriefing for legacy display
+        setTeamReportBriefing(d.report?.corvusBriefing ?? d.briefing ?? "");
         setTeamReportGenerated(true);
-        // Extract available months from all member scans
-        type MScan = { createdAt: string };
-        type MMember = { scans: MScan[] };
-        const allDates = (d.report?.members ?? []).flatMap((m: MMember) => m.scans.map((s: MScan) => s.createdAt.slice(0, 7)));
-        const months = Array.from(new Set<string>(allDates)).sort((a, b) => b.localeCompare(a));
-        setTeamAvailableMonths(months);
+        if (d.availableMonths) {
+          setTeamAvailableMonths(d.availableMonths);
+        }
       }
     } catch { /* */ } finally {
       if (!silent) setTeamReportLoading(false);
@@ -460,16 +458,7 @@ export default function DashboardPage() {
     try {
       const saved = localStorage.getItem("corvus_sub_code");
       if (!saved) { setPhase("auth"); return; }
-      // 24-hour session check
-      const ts = localStorage.getItem("corvus_session_ts");
-      const SESSION_TTL = 24 * 60 * 60 * 1000;
-      if (ts && Date.now() - parseInt(ts) > SESSION_TTL) {
-        localStorage.removeItem("corvus_sub_code");
-        localStorage.removeItem("corvus_session_ts");
-        try { sessionStorage.setItem("corvus_session_expired", "1"); } catch { /* */ }
-        window.location.href = "/login";
-        return;
-      }
+      // Session persists until explicit logout — no time-based expiry
       loadDashboard(saved);
     } catch { setPhase("auth"); }
   }, [loadDashboard]);
@@ -506,7 +495,6 @@ export default function DashboardPage() {
       }
       try {
         localStorage.setItem("corvus_sub_code", code);
-        localStorage.setItem("corvus_session_ts", String(Date.now()));
       } catch { /* */ }
       setSub(data);
       if (data.type === "subscription") {
@@ -529,10 +517,13 @@ export default function DashboardPage() {
   function handleLogout() {
     try {
       localStorage.removeItem("corvus_sub_code");
+      localStorage.removeItem("corvus_session_ts");
       localStorage.removeItem("corvus_sub_tier");
+      localStorage.removeItem("corvus_admin_auth");
       localStorage.removeItem("corvus_admin_impersonating");
+      sessionStorage.clear();
     } catch { /* */ }
-    router.push("/login");
+    window.location.href = "/";
   }
 
   function copyCode() {
@@ -1306,10 +1297,10 @@ export default function DashboardPage() {
                     {/* Stats row */}
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px", marginBottom: "16px" }}>
                       {[
-                        { label: "Total Scans",      value: String(teamReport.totalScans),       color: "#00C2C7" },
-                        { label: "Active Members",   value: `${teamReport.activeMembers} / ${teamReport.members.length}`, color: "#4ADE80" },
-                        { label: "Critical Findings",value: String(teamReport.criticalFindings),  color: "#F87171" },
-                        { label: "Avg Findings/Scan",value: String(teamReport.avgFindingsPerScan), color: "#FBBF24" },
+                        { label: "Total Scans",      value: String(teamReport.totalTeamScans),       color: "#00C2C7" },
+                        { label: "Active Members",   value: `${teamReport.memberReports.filter(m => m.totalScans > 0).length} / ${teamReport.memberReports.length}`, color: "#4ADE80" },
+                        { label: "Critical Findings",value: String(teamReport.totalCriticalFindings),  color: "#F87171" },
+                        { label: "Avg Scans/Member", value: String(teamReport.avgScansPerMember), color: "#FBBF24" },
                       ].map((s) => (
                         <div key={s.label} style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "12px 14px" }}>
                           <p style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 4px" }}>{s.label}</p>
@@ -1319,35 +1310,35 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Corvus briefing */}
-                    {(teamReportBriefing || teamBriefingLoading) && (
+                    {(teamReport.corvusBriefing || teamBriefingLoading) && (
                       <div style={{ background: "rgba(0,194,199,0.04)", border: "1px solid rgba(0,194,199,0.15)", borderRadius: "10px", padding: "14px 16px", marginBottom: "16px", display: "flex", gap: "12px", alignItems: "flex-start" }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src="/corvus_still.png" alt="Corvus" style={{ width: "24px", height: "24px", borderRadius: "50%", flexShrink: 0, marginTop: "2px" }} />
                         {teamBriefingLoading ? (
                           <p style={{ color: "#555555", fontSize: "13px", fontStyle: "italic", margin: 0 }}>Corvus is analyzing…</p>
                         ) : (
-                          <p style={{ color: "#cccccc", fontSize: "13px", lineHeight: 1.6, margin: 0 }}>{teamReportBriefing}</p>
+                          <p style={{ color: "#cccccc", fontSize: "13px", lineHeight: 1.6, margin: 0 }}>{teamReport.corvusBriefing}</p>
                         )}
                       </div>
                     )}
 
                     {/* Member breakdown */}
                     <p style={{ ...sectionLabel, marginBottom: "10px" }}>Member Breakdown</p>
-                    {teamReport.members.length === 0 ? (
+                    {teamReport.memberReports.length === 0 ? (
                       <p style={{ color: "#555555", fontSize: "13px" }}>No members in this report.</p>
                     ) : (
                       <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                        {teamReport.members.map((m) => (
+                        {teamReport.memberReports.map((m) => (
                           <button key={m.code} onClick={() => setMemberModalCode(m.code)}
                             style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", textAlign: "left", width: "100%", flexWrap: "wrap", gap: "8px" }}>
                             <div>
-                              <p style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, margin: 0 }}>{m.name}</p>
-                              <p style={{ color: "#444444", fontSize: "10px", fontFamily: "monospace", margin: "2px 0 0", letterSpacing: "0.08em" }}>{m.code}</p>
+                              <p style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, margin: 0 }}>{m.codeMasked}</p>
+                              <p style={{ color: "#444444", fontSize: "10px", fontFamily: "monospace", margin: "2px 0 0", letterSpacing: "0.08em" }}>{m.mostUsedProduct !== "—" ? m.mostUsedProduct : ""}</p>
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                               <span style={{ color: "#00C2C7", fontSize: "12px", fontWeight: 600 }}>{m.totalScans} scan{m.totalScans !== 1 ? "s" : ""}</span>
                               {m.criticalFindings > 0 && <span style={{ color: "#F87171", fontSize: "11px" }}>{m.criticalFindings} critical</span>}
-                              <span style={{ color: "#555555", fontSize: "11px" }}>{m.lastScan ? new Date(m.lastScan).toLocaleDateString() : "No activity"}</span>
+                              <span style={{ color: "#555555", fontSize: "11px" }}>{m.lastActive ? new Date(m.lastActive).toLocaleDateString() : "No activity"}</span>
                               <span style={{ color: "#444444", fontSize: "12px" }}>›</span>
                             </div>
                           </button>
@@ -1506,10 +1497,10 @@ export default function DashboardPage() {
             {/* Stats row */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px", marginBottom: "16px" }}>
               {[
-                { label: "Total Scans",      value: String(teamReport.totalScans),       color: "#D4AF37" },
-                { label: "Active Members",   value: `${teamReport.activeMembers} / ${teamReport.members.length}`, color: "#4ADE80" },
-                { label: "Critical Findings",value: String(teamReport.criticalFindings),  color: "#F87171" },
-                { label: "Avg Findings/Scan",value: String(teamReport.avgFindingsPerScan), color: "#FBBF24" },
+                { label: "Total Scans",      value: String(teamReport.totalTeamScans),       color: "#D4AF37" },
+                { label: "Active Members",   value: `${teamReport.memberReports.filter(m => m.totalScans > 0).length} / ${teamReport.memberReports.length}`, color: "#4ADE80" },
+                { label: "Critical Findings",value: String(teamReport.totalCriticalFindings),  color: "#F87171" },
+                { label: "Avg Scans/Member", value: String(teamReport.avgScansPerMember), color: "#FBBF24" },
               ].map((s) => (
                 <div key={s.label} style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "12px 14px" }}>
                   <p style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 4px" }}>{s.label}</p>
@@ -1519,35 +1510,35 @@ export default function DashboardPage() {
             </div>
 
             {/* Corvus briefing */}
-            {(teamReportBriefing || teamBriefingLoading) && (
+            {(teamReport.corvusBriefing || teamBriefingLoading) && (
               <div style={{ background: "rgba(212,175,55,0.04)", border: "1px solid rgba(212,175,55,0.15)", borderRadius: "10px", padding: "14px 16px", marginBottom: "16px", display: "flex", gap: "12px", alignItems: "flex-start" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/corvus_still.png" alt="Corvus" style={{ width: "24px", height: "24px", borderRadius: "50%", flexShrink: 0, marginTop: "2px" }} />
                 {teamBriefingLoading ? (
                   <p style={{ color: "#555555", fontSize: "13px", fontStyle: "italic", margin: 0 }}>Corvus is analyzing…</p>
                 ) : (
-                  <p style={{ color: "#cccccc", fontSize: "13px", lineHeight: 1.6, margin: 0 }}>{teamReportBriefing}</p>
+                  <p style={{ color: "#cccccc", fontSize: "13px", lineHeight: 1.6, margin: 0 }}>{teamReport.corvusBriefing}</p>
                 )}
               </div>
             )}
 
             {/* Member breakdown */}
             <p style={{ ...sectionLabel, marginBottom: "10px", color: "#D4AF37" }}>Member Breakdown</p>
-            {teamReport.members.length === 0 ? (
+            {teamReport.memberReports.length === 0 ? (
               <p style={{ color: "#555555", fontSize: "13px" }}>No subordinate activity in this period.</p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                {teamReport.members.map((m) => (
+                {teamReport.memberReports.map((m) => (
                   <button key={m.code} onClick={() => setMemberModalCode(m.code)}
                     style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", textAlign: "left", width: "100%", flexWrap: "wrap", gap: "8px" }}>
                     <div>
-                      <p style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, margin: 0 }}>{m.name}</p>
-                      <p style={{ color: "#444444", fontSize: "10px", fontFamily: "monospace", margin: "2px 0 0", letterSpacing: "0.08em" }}>{m.code}</p>
+                      <p style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, margin: 0 }}>{m.codeMasked}</p>
+                      <p style={{ color: "#444444", fontSize: "10px", fontFamily: "monospace", margin: "2px 0 0", letterSpacing: "0.08em" }}>{m.mostUsedProduct !== "—" ? m.mostUsedProduct : ""}</p>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                       <span style={{ color: "#D4AF37", fontSize: "12px", fontWeight: 600 }}>{m.totalScans} scan{m.totalScans !== 1 ? "s" : ""}</span>
                       {m.criticalFindings > 0 && <span style={{ color: "#F87171", fontSize: "11px" }}>{m.criticalFindings} critical</span>}
-                      <span style={{ color: "#555555", fontSize: "11px" }}>{m.lastScan ? new Date(m.lastScan).toLocaleDateString() : "No activity"}</span>
+                      <span style={{ color: "#555555", fontSize: "11px" }}>{m.lastActive ? new Date(m.lastActive).toLocaleDateString() : "No activity"}</span>
                       <span style={{ color: "#444444", fontSize: "12px" }}>›</span>
                     </div>
                   </button>
@@ -1957,15 +1948,8 @@ export default function DashboardPage() {
 
       {/* Member detail modal */}
       {memberModalCode && teamReport && (() => {
-        const m = teamReport.members.find((x) => x.code === memberModalCode);
+        const m = teamReport.memberReports.find((x) => x.code === memberModalCode);
         if (!m) return null;
-        const REPORT_TYPE_SHORT: Record<string, string> = {
-          verdict: "Verdict",
-          reckoning_small: "S.Reckoning",
-          reckoning_standard: "Std.Reckoning",
-          reckoning_commercial: "Com.Reckoning",
-          reckoning_pro: "Pro Reckoning",
-        };
         return (
           <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}
             onClick={(e) => { if (e.target === e.currentTarget) setMemberModalCode(null); }}>
@@ -1973,8 +1957,8 @@ export default function DashboardPage() {
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "20px" }}>
                 <div>
                   <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", margin: "0 0 4px" }}>Member Detail</p>
-                  <p style={{ color: "#ffffff", fontSize: "18px", fontWeight: 700, margin: 0 }}>{m.name}</p>
-                  <p style={{ color: "#444444", fontSize: "11px", fontFamily: "monospace", margin: "4px 0 0", letterSpacing: "0.08em" }}>{m.code}</p>
+                  <p style={{ color: "#ffffff", fontSize: "18px", fontWeight: 700, margin: 0 }}>{m.codeMasked}</p>
+                  <p style={{ color: "#444444", fontSize: "11px", fontFamily: "monospace", margin: "4px 0 0", letterSpacing: "0.08em" }}>Last active: {m.lastActive ? new Date(m.lastActive).toLocaleDateString() : "Never"}</p>
                 </div>
                 <button onClick={() => setMemberModalCode(null)}
                   style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#888888", fontSize: "13px", padding: "6px 12px", cursor: "pointer", flexShrink: 0 }}>
@@ -1984,9 +1968,9 @@ export default function DashboardPage() {
               {/* Stats */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", marginBottom: "20px" }}>
                 {[
-                  { label: "Scans",    value: String(m.totalScans),          color: "#00C2C7" },
-                  { label: "Critical", value: String(m.criticalFindings),     color: "#F87171" },
-                  { label: "Avg Findings", value: String(m.avgFindingsPerScan), color: "#FBBF24" },
+                  { label: "Scans",        value: String(m.totalScans),          color: "#00C2C7" },
+                  { label: "Critical",     value: String(m.criticalFindings),     color: "#F87171" },
+                  { label: "Avg/Scan",     value: String(m.avgFindingsPerScan),   color: "#FBBF24" },
                 ].map((s) => (
                   <div key={s.label} style={{ background: "#1A2332", borderRadius: "8px", padding: "10px 12px", textAlign: "center" }}>
                     <p style={{ color: "#555555", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 4px" }}>{s.label}</p>
@@ -1994,41 +1978,36 @@ export default function DashboardPage() {
                   </div>
                 ))}
               </div>
-              {/* Product breakdown */}
-              {Object.keys(m.productBreakdown).length > 0 && (
+              {/* Top issues */}
+              {m.topIssues.length > 0 && (
                 <div style={{ marginBottom: "16px" }}>
-                  <p style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>Product Usage</p>
+                  <p style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>Top Issues</p>
                   <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-                    {Object.entries(m.productBreakdown).map(([p, count]) => (
-                      <span key={p} style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "20px", color: "#00C2C7", fontSize: "11px", fontWeight: 600, padding: "3px 10px" }}>
-                        {REPORT_TYPE_SHORT[p] ?? p}: {count}
+                    {m.topIssues.map((issue) => (
+                      <span key={issue} style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: "20px", color: "#F87171", fontSize: "11px", fontWeight: 600, padding: "3px 10px" }}>
+                        {issue}
                       </span>
                     ))}
                   </div>
                 </div>
               )}
-              {/* Scan history */}
-              <p style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>Scan History ({teamReport.intervalLabel})</p>
-              {m.scans.length === 0 ? (
-                <p style={{ color: "#444444", fontSize: "13px" }}>No scans in this period.</p>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  {m.scans.map((s) => {
-                    const sev = SEVERITY_COLORS[s.severity] ?? SEVERITY_COLORS.info;
-                    return (
-                      <div key={s.reportId} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 10px", background: "#1A2332", borderRadius: "8px", flexWrap: "wrap", gap: "8px" }}>
-                        <div>
-                          <p style={{ color: "#ffffff", fontSize: "12px", fontWeight: 600, margin: 0 }}>{s.locationName || "Unknown Location"}</p>
-                          <p style={{ color: "#555555", fontSize: "10px", margin: "2px 0 0" }}>{new Date(s.createdAt).toLocaleDateString()} · {REPORT_TYPE_SHORT[s.type] ?? s.type} · {s.findingCount} findings</p>
-                        </div>
-                        <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "0.1em", padding: "2px 8px", borderRadius: "20px", background: sev.bg, color: sev.color, border: `1px solid ${sev.border}` }}>
-                          {s.severity.toUpperCase()}
-                        </span>
-                      </div>
-                    );
-                  })}
+              {/* Locations */}
+              {m.locationsScanned.length > 0 && (
+                <div style={{ marginBottom: "16px" }}>
+                  <p style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>Locations ({m.locationsScanned.length})</p>
+                  <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                    {m.locationsScanned.slice(0, 5).map((loc) => (
+                      <span key={loc} style={{ background: "rgba(0,194,199,0.06)", border: "1px solid rgba(0,194,199,0.15)", borderRadius: "20px", color: "#00C2C7", fontSize: "11px", padding: "3px 10px" }}>
+                        {loc}
+                      </span>
+                    ))}
+                    {m.locationsScanned.length > 5 && <span style={{ color: "#555555", fontSize: "11px", alignSelf: "center" }}>+{m.locationsScanned.length - 5} more</span>}
+                  </div>
                 </div>
               )}
+              {/* Most used product */}
+              <p style={{ color: "#888888", fontSize: "12px" }}>Most used product: <span style={{ color: "#ffffff" }}>{m.mostUsedProduct}</span></p>
+              <p style={{ color: "#555555", fontSize: "10px", marginTop: "8px" }}>Period: {teamReport.intervalLabel}</p>
             </div>
           </div>
         );

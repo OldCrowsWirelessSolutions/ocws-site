@@ -1,12 +1,12 @@
 // app/api/team/report/csv/route.ts
-// Returns a CSV file for a team report at the given interval.
+// Returns a CSV export of all scan events for a team in a given interval.
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { isVIPCode, getActiveSubordinates } from "@/lib/vip-codes";
 import { validateSubscriptionId, getSeatMembers } from "@/lib/subscriptions";
 import { getReportsForSubscription } from "@/lib/reports";
-import { buildTeamReport, type TimeInterval } from "@/lib/team-reporting";
+import { filterReportsByInterval, getIntervalLabel, type TimeInterval } from "@/lib/team-reporting";
 import redis from "@/lib/redis";
 
 const REPORT_TYPE_LABELS: Record<string, string> = {
@@ -38,7 +38,10 @@ export async function POST(req: NextRequest) {
 
     if (isVIPCode(code)) {
       const subs = await getActiveSubordinates(code);
-      memberSets = subs.map((s) => ({ code: s.code, name: `Sub-${s.code.slice(-4)}` }));
+      memberSets = [
+        { code, name: code },
+        ...subs.map((s) => ({ code: s.code, name: `Sub-${s.code.slice(-4)}` })),
+      ];
     } else {
       const validation = await validateSubscriptionId(code);
       if (!validation.valid || validation.type !== "subscription") {
@@ -60,23 +63,20 @@ export async function POST(req: NextRequest) {
       ];
     }
 
-    const memberReports = await Promise.all(
+    const memberReportsData = await Promise.all(
       memberSets.map(async ({ code: mCode, name }) => ({
         code: mCode,
         name,
-        reports: await getReportsForSubscription(mCode),
+        reports: filterReportsByInterval(await getReportsForSubscription(mCode), interval),
       }))
     );
 
-    const report = buildTeamReport(code, memberReports, interval);
-
-    // Build CSV: one row per scan
     const rows: string[] = [
       ["Date", "Member", "Code", "Location", "Report Type", "Severity", "Findings", "Critical", "Warning"].map(escapeCSV).join(","),
     ];
 
-    for (const m of report.members) {
-      for (const s of m.scans) {
+    for (const m of memberReportsData) {
+      for (const s of m.reports) {
         rows.push([
           new Date(s.createdAt).toLocaleDateString("en-US"),
           m.name,
@@ -92,7 +92,8 @@ export async function POST(req: NextRequest) {
     }
 
     const csv = rows.join("\n");
-    const filename = `team-report-${report.intervalLabel.replace(/\s+/g, "-").toLowerCase()}.csv`;
+    const intervalLabel = getIntervalLabel(interval).replace(/\s+/g, "-").toLowerCase();
+    const filename = `OCWS-Team-Report-${intervalLabel}-${new Date().toISOString().slice(0, 10)}.csv`;
 
     return new NextResponse(csv, {
       headers: {

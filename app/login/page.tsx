@@ -317,7 +317,6 @@ export default function LoginPage() {
   function storeAndRedirect(code: string) {
     try {
       localStorage.setItem("corvus_sub_code", code);
-      localStorage.setItem("corvus_session_ts", String(Date.now()));
     } catch { /* */ }
     router.push("/dashboard");
   }
@@ -327,7 +326,6 @@ export default function LoginPage() {
   async function maybeShowTribute(code: string) {
     try {
       localStorage.setItem("corvus_sub_code", code);
-      localStorage.setItem("corvus_session_ts", String(Date.now()));
     } catch { /* */ }
 
     const msg = TRIBUTE_MESSAGES[code];

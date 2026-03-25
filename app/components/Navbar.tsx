@@ -19,26 +19,37 @@ const navLinks = [
   { href: "/contact", label: "Contact" },
 ];
 
-// "My Dashboard" is always visible — routes to the universal login page
-const DASHBOARD_HREF = "/login";
-
 const GOOGLE_REVIEWS_URL =
   "https://www.google.com/search?q=old+crows+wireless+solutions#mpd=~4427280477076900275/customers/reviews";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [socialOpen, setSocialOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const pathname = usePathname();
   const hasEndorsements = getApprovedEndorsements().length > 0;
+
+  // Check login state from localStorage
+  useEffect(() => {
+    try {
+      const code = localStorage.getItem("corvus_sub_code");
+      const adminAuth = localStorage.getItem("corvus_admin_auth");
+      setIsLoggedIn(!!code);
+      setIsAdmin(!!adminAuth);
+    } catch { /* */ }
+  }, [pathname]);
 
   useEffect(() => {
     setOpen(false);
     setSocialOpen(false);
+    setAccountOpen(false);
   }, [pathname]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { setOpen(false); setSocialOpen(false); }
+      if (e.key === "Escape") { setOpen(false); setSocialOpen(false); setAccountOpen(false); }
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
@@ -54,6 +65,29 @@ export default function Navbar() {
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
   }, [socialOpen]);
+
+  // Close account dropdown when clicking outside
+  useEffect(() => {
+    if (!accountOpen) return;
+    const close = (e: MouseEvent) => {
+      const target = e.target as Element;
+      if (!target.closest("[data-account-dropdown]")) setAccountOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [accountOpen]);
+
+  function handleLogout() {
+    try {
+      localStorage.removeItem("corvus_sub_code");
+      localStorage.removeItem("corvus_session_ts");
+      localStorage.removeItem("corvus_sub_tier");
+      localStorage.removeItem("corvus_admin_auth");
+      localStorage.removeItem("corvus_admin_impersonating");
+      sessionStorage.clear();
+    } catch { /* */ }
+    window.location.href = "/";
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 backdrop-blur" style={{ background: "rgba(13,21,32,0.92)" }}>
@@ -154,13 +188,73 @@ export default function Navbar() {
               )}
             </div>
 
-            <Link
-              href={DASHBOARD_HREF}
-              className="rounded-lg px-3 py-2 text-sm font-semibold transition"
-              style={{ color: "#00C2C7", background: "rgba(0,194,199,0.07)", border: "1px solid rgba(0,194,199,0.18)" }}
-            >
-              My Dashboard
-            </Link>
+            {/* Account dropdown when logged in, otherwise My Dashboard link */}
+            {isLoggedIn ? (
+              <div className="relative" data-account-dropdown>
+                <button
+                  type="button"
+                  onClick={() => setAccountOpen(v => !v)}
+                  className="rounded-lg px-3 py-2 text-sm font-semibold transition flex items-center gap-1"
+                  style={{ color: "#00C2C7", background: "rgba(0,194,199,0.07)", border: "1px solid rgba(0,194,199,0.18)" }}
+                >
+                  My Account
+                  <svg
+                    width="10" height="10" viewBox="0 0 10 10" fill="currentColor"
+                    className={`transition-transform duration-150 ${accountOpen ? "rotate-180" : ""}`}
+                  >
+                    <path d="M1 3l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+
+                {accountOpen && (
+                  <div
+                    className="absolute top-full right-0 mt-2 rounded-xl border border-white/10 shadow-2xl py-2"
+                    style={{ background: "#1A2332", minWidth: "180px", zIndex: 100 }}
+                  >
+                    <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-widest" style={{ color: "#00C2C7", letterSpacing: "0.15em" }}>
+                      My Account
+                    </div>
+                    <div className="mx-3 mb-1 border-t border-white/10" />
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setAccountOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/[0.06] transition mx-1 rounded-lg"
+                    >
+                      <span>📊</span>
+                      <span>Dashboard</span>
+                    </Link>
+                    {isAdmin && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setAccountOpen(false)}
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/[0.06] transition mx-1 rounded-lg"
+                      >
+                        <span>⚙️</span>
+                        <span>Admin</span>
+                      </Link>
+                    )}
+                    <div className="mx-3 my-1 border-t border-white/10" />
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="flex items-center gap-2 px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/[0.06] transition mx-1 rounded-lg w-full text-left"
+                      style={{ color: "#F87171" }}
+                    >
+                      <span>↩</span>
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="rounded-lg px-3 py-2 text-sm font-semibold transition"
+                style={{ color: "#00C2C7", background: "rgba(0,194,199,0.07)", border: "1px solid rgba(0,194,199,0.18)" }}
+              >
+                My Dashboard
+              </Link>
+            )}
           </nav>
 
           {/* Right: CTA + Hamburger */}
@@ -266,14 +360,47 @@ export default function Navbar() {
                 )}
                 <div className="mx-3 mt-1 mb-1 border-t border-white/10" />
 
-                <Link
-                  href={DASHBOARD_HREF}
-                  onClick={() => setOpen(false)}
-                  className="rounded-xl px-3 py-3 text-sm font-semibold hover:bg-white/10 transition"
-                  style={{ color: "#00C2C7" }}
-                >
-                  My Dashboard
-                </Link>
+                {isLoggedIn ? (
+                  <>
+                    <div className="px-3 py-1 text-xs font-semibold uppercase tracking-widest" style={{ color: "#00C2C7" }}>
+                      My Account
+                    </div>
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setOpen(false)}
+                      className="rounded-xl px-3 py-3 text-sm font-semibold hover:bg-white/10 transition flex items-center gap-2"
+                      style={{ color: "#00C2C7" }}
+                    >
+                      <span>📊</span> Dashboard
+                    </Link>
+                    {isAdmin && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setOpen(false)}
+                        className="rounded-xl px-3 py-3 text-sm text-white/85 hover:bg-white/10 transition flex items-center gap-2"
+                      >
+                        <span>⚙️</span> Admin
+                      </Link>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => { setOpen(false); handleLogout(); }}
+                      className="rounded-xl px-3 py-3 text-sm hover:bg-white/10 transition flex items-center gap-2 w-full text-left"
+                      style={{ color: "#F87171", background: "transparent", border: "none", cursor: "pointer" }}
+                    >
+                      <span>↩</span> Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={() => setOpen(false)}
+                    className="rounded-xl px-3 py-3 text-sm font-semibold hover:bg-white/10 transition"
+                    style={{ color: "#00C2C7" }}
+                  >
+                    My Dashboard
+                  </Link>
+                )}
               </div>
 
               <div className="mt-3 border-t border-white/10 pt-3">
