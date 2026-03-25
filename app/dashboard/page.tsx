@@ -14,6 +14,7 @@ import {
   CORVUS_KYLE_DASHBOARD_BRIEF,
   CORVUS_TEAM_LEAD_DASHBOARD_BRIEF,
 } from "@/lib/corvus-ui-strings";
+import type { TeamReport } from "@/lib/team-reporting";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -260,6 +261,15 @@ export default function DashboardPage() {
   const [buyingTeamLead, setBuyingTeamLead]             = useState(false);
   const [teamLeadBilling, setTeamLeadBilling]           = useState<"monthly" | "annual">("monthly");
 
+  const [teamReport, setTeamReport]                     = useState<TeamReport | null>(null);
+  const [teamReportLoading, setTeamReportLoading]       = useState(false);
+  const [teamReportInterval, setTeamReportInterval]     = useState("30d");
+  const [teamReportBriefing, setTeamReportBriefing]     = useState("");
+  const [teamBriefingLoading, setTeamBriefingLoading]   = useState(false);
+  const [memberModalCode, setMemberModalCode]           = useState<string | null>(null);
+  const [teamAvailableMonths, setTeamAvailableMonths]   = useState<string[]>([]);
+  const [teamReportGenerated, setTeamReportGenerated]   = useState(false);
+
   const [subMgmtLoading, setSubMgmtLoading]   = useState<"pause30" | "pause60" | "cancel" | "reactivate" | null>(null);
   const [subMgmtConfirm, setSubMgmtConfirm]   = useState<"pause30" | "pause60" | "cancel" | null>(null);
   const [subMgmtFeedback, setSubMgmtFeedback] = useState("");
@@ -372,6 +382,33 @@ export default function DashboardPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const loadTeamReport = useCallback(async (code: string, interval: string, silent = false) => {
+    if (!silent) setTeamReportLoading(true);
+    setTeamBriefingLoading(true);
+    try {
+      const res = await fetch("/api/team/report", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, interval, withBriefing: true }),
+      });
+      if (res.ok) {
+        const d = await res.json();
+        setTeamReport(d.report ?? null);
+        setTeamReportBriefing(d.briefing ?? "");
+        setTeamReportGenerated(true);
+        // Extract available months from all member scans
+        type MScan = { createdAt: string };
+        type MMember = { scans: MScan[] };
+        const allDates = (d.report?.members ?? []).flatMap((m: MMember) => m.scans.map((s: MScan) => s.createdAt.slice(0, 7)));
+        const months = Array.from(new Set<string>(allDates)).sort((a, b) => b.localeCompare(a));
+        setTeamAvailableMonths(months);
+      }
+    } catch { /* */ } finally {
+      if (!silent) setTeamReportLoading(false);
+      setTeamBriefingLoading(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const loadDashboard = useCallback(async (code: string) => {
     setValidating(true);
     try {
@@ -406,16 +443,18 @@ export default function DashboardPage() {
       loadMyAnalytics(code);
       if (data.type === "vip") {
         loadVipSubordinates(code); loadVipTeamActivity(code);
+        loadTeamReport(code, "30d", true);
       } else {
         loadSeatInfo(code);
         if (data.type === "subscription" && (data.tier === "flock" || data.tier === "murder")) {
           loadTeamActivity(code);
+          loadTeamReport(code, "30d", true);
         }
       }
     } catch {
       setAuthError("Connection error. Please try again."); setPhase("auth");
     } finally { setValidating(false); }
-  }, [loadReports, loadSeatInfo, loadVipSubordinates, loadVipTeamActivity, loadTeamActivity, loadMyAnalytics]);
+  }, [loadReports, loadSeatInfo, loadVipSubordinates, loadVipTeamActivity, loadTeamActivity, loadMyAnalytics, loadTeamReport]);
 
   useEffect(() => {
     try {
@@ -563,6 +602,23 @@ export default function DashboardPage() {
       });
       await loadVipSubordinates(storedCode);
     } catch { alert("Connection error."); }
+  }
+
+  async function handleExportCSV() {
+    try {
+      const res = await fetch("/api/team/report/csv", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: storedCode, interval: teamReportInterval }),
+      });
+      if (!res.ok) { alert("Failed to export CSV."); return; }
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href     = url;
+      a.download = `team-report.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch { alert("Export failed."); }
   }
 
   async function handleUpgradeTeamLead() {
@@ -1202,37 +1258,104 @@ export default function DashboardPage() {
           <div style={card}>
             {tier === "murder" || teamLeadActive ? (
               <>
+                {/* ── Report Builder ─────────────────────────────────────── */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
                   <div>
-                    <p style={{ ...sectionLabel, marginBottom: 0 }}>Team Activity</p>
+                    <p style={{ ...sectionLabel, marginBottom: 0 }}>Team Activity Report</p>
                     {tier === "murder" && <p style={{ color: "#555555", fontSize: "11px", marginTop: "4px" }}>Team Lead included with Murder tier</p>}
                   </div>
-                  {teamActivity.length > 0 && <span style={{ color: "#555555", fontSize: "12px" }}>{teamActivity.length} report{teamActivity.length !== 1 ? "s" : ""}</span>}
+                  {teamReport && (
+                    <button onClick={handleExportCSV}
+                      style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.25)", borderRadius: "8px", color: "#00C2C7", fontSize: "11px", fontWeight: 600, padding: "6px 14px", cursor: "pointer" }}>
+                      Export CSV
+                    </button>
+                  )}
                 </div>
-                {teamActivityLoading ? (
-                  <p style={{ color: "#555555", fontSize: "13px", fontFamily: "monospace", letterSpacing: "0.1em" }}>Loading activity...</p>
-                ) : teamActivity.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "24px 16px" }}>
-                    <p style={{ color: "#555555", fontSize: "13px" }}>No team scans yet.</p>
-                    <p style={{ color: "#444444", fontSize: "12px", marginTop: "6px" }}>Invite team members and their scans will appear here.</p>
+
+                {/* Interval selector */}
+                <div style={{ marginBottom: "16px" }}>
+                  <p style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>Time Period</p>
+                  <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "8px" }}>
+                    {([ ["7d","Last 7 days"], ["30d","Last 30 days"], ["90d","Last 90 days"], ["this_month","This Month"], ["last_month","Last Month"] ] as [string, string][]).map(([iv, lbl]) => (
+                      <button key={iv} onClick={() => setTeamReportInterval(iv)}
+                        style={{ padding: "5px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${teamReportInterval === iv ? "rgba(0,194,199,0.5)" : "rgba(255,255,255,0.1)"}`, borderRadius: "20px", cursor: "pointer", background: teamReportInterval === iv ? "rgba(0,194,199,0.12)" : "transparent", color: teamReportInterval === iv ? "#00C2C7" : "rgba(255,255,255,0.45)", transition: "all 0.15s" }}>
+                        {lbl}
+                      </button>
+                    ))}
                   </div>
-                ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                    {teamActivity.slice(0, 20).map((r) => {
-                      const sev = SEVERITY_COLORS[r.severity] ?? SEVERITY_COLORS.info;
-                      return (
-                        <div key={r.reportId} style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
-                          <div>
-                            <p style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, margin: 0 }}>{r.locationName || "Unknown Location"}</p>
-                            <p style={{ color: "#555555", fontSize: "11px", margin: "3px 0 0" }}>{new Date(r.createdAt).toLocaleDateString()} · {REPORT_TYPE_LABELS[r.type]} · {r.findingCount} finding{r.findingCount !== 1 ? "s" : ""}</p>
-                          </div>
-                          <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", padding: "2px 8px", borderRadius: "20px", background: sev.bg, color: sev.color, border: `1px solid ${sev.border}` }}>
-                            {r.severity.toUpperCase()}
-                          </span>
+                  {teamAvailableMonths.length > 0 && (
+                    <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                      {teamAvailableMonths.map((m) => (
+                        <button key={m} onClick={() => setTeamReportInterval(m)}
+                          style={{ padding: "4px 10px", fontSize: "10px", fontWeight: 600, border: `1px solid ${teamReportInterval === m ? "rgba(184,146,42,0.5)" : "rgba(255,255,255,0.08)"}`, borderRadius: "20px", cursor: "pointer", background: teamReportInterval === m ? "rgba(184,146,42,0.1)" : "transparent", color: teamReportInterval === m ? "#D4AF37" : "rgba(255,255,255,0.35)" }}>
+                          {new Date(m + "-02").toLocaleString("en-US", { month: "short", year: "2-digit" })}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <button onClick={() => loadTeamReport(storedCode, teamReportInterval)} disabled={teamReportLoading}
+                  style={{ background: teamReportLoading ? "#0D6E7A" : "#00C2C7", color: "#0D1520", border: "none", borderRadius: "8px", fontSize: "12px", fontWeight: 700, padding: "8px 20px", cursor: teamReportLoading ? "not-allowed" : "pointer", marginBottom: "20px" }}>
+                  {teamReportLoading ? "Analyzing…" : "Generate Report"}
+                </button>
+
+                {/* Report output */}
+                {teamReport && !teamReportLoading && (
+                  <>
+                    {/* Stats row */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px", marginBottom: "16px" }}>
+                      {[
+                        { label: "Total Scans",      value: String(teamReport.totalScans),       color: "#00C2C7" },
+                        { label: "Active Members",   value: `${teamReport.activeMembers} / ${teamReport.members.length}`, color: "#4ADE80" },
+                        { label: "Critical Findings",value: String(teamReport.criticalFindings),  color: "#F87171" },
+                        { label: "Avg Findings/Scan",value: String(teamReport.avgFindingsPerScan), color: "#FBBF24" },
+                      ].map((s) => (
+                        <div key={s.label} style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "12px 14px" }}>
+                          <p style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 4px" }}>{s.label}</p>
+                          <p style={{ color: s.color, fontSize: "22px", fontWeight: 700, margin: 0, lineHeight: 1 }}>{s.value}</p>
                         </div>
-                      );
-                    })}
-                  </div>
+                      ))}
+                    </div>
+
+                    {/* Corvus briefing */}
+                    {(teamReportBriefing || teamBriefingLoading) && (
+                      <div style={{ background: "rgba(0,194,199,0.04)", border: "1px solid rgba(0,194,199,0.15)", borderRadius: "10px", padding: "14px 16px", marginBottom: "16px", display: "flex", gap: "12px", alignItems: "flex-start" }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/corvus_still.png" alt="Corvus" style={{ width: "24px", height: "24px", borderRadius: "50%", flexShrink: 0, marginTop: "2px" }} />
+                        {teamBriefingLoading ? (
+                          <p style={{ color: "#555555", fontSize: "13px", fontStyle: "italic", margin: 0 }}>Corvus is analyzing…</p>
+                        ) : (
+                          <p style={{ color: "#cccccc", fontSize: "13px", lineHeight: 1.6, margin: 0 }}>{teamReportBriefing}</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Member breakdown */}
+                    <p style={{ ...sectionLabel, marginBottom: "10px" }}>Member Breakdown</p>
+                    {teamReport.members.length === 0 ? (
+                      <p style={{ color: "#555555", fontSize: "13px" }}>No members in this report.</p>
+                    ) : (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        {teamReport.members.map((m) => (
+                          <button key={m.code} onClick={() => setMemberModalCode(m.code)}
+                            style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", textAlign: "left", width: "100%", flexWrap: "wrap", gap: "8px" }}>
+                            <div>
+                              <p style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, margin: 0 }}>{m.name}</p>
+                              <p style={{ color: "#444444", fontSize: "10px", fontFamily: "monospace", margin: "2px 0 0", letterSpacing: "0.08em" }}>{m.code}</p>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                              <span style={{ color: "#00C2C7", fontSize: "12px", fontWeight: 600 }}>{m.totalScans} scan{m.totalScans !== 1 ? "s" : ""}</span>
+                              {m.criticalFindings > 0 && <span style={{ color: "#F87171", fontSize: "11px" }}>{m.criticalFindings} critical</span>}
+                              <span style={{ color: "#555555", fontSize: "11px" }}>{m.lastScan ? new Date(m.lastScan).toLocaleDateString() : "No activity"}</span>
+                              <span style={{ color: "#444444", fontSize: "12px" }}>›</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <p style={{ color: "#555555", fontSize: "10px", marginTop: "12px" }}>Period: {teamReport.intervalLabel} · Generated {new Date(teamReport.generatedAt).toLocaleString()}</p>
+                  </>
                 )}
               </>
             ) : (
@@ -1338,36 +1461,106 @@ export default function DashboardPage() {
   function renderVipTeamActivity() {
     return (
       <div style={card}>
+        {/* ── Report Builder ─────────────────────────────────────────────── */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
-          <p style={{ ...sectionLabel, marginBottom: 0, color: "#D4AF37" }}>Team Activity</p>
-          {vipTeamActivity.length > 0 && <span style={{ color: "#555555", fontSize: "12px" }}>{vipTeamActivity.length} report{vipTeamActivity.length !== 1 ? "s" : ""}</span>}
+          <p style={{ ...sectionLabel, marginBottom: 0, color: "#D4AF37" }}>Team Activity Report</p>
+          {teamReport && (
+            <button onClick={handleExportCSV}
+              style={{ background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.25)", borderRadius: "8px", color: "#D4AF37", fontSize: "11px", fontWeight: 600, padding: "6px 14px", cursor: "pointer" }}>
+              Export CSV
+            </button>
+          )}
         </div>
-        {vipLoadingActivity ? (
-          <p style={{ color: "#555555", fontSize: "13px", fontFamily: "monospace", letterSpacing: "0.1em" }}>Loading activity...</p>
-        ) : vipTeamActivity.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "24px 16px" }}>
-            <p style={{ color: "#555555", fontSize: "13px" }}>No subordinate scans yet.</p>
+
+        {/* Interval selector */}
+        <div style={{ marginBottom: "16px" }}>
+          <p style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>Time Period</p>
+          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "8px" }}>
+            {([ ["7d","Last 7 days"], ["30d","Last 30 days"], ["90d","Last 90 days"], ["this_month","This Month"], ["last_month","Last Month"] ] as [string, string][]).map(([iv, lbl]) => (
+              <button key={iv} onClick={() => setTeamReportInterval(iv)}
+                style={{ padding: "5px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${teamReportInterval === iv ? "rgba(212,175,55,0.5)" : "rgba(255,255,255,0.1)"}`, borderRadius: "20px", cursor: "pointer", background: teamReportInterval === iv ? "rgba(212,175,55,0.1)" : "transparent", color: teamReportInterval === iv ? "#D4AF37" : "rgba(255,255,255,0.45)", transition: "all 0.15s" }}>
+                {lbl}
+              </button>
+            ))}
           </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {vipTeamActivity.slice(0, 20).map((r) => {
-              const sev = SEVERITY_COLORS[r.severity] ?? SEVERITY_COLORS.info;
-              return (
-                <div key={r.reportId} style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
-                  <div>
-                    <p style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, margin: 0 }}>{r.locationName || "Unknown Location"}</p>
-                    <p style={{ color: "#555555", fontSize: "11px", margin: "3px 0 0" }}>
-                      {new Date(r.createdAt).toLocaleDateString()} · {REPORT_TYPE_LABELS[r.type]} · {r.findingCount} finding{r.findingCount !== 1 ? "s" : ""}
-                      {r.codeUsed && <span style={{ marginLeft: "8px", color: "#333333", fontFamily: "monospace" }}>{r.codeUsed.replace(/[A-Z0-9]{4}$/, "••••")}</span>}
-                    </p>
-                  </div>
-                  <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", padding: "2px 8px", borderRadius: "20px", background: sev.bg, color: sev.color, border: `1px solid ${sev.border}` }}>
-                    {r.severity.toUpperCase()}
-                  </span>
+          {teamAvailableMonths.length > 0 && (
+            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+              {teamAvailableMonths.map((m) => (
+                <button key={m} onClick={() => setTeamReportInterval(m)}
+                  style={{ padding: "4px 10px", fontSize: "10px", fontWeight: 600, border: `1px solid ${teamReportInterval === m ? "rgba(184,146,42,0.5)" : "rgba(255,255,255,0.08)"}`, borderRadius: "20px", cursor: "pointer", background: teamReportInterval === m ? "rgba(184,146,42,0.1)" : "transparent", color: teamReportInterval === m ? "#D4AF37" : "rgba(255,255,255,0.35)" }}>
+                  {new Date(m + "-02").toLocaleString("en-US", { month: "short", year: "2-digit" })}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <button onClick={() => loadTeamReport(storedCode, teamReportInterval)} disabled={teamReportLoading}
+          style={{ background: teamReportLoading ? "rgba(184,146,42,0.3)" : "rgba(212,175,55,0.15)", color: teamReportLoading ? "#888888" : "#D4AF37", border: "1px solid rgba(212,175,55,0.35)", borderRadius: "8px", fontSize: "12px", fontWeight: 700, padding: "8px 20px", cursor: teamReportLoading ? "not-allowed" : "pointer", marginBottom: "20px" }}>
+          {teamReportLoading ? "Analyzing…" : "Generate Report"}
+        </button>
+
+        {/* Report output */}
+        {teamReport && !teamReportLoading && (
+          <>
+            {/* Stats row */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px", marginBottom: "16px" }}>
+              {[
+                { label: "Total Scans",      value: String(teamReport.totalScans),       color: "#D4AF37" },
+                { label: "Active Members",   value: `${teamReport.activeMembers} / ${teamReport.members.length}`, color: "#4ADE80" },
+                { label: "Critical Findings",value: String(teamReport.criticalFindings),  color: "#F87171" },
+                { label: "Avg Findings/Scan",value: String(teamReport.avgFindingsPerScan), color: "#FBBF24" },
+              ].map((s) => (
+                <div key={s.label} style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "12px 14px" }}>
+                  <p style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 4px" }}>{s.label}</p>
+                  <p style={{ color: s.color, fontSize: "22px", fontWeight: 700, margin: 0, lineHeight: 1 }}>{s.value}</p>
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+
+            {/* Corvus briefing */}
+            {(teamReportBriefing || teamBriefingLoading) && (
+              <div style={{ background: "rgba(212,175,55,0.04)", border: "1px solid rgba(212,175,55,0.15)", borderRadius: "10px", padding: "14px 16px", marginBottom: "16px", display: "flex", gap: "12px", alignItems: "flex-start" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/corvus_still.png" alt="Corvus" style={{ width: "24px", height: "24px", borderRadius: "50%", flexShrink: 0, marginTop: "2px" }} />
+                {teamBriefingLoading ? (
+                  <p style={{ color: "#555555", fontSize: "13px", fontStyle: "italic", margin: 0 }}>Corvus is analyzing…</p>
+                ) : (
+                  <p style={{ color: "#cccccc", fontSize: "13px", lineHeight: 1.6, margin: 0 }}>{teamReportBriefing}</p>
+                )}
+              </div>
+            )}
+
+            {/* Member breakdown */}
+            <p style={{ ...sectionLabel, marginBottom: "10px", color: "#D4AF37" }}>Member Breakdown</p>
+            {teamReport.members.length === 0 ? (
+              <p style={{ color: "#555555", fontSize: "13px" }}>No subordinate activity in this period.</p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {teamReport.members.map((m) => (
+                  <button key={m.code} onClick={() => setMemberModalCode(m.code)}
+                    style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", textAlign: "left", width: "100%", flexWrap: "wrap", gap: "8px" }}>
+                    <div>
+                      <p style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, margin: 0 }}>{m.name}</p>
+                      <p style={{ color: "#444444", fontSize: "10px", fontFamily: "monospace", margin: "2px 0 0", letterSpacing: "0.08em" }}>{m.code}</p>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      <span style={{ color: "#D4AF37", fontSize: "12px", fontWeight: 600 }}>{m.totalScans} scan{m.totalScans !== 1 ? "s" : ""}</span>
+                      {m.criticalFindings > 0 && <span style={{ color: "#F87171", fontSize: "11px" }}>{m.criticalFindings} critical</span>}
+                      <span style={{ color: "#555555", fontSize: "11px" }}>{m.lastScan ? new Date(m.lastScan).toLocaleDateString() : "No activity"}</span>
+                      <span style={{ color: "#444444", fontSize: "12px" }}>›</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            <p style={{ color: "#555555", fontSize: "10px", marginTop: "12px" }}>Period: {teamReport.intervalLabel} · Generated {new Date(teamReport.generatedAt).toLocaleString()}</p>
+          </>
+        )}
+
+        {/* Fallback: raw activity list when no report generated */}
+        {!teamReportGenerated && !teamReportLoading && vipLoadingActivity && (
+          <p style={{ color: "#555555", fontSize: "13px", fontFamily: "monospace", letterSpacing: "0.1em", marginTop: "16px" }}>Loading activity…</p>
         )}
       </div>
     );
@@ -1761,6 +1954,85 @@ export default function DashboardPage() {
 
       {/* Tab content */}
       {renderTabContent()}
+
+      {/* Member detail modal */}
+      {memberModalCode && teamReport && (() => {
+        const m = teamReport.members.find((x) => x.code === memberModalCode);
+        if (!m) return null;
+        const REPORT_TYPE_SHORT: Record<string, string> = {
+          verdict: "Verdict",
+          reckoning_small: "S.Reckoning",
+          reckoning_standard: "Std.Reckoning",
+          reckoning_commercial: "Com.Reckoning",
+          reckoning_pro: "Pro Reckoning",
+        };
+        return (
+          <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}
+            onClick={(e) => { if (e.target === e.currentTarget) setMemberModalCode(null); }}>
+            <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "520px", maxHeight: "80vh", overflowY: "auto" }}>
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "20px" }}>
+                <div>
+                  <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", margin: "0 0 4px" }}>Member Detail</p>
+                  <p style={{ color: "#ffffff", fontSize: "18px", fontWeight: 700, margin: 0 }}>{m.name}</p>
+                  <p style={{ color: "#444444", fontSize: "11px", fontFamily: "monospace", margin: "4px 0 0", letterSpacing: "0.08em" }}>{m.code}</p>
+                </div>
+                <button onClick={() => setMemberModalCode(null)}
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#888888", fontSize: "13px", padding: "6px 12px", cursor: "pointer", flexShrink: 0 }}>
+                  Close
+                </button>
+              </div>
+              {/* Stats */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", marginBottom: "20px" }}>
+                {[
+                  { label: "Scans",    value: String(m.totalScans),          color: "#00C2C7" },
+                  { label: "Critical", value: String(m.criticalFindings),     color: "#F87171" },
+                  { label: "Avg Findings", value: String(m.avgFindingsPerScan), color: "#FBBF24" },
+                ].map((s) => (
+                  <div key={s.label} style={{ background: "#1A2332", borderRadius: "8px", padding: "10px 12px", textAlign: "center" }}>
+                    <p style={{ color: "#555555", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 4px" }}>{s.label}</p>
+                    <p style={{ color: s.color, fontSize: "20px", fontWeight: 700, margin: 0, lineHeight: 1 }}>{s.value}</p>
+                  </div>
+                ))}
+              </div>
+              {/* Product breakdown */}
+              {Object.keys(m.productBreakdown).length > 0 && (
+                <div style={{ marginBottom: "16px" }}>
+                  <p style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>Product Usage</p>
+                  <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                    {Object.entries(m.productBreakdown).map(([p, count]) => (
+                      <span key={p} style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "20px", color: "#00C2C7", fontSize: "11px", fontWeight: 600, padding: "3px 10px" }}>
+                        {REPORT_TYPE_SHORT[p] ?? p}: {count}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {/* Scan history */}
+              <p style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>Scan History ({teamReport.intervalLabel})</p>
+              {m.scans.length === 0 ? (
+                <p style={{ color: "#444444", fontSize: "13px" }}>No scans in this period.</p>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  {m.scans.map((s) => {
+                    const sev = SEVERITY_COLORS[s.severity] ?? SEVERITY_COLORS.info;
+                    return (
+                      <div key={s.reportId} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 10px", background: "#1A2332", borderRadius: "8px", flexWrap: "wrap", gap: "8px" }}>
+                        <div>
+                          <p style={{ color: "#ffffff", fontSize: "12px", fontWeight: 600, margin: 0 }}>{s.locationName || "Unknown Location"}</p>
+                          <p style={{ color: "#555555", fontSize: "10px", margin: "2px 0 0" }}>{new Date(s.createdAt).toLocaleDateString()} · {REPORT_TYPE_SHORT[s.type] ?? s.type} · {s.findingCount} findings</p>
+                        </div>
+                        <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "0.1em", padding: "2px 8px", borderRadius: "20px", background: sev.bg, color: sev.color, border: `1px solid ${sev.border}` }}>
+                          {s.severity.toUpperCase()}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Invite modal */}
       {showInviteModal && (
