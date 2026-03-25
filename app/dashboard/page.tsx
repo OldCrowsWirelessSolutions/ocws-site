@@ -887,7 +887,7 @@ export default function DashboardPage() {
                         {REPORT_TYPE_LABELS[r.type] ?? r.type}
                       </span>
                       <div style={{ minWidth: 0 }}>
-                        <p style={{ color: "#ffffff", fontSize: "14px", fontWeight: 600, margin: 0, truncate: "ellipsis" }}>
+                        <p style={{ color: "#ffffff", fontSize: "14px", fontWeight: 600, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {r.locationName || "Untitled"}
                         </p>
                         <p style={{ color: "#555555", fontSize: "11px", margin: 0 }}>
