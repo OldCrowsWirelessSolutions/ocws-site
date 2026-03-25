@@ -3,12 +3,17 @@
 // CorvusChatWrapper — client component that reads localStorage and renders
 // CorvusChat for authenticated subscribers. Mounted once in the root layout
 // so the chat bubble persists across all pages.
+//
+// On /dashboard the floating panel is replaced by the inline Chat tab, so
+// instead of opening a panel we render a minimal FAB that links to #chat.
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import CorvusChat from "@/app/components/CorvusChat";
 
 export default function CorvusChatWrapper() {
   const [subCode, setSubCode] = useState<string | null>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     try {
@@ -16,7 +21,6 @@ export default function CorvusChatWrapper() {
       if (code) setSubCode(code);
     } catch { /* localStorage unavailable */ }
 
-    // Re-check when storage changes (login/logout in another tab)
     function onStorage(e: StorageEvent) {
       if (e.key === "corvus_sub_code") {
         setSubCode(e.newValue ?? null);
@@ -27,5 +31,44 @@ export default function CorvusChatWrapper() {
   }, []);
 
   if (!subCode) return null;
+
+  // On the dashboard the Chat tab handles everything — show a redirect FAB
+  if (pathname === "/dashboard") {
+    return (
+      <a
+        href="/dashboard#chat"
+        aria-label="Open Corvus Chat"
+        style={{
+          position: "fixed",
+          bottom: "24px",
+          right: "24px",
+          zIndex: 9999,
+          width: "52px",
+          height: "52px",
+          borderRadius: "50%",
+          background: "linear-gradient(135deg,#00C2C7,#007A7E)",
+          boxShadow: "0 4px 20px rgba(0,194,199,0.35)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          textDecoration: "none",
+          transition: "transform 0.15s, box-shadow 0.15s",
+        }}
+        onMouseEnter={e => {
+          (e.currentTarget as HTMLAnchorElement).style.transform = "scale(1.08)";
+          (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 6px 28px rgba(0,194,199,0.5)";
+        }}
+        onMouseLeave={e => {
+          (e.currentTarget as HTMLAnchorElement).style.transform = "scale(1)";
+          (e.currentTarget as HTMLAnchorElement).style.boxShadow = "0 4px 20px rgba(0,194,199,0.35)";
+        }}
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0D1520" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      </a>
+    );
+  }
+
   return <CorvusChat code={subCode} />;
 }

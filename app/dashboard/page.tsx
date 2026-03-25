@@ -366,6 +366,12 @@ export default function DashboardPage() {
     } finally { setValidating(false); }
   };
 
+  function handleGoToCrowsEye() {
+    try {
+      if (storedCode) sessionStorage.setItem("corvus_active_session", storedCode);
+    } catch { /* non-fatal */ }
+  }
+
   function handleLogout() {
     try {
       localStorage.removeItem("corvus_sub_code");
@@ -682,10 +688,10 @@ export default function DashboardPage() {
           <div style={card}>
             <p style={{ ...sectionLabel, marginBottom: "8px" }}>Quick Actions</p>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <Link href="/crows-eye" style={{ display: "block", background: "#00C2C7", color: "#0D1520", borderRadius: "10px", padding: "11px 16px", fontSize: "13px", fontWeight: 700, textDecoration: "none", textAlign: "center" }}>
+              <Link href="/crows-eye" onClick={handleGoToCrowsEye} style={{ display: "block", background: "#00C2C7", color: "#0D1520", borderRadius: "10px", padding: "11px 16px", fontSize: "13px", fontWeight: 700, textDecoration: "none", textAlign: "center" }}>
                 Run a Verdict →
               </Link>
-              <Link href="/crows-eye" style={{ display: "block", background: "rgba(184,146,42,0.1)", border: "1px solid rgba(184,146,42,0.3)", color: "#B8922A", borderRadius: "10px", padding: "11px 16px", fontSize: "13px", fontWeight: 700, textDecoration: "none", textAlign: "center" }}>
+              <Link href="/crows-eye" onClick={handleGoToCrowsEye} style={{ display: "block", background: "rgba(184,146,42,0.1)", border: "1px solid rgba(184,146,42,0.3)", color: "#B8922A", borderRadius: "10px", padding: "11px 16px", fontSize: "13px", fontWeight: 700, textDecoration: "none", textAlign: "center" }}>
                 Run a Reckoning →
               </Link>
             </div>
@@ -723,7 +729,7 @@ export default function DashboardPage() {
           <div style={{ ...card, textAlign: "center", padding: "40px" }}>
             <p style={{ color: "#555555", fontSize: "14px", marginBottom: "8px" }}>No scans yet.</p>
             <p style={{ color: "#888888", fontSize: "13px", marginBottom: "20px" }}>Run your first Verdict or Reckoning to start tracking.</p>
-            <Link href="/crows-eye" style={{ display: "inline-block", background: "#00C2C7", color: "#0D1520", borderRadius: "10px", padding: "10px 24px", fontSize: "14px", fontWeight: 700, textDecoration: "none" }}>
+            <Link href="/crows-eye" onClick={handleGoToCrowsEye} style={{ display: "inline-block", background: "#00C2C7", color: "#0D1520", borderRadius: "10px", padding: "10px 24px", fontSize: "14px", fontWeight: 700, textDecoration: "none" }}>
               Go to Crow&rsquo;s Eye →
             </Link>
           </div>
@@ -770,7 +776,7 @@ export default function DashboardPage() {
         ) : reports.length === 0 ? (
           <div style={{ textAlign: "center", padding: "32px 16px" }}>
             <p style={{ color: "#555555", fontSize: "14px", marginBottom: "10px" }}>No reports yet.</p>
-            <Link href="/crows-eye" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: "#00C2C7", color: "#0D1520", borderRadius: "10px", padding: "10px 26px", fontSize: "14px", fontWeight: 700, textDecoration: "none" }}>
+            <Link href="/crows-eye" onClick={handleGoToCrowsEye} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: "#00C2C7", color: "#0D1520", borderRadius: "10px", padding: "10px 26px", fontSize: "14px", fontWeight: 700, textDecoration: "none" }}>
               Go to Crow&rsquo;s Eye →
             </Link>
           </div>

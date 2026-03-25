@@ -489,6 +489,9 @@ export default function CrowsEyeClient() {
   const [appliedSubscriptionId, setAppliedSubscriptionId] = useState<string | null>(null);
   const [subscriptionEntitlement, setSubscriptionEntitlement] = useState<SubscriptionEntitlement | null>(null);
 
+  // Pre-auth from dashboard session
+  const [preAuthed, setPreAuthed] = useState(false);
+
   // Recovery UI
   const [showRecovery, setShowRecovery] = useState(false);
   const [recoveryEmail, setRecoveryEmail] = useState("");
@@ -652,6 +655,65 @@ export default function CrowsEyeClient() {
       ]);
       setPdfLogos({ ocws: ocws.data, ocwsAspect: ocws.aspect, crows: crows.data, crowsAspect: crows.aspect });
     })();
+  }, []);
+
+  // Pre-auth from dashboard: read corvus_active_session from sessionStorage
+  useEffect(() => {
+    (async () => {
+      try {
+        const sessionCode = sessionStorage.getItem("corvus_active_session");
+        const lsCode = localStorage.getItem("corvus_sub_code");
+        const code = (sessionCode ?? lsCode)?.trim().toUpperCase();
+        if (!code) return;
+        if (sessionCode) sessionStorage.removeItem("corvus_active_session");
+
+        const res = await fetch("/api/subscriptions/validate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ subscription_id: code }),
+        });
+        const data = await res.json().catch(() => ({})) as {
+          valid?: boolean; type?: string; tier?: string; customer_name?: string;
+          verdicts_remaining?: number; verdicts_unlimited?: boolean;
+          reckonings_remaining?: { small: number; standard: number; commercial: number };
+          reckonings_unlimited?: { small: boolean; standard: boolean; commercial: boolean };
+          seat_limit?: number; seats_used?: number; discount?: number; label?: string; name?: string;
+        };
+        if (!data.valid) return;
+
+        const codeType: AppliedCode["type"] =
+          data.type === "admin" ? "admin" :
+          data.type === "founder" ? "founder" :
+          data.type === "promo" ? "promo" : "subscriber";
+
+        setAppliedCode({ type: codeType, name: data.name, discount: data.discount, label: data.label });
+        setAccessCodeStatus("valid");
+
+        if (codeType === "subscriber") {
+          setAppliedSubscriptionId(code);
+          setSubscriptionEntitlement({
+            tier: data.tier,
+            customer_name: data.customer_name,
+            verdicts_remaining: data.verdicts_remaining,
+            verdicts_unlimited: data.verdicts_unlimited,
+            reckonings_remaining: data.reckonings_remaining,
+            reckonings_unlimited: data.reckonings_unlimited,
+            seat_limit: data.seat_limit,
+            seats_used: data.seats_used,
+          });
+          try {
+            const deviceToken = getOrCreateDeviceToken();
+            await fetch("/api/subscriptions/register-device", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ subscription_id: code, device_token: deviceToken }),
+            });
+          } catch { /* non-fatal */ }
+        }
+        setPreAuthed(true);
+      } catch { /* non-fatal */ }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function handleFile(slot: UploadSlot, f: File | null) {
@@ -1667,6 +1729,26 @@ export default function CrowsEyeClient() {
 
   return (
     <div className="ocws-container py-12 md:py-16 pb-40">
+
+      {/* ── PRE-AUTH BANNER ───────────────────────────────────────────────── */}
+      {preAuthed && appliedCode && (
+        <div
+          className="mb-8 px-4 py-3 rounded-2xl text-sm flex items-center gap-3"
+          style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.25)" }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00C2C7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+          <span style={{ color: "#00C2C7", fontWeight: 600 }}>
+            Authenticated from your dashboard
+            {subscriptionEntitlement?.tier && ` — ${subscriptionEntitlement.tier.charAt(0).toUpperCase() + subscriptionEntitlement.tier.slice(1)} tier`}
+            {subscriptionEntitlement?.customer_name && ` (${subscriptionEntitlement.customer_name})`}
+          </span>
+          <span style={{ color: "rgba(0,194,199,0.6)", fontSize: "12px", marginLeft: "auto" }}>
+            Reports will save to your dashboard automatically
+          </span>
+        </div>
+      )}
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
       <div className="text-center mb-14">
