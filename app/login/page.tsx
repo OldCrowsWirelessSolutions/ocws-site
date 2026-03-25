@@ -136,6 +136,14 @@ function SuccessFlash({ line, accent = "#00C2C7" }: { line: string; accent?: str
   );
 }
 
+// ─── Exempt codes ─────────────────────────────────────────────────────────────
+
+// These codes bypass the password flow entirely and go straight to dashboard.
+const CODES_EXEMPT_FROM_PASSWORD = new Set(["CORVUS-NEST"]);
+
+// These codes are for Crow's Eye only — not dashboard logins.
+const CROWS_EYE_ONLY_CODES = new Set(["CORVUS-HONOR"]);
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY || "SpectrumLife2026!!";
@@ -265,21 +273,34 @@ export default function LoginPage() {
         tier?: string; subscriptionId?: string; name?: string; passwordSet?: boolean;
       };
 
+      const upperRaw = raw.toUpperCase();
+
       if (data.type === "admin") {
         try { localStorage.setItem("corvus_admin_auth", ADMIN_KEY); } catch { /* */ }
         router.push("/admin");
       } else if (data.type === "admin_first_factor") {
         setStep("admin_password");
       } else if (data.type === "founder") {
-        const code = raw.toUpperCase();
-        setPendingCode(code); setPendingName(data.name ?? "");
+        // Exempt founding codes skip password entirely
+        if (CODES_EXEMPT_FROM_PASSWORD.has(upperRaw)) {
+          storeAndRedirect(upperRaw);
+          return;
+        }
+        setPendingCode(upperRaw); setPendingName(data.name ?? "");
         setStep(data.passwordSet ? "vip_enter_password" : "vip_create_password");
       } else if (data.type === "subscriber") {
-        const code = data.subscriptionId ?? raw.toUpperCase();
-        setPendingCode(raw.toUpperCase()); setPendingSubscriptionId(code);
+        const code = data.subscriptionId ?? upperRaw;
+        // Exempt subscriber codes skip password entirely
+        if (CODES_EXEMPT_FROM_PASSWORD.has(upperRaw)) {
+          storeAndRedirect(upperRaw);
+          return;
+        }
+        setPendingCode(upperRaw); setPendingSubscriptionId(code);
         setStep(data.passwordSet ? "sub_enter_password" : "sub_create_password");
       } else if (data.type === "promo") {
         setError("Promo codes are used on the Crow's Eye page, not here.");
+      } else if (CROWS_EYE_ONLY_CODES.has(upperRaw)) {
+        setError("This code is for Crow\u2019s Eye discounts, not dashboard access. Use it at oldcrowswireless.com/crows-eye.");
       } else {
         setError("Invalid code. Check your welcome email or recover your code.");
       }

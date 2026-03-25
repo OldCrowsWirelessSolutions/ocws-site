@@ -270,6 +270,11 @@ export async function sendWelcomeEmail(
     ``,
     `You have ${credits} Verdicts included this month.`,
     ``,
+    `SETTING UP YOUR DASHBOARD PASSWORD:`,
+    `On your first login you will be prompted to create a personal password for your dashboard. This password is yours alone — we never see it and cannot recover it for you, so store it somewhere safe.`,
+    ``,
+    `If you ever lose your password contact joshua@oldcrowswireless.com and we will reset your access within 24 hours.`,
+    ``,
     `How to use Crow's Eye:`,
     `1. Download WiFi Analyzer (free — green icon, Google Play or App Store)`,
     `2. Take three screenshots — Access Points, 2.4 GHz graph, 5 GHz graph`,
@@ -317,6 +322,12 @@ export async function sendWelcomeEmail(
         <p style="color:#aaaaaa;font-size:13px;margin:0 0 20px;">
           You have <strong style="color:#ffffff;">${escapeHtml(credits)} Verdicts</strong> included this month.
         </p>
+
+        <div style="background:rgba(212,175,55,0.06);border:1px solid rgba(212,175,55,0.2);border-radius:8px;padding:14px 18px;margin:0 0 20px;">
+          <p style="color:#D4AF37;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 8px;">Setting Up Your Dashboard Password</p>
+          <p style="color:#aaaaaa;font-size:13px;margin:0 0 8px;line-height:1.6;">On your first login you will be prompted to create a personal password for your dashboard. This password is yours alone &mdash; we never see it and cannot recover it for you, so store it somewhere safe.</p>
+          <p style="color:#aaaaaa;font-size:13px;margin:0;line-height:1.6;">If you ever lose your password contact <a href="mailto:joshua@oldcrowswireless.com" style="color:#00C2C7;">joshua@oldcrowswireless.com</a> and we will reset your access within 24 hours.</p>
+        </div>
 
         <div style="background:rgba(0,194,199,0.06);border:1px solid rgba(0,194,199,0.2);border-radius:8px;padding:14px 18px;margin:0 0 20px;">
           <p style="color:#00C2C7;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 10px;">How to use Crow&rsquo;s Eye</p>
