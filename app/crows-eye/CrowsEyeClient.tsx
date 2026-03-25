@@ -58,9 +58,16 @@ interface CrossStructureAnalysis {
   corvus_assessment: string;
 }
 
+interface DeviceInfo {
+  vendor: string;
+  model: string | null;
+  type: "router" | "modem" | "gateway" | "ap" | "unknown";
+}
+
 interface AnalysisResult {
   identified_ssid: string | null;
   router_vendor: string | null;
+  device?: DeviceInfo;
   corvus_opening: string;
   problems_found: number;
   critical_count: number;
@@ -422,6 +429,8 @@ export default function CrowsEyeClient() {
   const [locationType, setLocationType] = useState("");
   const [notes, setNotes] = useState("");
   const [ssid, setSsid] = useState("");
+  const [multiSsid, setMultiSsid] = useState(false);
+  const [ssidDescription, setSsidDescription] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
   const [honeypot, setHoneypot] = useState("");
@@ -709,6 +718,8 @@ export default function CrowsEyeClient() {
           locationType,
           notes,
           client_ssid: ssid,
+          multiSsid,
+          ssidDescription: multiSsid ? ssidDescription.trim() : "",
           honeypot,
         };
       } else {
@@ -745,6 +756,8 @@ export default function CrowsEyeClient() {
           locationType,
           notes,
           client_ssid: ssid,
+          multiSsid,
+          ssidDescription: multiSsid ? ssidDescription.trim() : "",
           honeypot,
         };
       }
@@ -1506,6 +1519,43 @@ export default function CrowsEyeClient() {
         st(CYAN);  fn("bold", 7);   txt("CORVUS ON YOUR STRUCTURES", ML + 10, y + 8, 7);
         st(LGRAY); fn("italic", 9); txt(csaAssessW, ML + 10, y + 18, 9);
         y += csaAssessH + 14;
+      }
+
+      // ── DEVICE RESOURCES ─────────────────────────────────────────────────
+      const deviceInfo = result.device;
+      if (deviceInfo && deviceInfo.vendor && deviceInfo.vendor !== "Unknown") {
+        const VENDOR_URLS: Record<string, string> = {
+          "Netgear":        "https://www.netgear.com/support/",
+          "TP-Link":        "https://www.tp-link.com/us/support/",
+          "ASUS":           "https://www.asus.com/support/",
+          "Linksys":        "https://www.linksys.com/support/",
+          "Eero":           "https://support.eero.com/",
+          "Google/Nest":    "https://support.google.com/googlenest/",
+          "Ubiquiti":       "https://help.ui.com/",
+          "Arris":          "https://www.arris.com/support/",
+          "Motorola":       "https://motorola-support.com/",
+          "Cox/Vantiva":    "https://www.cox.com/residential/support/wifi.html",
+          "Xfinity/Comcast":"https://www.xfinity.com/support/",
+          "AT&T":           "https://www.att.com/support/",
+          "Vantiva":        "https://www.vantiva.com/support/",
+        };
+        const manualUrl = VENDOR_URLS[deviceInfo.vendor] ?? "https://www.routerpasswords.com";
+        const deviceLabel = [deviceInfo.vendor, deviceInfo.model].filter(Boolean).join(" ");
+        const deviceType = deviceInfo.type !== "unknown" ? ` \u00B7 ${deviceInfo.type}` : "";
+
+        sectionBar("DEVICE RESOURCES");
+        y += 8;
+
+        const DR_H = 54;
+        ensure(DR_H + 4);
+        sf(NAVYL); doc.rect(ML, y, CW, DR_H, "F");
+        sf(TEAL);  doc.rect(ML, y, 3, DR_H, "F");
+        st(GOLD);  fn("bold", 7);    txt("IDENTIFIED DEVICE", ML + 10, y + 9, 7);
+        st(WHITE); fn("bold", 10);   txt(`${deviceLabel}${deviceType}`, ML + 10, y + 21, 10);
+        st(CYAN);  fn("normal", 8.5);
+        doc.textWithLink("View Official Manual \u2192", ML + 10, y + 38, { url: manualUrl });
+        st(MGRAY); fn("normal", 7);  txt(manualUrl, ML + 10, y + 48, 7);
+        y += DR_H + 10;
       }
 
       // ── GOLD DIVIDER ──────────────────────────────────────────────────────
@@ -2470,6 +2520,47 @@ export default function CrowsEyeClient() {
               </select>
             </div>
           </div>
+        </div>
+
+        {/* Network Setup */}
+        <div>
+          <label className="block text-sm font-medium text-white mb-2">
+            Does your router broadcast multiple networks?
+          </label>
+          <div
+            className="flex rounded-xl overflow-hidden"
+            style={{ border: "1px solid rgba(255,255,255,0.10)" }}
+          >
+            {(["Single network", "Multiple networks (private + guest, 2.4G + 5G split, etc.)"] as const).map((opt, i) => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => setMultiSsid(i === 1)}
+                className="flex-1 px-4 py-3 text-sm font-medium transition"
+                style={{
+                  background: (i === 1) === multiSsid ? "rgba(0,212,255,0.15)" : "rgba(255,255,255,0.04)",
+                  color: (i === 1) === multiSsid ? "var(--ocws-cyan)" : "rgba(255,255,255,0.55)",
+                  borderRight: i === 0 ? "1px solid rgba(255,255,255,0.10)" : undefined,
+                }}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+          {multiSsid && (
+            <div className="mt-3">
+              <label className="block text-xs text-white/50 mb-1">
+                Describe your network setup (optional)
+              </label>
+              <input
+                type="text"
+                value={ssidDescription}
+                onChange={(e) => setSsidDescription(e.target.value)}
+                placeholder="e.g. Home-Private, Home-5G, Home-Guest — all from same router"
+                className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
+              />
+            </div>
+          )}
         </div>
 
         {/* Notes */}

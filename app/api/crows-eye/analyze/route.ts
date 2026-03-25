@@ -47,11 +47,22 @@ YOUR VOICE:
 - Warm underneath. You genuinely want this fixed.
 - Examples: "Your ISP didn't lie to you. They just didn't tell you the truth." / "Three of these are free fixes. One requires spending money." / "This is fixable. Most of them are." / "I've seen this exact configuration in forty buildings. It was wrong in all forty."
 
+MULTI-SSID ENVIRONMENTS: When MULTI_SSID: true appears in the client context, the client's router broadcasts multiple networks from the same hardware. Key analysis rules:
+- Multiple SSIDs from one router share the same radio and airtime. They are not separate channels.
+- Co-channel findings must note this: apparent interference from a neighbor may actually be the client's own router broadcasting multiple SSIDs. Do not count the client's own networks as competitor interference.
+- Identify MAC address patterns suggesting same-vendor multi-SSID: multiple BSSIDs with the same OUI (first 3 MAC octets) and consecutive or near-consecutive last 3 octets likely belong to the same physical router.
+- If SSID_DESCRIPTION is provided, use it to identify which visible SSIDs in the scan belong to the client's router, then apply all findings in that context.
+
 RESPONSE FORMAT — return ONLY valid JSON, no markdown fences, no prose outside the JSON object:
 
 {
   "identified_ssid": "The exact SSID string you matched in the scan data, or null if not found",
   "router_vendor": "The vendor you identified (e.g. 'TP-Link', 'Netgear', 'Cox/Vantiva', 'Eero', 'Unknown')",
+  "device": {
+    "vendor": "Same as router_vendor — the manufacturer (e.g. 'TP-Link', 'Netgear', 'Unknown')",
+    "model": "Specific model if identifiable from SSID naming patterns or MAC OUI lookup (e.g. 'Archer AX21', 'Nighthawk R7000'), otherwise null",
+    "type": "router or modem or gateway or ap or unknown"
+  },
   "corvus_opening": "1–2 sentence dramatic hook. If you identified the client's network, reference it by name and vendor. What did you find? Be specific.",
   "problems_found": <integer total issues>,
   "critical_count": <integer CRITICAL issues>,
@@ -113,6 +124,7 @@ Rules:
 - For Eero and Google/Nest routers, steps must describe the mobile app flow, not a web UI
 - If client_ssid was not found in the scan, set identified_ssid to null and use Unknown vendor defaults
 - If router_vendor is Unknown, steps should instruct the user to try each common gateway address in order
+- Always include the "device" top-level field with best-effort vendor, model, and type identification
 - Return ONLY the JSON object — no surrounding text`;
 
 type ImageEntry = {
@@ -179,6 +191,8 @@ export async function POST(req: Request) {
       locationType = "",
       notes = "",
       client_ssid = "",
+      multiSsid = false,
+      ssidDescription = "",
       honeypot = "",
     } = body as {
       mode?: string;
@@ -194,6 +208,8 @@ export async function POST(req: Request) {
       locationType: string;
       notes: string;
       client_ssid: string;
+      multiSsid?: boolean;
+      ssidDescription?: string;
       honeypot: string;
     };
 
@@ -279,6 +295,8 @@ export async function POST(req: Request) {
       `Environment: ${environment}`,
       `Location type: ${locationType || "Not specified"}`,
       `Client's Wi-Fi network name (SSID): ${String(client_ssid).trim() || "Not provided"} — use this to identify their router in the scan data`,
+      `MULTI_SSID: ${multiSsid ? "true" : "false"}`,
+      ...(multiSsid && ssidDescription?.trim() ? [`SSID_DESCRIPTION: ${ssidDescription.trim()}`] : []),
       ...(isSiteMode && locationNames ? [`Locations surveyed (${locationPayloads.length}): ${locationNames}`] : []),
       ...(isSiteMode ? ["ANALYSIS MODE: Full Site Survey — synthesize patterns ACROSS all locations for a site-wide assessment."] : []),
       ...(isHybrid ? [
