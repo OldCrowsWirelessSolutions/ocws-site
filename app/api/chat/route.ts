@@ -26,7 +26,7 @@ async function getAccessLevel(code: string): Promise<AccessLevel> {
   const upper = code.toUpperCase();
 
   // Admin / bypass
-  if (upper === "OCWS-CORVUS-FOUNDER-JOSHUA" || upper === "CORVUS-NEST") return "unlimited";
+  if (upper === "OCWS-CORVUS-FOUNDER-JOSHUA" || upper === "CORVUS-NEST" || upper === "CORVUS-ADMIN") return "unlimited";
   if (process.env.OCWS_ADMIN_SECRET && code === process.env.OCWS_ADMIN_SECRET) return "unlimited";
 
   try {
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     // ── Access check ─────────────────────────────────────────────────────────
     const access = await getAccessLevel(code);
     if (access === "denied") {
-      return NextResponse.json({ error: `Invalid or inactive code: "${code}"` }, { status: 401 });
+      return NextResponse.json({ error: "Invalid or inactive code" }, { status: 401 });
     }
 
     if (access === "free") {
@@ -136,8 +136,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ response: responseText, messagesRemaining });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error("[chat] CRASH:", msg);
-    return NextResponse.json({ error: `Chat failed: ${msg}` }, { status: 500 });
+    console.error("[chat]", err);
+    return NextResponse.json({ error: "Chat failed" }, { status: 500 });
   }
 }
