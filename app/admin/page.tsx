@@ -193,6 +193,7 @@ function TabBar({ tabs, active, onChange, badge }: {
         })}
       </div>
     </div>
+  </div>
   );
 }
 
