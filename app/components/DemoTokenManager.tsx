@@ -42,6 +42,7 @@ export default function DemoTokenManager({ authKey, isAdmin = false }: Props) {
   const [expiresInHours, setExpiresInHours] = useState(24)
   const [maxUses, setMaxUses] = useState(1)
   const [label, setLabel] = useState('')
+  const [clientName, setClientName] = useState('')
   const [allowPDF, setAllowPDF] = useState(false)
   const [allowReckoning, setAllowReckoning] = useState(false)
   const [error, setError] = useState('')
@@ -73,12 +74,13 @@ export default function DemoTokenManager({ authKey, isAdmin = false }: Props) {
       const res = await fetch('/api/demo/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ authKey, accessLevel, expiresInHours, maxUses, label: label || undefined, allowPDF, allowReckoning }),
+        body: JSON.stringify({ authKey, accessLevel, expiresInHours, maxUses, label: label || undefined, clientName: clientName || undefined, allowPDF, allowReckoning }),
       })
       const data = await res.json()
       if (data.success) {
         setNewTokenUrl(data.url)
         setLabel('')
+        setClientName('')
         await fetchTokens()
       } else {
         setError(data.error || 'Failed to generate token')
@@ -140,6 +142,16 @@ export default function DemoTokenManager({ authKey, isAdmin = false }: Props) {
           <div style={s.field}>
             <label style={s.label}>Label (optional)</label>
             <input style={s.input} type="text" value={label} onChange={e => setLabel(e.target.value)} placeholder="e.g. Pilcher's Demo" />
+          </div>
+          <div style={s.field}>
+            <label style={s.label}>Client Name (optional)</label>
+            <input
+              style={s.input}
+              type="text"
+              placeholder='e.g. "Pastor Jim", "ABC Hotel", "Nate Farrelly"'
+              value={clientName}
+              onChange={e => setClientName(e.target.value)}
+            />
           </div>
         </div>
         {isAdmin && (

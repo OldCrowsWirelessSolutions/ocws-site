@@ -51,6 +51,28 @@ export default function AdminDemoRequests({ authKey }: Props) {
     }
   }
 
+  async function sendDemoUrl(req: DemoRequest) {
+    setSaving(true)
+    try {
+      const res = await fetch('/api/demo/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          authKey,
+          accessLevel: 'fledgling',
+          expiresInHours: 168,
+          maxUses: 0,
+          label: `Demo for ${req.name}`,
+          clientName: req.name,
+        }),
+      })
+      const data = await res.json()
+      if (data.success) setDemoUrl(data.url)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   async function updateRequest(id: string, updates: Partial<DemoRequest>) {
     setSaving(true)
     try {
@@ -126,6 +148,9 @@ export default function AdminDemoRequests({ authKey }: Props) {
             )}
             <div style={s.fieldLabel}>Demo URL Sent</div>
             <input style={s.input} type="text" value={demoUrl} onChange={e => setDemoUrl(e.target.value)} placeholder="https://oldcrowswireless.com/demo/CORVUS-DEMO-..." />
+            <button style={{ ...s.actionBtn, background: 'rgba(0,194,199,0.06)', color: '#00C2C7', borderColor: 'rgba(0,194,199,0.2)', marginBottom: '0.5rem' }} onClick={() => sendDemoUrl(selected)} disabled={saving}>
+              Generate URL for {selected.name} →
+            </button>
             <div style={s.fieldLabel}>Admin Notes</div>
             <textarea style={s.textarea} value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Contact notes, follow-up..." />
             <div style={s.actionRow}>

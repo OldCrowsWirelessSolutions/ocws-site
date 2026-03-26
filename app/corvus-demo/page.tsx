@@ -30,6 +30,30 @@ export default function CorvusDemoPage() {
   const [scanProgress, setScanProgress] = useState(0)
   const [showVerdict, setShowVerdict] = useState(false)
   const [lineVisible, setLineVisible] = useState(true)
+  const [clientName, setClientName] = useState<string | null>(null)
+  const [showPersonalized, setShowPersonalized] = useState(true)
+
+  useEffect(() => {
+    // Try to get name from demo session in sessionStorage
+    const raw = sessionStorage.getItem('corvus_demo_session')
+    if (raw) {
+      try {
+        const session = JSON.parse(raw)
+        if (session.clientName) setClientName(session.clientName)
+      } catch {}
+    }
+    // Also check URL param as fallback
+    const params = new URLSearchParams(window.location.search)
+    const nameParam = params.get('name')
+    if (nameParam) setClientName(prev => prev ?? nameParam)
+  }, [])
+
+  useEffect(() => {
+    if (!clientName) { setShowPersonalized(false); return }
+    // Show personalized line for 5 seconds, then start rotation
+    const timer = setTimeout(() => setShowPersonalized(false), 5000)
+    return () => clearTimeout(timer)
+  }, [clientName])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -60,7 +84,11 @@ export default function CorvusDemoPage() {
         <h2 style={s.heroSub}>The only AI that renders Verdicts on your wireless network.</h2>
         <div style={s.quoteBox}>
           <div style={s.quoteMark}>"</div>
-          <p style={{ ...s.quoteLine, opacity: lineVisible ? 1 : 0, transition: 'opacity 0.4s ease' }}>{DEMO_LINES[currentLine]}</p>
+          <p style={{ ...s.quoteLine, opacity: lineVisible ? 1 : 0, transition: 'opacity 0.4s ease' }}>
+            {showPersonalized && clientName
+              ? `I've been expecting you, ${clientName}. Let's see what your network has been hiding.`
+              : DEMO_LINES[currentLine]}
+          </p>
           <div style={s.quoteAttrib}>— CORVUS · OLD CROWS WIRELESS SOLUTIONS</div>
         </div>
       </div>

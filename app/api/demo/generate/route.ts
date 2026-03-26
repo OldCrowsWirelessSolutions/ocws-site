@@ -7,7 +7,7 @@ const VIP_CODES = [process.env.VIP_NATE_CODE, process.env.VIP_MIKE_CODE, process
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { authKey, accessLevel = 'fledgling', expiresInHours = 24, maxUses = 1, label, allowPDF, allowReckoning } = body
+    const { authKey, accessLevel = 'fledgling', expiresInHours = 24, maxUses = 1, label, clientName, allowPDF, allowReckoning } = body
 
     const isAdmin = authKey === ADMIN_KEY
     const isVIP = VIP_CODES.includes(authKey)
@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
       maxUses,
       createdBy: isAdmin ? 'admin' : authKey,
       label,
+      clientName,
       allowPDF: allowPDF ?? false,
       allowReckoning: allowReckoning ?? false,
     })

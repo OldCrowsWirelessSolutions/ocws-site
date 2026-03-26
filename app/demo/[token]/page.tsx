@@ -10,6 +10,7 @@ type DemoSession = {
   allowPDF: boolean
   allowReckoning: boolean
   usesRemaining: number | 'unlimited'
+  clientName?: string
 }
 
 const ACCESS_LABELS: Record<string, string> = {
@@ -92,7 +93,11 @@ export default function DemoLandingPage() {
     <div style={s.page}><div style={s.card}>
       <Image src="/Crows_Eye_Logo.png" alt="Crow's Eye" width={90} height={90} />
       <div style={s.badge}>{ACCESS_LABELS[session!.accessLevel]}</div>
-      <h1 style={s.title}>You've been given access to Crow's Eye.</h1>
+      <h1 style={s.title}>
+        {session!.clientName
+          ? `You've been given access to Crow's Eye, ${session!.clientName}.`
+          : "You've been given access to Crow's Eye."}
+      </h1>
       <p style={s.description}>{ACCESS_DESCRIPTIONS[session!.accessLevel]}</p>
       <div style={s.meta}>
         <span style={s.timer}>⏱ {timeLeft}</span>

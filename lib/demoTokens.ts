@@ -14,6 +14,7 @@ export type DemoTokenConfig = {
   maxUses: number
   createdBy: string
   label?: string
+  clientName?: string
   allowPDF: boolean
   allowReckoning: boolean
 }
@@ -27,6 +28,7 @@ export type DemoToken = {
   useCount: number
   createdBy: string
   label?: string
+  clientName?: string
   allowPDF: boolean
   allowReckoning: boolean
   revoked: boolean
@@ -41,6 +43,7 @@ export type DemoSession = {
   allowPDF: boolean
   allowReckoning: boolean
   usesRemaining: number | 'unlimited'
+  clientName?: string
 }
 
 const TOKEN_PREFIX = 'demo:token:'
@@ -63,6 +66,7 @@ export async function generateDemoToken(config: DemoTokenConfig): Promise<DemoTo
     useCount: 0,
     createdBy: config.createdBy,
     label: config.label,
+    clientName: config.clientName,
     allowPDF,
     allowReckoning,
     revoked: false,
@@ -110,6 +114,7 @@ export async function validateDemoToken(
       allowPDF: data.allowPDF,
       allowReckoning: data.allowReckoning,
       usesRemaining,
+      clientName: data.clientName,
     },
   }
 }
