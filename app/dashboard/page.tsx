@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import CorvusChat from "@/app/components/CorvusChat";
 import CrowsEyeTab from "@/app/components/CrowsEyeTab";
+import SettingsTab from "@/app/components/SettingsTab";
 import {
   corvusLineFresh,
   CORVUS_JOSHUA_DASHBOARD_BRIEF,
@@ -101,8 +102,8 @@ const sectionLabel: React.CSSProperties = {
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
-type SubTab  = "overview" | "reports" | "analytics" | "credits" | "team" | "billing" | "chat" | "products" | "crow";
-type VIPTab  = "overview" | "reports" | "analytics" | "codes"   | "team" | "chat"  | "products" | "crow";
+type SubTab  = "overview" | "reports" | "analytics" | "credits" | "team" | "billing" | "chat" | "products" | "crow" | "settings";
+type VIPTab  = "overview" | "reports" | "analytics" | "codes"   | "team" | "chat"  | "products" | "crow" | "settings";
 type AnyTab  = SubTab | VIPTab;
 
 // ─── TabBar ───────────────────────────────────────────────────────────────────
@@ -804,6 +805,7 @@ export default function DashboardPage() {
     ...(isSubType ? [{ id: "billing" as SubTab, label: "Account & Billing" }] : []),
     { id: "products",   label: "Products"    },
     { id: "chat",       label: "Ask Corvus"  },
+    { id: "settings",   label: "Settings"    },
   ];
 
   const vipTabs: { id: VIPTab; label: string }[] = [
@@ -815,6 +817,7 @@ export default function DashboardPage() {
     { id: "team",       label: "Team Activity" },
     { id: "products",   label: "Products"    },
     { id: "chat",       label: "Ask Corvus"  },
+    { id: "settings",   label: "Settings"    },
   ];
 
   const tabs = isVIP ? vipTabs : subTabs;
@@ -1876,6 +1879,7 @@ export default function DashboardPage() {
         case "team":       return renderVipTeamActivity();
         case "products":   return renderProducts();
         case "chat":       return renderChat();
+        case "settings":   return <SettingsTab code={storedCode} isVIP={isVIP} />;
         default:           return renderOverview();
       }
     }
@@ -1889,6 +1893,7 @@ export default function DashboardPage() {
       case "billing":    return renderBilling();
       case "products":   return renderProducts();
       case "chat":       return renderChat();
+      case "settings":   return <SettingsTab code={storedCode} isVIP={isVIP} />;
       default:           return renderOverview();
     }
   }

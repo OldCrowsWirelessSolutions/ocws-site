@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import CorvusChat from "@/app/components/CorvusChat";
 import CrowsEyeTab from "@/app/components/CrowsEyeTab";
+import SettingsTab from "@/app/components/SettingsTab";
 import { CORVUS_JOSHUA_DASHBOARD_LOAD } from "@/lib/corvus-ui-strings";
 
 function AdminCrowsEyeTab() {
@@ -1990,34 +1991,22 @@ export default function AdminPage() {
 
   function renderSettings() {
     return (
-      <div style={card}>
-        <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
-          Settings
-        </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          <div style={{ background: "#0D1520", borderRadius: "10px", padding: "20px" }}>
-            <p style={{ color: "#888888", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>Admin Session</p>
-            <p style={{ color: "#555555", fontSize: "12px", marginBottom: "14px" }}>
-              You are authenticated as the platform administrator.
-            </p>
-            <button onClick={handleLogout}
-              style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: "8px", color: "#F87171", fontSize: "13px", fontWeight: 600, padding: "9px 20px", cursor: "pointer" }}>
-              Sign Out
-            </button>
-          </div>
-
-          <div style={{ background: "#0D1520", borderRadius: "10px", padding: "20px" }}>
-            <p style={{ color: "#888888", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>Refresh All Data</p>
-            <p style={{ color: "#555555", fontSize: "12px", marginBottom: "14px" }}>
-              Pull fresh data from Redis across all admin panels.
-            </p>
-            <button
-              onClick={() => { loadAll(); flash("All data refreshed."); }}
-              style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "8px", color: "#00C2C7", fontSize: "13px", fontWeight: 600, padding: "9px 20px", cursor: "pointer" }}>
-              ↻ Refresh All
-            </button>
-          </div>
+      <div>
+        {/* Refresh panel */}
+        <div style={{ ...card, marginBottom: 20 }}>
+          <p style={{ color: "#888888", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>Refresh All Data</p>
+          <p style={{ color: "#555555", fontSize: "12px", marginBottom: "14px" }}>
+            Pull fresh data from Redis across all admin panels.
+          </p>
+          <button
+            onClick={() => { loadAll(); flash("All data refreshed."); }}
+            style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "8px", color: "#00C2C7", fontSize: "13px", fontWeight: 600, padding: "9px 20px", cursor: "pointer" }}>
+            ↻ Refresh All
+          </button>
         </div>
+
+        {/* Session settings shared component */}
+        <SettingsTab code="CORVUS-ADMIN" isAdmin={true} />
       </div>
     );
   }

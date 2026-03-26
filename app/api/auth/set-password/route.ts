@@ -9,11 +9,12 @@ import redis from "@/lib/redis";
 const VIP_CODES = new Set(["CORVUS-NEST", "CORVUS-NATE", "CORVUS-MIKE", "CORVUS-ERIC", "CORVUS-KYLE"]);
 
 export async function POST(req: Request) {
-  let code: string, password: string;
+  let code: string, password: string, force: boolean;
   try {
-    const body = await req.json() as { code?: string; password?: string };
+    const body = await req.json() as { code?: string; password?: string; force?: boolean };
     code = String(body.code ?? "").trim().toUpperCase();
     password = String(body.password ?? "").trim();
+    force = body.force === true;
   } catch {
     return Response.json({ error: "Bad request" }, { status: 400 });
   }
@@ -34,20 +35,22 @@ export async function POST(req: Request) {
 
   const redisKey = isVip ? `vip:${code}:password_hash` : `sub:${code}:password_hash`;
 
-  // Check if password already set (prevent overwrite without reset)
-  try {
-    const existing = await redis.get<string>(redisKey);
-    if (existing) {
-      return Response.json({ error: "Password already set. Contact admin to reset." }, { status: 409 });
+  // Prevent overwrite unless force=true (force is only set by the settings tab after verifying current password)
+  if (!force) {
+    try {
+      const existing = await redis.get<string>(redisKey);
+      if (existing) {
+        return Response.json({ error: "Password already set. Use the Settings tab to change it." }, { status: 409 });
+      }
+    } catch {
+      return Response.json({ error: "Service unavailable" }, { status: 503 });
     }
-  } catch {
-    return Response.json({ error: "Service unavailable" }, { status: 503 });
   }
 
   try {
     const hash = await bcrypt.hash(password, 12);
     await redis.set(redisKey, hash);
-    return Response.json({ ok: true });
+    return Response.json({ ok: true, success: true });
   } catch {
     return Response.json({ error: "Failed to save password" }, { status: 500 });
   }

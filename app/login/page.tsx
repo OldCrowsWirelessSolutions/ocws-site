@@ -241,8 +241,16 @@ export default function LoginPage() {
     // Read session expired flag
     try {
       const expired = sessionStorage.getItem("corvus_session_expired");
-      if (expired) {
+      const logoutReason = sessionStorage.getItem("corvus_logout_reason");
+      if (expired || logoutReason === "inactivity") {
         sessionStorage.removeItem("corvus_session_expired");
+        sessionStorage.removeItem("corvus_logout_reason");
+        sessionExpiredLineRef.current = pick(CORVUS_SESSION_EXPIRED);
+        setSessionExpired(true);
+        speakCorvus(sessionExpiredLineRef.current);
+      } else if (logoutReason) {
+        sessionStorage.removeItem("corvus_logout_reason");
+        // domain_exit or other — treat as session expired for display purposes
         sessionExpiredLineRef.current = pick(CORVUS_SESSION_EXPIRED);
         setSessionExpired(true);
         speakCorvus(sessionExpiredLineRef.current);

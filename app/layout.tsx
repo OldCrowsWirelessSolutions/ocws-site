@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import StickyQuoteCTA from "./components/StickyQuoteCTA";
 import CorvusChatWrapper from "./components/CorvusChatWrapper";
+import ActivityTracker from "./components/ActivityTracker";
 
 export const metadata: Metadata = {
   title: "Old Crows Wireless Solutions (OCWS)",
@@ -48,6 +49,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* Corvus chat — persists for authenticated subscribers across all pages */}
         <CorvusChatWrapper />
+
+        {/* Activity tracker — inactivity timeout, domain exit logout, multi-tab sync */}
+        <ActivityTracker />
       </body>
     </html>
   );
