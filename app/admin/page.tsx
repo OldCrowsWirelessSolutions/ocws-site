@@ -326,6 +326,13 @@ export default function AdminPage() {
   const [loadingPlatform, setLoadingPlatform]       = useState(false);
   const [platformNarrative, setPlatformNarrative]   = useState("");
   const [loadingNarrative, setLoadingNarrative]     = useState(false);
+
+  // Knowledge base state
+  const [knowledgeLastUpdated, setKnowledgeLastUpdated]   = useState<string | null>(null);
+  const [knowledgeNextScheduled, setKnowledgeNextScheduled] = useState<string>("");
+  const [knowledgeSize, setKnowledgeSize]                 = useState<number | null>(null);
+  const [knowledgeUpdating, setKnowledgeUpdating]         = useState(false);
+  const [knowledgePreview, setKnowledgePreview]           = useState<string | null>(null);
   const chartsInitRef = useRef(false);
 
   interface ChatAnalytics {
@@ -905,6 +912,42 @@ export default function AdminPage() {
     }
   }
 
+  async function loadKnowledgeStatus() {
+    try {
+      const res = await fetch('/api/admin/knowledge/status', {
+        headers: { 'x-admin-key': ADMIN_KEY },
+      });
+      if (res.ok) {
+        const data = await res.json() as { lastUpdated: string | null; nextScheduled: string; knowledgeSize: number };
+        setKnowledgeLastUpdated(data.lastUpdated);
+        setKnowledgeNextScheduled(data.nextScheduled);
+        setKnowledgeSize(data.knowledgeSize);
+      }
+    } catch { /* non-fatal */ }
+  }
+
+  async function handleManualKnowledgeUpdate() {
+    setKnowledgeUpdating(true);
+    setKnowledgePreview(null);
+    try {
+      const res = await fetch('/api/admin/knowledge/update', {
+        method: 'POST',
+        headers: { 'x-admin-key': ADMIN_KEY },
+      });
+      const data = await res.json() as { success?: boolean; preview?: string; error?: string };
+      if (data.success) {
+        setKnowledgePreview(data.preview ?? 'Update applied.');
+        await loadKnowledgeStatus();
+      } else {
+        setKnowledgePreview(`Error: ${data.error ?? 'Update failed'}`);
+      }
+    } catch {
+      setKnowledgePreview('Network error. Try again.');
+    } finally {
+      setKnowledgeUpdating(false);
+    }
+  }
+
   function flash(msg: string, _isError = false) {
     setActionMsg(msg);
     setTimeout(() => setActionMsg(""), 4000);
@@ -1090,6 +1133,57 @@ export default function AdminPage() {
               </p>
             )}
           </div>
+        </div>
+
+        {/* Knowledge Base */}
+        <div style={card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
+            <div>
+              <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>Corvus Knowledge Base</p>
+              <p style={{ color: "#555555", fontSize: "12px" }}>RF/wireless technical knowledge injected into every Corvus conversation</p>
+            </div>
+            <button
+              onClick={knowledgeLastUpdated === undefined ? loadKnowledgeStatus : handleManualKnowledgeUpdate}
+              disabled={knowledgeUpdating}
+              style={{ background: knowledgeUpdating ? "rgba(0,194,199,0.04)" : "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "8px", color: "#00C2C7", fontSize: "12px", padding: "7px 14px", cursor: knowledgeUpdating ? "not-allowed" : "pointer", opacity: knowledgeUpdating ? 0.6 : 1 }}
+            >
+              {knowledgeUpdating ? "🐦‍⬛ Corvus is learning…" : knowledgeLastUpdated === undefined ? "↻ Check Status" : "⚡ Manual Update"}
+            </button>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: "12px", marginBottom: "16px" }}>
+            <div style={{ background: "#0D1520", borderRadius: "10px", padding: "14px 16px" }}>
+              <p style={{ color: "#444", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>Last Updated</p>
+              <p style={{ color: "#F4F6F8", fontSize: "13px", fontWeight: 600 }}>
+                {knowledgeLastUpdated ? new Date(knowledgeLastUpdated).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "Static build — no updates yet"}
+              </p>
+            </div>
+            <div style={{ background: "#0D1520", borderRadius: "10px", padding: "14px 16px" }}>
+              <p style={{ color: "#444", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>Next Scheduled</p>
+              <p style={{ color: "#B8922A", fontSize: "13px", fontWeight: 600 }}>
+                {knowledgeNextScheduled || "—"}
+              </p>
+            </div>
+            {knowledgeSize !== null && (
+              <div style={{ background: "#0D1520", borderRadius: "10px", padding: "14px 16px" }}>
+                <p style={{ color: "#444", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>Knowledge Size</p>
+                <p style={{ color: "#4ADE80", fontSize: "13px", fontWeight: 600 }}>{(knowledgeSize / 1000).toFixed(1)}k chars</p>
+              </div>
+            )}
+          </div>
+
+          {!knowledgeLastUpdated && knowledgeLastUpdated !== undefined && (
+            <button onClick={loadKnowledgeStatus} style={{ background: "rgba(0,194,199,0.06)", border: "1px solid rgba(0,194,199,0.15)", borderRadius: "8px", color: "#00C2C7", fontSize: "12px", padding: "8px 16px", cursor: "pointer", marginBottom: "12px" }}>
+              Load Status
+            </button>
+          )}
+
+          {knowledgePreview && (
+            <div style={{ background: "#0D1520", borderRadius: "10px", padding: "14px 16px" }}>
+              <p style={{ color: "#444", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>Last Update Preview</p>
+              <p style={{ color: "#aaaaaa", fontSize: "12px", lineHeight: 1.6, margin: 0 }}>{knowledgePreview}</p>
+            </div>
+          )}
         </div>
 
         {/* Chat Intelligence */}

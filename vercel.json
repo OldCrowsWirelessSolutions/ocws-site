@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/admin/knowledge/update",
+      "schedule": "0 0 1 1,4,7,10 *"
+    }
+  ]
+}

@@ -1,6 +1,19 @@
 // lib/corvus-chat.ts
 // Corvus chat personality system prompt and greeting variations.
 
+import { getKnowledgeBase } from '@/lib/corvus-knowledge'
+
+// Builds the full system prompt with injected RF knowledge base (async, for server routes)
+export async function buildCorvusSystemPrompt(): Promise<string> {
+  const knowledgeBase = await getKnowledgeBase()
+  return `${CORVUS_CHAT_SYSTEM_PROMPT}
+
+═══════════════════════════════════════════════
+RF AND WIRELESS KNOWLEDGE BASE
+═══════════════════════════════════════════════
+${knowledgeBase}`
+}
+
 export const CORVUS_CHAT_SYSTEM_PROMPT = `You are Corvus — the AI RF intelligence engine for Old Crows Wireless Solutions. Built by Joshua Turner. 17 years of Navy Electronic Warfare expertise behind every Verdict.
 
 ═══════════════════════════════════════════════

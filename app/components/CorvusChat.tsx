@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { pickGreeting } from "@/lib/corvus-chat";
 import { CORVUS_JOSHUA_CHAT } from "@/lib/corvus-ui-strings";
-import { speakCorvus } from "@/lib/elevenlabs";
+import { speakCorvusFull, stopCorvus } from "@/lib/elevenlabs";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -106,9 +106,12 @@ export default function CorvusChat({
   const [limited, setLimited]               = useState(false);
   const [upgradeMsg, setUpgradeMsg]         = useState("");
   const [activeReport, setActiveReport]     = useState<ActiveReport | null>(null);
+  const [isListening, setIsListening]       = useState(false);
   const bottomRef                           = useRef<HTMLDivElement>(null);
   const inputRef                            = useRef<HTMLInputElement>(null);
   const greetedRef                          = useRef(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef                      = useRef<any>(null);
 
   // Auto-scroll
   useEffect(() => {
@@ -161,7 +164,7 @@ export default function CorvusChat({
     }
     setMessages([{ id, role: "assistant", content: greeting }]);
     setTypingId(id);
-    speakCorvus(greeting);
+    speakCorvusFull(greeting, 'chat');
   }, [open, hasRecentVerdict, isFounder]);
 
   // Focus input when opened
@@ -222,7 +225,7 @@ export default function CorvusChat({
           content: limitMsg,
         }]);
         setTypingId(limitId);
-        speakCorvus(limitMsg);
+        speakCorvusFull(limitMsg, 'chat');
         setLimited(true);
         setMessagesRemaining(0);
         setUpgradeMsg(data.message ?? "");
@@ -233,10 +236,7 @@ export default function CorvusChat({
         const aiId = `msg-${Date.now()}-a`;
         setMessages((prev) => [...prev, { id: aiId, role: "assistant", content: data.response! }]);
         setTypingId(aiId);
-        // Truncate to first 2 sentences for audio
-        const sentences = data.response.split(/[.!?]+/).filter(Boolean);
-        const audioText = sentences.slice(0, 2).join('. ').trim() + '.';
-        speakCorvus(audioText);
+        speakCorvusFull(data.response!, 'chat');
         if (data.messagesRemaining !== undefined) {
           setMessagesRemaining(data.messagesRemaining);
         }
@@ -280,6 +280,63 @@ export default function CorvusChat({
       setMessages([{ id, role: "assistant", content: greeting }]);
       setTypingId(id);
     }, 50);
+  }
+
+  // ── Voice input ──────────────────────────────────────────────────────────
+
+  function handleVoiceInput() {
+    const SpeechRecognition =
+      (window as Window & { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).SpeechRecognition ??
+      (window as Window & { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert('Voice input requires Chrome or Edge. Try typing instead.');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    stopCorvus(); // stop any currently playing audio before listening
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const recognition = new (SpeechRecognition as any)();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => { setIsListening(true); setInput(''); };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onresult = (event: any) => {
+      const transcript = Array.from(event.results as unknown[])
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((r: any) => r[0].transcript as string)
+        .join('');
+      setInput(transcript);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      // Auto-send after a short delay so state has updated
+      setTimeout(() => {
+        if (inputRef.current?.value.trim()) {
+          sendMessage();
+        }
+      }, 300);
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onerror = (event: any) => {
+      console.error('[CorvusChat] Speech recognition error:', event.error);
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
   }
 
   // ── Styles ────────────────────────────────────────────────────────────────
@@ -466,13 +523,19 @@ export default function CorvusChat({
         </div>
 
         <div style={inputBarStyle}>
-          <input ref={inputRef} type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} disabled={loading || limited} placeholder={limited ? "Subscribe to continue…" : "Ask Corvus…"}
+          <input ref={inputRef} type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} disabled={loading || limited} placeholder={limited ? "Subscribe to continue…" : isListening ? "Listening…" : "Ask Corvus…"}
             style={{ flex: 1, background: "#0D1520", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "8px", padding: "9px 12px", color: "#ffffff", fontSize: "13px", outline: "none", fontFamily: "inherit", opacity: limited ? 0.4 : 1 }}
             onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,194,199,0.5)"; }}
             onBlur={(e)  => { e.currentTarget.style.borderColor = "rgba(0,194,199,0.2)"; }}
           />
-          <button onClick={sendMessage} disabled={loading || limited || !input.trim()}
-            style={{ background: loading || limited || !input.trim() ? "rgba(0,194,199,0.08)" : "#00C2C7", border: "none", borderRadius: "8px", width: "38px", height: "38px", display: "flex", alignItems: "center", justifyContent: "center", cursor: loading || limited || !input.trim() ? "not-allowed" : "pointer", flexShrink: 0, transition: "background 0.15s", color: loading || limited || !input.trim() ? "rgba(0,194,199,0.4)" : "#0D1520", fontSize: "16px", fontWeight: 700 }}
+          <button
+            onClick={handleVoiceInput}
+            disabled={loading || limited}
+            title={isListening ? "Stop listening" : "Speak to Corvus"}
+            style={{ background: isListening ? "rgba(224,85,85,0.15)" : "transparent", border: `1px solid ${isListening ? "rgba(224,85,85,0.5)" : "rgba(0,194,199,0.2)"}`, borderRadius: "50%", width: "36px", height: "36px", display: "flex", alignItems: "center", justifyContent: "center", cursor: loading || limited ? "not-allowed" : "pointer", flexShrink: 0, transition: "all 0.2s", fontSize: "14px", animation: isListening ? "corvus-mic-pulse 1s ease-in-out infinite" : "none", opacity: limited ? 0.3 : 1 }}
+          >{isListening ? "⏹" : "🎤"}</button>
+          <button onClick={sendMessage} disabled={loading || limited || (!input.trim() && !isListening)}
+            style={{ background: loading || limited || (!input.trim() && !isListening) ? "rgba(0,194,199,0.08)" : "#00C2C7", border: "none", borderRadius: "8px", width: "38px", height: "38px", display: "flex", alignItems: "center", justifyContent: "center", cursor: loading || limited || (!input.trim() && !isListening) ? "not-allowed" : "pointer", flexShrink: 0, transition: "background 0.15s", color: loading || limited || (!input.trim() && !isListening) ? "rgba(0,194,199,0.4)" : "#0D1520", fontSize: "16px", fontWeight: 700 }}
             aria-label="Send"
           >→</button>
         </div>
@@ -486,6 +549,10 @@ export default function CorvusChat({
         @keyframes corvus-chat-slide-in {
           from { opacity: 0; transform: translateY(12px) scale(0.97); }
           to   { opacity: 1; transform: translateY(0)   scale(1);    }
+        }
+        @keyframes corvus-mic-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(224,85,85,0.3); }
+          50%       { box-shadow: 0 0 0 6px rgba(224,85,85,0); }
         }
       `}</style>
 
@@ -664,7 +731,7 @@ export default function CorvusChat({
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={loading || limited}
-              placeholder={limited ? "Subscribe to continue…" : "Ask Corvus…"}
+              placeholder={limited ? "Subscribe to continue…" : isListening ? "Listening…" : "Ask Corvus…"}
               style={{
                 flex: 1,
                 background: "#0D1520",
@@ -681,10 +748,16 @@ export default function CorvusChat({
               onBlur={(e)  => { e.currentTarget.style.borderColor = "rgba(0,194,199,0.2)"; }}
             />
             <button
+              onClick={handleVoiceInput}
+              disabled={loading || limited}
+              title={isListening ? "Stop listening" : "Speak to Corvus"}
+              style={{ background: isListening ? "rgba(224,85,85,0.15)" : "transparent", border: `1px solid ${isListening ? "rgba(224,85,85,0.5)" : "rgba(0,194,199,0.2)"}`, borderRadius: "50%", width: "36px", height: "36px", display: "flex", alignItems: "center", justifyContent: "center", cursor: loading || limited ? "not-allowed" : "pointer", flexShrink: 0, transition: "all 0.2s", fontSize: "14px", animation: isListening ? "corvus-mic-pulse 1s ease-in-out infinite" : "none", opacity: limited ? 0.3 : 1 }}
+            >{isListening ? "⏹" : "🎤"}</button>
+            <button
               onClick={sendMessage}
-              disabled={loading || limited || !input.trim()}
+              disabled={loading || limited || (!input.trim() && !isListening)}
               style={{
-                background: loading || limited || !input.trim()
+                background: loading || limited || (!input.trim() && !isListening)
                   ? "rgba(0,194,199,0.08)"
                   : "#00C2C7",
                 border: "none",
@@ -694,10 +767,10 @@ export default function CorvusChat({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                cursor: loading || limited || !input.trim() ? "not-allowed" : "pointer",
+                cursor: loading || limited || (!input.trim() && !isListening) ? "not-allowed" : "pointer",
                 flexShrink: 0,
                 transition: "background 0.15s",
-                color: loading || limited || !input.trim() ? "rgba(0,194,199,0.4)" : "#0D1520",
+                color: loading || limited || (!input.trim() && !isListening) ? "rgba(0,194,199,0.4)" : "#0D1520",
                 fontSize: "16px",
                 fontWeight: 700,
               }}

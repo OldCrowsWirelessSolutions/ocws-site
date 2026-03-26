@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { CORVUS_CHAT_SYSTEM_PROMPT } from "@/lib/corvus-chat";
+import { buildCorvusSystemPrompt } from "@/lib/corvus-chat";
 import { getTodayHoliday, getHolidayGreeting } from "@/lib/corvus-calendar";
 import {
   getChatHistory,
@@ -111,7 +111,8 @@ export async function POST(req: NextRequest) {
 
     const todayNote = `\n\nTODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
 
-    const systemPrompt = CORVUS_CHAT_SYSTEM_PROMPT + reportContextInjection + contextInjection + comfortNote + holidayNote + todayNote;
+    const systemPromptBase = await buildCorvusSystemPrompt();
+    const systemPrompt = systemPromptBase + reportContextInjection + contextInjection + comfortNote + holidayNote + todayNote;
 
     // Last 20 messages for context window
     const contextMessages = history.slice(-20).map((m) => ({ role: m.role, content: m.content }));

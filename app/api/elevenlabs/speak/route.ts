@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// Voice speed is locked at 1.5x — matches client-side constant
+const LOCKED_SPEED = 1.5
+
 export async function POST(request: NextRequest) {
   try {
-    const { text } = await request.json()
+    const { text } = await request.json() as { text?: string; speed?: number }
 
-    if (!text || typeof text !== 'string' || text.length > 500) {
+    if (!text || typeof text !== 'string' || text.length > 3000) {
       return NextResponse.json({ error: 'Invalid text' }, { status: 400 })
     }
 
@@ -31,7 +34,7 @@ export async function POST(request: NextRequest) {
             similarity_boost: 0.85,
             style: 0.80,
             use_speaker_boost: true,
-            speed: 1.15,
+            speed: LOCKED_SPEED, // Always 1.5x — locked
           },
         }),
       }

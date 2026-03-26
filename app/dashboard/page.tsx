@@ -7,6 +7,8 @@ import Link from "next/link";
 import CorvusChat from "@/app/components/CorvusChat";
 import CrowsEyeTab from "@/app/components/CrowsEyeTab";
 import SettingsTab from "@/app/components/SettingsTab";
+import CorvusTour from "@/app/components/CorvusTour";
+import { TOURS, type Tour } from "@/lib/corvus-tours";
 import {
   corvusLineFresh,
   CORVUS_JOSHUA_DASHBOARD_BRIEF,
@@ -103,8 +105,8 @@ const sectionLabel: React.CSSProperties = {
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
-type SubTab  = "overview" | "reports" | "analytics" | "credits" | "team" | "billing" | "chat" | "products" | "crow" | "settings";
-type VIPTab  = "overview" | "reports" | "analytics" | "codes"   | "team" | "chat"  | "products" | "crow" | "settings";
+type SubTab  = "overview" | "reports" | "analytics" | "credits" | "team" | "billing" | "chat" | "products" | "crow" | "settings" | "help";
+type VIPTab  = "overview" | "reports" | "analytics" | "codes"   | "team" | "chat"  | "products" | "crow" | "settings" | "help";
 type AnyTab  = SubTab | VIPTab;
 
 // ─── TabBar ───────────────────────────────────────────────────────────────────
@@ -121,7 +123,7 @@ function TabBar({ tabs, active, onSelect }: {
       scrollbarWidth: "none",
     }}>
       {tabs.map(t => (
-        <button key={t.id} onClick={() => onSelect(t.id)}
+        <button key={t.id} onClick={() => onSelect(t.id)} data-tab={t.id}
           style={{
             padding: "10px 18px", fontSize: "13px", fontWeight: 600,
             border: "none", borderRadius: "10px 10px 0 0", cursor: "pointer",
@@ -316,6 +318,9 @@ export default function DashboardPage() {
   const [analyticsLoading, setAnalyticsLoading]   = useState(false);
   const [analyticsNarrative, setAnalyticsNarrative] = useState("");
   const [narrativeLoading, setNarrativeLoading]   = useState(false);
+
+  // ── Tour state ──────────────────────────────────────────────────────────────
+  const [activeTour, setActiveTour]               = useState<Tour | null>(null);
 
   // ── Tab persistence via URL hash ────────────────────────────────────────────
   const tabInitialized = useRef(false);
@@ -816,6 +821,7 @@ export default function DashboardPage() {
     { id: "products",   label: "Products"    },
     { id: "chat",       label: "Ask Corvus"  },
     { id: "settings",   label: "Settings"    },
+    { id: "help",       label: "Help"        },
   ];
 
   const vipTabs: { id: VIPTab; label: string }[] = [
@@ -828,6 +834,7 @@ export default function DashboardPage() {
     { id: "products",   label: "Products"    },
     { id: "chat",       label: "Ask Corvus"  },
     { id: "settings",   label: "Settings"    },
+    { id: "help",       label: "Help"        },
   ];
 
   const tabs = isVIP ? vipTabs : subTabs;
@@ -1878,6 +1885,58 @@ export default function DashboardPage() {
     );
   }
 
+  function renderHelp() {
+    const role: 'vip' | 'team_lead' | 'subscriber' =
+      isVIP ? 'vip' :
+      (teamLeadActive ? 'team_lead' : 'subscriber');
+
+    const availableTours = Object.values(TOURS).filter(t => t.applicableTo.includes(role));
+
+    return (
+      <div style={{ maxWidth: 680, display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: 24 }}>
+          <p style={{ color: "#00C2C7", fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Help & Training</p>
+          <p style={{ color: "#888888", fontSize: "0.78rem", marginBottom: 20, lineHeight: 1.6 }}>
+            Corvus will walk you through each section of the dashboard. Select a tour and I&apos;ll guide you step by step with live highlights.
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {availableTours.map(tour => (
+              <div key={tour.id} style={{ background: "rgba(13,21,32,0.8)", border: "1px solid rgba(0,194,199,0.12)", borderRadius: 12, padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+                <div style={{ flex: 1 }}>
+                  <p style={{ color: "#F4F6F8", fontSize: "0.88rem", fontWeight: 600, marginBottom: 4 }}>
+                    🐦‍⬛ {tour.name}
+                  </p>
+                  <p style={{ color: "#888888", fontSize: "0.75rem" }}>{tour.description}</p>
+                  <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.55rem", color: "#555", letterSpacing: "0.1em", marginTop: 6 }}>
+                    {tour.steps.length} steps
+                  </p>
+                </div>
+                <button
+                  onClick={() => setActiveTour(tour)}
+                  style={{ padding: "8px 20px", background: "rgba(0,194,199,0.1)", border: "1px solid rgba(0,194,199,0.3)", borderRadius: 8, color: "#00C2C7", fontFamily: "'Share Tech Mono', monospace", fontSize: "0.62rem", letterSpacing: "0.08em", cursor: "pointer", transition: "all 0.2s", flexShrink: 0 }}
+                >
+                  Start Tour →
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {availableTours.length === 0 && (
+            <p style={{ color: "#555", fontSize: "0.78rem", fontStyle: "italic" }}>No tours available for your current access level.</p>
+          )}
+        </div>
+
+        <div style={{ background: "rgba(184,146,42,0.05)", border: "1px solid rgba(184,146,42,0.15)", borderRadius: 12, padding: "14px 18px" }}>
+          <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.6rem", color: "#B8922A", letterSpacing: "0.12em", marginBottom: 6 }}>QUESTIONS?</p>
+          <p style={{ color: "#888888", fontSize: "0.75rem", lineHeight: 1.6 }}>
+            Tours cover the UI. For RF questions, technical analysis, or help interpreting your scan results — use the <strong style={{ color: "#F4F6F8" }}>Ask Corvus</strong> tab. I&apos;m there.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   function renderTabContent() {
     if (isVIP) {
       switch (activeTab as VIPTab) {
@@ -1890,6 +1949,7 @@ export default function DashboardPage() {
         case "products":   return renderProducts();
         case "chat":       return renderChat();
         case "settings":   return <SettingsTab code={storedCode} isVIP={isVIP} />;
+        case "help":       return renderHelp();
         default:           return renderOverview();
       }
     }
@@ -1904,6 +1964,7 @@ export default function DashboardPage() {
       case "products":   return renderProducts();
       case "chat":       return renderChat();
       case "settings":   return <SettingsTab code={storedCode} isVIP={isVIP} />;
+      case "help":       return renderHelp();
       default:           return renderOverview();
     }
   }
@@ -2119,6 +2180,22 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Guided tour overlay */}
+      {activeTour && (
+        <CorvusTour
+          tour={activeTour}
+          onComplete={() => {
+            fetch('/api/tours/complete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ code: storedCode, tourId: activeTour.id }),
+            }).catch(() => { /* non-fatal */ });
+            setActiveTour(null);
+          }}
+          onSkip={() => setActiveTour(null)}
+        />
       )}
     </div>
   );

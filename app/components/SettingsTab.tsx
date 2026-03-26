@@ -15,6 +15,29 @@ interface SettingsTabProps {
   isAdmin?: boolean;
 }
 
+const DEFAULT_VOICE_SETTINGS = {
+  login:      true,
+  dashboard:  true,
+  processing: true,
+  report:     true,
+  chat:       true,
+  holidays:   true,
+  tributes:   true,
+  imageClick: true,
+};
+type VoiceKey = keyof typeof DEFAULT_VOICE_SETTINGS;
+
+const VOICE_TOGGLE_CONFIG: { key: VoiceKey; label: string; desc: string }[] = [
+  { key: 'login',      label: 'LOGIN GREETING',       desc: 'Corvus speaks when you log in' },
+  { key: 'dashboard',  label: 'DASHBOARD BRIEFING',   desc: 'Corvus speaks his dashboard briefing' },
+  { key: 'processing', label: 'SCAN PROCESSING',      desc: 'Corvus narrates while analyzing' },
+  { key: 'report',     label: 'REPORT RENDER',        desc: 'Corvus speaks when your Verdict is ready' },
+  { key: 'chat',       label: 'CORVUS CHAT',          desc: 'Corvus speaks his chat responses' },
+  { key: 'holidays',   label: 'HOLIDAYS & SPECIAL DATES', desc: 'Corvus speaks holiday greetings' },
+  { key: 'tributes',   label: 'TRIBUTE MESSAGES',     desc: 'Corvus speaks personal tribute messages' },
+  { key: 'imageClick', label: 'CORVUS IMAGE CLICK',   desc: 'Corvus speaks when you click his image' },
+];
+
 export default function SettingsTab({ code, isVIP = false, isAdmin = false }: SettingsTabProps) {
   const [selectedTimeout, setSelectedTimeout] = useState<SessionTimeout>('never');
   const [timeoutSaved, setTimeoutSaved] = useState(false);
@@ -27,9 +50,31 @@ export default function SettingsTab({ code, isVIP = false, isAdmin = false }: Se
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
 
+  // Voice settings
+  const [masterAudio, setMasterAudio] = useState(true);
+  const [voiceSettings, setVoiceSettings] = useState({ ...DEFAULT_VOICE_SETTINGS });
+
   useEffect(() => {
     setSelectedTimeout(getSessionTimeout());
+    // Load voice settings from localStorage
+    setMasterAudio(localStorage.getItem('corvus_audio') !== 'false');
+    try {
+      const stored = localStorage.getItem('corvus_voice_settings');
+      if (stored) setVoiceSettings({ ...DEFAULT_VOICE_SETTINGS, ...JSON.parse(stored) as typeof DEFAULT_VOICE_SETTINGS });
+    } catch { /* use defaults */ }
   }, []);
+
+  function handleVoiceToggle(key: VoiceKey | 'master', value: boolean) {
+    if (key === 'master') {
+      setMasterAudio(value);
+      localStorage.setItem('corvus_audio', String(value));
+      return;
+    }
+    const updated = { ...voiceSettings, [key]: value };
+    setVoiceSettings(updated);
+    localStorage.setItem('corvus_voice_settings', JSON.stringify(updated));
+    localStorage.setItem(`corvus_voice_${key}`, String(value));
+  }
 
   function handleTimeoutChange(timeout: SessionTimeout) {
     setSelectedTimeout(timeout);
@@ -296,6 +341,53 @@ export default function SettingsTab({ code, isVIP = false, isAdmin = false }: Se
           </div>
         </div>
       )}
+
+      {/* Corvus Voice Settings */}
+      <div style={sectionStyle}>
+        <p style={sectionTitleStyle}>Corvus Voice</p>
+        <p style={sectionDescStyle}>
+          Control when and where Corvus speaks. Voice speed is set at 1.5x — optimized for Corvus&apos; delivery style.
+        </p>
+
+        {/* Master toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(0,194,199,0.06)', border: '1px solid rgba(0,194,199,0.2)', borderRadius: 8, marginBottom: 8 }}>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.62rem', color: '#F4F6F8', letterSpacing: '0.1em', marginBottom: 2 }}>MASTER AUDIO</p>
+            <p style={{ fontSize: '0.68rem', color: '#888888' }}>Enable or disable all Corvus voice</p>
+          </div>
+          <button
+            onClick={() => handleVoiceToggle('master', !masterAudio)}
+            style={{ padding: '6px 16px', borderRadius: 6, border: '1px solid', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.1em', cursor: 'pointer', transition: 'all 0.2s', minWidth: 70, background: masterAudio ? 'rgba(0,194,199,0.12)' : 'rgba(136,136,136,0.08)', borderColor: masterAudio ? 'rgba(0,194,199,0.4)' : 'rgba(136,136,136,0.2)', color: masterAudio ? '#00C2C7' : '#888888' }}
+          >
+            {masterAudio ? '🔊 ON' : '🔇 OFF'}
+          </button>
+        </div>
+
+        {/* Per-context toggles */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+          {VOICE_TOGGLE_CONFIG.map(({ key, label, desc }) => {
+            const on = voiceSettings[key];
+            return (
+              <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(26,35,50,0.6)', border: '1px solid rgba(0,194,199,0.08)', borderRadius: 8 }}>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.62rem', color: '#F4F6F8', letterSpacing: '0.1em', marginBottom: 2 }}>{label}</p>
+                  <p style={{ fontSize: '0.68rem', color: '#888888' }}>{desc}</p>
+                </div>
+                <button
+                  onClick={() => handleVoiceToggle(key, !on)}
+                  style={{ padding: '6px 16px', borderRadius: 6, border: '1px solid', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.1em', cursor: 'pointer', transition: 'all 0.2s', minWidth: 60, background: on ? 'rgba(0,194,199,0.12)' : 'rgba(136,136,136,0.08)', borderColor: on ? 'rgba(0,194,199,0.4)' : 'rgba(136,136,136,0.2)', color: on ? '#00C2C7' : '#888888' }}
+                >
+                  {on ? 'ON' : 'OFF'}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.58rem', color: '#888888', padding: '8px 12px', background: 'rgba(184,146,42,0.05)', border: '1px solid rgba(184,146,42,0.15)', borderRadius: 6 }}>
+          🔒 Voice speed is locked at 1.5x — optimized for Corvus&apos; character delivery.
+        </div>
+      </div>
 
       {/* Notifications placeholder */}
       <div style={sectionStyle}>
