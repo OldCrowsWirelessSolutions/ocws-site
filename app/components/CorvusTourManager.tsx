@@ -18,14 +18,17 @@ export default function CorvusTourManager({ authKey, isAdmin = false }: Props) {
   const [shareName, setShareName] = useState('');
   const [shareLabel, setShareLabel] = useState('');
   const [generating, setGenerating] = useState(false);
-  const [generated, setGenerated] = useState<{ url: string; token: string; level: string } | null>(null);
+  const [generated, setGenerated] = useState<{ url: string; token: string; level: string; name: string } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [genError, setGenError] = useState('');
 
   const tourLevels = Object.keys(TOUR_LEVEL_LABELS) as TourLevel[];
 
   async function handleShare() {
     setGenerating(true);
     setGenerated(null);
+    setGenError('');
+    const nameSnapshot = shareName;
     try {
       const res = await fetch('/api/tour/create', {
         method: 'POST',
@@ -39,11 +42,15 @@ export default function CorvusTourManager({ authKey, isAdmin = false }: Props) {
       });
       const data = await res.json();
       if (data.success) {
-        setGenerated({ url: data.url, token: data.token, level: data.level });
+        setGenerated({ url: data.url, token: data.token, level: data.level, name: nameSnapshot });
         setShareName('');
         setShareLabel('');
+      } else {
+        setGenError(data.error || 'Failed to generate link. Check auth key or Redis connection.');
       }
-    } catch { /* silent */ }
+    } catch {
+      setGenError('Network error — could not reach the server.');
+    }
     setGenerating(false);
   }
 
@@ -143,21 +150,35 @@ export default function CorvusTourManager({ authKey, isAdmin = false }: Props) {
             {generating ? 'Generating...' : '🔗 Generate Tour Link'}
           </button>
 
+          {genError && (
+            <div style={s.errorBox}>
+              <span style={{ color: '#e05555', fontSize: '0.82rem' }}>⚠ {genError}</span>
+            </div>
+          )}
+
           {generated && (
             <div style={s.result}>
               <p style={s.resultLabel}>✓ Tour Link Ready</p>
-              <div style={s.urlBox}>
-                <span style={s.urlText}>{generated.url}</span>
+              <div style={s.urlRow}>
+                <input
+                  style={s.urlInput}
+                  type="text"
+                  readOnly
+                  value={generated.url}
+                  onFocus={e => e.target.select()}
+                />
+              </div>
+              <div style={s.urlActions}>
                 <button style={s.copyBtn} onClick={() => copyUrl(generated.url)}>
-                  {copied ? '✓ Copied' : 'Copy'}
+                  {copied ? '✓ Copied' : 'Copy Link'}
                 </button>
                 <button style={s.emailBtn} onClick={() => openEmail(generated.url)}>
-                  Email
+                  Open Email Draft
                 </button>
               </div>
               <p style={s.resultMeta}>
                 {generated.level} tour · Expires in 7 days ·{' '}
-                {shareName ? `Personalized for ${shareName}` : 'No name set'}
+                {generated.name ? `Personalized for ${generated.name}` : 'No name set'}
               </p>
             </div>
           )}
@@ -181,11 +202,13 @@ const s: Record<string, React.CSSProperties> = {
   playHint: { color: '#555', fontSize: '0.78rem', margin: 0, fontStyle: 'italic' },
   divider: { height: '1px', background: 'rgba(0,194,199,0.1)', margin: '1rem 0' },
   shareBtn: { background: '#1A2332', border: '1px solid rgba(0,194,199,0.35)', color: '#00C2C7', borderRadius: '8px', padding: '10px 20px', fontSize: '0.9rem', cursor: 'pointer', fontWeight: 600, alignSelf: 'flex-start' },
-  result: { background: 'rgba(0,194,199,0.07)', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '10px', padding: '1rem' },
-  resultLabel: { color: '#00C2C7', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.78rem', margin: '0 0 0.5rem' },
-  urlBox: { display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.4rem' },
-  urlText: { color: '#aaa', fontSize: '0.8rem', flex: 1, wordBreak: 'break-all' },
-  copyBtn: { background: '#0D6E7A', color: '#fff', border: 'none', borderRadius: '6px', padding: '5px 12px', fontSize: '0.78rem', cursor: 'pointer', whiteSpace: 'nowrap' },
-  emailBtn: { background: 'rgba(184,146,42,0.12)', border: '1px solid rgba(184,146,42,0.3)', color: '#B8922A', borderRadius: '6px', padding: '5px 12px', fontSize: '0.78rem', cursor: 'pointer', whiteSpace: 'nowrap' },
+  errorBox: { background: 'rgba(224,85,85,0.08)', border: '1px solid rgba(224,85,85,0.25)', borderRadius: '8px', padding: '0.6rem 0.85rem' },
+  result: { background: 'rgba(0,194,199,0.07)', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '10px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' },
+  resultLabel: { color: '#00C2C7', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.78rem', margin: 0 },
+  urlRow: { display: 'flex' },
+  urlInput: { width: '100%', background: '#0D1520', border: '1px solid rgba(0,194,199,0.3)', borderRadius: '6px', color: '#F4F6F8', padding: '9px 12px', fontSize: '0.82rem', fontFamily: 'monospace', cursor: 'text' },
+  urlActions: { display: 'flex', gap: '0.5rem', flexWrap: 'wrap' },
+  copyBtn: { background: '#0D6E7A', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600 },
+  emailBtn: { background: 'rgba(184,146,42,0.12)', border: '1px solid rgba(184,146,42,0.3)', color: '#B8922A', borderRadius: '6px', padding: '8px 16px', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600 },
   resultMeta: { color: '#555', fontSize: '0.75rem', margin: 0, fontFamily: 'Share Tech Mono, monospace' },
 };

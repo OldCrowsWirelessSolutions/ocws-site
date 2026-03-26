@@ -9,6 +9,7 @@ import CrowsEyeTab from "@/app/components/CrowsEyeTab";
 import SettingsTab from "@/app/components/SettingsTab";
 import CorvusTour from "@/app/components/CorvusTour";
 import CorvusTourPlayer from "@/app/components/CorvusTourPlayer";
+import CorvusTourManager from "@/app/components/CorvusTourManager";
 import { TOURS, type Tour } from "@/lib/corvus-tours";
 import type { TourLevel } from "@/lib/corvusTour";
 import {
@@ -112,7 +113,7 @@ const sectionLabel: React.CSSProperties = {
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
 type SubTab  = "overview" | "reports" | "analytics" | "credits" | "team" | "billing" | "chat" | "products" | "crow" | "settings" | "help";
-type VIPTab  = "overview" | "reports" | "analytics" | "codes"   | "team" | "chat"  | "products" | "crow" | "settings" | "help";
+type VIPTab  = "overview" | "reports" | "analytics" | "codes"   | "team" | "chat"  | "products" | "crow" | "settings" | "help" | "tour";
 type AnyTab  = SubTab | VIPTab;
 
 // ─── TabBar ───────────────────────────────────────────────────────────────────
@@ -899,6 +900,7 @@ export default function DashboardPage() {
     { id: "analytics",  label: "Analytics"   },
     { id: "codes",      label: "Sub Codes"   },
     { id: "team",       label: "Team Activity" },
+    { id: "tour",       label: "🎬 Tour"     },
     { id: "products",   label: "Products"    },
     { id: "chat",       label: "Ask Corvus"  },
     { id: "settings",   label: "Settings"    },
@@ -2071,6 +2073,7 @@ export default function DashboardPage() {
         case "analytics":  return renderAnalytics();
         case "codes":      return renderVipCodes();
         case "team":       return renderVipTeamActivity();
+        case "tour":       return <CorvusTourManager authKey={storedCode} />;
         case "products":   return renderProducts();
         case "chat":       return renderChat();
         case "settings":   return <SettingsTab code={storedCode} isVIP={isVIP} />;
