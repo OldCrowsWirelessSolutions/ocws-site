@@ -22,6 +22,11 @@ export default function CorvusTourManager({ authKey, isAdmin = false }: Props) {
   const [copied, setCopied] = useState(false);
   const [genError, setGenError] = useState('');
 
+  const [emailTo, setEmailTo] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [showEmailInput, setShowEmailInput] = useState(false);
+
   const tourLevels = Object.keys(TOUR_LEVEL_LABELS) as TourLevel[];
 
   async function handleShare() {
@@ -45,6 +50,9 @@ export default function CorvusTourManager({ authKey, isAdmin = false }: Props) {
         setGenerated({ url: data.url, token: data.token, level: data.level, name: nameSnapshot });
         setShareName('');
         setShareLabel('');
+        setShowEmailInput(false);
+        setSent(false);
+        setEmailTo('');
       } else {
         setGenError(data.error || 'Failed to generate link. Check auth key or Redis connection.');
       }
@@ -60,12 +68,37 @@ export default function CorvusTourManager({ authKey, isAdmin = false }: Props) {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  function openEmail(url: string) {
-    const subject = encodeURIComponent('Corvus wants to show you something');
-    const body = encodeURIComponent(
-      `${shareName ? `${shareName},\n\nI` : 'I'} wanted to share something with you.\n\nThis is Corvus — an AI that diagnoses wireless network problems in under 5 minutes. He put together a personal tour just for you.\n\nClick here to watch:\n${url}\n\n— Joshua Turner\nOld Crows Wireless Solutions\noldcrowswireless.com`
-    );
-    window.open(`mailto:?subject=${subject}&body=${body}`);
+  async function handleSendEmail(url: string) {
+    if (!emailTo) {
+      setShowEmailInput(true);
+      return;
+    }
+    setSending(true);
+    try {
+      const res = await fetch('/api/tour/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          authKey,
+          toEmail: emailTo,
+          toName: generated?.name || undefined,
+          tourUrl: url,
+          tourLevel: shareLevel,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSent(true);
+        setEmailTo('');
+        setShowEmailInput(false);
+        setTimeout(() => setSent(false), 4000);
+      } else {
+        setGenError(data.error || 'Failed to send email.');
+      }
+    } catch {
+      setGenError('Network error — could not send email.');
+    }
+    setSending(false);
   }
 
   return (
@@ -167,15 +200,48 @@ export default function CorvusTourManager({ authKey, isAdmin = false }: Props) {
                   value={generated.url}
                   onFocus={e => e.target.select()}
                 />
-              </div>
-              <div style={s.urlActions}>
                 <button style={s.copyBtn} onClick={() => copyUrl(generated.url)}>
-                  {copied ? '✓ Copied' : 'Copy Link'}
-                </button>
-                <button style={s.emailBtn} onClick={() => openEmail(generated.url)}>
-                  Open Email Draft
+                  {copied ? '✓' : 'Copy'}
                 </button>
               </div>
+
+              {!showEmailInput && !sent && (
+                <button style={s.emailBtn} onClick={() => setShowEmailInput(true)}>
+                  📧 Send as Email
+                </button>
+              )}
+
+              {showEmailInput && (
+                <div style={s.emailRow}>
+                  <input
+                    style={s.emailInput}
+                    type="email"
+                    placeholder="recipient@email.com"
+                    value={emailTo}
+                    onChange={e => setEmailTo(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleSendEmail(generated.url)}
+                    autoFocus
+                  />
+                  <button
+                    style={s.sendBtn}
+                    onClick={() => handleSendEmail(generated.url)}
+                    disabled={sending || !emailTo}
+                  >
+                    {sending ? 'Sending...' : 'Send'}
+                  </button>
+                  <button
+                    style={s.cancelEmailBtn}
+                    onClick={() => { setShowEmailInput(false); setEmailTo(''); }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
+              {sent && (
+                <p style={s.sentConfirm}>✓ Email sent with clickable tour link</p>
+              )}
+
               <p style={s.resultMeta}>
                 {generated.level} tour · Expires in 7 days ·{' '}
                 {generated.name ? `Personalized for ${generated.name}` : 'No name set'}
@@ -205,10 +271,14 @@ const s: Record<string, React.CSSProperties> = {
   errorBox: { background: 'rgba(224,85,85,0.08)', border: '1px solid rgba(224,85,85,0.25)', borderRadius: '8px', padding: '0.6rem 0.85rem' },
   result: { background: 'rgba(0,194,199,0.07)', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '10px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' },
   resultLabel: { color: '#00C2C7', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.78rem', margin: 0 },
-  urlRow: { display: 'flex' },
-  urlInput: { width: '100%', background: '#0D1520', border: '1px solid rgba(0,194,199,0.3)', borderRadius: '6px', color: '#F4F6F8', padding: '9px 12px', fontSize: '0.82rem', fontFamily: 'monospace', cursor: 'text' },
-  urlActions: { display: 'flex', gap: '0.5rem', flexWrap: 'wrap' },
-  copyBtn: { background: '#0D6E7A', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 16px', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600 },
-  emailBtn: { background: 'rgba(184,146,42,0.12)', border: '1px solid rgba(184,146,42,0.3)', color: '#B8922A', borderRadius: '6px', padding: '8px 16px', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600 },
+  urlRow: { display: 'flex', gap: '0.4rem' },
+  urlInput: { flex: 1, background: '#0D1520', border: '1px solid rgba(0,194,199,0.3)', borderRadius: '6px', color: '#F4F6F8', padding: '9px 12px', fontSize: '0.82rem', fontFamily: 'monospace', cursor: 'text' },
+  copyBtn: { background: '#0D6E7A', color: '#fff', border: 'none', borderRadius: '6px', padding: '8px 14px', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' },
+  emailBtn: { background: 'rgba(184,146,42,0.12)', border: '1px solid rgba(184,146,42,0.3)', color: '#B8922A', borderRadius: '6px', padding: '8px 16px', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600, alignSelf: 'flex-start' },
+  emailRow: { display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' },
+  emailInput: { flex: 1, background: '#0D1520', border: '1px solid rgba(0,194,199,0.25)', borderRadius: '6px', color: '#F4F6F8', padding: '6px 10px', fontSize: '0.82rem', fontFamily: 'inherit', outline: 'none', minWidth: '180px' },
+  sendBtn: { background: '#0D6E7A', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 14px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' },
+  cancelEmailBtn: { background: 'transparent', border: 'none', color: '#555', fontSize: '0.85rem', cursor: 'pointer', padding: '4px' },
+  sentConfirm: { color: '#00C2C7', fontSize: '0.78rem', fontFamily: 'Share Tech Mono, monospace', margin: 0 },
   resultMeta: { color: '#555', fontSize: '0.75rem', margin: 0, fontFamily: 'Share Tech Mono, monospace' },
 };
