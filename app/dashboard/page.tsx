@@ -10,6 +10,7 @@ import SettingsTab from "@/app/components/SettingsTab";
 import CorvusTour from "@/app/components/CorvusTour";
 import CorvusTourPlayer from "@/app/components/CorvusTourPlayer";
 import CorvusTourManager from "@/app/components/CorvusTourManager";
+import CodeManagerTab from "@/app/components/CodeManagerTab";
 import { TOURS, type Tour } from "@/lib/corvus-tours";
 import type { TourLevel } from "@/lib/corvusTour";
 import {
@@ -113,7 +114,7 @@ const sectionLabel: React.CSSProperties = {
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
 type SubTab  = "overview" | "reports" | "analytics" | "credits" | "team" | "billing" | "chat" | "products" | "crow" | "settings" | "help";
-type VIPTab  = "overview" | "reports" | "analytics" | "codes"   | "team" | "chat"  | "products" | "crow" | "settings" | "help" | "tour";
+type VIPTab  = "overview" | "reports" | "analytics" | "codes"   | "team" | "chat"  | "products" | "crow" | "settings" | "help" | "tour" | "code-manager";
 type AnyTab  = SubTab | VIPTab;
 
 // ─── TabBar ───────────────────────────────────────────────────────────────────
@@ -900,7 +901,8 @@ export default function DashboardPage() {
     { id: "analytics",  label: "Analytics"   },
     { id: "codes",      label: "Sub Codes"   },
     { id: "team",       label: "Team Activity" },
-    { id: "tour",       label: "🎬 Tour"     },
+    { id: "tour",         label: "🎬 Tour"        },
+    { id: "code-manager", label: "Code Manager" },
     { id: "products",   label: "Products"    },
     { id: "chat",       label: "Ask Corvus"  },
     { id: "settings",   label: "Settings"    },
@@ -2073,7 +2075,8 @@ export default function DashboardPage() {
         case "analytics":  return renderAnalytics();
         case "codes":      return renderVipCodes();
         case "team":       return renderVipTeamActivity();
-        case "tour":       return <CorvusTourManager authKey={storedCode} />;
+        case "tour":         return <CorvusTourManager authKey={storedCode} />;
+        case "code-manager": return <CodeManagerTab authKey={storedCode} role="vip" />;
         case "products":   return renderProducts();
         case "chat":       return renderChat();
         case "settings":   return <SettingsTab code={storedCode} isVIP={isVIP} />;

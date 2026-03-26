@@ -8,6 +8,7 @@ import CrowsEyeTab from "@/app/components/CrowsEyeTab";
 import SettingsTab from "@/app/components/SettingsTab";
 import DemoTokenManager from "@/app/components/DemoTokenManager";
 import CorvusTourManager from "@/app/components/CorvusTourManager";
+import CodeManagerTab from "@/app/components/CodeManagerTab";
 import { CORVUS_JOSHUA_DASHBOARD_LOAD } from "@/lib/corvus-ui-strings";
 
 function AdminCrowsEyeTab() {
@@ -83,7 +84,7 @@ interface SubRecord {
   seatMembers?: SeatMemberAdmin[];
 }
 
-type AdminTab = "intel" | "subscribers" | "codes" | "testimonials" | "vip" | "reports" | "products" | "demo" | "tour" | "chat" | "crow" | "settings";
+type AdminTab = "intel" | "subscribers" | "codes" | "testimonials" | "vip" | "reports" | "products" | "demo" | "tour" | "code-manager" | "chat" | "crow" | "settings";
 
 const ADMIN_TABS: { id: AdminTab; label: string }[] = [
   { id: "intel",        label: "Platform Intelligence" },
@@ -95,6 +96,7 @@ const ADMIN_TABS: { id: AdminTab; label: string }[] = [
   { id: "products",     label: "Products" },
   { id: "demo",         label: "Demo Tokens" },
   { id: "tour",         label: "🎬 Tour" },
+  { id: "code-manager", label: "Code Manager" },
   { id: "chat",         label: "Talk to Corvus" },
   { id: "crow",         label: "🦅 Crow's Eye" },
   { id: "settings",     label: "Settings" },
@@ -2274,6 +2276,7 @@ export default function AdminPage() {
       case "products":     return renderProducts();
       case "demo":         return renderDemo();
       case "tour":         return renderTour();
+      case "code-manager": return <CodeManagerTab authKey={ADMIN_KEY} role="admin" />;
       case "chat":         return renderAdminChat();
       case "crow":         return renderAdminCrowsEye();
       case "settings":     return renderSettings();
