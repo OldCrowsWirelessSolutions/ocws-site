@@ -24,6 +24,13 @@ const PROCESSING_LINES = [
   'Rendering Verdict... natural 20 on the analysis roll...',
   'Doing a full Marauder\'s Map on your network... I see everything...',
   'Mapping every room before we engage... dungeon crawl protocol active...',
+  'In the end it doesn\'t even matter... analyzing your RF environment...',
+  'Crawling through your network configuration...',
+  'Crikey. Look at the size of that channel congestion...',
+  'Approaching the interference carefully... from behind... don\'t startle it...',
+  'Checking your network... the number of problems is too many...',
+  'Fine on their end. It\'s always fine on their end. Scanning anyway...',
+  'By the grace of God and acceptable performance margins... analyzing...',
 ];
 
 const ENVIRONMENTS = [
