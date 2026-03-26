@@ -230,10 +230,10 @@ function renderVisual(stage: TourStage) {
             <span style={v.verdictLabel}>CORVUS&apos; VERDICT</span>
             <span style={v.verdictClient}>{d.client as string}</span>
           </div>
-          {d.locations && <div style={v.verdictMeta}>{d.locations as number} locations scanned</div>}
+          {!!d.locations && <div style={v.verdictMeta}>{d.locations as number} locations scanned</div>}
           <div style={v.findingsRow}>
-            {d.findings && <div style={v.findingStat}><span style={{ color: '#00C2C7' }}>{d.findings as number}</span> findings</div>}
-            {d.critical && <div style={v.findingStat}><span style={{ color: '#e05555' }}>{d.critical as number}</span> critical</div>}
+            {!!d.findings && <div style={v.findingStat}><span style={{ color: '#00C2C7' }}>{d.findings as number}</span> findings</div>}
+            {!!d.critical && <div style={v.findingStat}><span style={{ color: '#e05555' }}>{d.critical as number}</span> critical</div>}
           </div>
           {d.topFinding && (
             <div style={v.topFinding}>
