@@ -47,10 +47,11 @@ async function getAccessLevel(code: string): Promise<AccessLevel> {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json() as { code?: string; message?: string; comfortLevel?: number };
+    const body = await req.json() as { code?: string; message?: string; comfortLevel?: number; reportContext?: string };
     const code    = String(body?.code    ?? "").trim();
     const message = String(body?.message ?? "").trim().slice(0, 2000);
     const comfortLevel = Number(body?.comfortLevel ?? 2);
+    const reportContext = body?.reportContext ? String(body.reportContext).slice(0, 4000) : null;
 
     console.log("[chat] received:", { code: code ? `${code.slice(0, 8)}...` : "(empty)", messageLen: message.length });
 
@@ -87,7 +88,11 @@ export async function POST(req: NextRequest) {
       getLastVerdictForCode(code),
     ]);
 
-    const contextInjection = lastVerdict
+    const reportContextInjection = reportContext
+      ? `\n\nACTIVE REPORT CONTEXT — USE THIS FOR ALL RESPONSES:\n${reportContext}\n\nCRITICAL: Answer all questions with specific reference to THIS scan. Never give generic Wi-Fi advice when you have specific data from this report. Reference specific findings, locations, and recommendations from the report above.`
+      : "";
+
+    const contextInjection = !reportContext && lastVerdict
       ? `\n\nUSER'S LAST VERDICT CONTEXT:\n${lastVerdict}\n\nReference this naturally if relevant to the conversation.`
       : "";
 
@@ -95,7 +100,7 @@ export async function POST(req: NextRequest) {
       ? `\n\nUSER COMFORT LEVEL: ${comfortLevel}/5 — adapt language accordingly.`
       : "";
 
-    const systemPrompt = CORVUS_CHAT_SYSTEM_PROMPT + contextInjection + comfortNote;
+    const systemPrompt = CORVUS_CHAT_SYSTEM_PROMPT + reportContextInjection + contextInjection + comfortNote;
 
     // Last 20 messages for context window
     const contextMessages = history.slice(-20).map((m) => ({ role: m.role, content: m.content }));

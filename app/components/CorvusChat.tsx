@@ -13,6 +13,21 @@ interface Message {
   content: string;
 }
 
+interface ActiveReport {
+  reportId: string;
+  product?: string;
+  clientName?: string;
+  ssid?: string;
+  address?: string;
+  findings?: Array<{ severity: string; title: string; description: string }>;
+  recommendations?: string[];
+  corvusAnalysis?: string;
+  corvus_opening?: string;
+  critical_count?: number;
+  warning_count?: number;
+  problems_found?: number;
+}
+
 interface CorvisChatProps {
   code: string;
   comfortLevel?: number;
@@ -24,6 +39,8 @@ interface CorvisChatProps {
   isFounder?: boolean;
   /** VIP founding member */
   isVIP?: boolean;
+  /** Accessible reports for the report context selector (Team Leads / VIPs get subordinate reports) */
+  accessibleReports?: Array<{ reportId: string; clientName?: string; locationName?: string; createdAt: string; type: string }>;
 }
 
 // ─── Typewriter ───────────────────────────────────────────────────────────────
@@ -77,6 +94,7 @@ export default function CorvusChat({
   expanded = false,
   isFounder = false,
   isVIP = false,
+  accessibleReports = [],
 }: CorvisChatProps) {
   // In expanded mode the panel is always "open"
   const [open, setOpen]                     = useState(expanded);
@@ -87,6 +105,7 @@ export default function CorvusChat({
   const [messagesRemaining, setMessagesRemaining] = useState<number | null>(isFreeTier ? 3 : null);
   const [limited, setLimited]               = useState(false);
   const [upgradeMsg, setUpgradeMsg]         = useState("");
+  const [activeReport, setActiveReport]     = useState<ActiveReport | null>(null);
   const bottomRef                           = useRef<HTMLDivElement>(null);
   const inputRef                            = useRef<HTMLInputElement>(null);
   const greetedRef                          = useRef(false);
@@ -96,16 +115,49 @@ export default function CorvusChat({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
+  // Load active report from sessionStorage on mount
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem("corvus_active_report");
+      if (stored) {
+        const report = JSON.parse(stored) as ActiveReport;
+        setActiveReport(report);
+      }
+    } catch { /* non-fatal */ }
+  }, []);
+
   // Greeting on first open
   useEffect(() => {
     if (!open || greetedRef.current) return;
     greetedRef.current = true;
     const id = `msg-${Date.now()}`;
     let greeting: string;
-    if (isFounder) {
-      greeting = CORVUS_JOSHUA_CHAT[Math.floor(Math.random() * CORVUS_JOSHUA_CHAT.length)];
-    } else {
-      greeting = pickGreeting(hasRecentVerdict);
+    try {
+      const stored = sessionStorage.getItem("corvus_active_report");
+      if (stored) {
+        const report = JSON.parse(stored) as ActiveReport;
+        setActiveReport(report);
+        const critCount = report.critical_count ?? report.findings?.filter(f => f.severity?.toLowerCase() === "critical").length ?? 0;
+        const totalCount = report.problems_found ?? report.findings?.length ?? 0;
+        const name = report.clientName || "your location";
+        const greetings = [
+          `I just finished your scan for ${name}. ${critCount} critical finding${critCount !== 1 ? "s" : ""}. Ask me anything about what I found.`,
+          `Your ${name} scan is done. I have opinions about what I found. What do you want to know?`,
+          `${totalCount} finding${totalCount !== 1 ? "s" : ""}. ${critCount} critical. Ask me about any of them.`,
+          `I rendered your Verdict for ${name}. Now you want to talk about it. Good. What's your question?`,
+        ];
+        greeting = greetings[Math.floor(Math.random() * greetings.length)];
+      } else if (isFounder) {
+        greeting = CORVUS_JOSHUA_CHAT[Math.floor(Math.random() * CORVUS_JOSHUA_CHAT.length)];
+      } else {
+        greeting = pickGreeting(hasRecentVerdict);
+      }
+    } catch {
+      if (isFounder) {
+        greeting = CORVUS_JOSHUA_CHAT[Math.floor(Math.random() * CORVUS_JOSHUA_CHAT.length)];
+      } else {
+        greeting = pickGreeting(hasRecentVerdict);
+      }
     }
     setMessages([{ id, role: "assistant", content: greeting }]);
     setTypingId(id);
@@ -127,10 +179,30 @@ export default function CorvusChat({
     setLoading(true);
 
     try {
+      let reportContext: string | undefined;
+      if (activeReport) {
+        const critFindings = activeReport.findings?.filter(f => f.severity?.toLowerCase() === "critical") ?? [];
+        const warnFindings = activeReport.findings?.filter(f => f.severity?.toLowerCase() === "warning") ?? [];
+        reportContext = [
+          `Product: ${activeReport.product ?? "Verdict"}`,
+          `Client/Location: ${activeReport.clientName ?? "Unknown"}`,
+          activeReport.ssid ? `SSID: ${activeReport.ssid}` : null,
+          activeReport.address ? `Address: ${activeReport.address}` : null,
+          "",
+          "Findings:",
+          ...(activeReport.findings ?? []).map(f => `- [${f.severity?.toUpperCase()}] ${f.title}: ${f.description}`),
+          "",
+          "Recommendations:",
+          ...(activeReport.recommendations ?? []).map((r, i) => `${i + 1}. ${r}`),
+          "",
+          `Summary: ${critFindings.length} critical, ${warnFindings.length} warning findings.`,
+        ].filter(l => l !== null).join("\n");
+      }
+
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, message: text, comfortLevel }),
+        body: JSON.stringify({ code, message: text, comfortLevel, reportContext }),
       });
       const data = await res.json() as {
         response?: string;
@@ -185,7 +257,7 @@ export default function CorvusChat({
     } finally {
       setLoading(false);
     }
-  }, [input, loading, limited, code, comfortLevel]);
+  }, [input, loading, limited, code, comfortLevel, activeReport]);
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -317,6 +389,43 @@ export default function CorvusChat({
         {messagesRemaining !== null && !limited && (
           <div style={{ background: "rgba(184,146,42,0.06)", borderBottom: "1px solid rgba(184,146,42,0.12)", padding: "6px 14px", fontSize: "11px", color: "#B8922A", fontFamily: "monospace", flexShrink: 0 }}>
             {messagesRemaining} of {3} free messages remaining
+          </div>
+        )}
+
+        {/* Report context selector (expanded mode) */}
+        {(accessibleReports.length > 0 || activeReport) && (
+          <div style={{ padding: "10px 12px", borderBottom: "1px solid rgba(0,194,199,0.08)", background: "rgba(13,21,32,0.6)", flexShrink: 0 }}>
+            <div style={{ fontFamily: "monospace", fontSize: "0.55rem", color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "6px" }}>Ask Corvus About a Specific Report</div>
+            <select
+              value={activeReport?.reportId ?? ""}
+              onChange={e => {
+                if (!e.target.value) {
+                  setActiveReport(null);
+                  try { sessionStorage.removeItem("corvus_active_report"); } catch { /* */ }
+                } else {
+                  const found = accessibleReports.find(r => r.reportId === e.target.value);
+                  if (found) {
+                    setActiveReport(found as unknown as ActiveReport);
+                    try { sessionStorage.setItem("corvus_active_report", JSON.stringify(found)); } catch { /* */ }
+                  }
+                }
+              }}
+              style={{ width: "100%", background: "#0D1520", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", color: "#ccc", fontSize: "12px", padding: "6px 8px", outline: "none" }}
+            >
+              <option value="">General RF questions — no specific report</option>
+              {accessibleReports.map(r => (
+                <option key={r.reportId} value={r.reportId}>
+                  {r.clientName || r.locationName || "Untitled"} · {new Date(r.createdAt).toLocaleDateString()} · {r.type}
+                </option>
+              ))}
+            </select>
+            {activeReport && (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "6px", background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "6px", padding: "5px 10px" }}>
+                <span style={{ fontSize: "11px", color: "#00C2C7" }}>🐦‍⬛ Briefed on: <strong>{activeReport.clientName || "report"}</strong></span>
+                <button onClick={() => { setActiveReport(null); try { sessionStorage.removeItem("corvus_active_report"); } catch { /* */ } }}
+                  style={{ background: "none", border: "none", color: "#555", fontSize: "11px", cursor: "pointer", padding: "0 4px" }}>✕</button>
+              </div>
+            )}
           </div>
         )}
 

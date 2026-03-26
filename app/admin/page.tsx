@@ -4,7 +4,20 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import CorvusChat from "@/app/components/CorvusChat";
+import CrowsEyeTab from "@/app/components/CrowsEyeTab";
 import { CORVUS_JOSHUA_DASHBOARD_LOAD } from "@/lib/corvus-ui-strings";
+
+function AdminCrowsEyeTab() {
+  return (
+    <CrowsEyeTab
+      code="CORVUS-ADMIN"
+      isVIP={true}
+      tier="vip"
+      creditsRemaining={999999}
+      reckoningCredits={{ small: 999999, standard: 999999, commercial: 999999 }}
+    />
+  );
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -67,7 +80,7 @@ interface SubRecord {
   seatMembers?: SeatMemberAdmin[];
 }
 
-type AdminTab = "intel" | "subscribers" | "codes" | "testimonials" | "vip" | "reports" | "products" | "chat" | "settings";
+type AdminTab = "intel" | "subscribers" | "codes" | "testimonials" | "vip" | "reports" | "products" | "chat" | "crow" | "settings";
 
 const ADMIN_TABS: { id: AdminTab; label: string }[] = [
   { id: "intel",        label: "Platform Intelligence" },
@@ -78,6 +91,7 @@ const ADMIN_TABS: { id: AdminTab; label: string }[] = [
   { id: "reports",      label: "Reports" },
   { id: "products",     label: "Products" },
   { id: "chat",         label: "Talk to Corvus" },
+  { id: "crow",         label: "🦅 Crow's Eye" },
   { id: "settings",     label: "Settings" },
 ];
 
@@ -2173,8 +2187,17 @@ export default function AdminPage() {
       case "reports":      return renderReports();
       case "products":     return renderProducts();
       case "chat":         return renderAdminChat();
+      case "crow":         return renderAdminCrowsEye();
       case "settings":     return renderSettings();
     }
+  }
+
+  function renderAdminCrowsEye() {
+    return (
+      <div>
+        <AdminCrowsEyeTab />
+      </div>
+    );
   }
 
   // ── Dashboard ─────────────────────────────────────────────────────────────

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import CorvusChat from "@/app/components/CorvusChat";
+import CrowsEyeTab from "@/app/components/CrowsEyeTab";
 import {
   corvusLineFresh,
   CORVUS_JOSHUA_DASHBOARD_BRIEF,
@@ -100,8 +101,8 @@ const sectionLabel: React.CSSProperties = {
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
-type SubTab  = "overview" | "reports" | "analytics" | "credits" | "team" | "billing" | "chat" | "products";
-type VIPTab  = "overview" | "reports" | "analytics" | "codes"   | "team" | "chat"  | "products";
+type SubTab  = "overview" | "reports" | "analytics" | "credits" | "team" | "billing" | "chat" | "products" | "crow";
+type VIPTab  = "overview" | "reports" | "analytics" | "codes"   | "team" | "chat"  | "products" | "crow";
 type AnyTab  = SubTab | VIPTab;
 
 // ─── TabBar ───────────────────────────────────────────────────────────────────
@@ -795,6 +796,7 @@ export default function DashboardPage() {
   // Tab definitions per user type
   const subTabs: { id: SubTab; label: string }[] = [
     { id: "overview",   label: "Overview"    },
+    { id: "crow",       label: "🦅 Crow's Eye" },
     ...(hasReports ? [{ id: "reports" as SubTab, label: "My Reports" }] : []),
     { id: "analytics",  label: "Analytics"   },
     { id: "credits",    label: "Buy Credits" },
@@ -806,6 +808,7 @@ export default function DashboardPage() {
 
   const vipTabs: { id: VIPTab; label: string }[] = [
     { id: "overview",   label: "Overview"    },
+    { id: "crow",       label: "🦅 Crow's Eye" },
     { id: "reports",    label: "My Reports"  },
     { id: "analytics",  label: "Analytics"   },
     { id: "codes",      label: "Sub Codes"   },
@@ -1848,10 +1851,25 @@ export default function DashboardPage() {
     );
   }
 
+  function renderCrowsEye() {
+    return (
+      <CrowsEyeTab
+        code={storedCode}
+        isVIP={isVIP}
+        tier={tier}
+        creditsRemaining={verdictsRemaining}
+        reckoningCredits={rec}
+        onScanComplete={() => loadReports(storedCode)}
+        navigateToChat={() => navigateTab("chat")}
+      />
+    );
+  }
+
   function renderTabContent() {
     if (isVIP) {
       switch (activeTab as VIPTab) {
         case "overview":   return renderOverview();
+        case "crow":       return renderCrowsEye();
         case "reports":    return renderReports();
         case "analytics":  return renderAnalytics();
         case "codes":      return renderVipCodes();
@@ -1863,6 +1881,7 @@ export default function DashboardPage() {
     }
     switch (activeTab as SubTab) {
       case "overview":   return renderOverview();
+      case "crow":       return renderCrowsEye();
       case "reports":    return renderReports();
       case "analytics":  return renderAnalytics();
       case "credits":    return renderCredits();

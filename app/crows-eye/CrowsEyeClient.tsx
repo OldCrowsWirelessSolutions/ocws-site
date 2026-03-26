@@ -1697,6 +1697,20 @@ export default function CrowsEyeClient() {
       // ── GOLD DIVIDER ──────────────────────────────────────────────────────
       ensure(4); sf(GOLD); doc.rect(0, y, PW, 2, "F"); y += 10;
 
+      // ── CORVUS CHAT CALLOUT ───────────────────────────────────────────────
+      const CALLOUT_H = 62;
+      ensure(CALLOUT_H + 10);
+      sf(NAVY); doc.roundedRect(ML, y, CW, CALLOUT_H, 5, 5, "F");
+      sd(TEAL); doc.setLineWidth(0.5); doc.roundedRect(ML, y, CW, CALLOUT_H, 5, 5, "S");
+      sd(TEAL); doc.setLineWidth(3); doc.line(ML, y + 5, ML, y + CALLOUT_H - 5);
+      st(CYAN); fn("bold", 7); txt("QUESTIONS ABOUT THIS VERDICT?", ML + 10, y + 14, 7);
+      st(WHITE); fn("normal", 7.5);
+      txt("Log into your dashboard and open the \u201CTalk to Corvus\u201D tab.", ML + 10, y + 26, 7.5);
+      txt("Corvus has full context on this report and can answer any follow-up", ML + 10, y + 37, 7.5);
+      txt("questions about your specific findings and exactly how to fix them.", ML + 10, y + 48, 7.5);
+      st(CYAN); fn("bold", 7.5); txt("oldcrowswireless.com/login", ML + 10, y + 60, 7.5);
+      y += CALLOUT_H + 10;
+
       // ── CERTIFICATION ─────────────────────────────────────────────────────
       const CERT_H = 74;
       ensure(CERT_H + 10);

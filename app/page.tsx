@@ -268,16 +268,29 @@ export default function HomePage() {
                       </div>
                     </div>
 
-                    {/* Quote */}
-                    <blockquote
-                      className="flex-1 text-sm leading-relaxed italic pl-4"
-                      style={{
-                        color: "#cccccc",
-                        borderLeft: "3px solid #B8922A",
-                      }}
-                    >
-                      &ldquo;{e.quote}&rdquo;
-                    </blockquote>
+                    {/* Quote(s) */}
+                    {'quotes' in e && e.quotes && e.quotes.length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {(e.quotes as {id: string; label: string; text: string}[]).map(q => (
+                          <div key={q.id}>
+                            <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', color: '#00C2C7', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '6px' }}>{q.label}</p>
+                            <blockquote className="text-sm leading-relaxed italic pl-4" style={{ color: "#cccccc", borderLeft: "3px solid #B8922A", margin: 0 }}>
+                              &ldquo;{q.text}&rdquo;
+                            </blockquote>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <blockquote
+                        className="flex-1 text-sm leading-relaxed italic pl-4"
+                        style={{
+                          color: "#cccccc",
+                          borderLeft: "3px solid #B8922A",
+                        }}
+                      >
+                        &ldquo;{e.quote}&rdquo;
+                      </blockquote>
+                    )}
                   </div>
                 );
               })}
@@ -295,6 +308,70 @@ export default function HomePage() {
           </div>
         </section>
       )}
+
+      {/* ── SECTION 3c: WHY CORVUS COMPARISON ── */}
+      <section id="why-corvus" className="py-20" style={{ background: "#0D1520" }}>
+        <div className="ocws-container" style={{ maxWidth: "900px" }}>
+          <div className="text-center mb-12">
+            <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#00C2C7", letterSpacing: "0.18em" }}>
+              Why Choose Corvus
+            </p>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Other tools show you the data. Corvus tells you what it means.
+            </h2>
+          </div>
+
+          <div style={{ border: "1px solid rgba(0,194,199,0.2)", borderRadius: "12px", overflow: "hidden", marginBottom: "40px" }}>
+            {/* Header */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", background: "#1A2332", padding: "16px 24px", alignItems: "center" }}>
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.65rem", color: "#888888", letterSpacing: "0.15em", textTransform: "uppercase" }}>Traditional Wi-Fi Tools</span>
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.7rem", color: "#B8922A", textAlign: "center", padding: "0 20px" }}>VS</span>
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.65rem", color: "#00C2C7", letterSpacing: "0.15em", textTransform: "uppercase", textAlign: "right" }}>Corvus</span>
+            </div>
+
+            {[
+              ["Show you channel graphs", "Renders a complete Verdict"],
+              ["Require technical knowledge to interpret", "Adapts to your level — Level 1 to White Hat"],
+              ["Leave you with raw data", "Gives you step-by-step fix instructions"],
+              ["$2,400+/year for professional grade", "Starts at $50 · Subscriptions from $20/mo"],
+              ["Need a trained engineer to operate", "Works for anyone — grandmother to CISO"],
+              ["Silent output", "Speaks in his own voice"],
+              ["Generic recommendations", "Router-specific instructions for your exact equipment"],
+              ["No certification available", "Joshua Turner certifies every Pro report"],
+              ["Tools you use once and forget", "Platform with daily engagement and team features"],
+            ].map(([traditional, corvus], i) => (
+              <div key={i} style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                borderBottom: i < 8 ? "1px solid rgba(0,194,199,0.06)" : "none",
+                background: i % 2 === 0 ? "rgba(13,21,32,0.6)" : "rgba(26,35,50,0.4)",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "12px 20px", fontSize: "0.85rem", color: "rgba(244,246,248,0.5)", borderRight: "1px solid rgba(0,194,199,0.08)" }}>
+                  <span style={{ color: "#E05555", fontSize: "1rem", flexShrink: 0 }}>✗</span>
+                  {traditional}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "12px 20px", fontSize: "0.85rem", color: "#F4F6F8" }}>
+                  <span style={{ color: "#00C2C7", fontSize: "1rem", flexShrink: 0 }}>✓</span>
+                  {corvus}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Joshua quote */}
+          <div style={{ background: "rgba(13,21,32,0.8)", border: "1px solid rgba(184,146,42,0.3)", borderLeft: "4px solid #B8922A", borderRadius: "0 12px 12px 0", padding: "24px 28px" }}>
+            <p className="text-sm italic mb-3 leading-relaxed" style={{ color: "#F4F6F8", lineHeight: 1.8 }}>
+              &ldquo;I&rsquo;ve seen what professional RF analysis costs at the enterprise level. I built Corvus so that a barbershop owner, a church administrator, and a hospital IT director could all get the same quality of diagnosis — without needing a $2,400 subscription or a trained engineer.&rdquo;
+            </p>
+            <p className="text-sm italic mb-3 leading-relaxed" style={{ color: "#F4F6F8", lineHeight: 1.8 }}>
+              &ldquo;The ISP will always say everything is fine on their end. Corvus will tell you the truth.&rdquo;
+            </p>
+            <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.62rem", color: "#B8922A", letterSpacing: "0.12em", marginTop: "16px" }}>
+              — Joshua Turner · 17 Years U.S. Navy Electronic Warfare
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* ── SECTION 4: TIERS (client component for modal) ── */}
       <TiersSection />
