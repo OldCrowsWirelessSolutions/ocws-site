@@ -24,6 +24,7 @@ import TributeMessagePanel from "@/app/components/TributeMessage";
 import { TRIBUTE_MESSAGES } from "@/lib/tribute-messages";
 import type { TributeMessage } from "@/lib/tribute-messages";
 import { speakCorvus } from "@/lib/elevenlabs";
+import { getTodayHoliday, getHolidayGreeting } from "@/lib/corvus-calendar";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -232,10 +233,26 @@ export default function LoginPage() {
   // Session expired
   const [sessionExpired, setSessionExpired] = useState(false);
 
+  // Holiday greeting shown on initial page load
+  const [holidayGreeting, setHolidayGreeting] = useState<string | null>(null);
+
   // Stable Corvus lines per step (pick once when step/code changes)
   const corvusLineRef    = useRef<string>("");
   const instructionRef   = useRef<string>("");
   const sessionExpiredLineRef = useRef<string>("");
+
+  useEffect(() => {
+    // Check for holiday and show greeting on initial load
+    const holiday = getTodayHoliday();
+    if (holiday) {
+      const greeting = getHolidayGreeting(holiday.type, false, new Date().getFullYear());
+      if (greeting) {
+        setHolidayGreeting(greeting);
+        speakCorvus(greeting);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     // Read session expired flag
@@ -869,6 +886,9 @@ export default function LoginPage() {
 
   return (
     <Shell>
+      {holidayGreeting && !sessionExpired && (
+        <StarFoxPanel line={holidayGreeting} />
+      )}
       {sessionExpired && (
         <StarFoxPanel line={sessionExpiredLineRef.current || pick(CORVUS_SESSION_EXPIRED)} />
       )}

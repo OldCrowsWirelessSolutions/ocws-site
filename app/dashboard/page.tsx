@@ -16,6 +16,7 @@ import {
   CORVUS_KYLE_DASHBOARD_BRIEF,
   CORVUS_TEAM_LEAD_DASHBOARD_BRIEF,
 } from "@/lib/corvus-ui-strings";
+import { getTodayHoliday, getHolidayGreeting } from "@/lib/corvus-calendar";
 import type { TeamReport } from "@/lib/team-reporting";
 import { speakCorvus } from "@/lib/elevenlabs";
 import AudioToggle from "@/app/components/AudioToggle";
@@ -195,6 +196,15 @@ function CorvusDashGreeting(props: DashGreetingProps) {
       );
     } else {
       line = corvusLineFresh(SUBSCRIBER_GREETINGS, "dashboard_brief");
+    }
+
+    // Inject holiday greeting
+    const holiday = getTodayHoliday();
+    if (holiday) {
+      const holidayLine = getHolidayGreeting(holiday.type, isJoshua, new Date().getFullYear());
+      if (holidayLine) {
+        line = holiday.isSpecial ? holidayLine : `${line} — ${holidayLine}`;
+      }
     }
 
     lineRef.current = line;

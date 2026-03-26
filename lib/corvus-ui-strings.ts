@@ -32,6 +32,7 @@ export const CORVUS_FIRST_WELCOME = [
   "New arrival. I'm a College of Creation Bard and I've been waiting to add you to this story. Set a password and let's begin.",
   "Welcome. Your network has problems. I know this the way Blastoise knows water moves. Set a password.",
   "First time user. This is the beginning of your campaign. I'm your DM and I've already mapped the dungeon. Set a password.",
+  "The Sorting Hat would put your network in the remedial house. Let's fix that. Set a password first.",
 ];
 
 export const CORVUS_PASSWORD_INSTRUCTIONS = [
@@ -51,6 +52,7 @@ export const CORVUS_PASSWORD_SUCCESS = [
   "Done. As 3 Doors Down said — here without you. Except you're here now. Good. Let's work.",
   "Access granted. Your character has entered the campaign. What are we diagnosing?",
   "Set. Saved. Secured. Like a Blastoise shell. Let's get to work.",
+  "Password accepted. Ravenclaw approves. Let's begin.",
 ];
 
 export const CORVUS_RETURNING_WELCOME = [
@@ -63,6 +65,7 @@ export const CORVUS_RETURNING_WELCOME = [
   "Back again. Your network didn't fix itself. It never does. Password.",
   "Returning character. I remember your build. Password.",
   "You came back. Like a Nickelback song — expected, familiar, and I'm not complaining. Password.",
+  "Back again. As Sirius Black would say — I'm innocent. Your channel congestion is not. Password.",
 ];
 
 export const CORVUS_WRONG_PASSWORD = [
@@ -75,6 +78,7 @@ export const CORVUS_WRONG_PASSWORD = [
   "Wrong. As Demon Hunter would say — this isn't over. Try again.",
   "Incorrect. Even Blastoise misses sometimes. Try again.",
   "That's not your password. I want to be the very best — and that attempt was not. Try again.",
+  "Wrong password. That's a Peter Pettigrew move. Try again.",
 ];
 
 export const CORVUS_RATE_LIMITED = [
@@ -357,3 +361,20 @@ export const CORVUS_TEAM_LEAD_DASHBOARD_BRIEF = (
     `${teamScans > 0 ? `${teamScans} scan${teamScans !== 1 ? "s" : ""} from your team ${name}. ` : ""}${personalScans > 0 ? `${personalScans} from you personally. ` : ""}${co}covered. ${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} remaining.`,
   ];
 };
+
+// ─── Verdict quote pool ────────────────────────────────────────────────────────
+
+export const CORVUS_VERDICT_QUOTES = [
+  "Found your network in a pit of channel congestion and pulled it out. Psalm 40:2 energy. You're welcome.",
+  "Three findings. None of them surprise me. I rolled a 20 on this scan before I even started.",
+  "Your 5 GHz is cleaner than your 2.4 GHz. Dragonite hiding in a Magikarp situation. Let's fix the 2.4.",
+  "Found seventeen networks on channel 11. That's not interference. That's everyone rolling Initiative simultaneously.",
+  "Open network. No security. A city without walls. Proverbs 25:28. Also your SSID. Both need attention.",
+  "Clean 5 GHz. Congested 2.4. You have a Blastoise and a Magikarp and you're leading with the wrong one.",
+  "Whoever designed this was rolling disadvantage on every decision. This is Gryffindor configuration.",
+  "Natural 20 on the spectrum scan. This channel is clean. I'm making a note of this.",
+  "I've done a full Marauder's Map on your network. I see everything. Here's what needs fixing.",
+  "Sirius Black escaped Azkaban with nothing but conviction. I diagnosed your network with a scan. We both work with what we have.",
+  "This network is Hermione's homework — thorough, correct, and three issues longer than expected.",
+  "Your router has fainted. More than once. It needs to be benched.",
+];

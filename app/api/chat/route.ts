@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { CORVUS_CHAT_SYSTEM_PROMPT } from "@/lib/corvus-chat";
-import { getTodayHoliday } from "@/lib/corvus-calendar";
+import { getTodayHoliday, getHolidayGreeting } from "@/lib/corvus-calendar";
 import {
   getChatHistory,
   saveChatMessage,
@@ -103,8 +103,10 @@ export async function POST(req: NextRequest) {
       : "";
 
     const holiday = getTodayHoliday();
+    const holidayGreetingLine = holiday ? getHolidayGreeting(holiday.type, false, new Date().getFullYear()) : null;
+    const isSolemn = holiday?.type === 'good_friday';
     const holidayNote = holiday
-      ? `\n\nTODAY IS ${holiday.name.toUpperCase()}. You are aware of this. ${holiday.isSolemn ? "This is a solemn day. No humor today — respond with appropriate weight and respect." : `If it comes up naturally in conversation, you may acknowledge it in your voice. Your holiday line: "${holiday.greeting}"`}`
+      ? `\n\nTODAY IS ${holiday.name.toUpperCase()}. You are aware of this. ${isSolemn ? "This is a solemn day. No humor today — respond with appropriate weight and respect." : `If it comes up naturally in conversation, you may acknowledge it in your voice. Your holiday line: "${holidayGreetingLine ?? holiday.name}"`}`
       : "";
 
     const todayNote = `\n\nTODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;

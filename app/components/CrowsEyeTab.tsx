@@ -22,6 +22,8 @@ const PROCESSING_LINES = [
   'Reviewing vendor configurations... whoever set this up was rolling disadvantage...',
   'Compiling findings... I want to be the very best at diagnosing your network...',
   'Rendering Verdict... natural 20 on the analysis roll...',
+  'Doing a full Marauder\'s Map on your network... I see everything...',
+  'Mapping every room before we engage... dungeon crawl protocol active...',
 ];
 
 const ENVIRONMENTS = [
