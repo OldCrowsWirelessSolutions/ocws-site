@@ -6,6 +6,7 @@ import Image from "next/image";
 import CorvusChat from "@/app/components/CorvusChat";
 import CrowsEyeTab from "@/app/components/CrowsEyeTab";
 import SettingsTab from "@/app/components/SettingsTab";
+import DemoTokenManager from "@/app/components/DemoTokenManager";
 import { CORVUS_JOSHUA_DASHBOARD_LOAD } from "@/lib/corvus-ui-strings";
 
 function AdminCrowsEyeTab() {
@@ -81,7 +82,7 @@ interface SubRecord {
   seatMembers?: SeatMemberAdmin[];
 }
 
-type AdminTab = "intel" | "subscribers" | "codes" | "testimonials" | "vip" | "reports" | "products" | "chat" | "crow" | "settings";
+type AdminTab = "intel" | "subscribers" | "codes" | "testimonials" | "vip" | "reports" | "products" | "demo" | "chat" | "crow" | "settings";
 
 const ADMIN_TABS: { id: AdminTab; label: string }[] = [
   { id: "intel",        label: "Platform Intelligence" },
@@ -91,6 +92,7 @@ const ADMIN_TABS: { id: AdminTab; label: string }[] = [
   { id: "vip",          label: "VIP Activity" },
   { id: "reports",      label: "Reports" },
   { id: "products",     label: "Products" },
+  { id: "demo",         label: "Demo Tokens" },
   { id: "chat",         label: "Talk to Corvus" },
   { id: "crow",         label: "🦅 Crow's Eye" },
   { id: "settings",     label: "Settings" },
@@ -143,8 +145,18 @@ function TabBar({ tabs, active, onChange, badge }: {
   badge?: Partial<Record<AdminTab, number>>;
 }) {
   return (
-    <div style={{ overflowX: "auto", marginBottom: "28px" }}>
-      <div style={{ display: "flex", gap: "4px", borderBottom: "1px solid rgba(255,255,255,0.08)", paddingBottom: "0", minWidth: "max-content" }}>
+    <div style={{ position: "relative", marginBottom: "28px" }}>
+      {/* Fade edges */}
+      <div style={{ position: "absolute", left: 0, top: 0, bottom: "1px", width: "32px", background: "linear-gradient(to right, #0D1520, transparent)", zIndex: 2, pointerEvents: "none" }} />
+      <div style={{ position: "absolute", right: 0, top: 0, bottom: "1px", width: "32px", background: "linear-gradient(to left, #0D1520, transparent)", zIndex: 2, pointerEvents: "none" }} />
+      <div style={{
+        overflowX: "auto",
+        scrollbarWidth: "none",
+        msOverflowStyle: "none",
+        WebkitOverflowScrolling: "touch",
+      } as React.CSSProperties}>
+        <style>{`.admin-tabbar::-webkit-scrollbar { display: none; }`}</style>
+      <div className="admin-tabbar" style={{ display: "flex", gap: "0", borderBottom: "1px solid rgba(255,255,255,0.08)", minWidth: "max-content" }}>
         {tabs.map((t) => {
           const isActive = t.id === active;
           const count = badge?.[t.id];
@@ -2270,10 +2282,19 @@ export default function AdminPage() {
       case "vip":          return renderVIP();
       case "reports":      return renderReports();
       case "products":     return renderProducts();
+      case "demo":         return renderDemo();
       case "chat":         return renderAdminChat();
       case "crow":         return renderAdminCrowsEye();
       case "settings":     return renderSettings();
     }
+  }
+
+  function renderDemo() {
+    return (
+      <div>
+        <DemoTokenManager authKey={ADMIN_KEY} isAdmin={true} />
+      </div>
+    );
   }
 
   function renderAdminCrowsEye() {
