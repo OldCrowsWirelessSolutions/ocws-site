@@ -519,3 +519,30 @@ body {
   color: #888888;
   letter-spacing: 0.1em;
 }
+
+/* ============================================================
+   Desktop Input Fix
+   ============================================================ */
+.access-code-input,
+input[type="text"],
+input[type="password"],
+input[type="email"] {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 1;
+}
+
+.access-code-form button,
+.dashboard-continue-btn {
+  position: relative;
+  z-index: 2;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.access-code-card::after {
+  display: none !important;
+  pointer-events: none !important;
+}
