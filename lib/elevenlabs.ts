@@ -7,6 +7,33 @@ interface CorvusVoiceSettings {
   toggleKey?: string;
 }
 
+// Holds a pre-fetched audio URL that was blocked by browser autoplay policy.
+// Played as soon as the user makes any gesture (click, keydown, touch).
+let _pendingAudioUrl: string | null = null
+
+function _playPendingAudio() {
+  if (!_pendingAudioUrl) return
+  const url = _pendingAudioUrl
+  _pendingAudioUrl = null
+  const audio = new Audio(url)
+  const win = window as Window & { corvusCurrentAudio?: HTMLAudioElement }
+  if (win.corvusCurrentAudio) win.corvusCurrentAudio.pause()
+  win.corvusCurrentAudio = audio
+  audio.play().catch(() => {})
+  audio.onended = () => {
+    URL.revokeObjectURL(url)
+    win.corvusCurrentAudio = undefined
+  }
+}
+
+function _registerAutoplayUnlock() {
+  const opts = { once: true, capture: true }
+  document.addEventListener('click',      _playPendingAudio, opts)
+  document.addEventListener('keydown',    _playPendingAudio, opts)
+  document.addEventListener('touchstart', _playPendingAudio, opts)
+  document.addEventListener('pointerdown',_playPendingAudio, opts)
+}
+
 export async function speakCorvus(
   text: string,
   settings?: CorvusVoiceSettings
@@ -42,14 +69,25 @@ export async function speakCorvus(
     }
     win.corvusCurrentAudio = audio
 
-    await audio.play()
-    audio.onended = () => {
-      URL.revokeObjectURL(audioUrl)
+    try {
+      await audio.play()
+      audio.onended = () => {
+        URL.revokeObjectURL(audioUrl)
+        win.corvusCurrentAudio = undefined
+      }
+    } catch (playErr: unknown) {
       win.corvusCurrentAudio = undefined
+      // Browser blocked autoplay (no user gesture yet) — queue for first interaction
+      if (playErr instanceof DOMException && playErr.name === 'NotAllowedError') {
+        if (_pendingAudioUrl) URL.revokeObjectURL(_pendingAudioUrl)
+        _pendingAudioUrl = audioUrl
+        _registerAutoplayUnlock()
+      } else {
+        URL.revokeObjectURL(audioUrl)
+      }
     }
-  } catch (error) {
-    console.error('Corvus audio error:', error)
-    // Fail silently — never break the UI for audio failure
+  } catch {
+    // Network / API failure — fail silently, never break the UI
   }
 }
 
