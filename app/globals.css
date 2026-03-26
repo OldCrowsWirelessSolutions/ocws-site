@@ -546,3 +546,14 @@ input[type="email"] {
   display: none !important;
   pointer-events: none !important;
 }
+
+/* ── Corvus Tour Player animations ── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1); }
+}
