@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { getTourScript, TourStage, TOUR_LEVEL_LABELS } from '@/lib/corvusTourScript';
 import { TourLevel } from '@/lib/corvusTour';
+import { speakAsCorvus, stopCorvusAudio, initCorvusAudio } from '@/lib/corvusAudio';
 
 type Props = {
   level: TourLevel;
@@ -17,28 +18,22 @@ export default function CorvusTourPlayer({ level, visitorName, onComplete, inlin
   const [stageIndex, setStageIndex] = useState(0);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const autoAdvanceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const currentStage: TourStage | null = phase === 'stages' ? script.stages[stageIndex] : null;
 
+  useEffect(() => {
+    initCorvusAudio();
+    return () => stopCorvusAudio();
+  }, []);
+
   const playAudio = useCallback(async (text: string) => {
     if (muted) return;
-    try {
-      const res = await fetch('/api/elevenlabs/speak', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text.replace(/["""]/g, '') }),
-      });
-      if (!res.ok) return;
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      if (audioRef.current) {
-        audioRef.current.src = url;
-        audioRef.current.play().catch(() => {});
-        setAudioPlaying(true);
-      }
-    } catch { /* silent */ }
+    await speakAsCorvus(
+      text,
+      () => setAudioPlaying(true),
+      () => setAudioPlaying(false),
+    );
   }, [muted]);
 
   // Opening phase
@@ -90,7 +85,6 @@ export default function CorvusTourPlayer({ level, visitorName, onComplete, inlin
 
   return (
     <div style={wrapStyle}>
-      <audio ref={audioRef} onEnded={() => setAudioPlaying(false)} style={{ display: 'none' }} />
 
       {/* Header */}
       <div style={s.header}>

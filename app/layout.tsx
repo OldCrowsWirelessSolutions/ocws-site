@@ -6,6 +6,7 @@ import Footer from "./components/Footer";
 import StickyQuoteCTA from "./components/StickyQuoteCTA";
 import CorvusChatWrapper from "./components/CorvusChatWrapper";
 import ActivityTracker from "./components/ActivityTracker";
+import AudioInit from "./components/AudioInit";
 
 export const metadata: Metadata = {
   title: "Old Crows Wireless Solutions (OCWS)",
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* Activity tracker — inactivity timeout, domain exit logout, multi-tab sync */}
         <ActivityTracker />
+        <AudioInit />
       </body>
     </html>
   );
