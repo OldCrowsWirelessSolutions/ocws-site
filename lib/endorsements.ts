@@ -15,11 +15,13 @@ export interface Endorsement {
   photoUrl?: string;   // optional headshot; initials used as fallback
   featured?: boolean;
   approved: boolean;   // only true entries render publicly
+  hidden?: boolean;    // emergency hide without deleting — overrides approved
 }
 
 export const ENDORSEMENTS: Endorsement[] = [
   {
     id: 'eric-mims',
+    hidden: true, // pending ethics review — institutional vs personal capacity
     name: 'Eric Mims',
     title: 'Executive Director, Enterprise IT Security & Security Operations',
     company: 'University of Houston System',
@@ -44,7 +46,7 @@ export const ENDORSEMENTS: Endorsement[] = [
   },
 ];
 
-/** Returns only approved endorsements. */
+/** Returns only visible (approved and not hidden) endorsements. */
 export function getApprovedEndorsements(): Endorsement[] {
-  return ENDORSEMENTS.filter(e => e.approved);
+  return ENDORSEMENTS.filter(e => e.approved && !e.hidden);
 }
