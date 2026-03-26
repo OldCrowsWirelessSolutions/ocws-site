@@ -23,7 +23,7 @@ export const ENDORSEMENTS: Endorsement[] = [
     title: 'Director of Enterprise IT Security & CISO',
     company: 'University of Houston System',
     location: 'Houston, TX',
-    photoUrl: undefined,
+    photoUrl: '/endorsements/eric-mims.jpg',
     approved: true,
     quote: "Having managed WiFi deployments since the 802.11g era, I've seen how labor-intensive traditional site surveys can be; Crow's Eye by Corvus effectively condenses a week's worth of manual engineering into a single afternoon.",
     quotes: [
