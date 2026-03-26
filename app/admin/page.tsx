@@ -147,55 +147,42 @@ function TabBar({ tabs, active, onChange, badge }: {
   badge?: Partial<Record<AdminTab, number>>;
 }) {
   return (
-    <div style={{ position: "relative", marginBottom: "28px" }}>
-      {/* Fade edges */}
-      <div style={{ position: "absolute", left: 0, top: 0, bottom: "1px", width: "32px", background: "linear-gradient(to right, #0D1520, transparent)", zIndex: 2, pointerEvents: "none" }} />
-      <div style={{ position: "absolute", right: 0, top: 0, bottom: "1px", width: "32px", background: "linear-gradient(to left, #0D1520, transparent)", zIndex: 2, pointerEvents: "none" }} />
-      <div style={{
-        overflowX: "auto",
-        scrollbarWidth: "none",
-        msOverflowStyle: "none",
-        WebkitOverflowScrolling: "touch",
-      } as React.CSSProperties}>
-        <style>{`.admin-tabbar::-webkit-scrollbar { display: none; }`}</style>
-      <div className="admin-tabbar" style={{ display: "flex", gap: "0", borderBottom: "1px solid rgba(255,255,255,0.08)", minWidth: "max-content" }}>
-        {tabs.map((t) => {
-          const isActive = t.id === active;
-          const count = badge?.[t.id];
-          return (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => onChange(t.id)}
-              style={{
-                padding: "10px 16px",
-                fontSize: "12px",
-                fontWeight: isActive ? 700 : 500,
-                color: isActive ? "#00C2C7" : "#555555",
-                background: "transparent",
-                border: "none",
-                borderBottom: isActive ? "2px solid #00C2C7" : "2px solid transparent",
-                cursor: "pointer",
-                transition: "color 0.15s",
-                whiteSpace: "nowrap",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                marginBottom: "-1px",
-              }}
-            >
-              {t.label}
-              {count != null && count > 0 && (
-                <span style={{ background: "#B8922A", color: "#0D1520", fontSize: "9px", fontWeight: 800, padding: "1px 6px", borderRadius: "20px" }}>
-                  {count}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "28px" }}>
+      {tabs.map((t) => {
+        const isActive = t.id === active;
+        const count = badge?.[t.id];
+        return (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => onChange(t.id)}
+            style={{
+              padding: "8px 16px",
+              fontSize: "12px",
+              fontWeight: isActive ? 700 : 500,
+              color: isActive ? "#00C2C7" : "rgba(255,255,255,0.45)",
+              background: isActive ? "rgba(0,194,199,0.13)" : "rgba(255,255,255,0.03)",
+              border: isActive ? "1px solid rgba(0,194,199,0.5)" : "1px solid rgba(255,255,255,0.09)",
+              borderRadius: "8px",
+              cursor: "pointer",
+              transition: "all 0.15s",
+              whiteSpace: "nowrap",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              letterSpacing: isActive ? "0.02em" : "0",
+            }}
+          >
+            {t.label}
+            {count != null && count > 0 && (
+              <span style={{ background: "#B8922A", color: "#0D1520", fontSize: "9px", fontWeight: 800, padding: "1px 6px", borderRadius: "20px" }}>
+                {count}
+              </span>
+            )}
+          </button>
+        );
+      })}
     </div>
-  </div>
   );
 }
 

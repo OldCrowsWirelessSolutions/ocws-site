@@ -8,7 +8,9 @@ import CorvusChat from "@/app/components/CorvusChat";
 import CrowsEyeTab from "@/app/components/CrowsEyeTab";
 import SettingsTab from "@/app/components/SettingsTab";
 import CorvusTour from "@/app/components/CorvusTour";
+import CorvusTourPlayer from "@/app/components/CorvusTourPlayer";
 import { TOURS, type Tour } from "@/lib/corvus-tours";
+import type { TourLevel } from "@/lib/corvusTour";
 import {
   corvusLineFresh,
   CORVUS_JOSHUA_DASHBOARD_BRIEF,
@@ -122,24 +124,26 @@ function TabBar({ tabs, active, onSelect }: {
 }) {
   return (
     <div style={{
-      display: "flex", gap: "4px", overflowX: "auto", marginBottom: "24px",
-      borderBottom: "1px solid rgba(255,255,255,0.08)", paddingBottom: "0",
-      scrollbarWidth: "none",
+      display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "24px",
     }}>
-      {tabs.map(t => (
-        <button key={t.id} onClick={() => onSelect(t.id)} data-tab={t.id}
-          style={{
-            padding: "10px 18px", fontSize: "13px", fontWeight: 600,
-            border: "none", borderRadius: "10px 10px 0 0", cursor: "pointer",
-            whiteSpace: "nowrap", transition: "all 0.15s", flexShrink: 0,
-            background: active === t.id ? "#00C2C7" : "transparent",
-            color: active === t.id ? "#0D1520" : "rgba(255,255,255,0.45)",
-            borderBottom: active === t.id ? "2px solid #00C2C7" : "2px solid transparent",
-          }}
-        >
-          {t.label}
-        </button>
-      ))}
+      {tabs.map(t => {
+        const isActive = active === t.id;
+        return (
+          <button key={t.id} onClick={() => onSelect(t.id)} data-tab={t.id}
+            style={{
+              padding: "8px 16px", fontSize: "12px", fontWeight: isActive ? 700 : 500,
+              border: isActive ? "1px solid rgba(0,194,199,0.5)" : "1px solid rgba(255,255,255,0.09)",
+              borderRadius: "8px", cursor: "pointer", whiteSpace: "nowrap",
+              transition: "all 0.15s",
+              background: isActive ? "rgba(0,194,199,0.13)" : "rgba(255,255,255,0.03)",
+              color: isActive ? "#00C2C7" : "rgba(255,255,255,0.45)",
+              letterSpacing: isActive ? "0.02em" : "0",
+            }}
+          >
+            {t.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -325,6 +329,7 @@ export default function DashboardPage() {
 
   // ── Tour state ──────────────────────────────────────────────────────────────
   const [activeTour, setActiveTour]               = useState<Tour | null>(null);
+  const [autoTourLevel, setAutoTourLevel]         = useState<TourLevel | null>(null);
 
   // ── Fledgling state ─────────────────────────────────────────────────────────
   const [fledglingVerdictUsed, setFledglingVerdictUsed] = useState<boolean>(false);
@@ -475,6 +480,25 @@ export default function DashboardPage() {
       } catch { /* */ }
       setStoredCode(code);
       setPhase("dashboard");
+      // Auto-tour: show on first login per code, tier-appropriate level
+      try {
+        const tourKey = `corvus_tour_seen_${code}`;
+        if (!localStorage.getItem(tourKey)) {
+          const upperCode = code.toUpperCase();
+          const isJoshuaCode = ["OCWS-CORVUS-FOUNDER-JOSHUA", "CORVUS-ADMIN", "CORVUS-NEST", "OCWS-ADMIN-2026"].includes(upperCode);
+          if (!isJoshuaCode) {
+            const isVIPCode = ["CORVUS-NATE", "CORVUS-NATE-2026", "CORVUS-MIKE", "CORVUS-MIKE-2026", "CORVUS-ERIC", "CORVUS-ERIC-2026"].includes(upperCode) || data.type === "vip";
+            const isKyleCode = upperCode === "CORVUS-KYLE";
+            let level: TourLevel;
+            if (isVIPCode) level = "full";
+            else if (isKyleCode) level = "flock";
+            else if (data.tier === "murder") level = "murder";
+            else if (data.tier === "flock") level = "flock";
+            else level = "nest";
+            setAutoTourLevel(level);
+          }
+        }
+      } catch { /* localStorage unavailable */ }
       loadReports(code);
       loadMyAnalytics(code);
       if (data.type === "vip") {
@@ -542,6 +566,24 @@ export default function DashboardPage() {
         } catch { /* */ }
       }
       setStoredCode(code); setPhase("dashboard");
+      // Auto-tour on first login
+      try {
+        const tourKey = `corvus_tour_seen_${code}`;
+        if (!localStorage.getItem(tourKey)) {
+          const isJoshuaCode = ["OCWS-CORVUS-FOUNDER-JOSHUA", "CORVUS-ADMIN", "CORVUS-NEST", "OCWS-ADMIN-2026"].includes(code);
+          if (!isJoshuaCode) {
+            const isVIPCode = ["CORVUS-NATE", "CORVUS-NATE-2026", "CORVUS-MIKE", "CORVUS-MIKE-2026", "CORVUS-ERIC", "CORVUS-ERIC-2026"].includes(code) || data.type === "vip";
+            const isKyleCode = code === "CORVUS-KYLE";
+            let level: TourLevel;
+            if (isVIPCode) level = "full";
+            else if (isKyleCode) level = "flock";
+            else if (data.tier === "murder") level = "murder";
+            else if (data.tier === "flock") level = "flock";
+            else level = "nest";
+            setAutoTourLevel(level);
+          }
+        }
+      } catch { /* localStorage unavailable */ }
     } catch { setAuthError("Connection error. Please try again.");
     } finally { setValidating(false); }
   };
@@ -2054,6 +2096,19 @@ export default function DashboardPage() {
 
   return (
     <div style={{ maxWidth: "960px", margin: "0 auto", padding: "32px 16px 80px" }}>
+
+      {/* Auto-tour on first login */}
+      {autoTourLevel && (
+        <CorvusTourPlayer
+          level={autoTourLevel}
+          visitorName={sub?.vip_name?.split(' ')[0] ?? details?.customer_name?.split(' ')[0] ?? undefined}
+          onComplete={() => {
+            try { localStorage.setItem(`corvus_tour_seen_${storedCode}`, 'true'); } catch { /* */ }
+            setAutoTourLevel(null);
+          }}
+          inline={false}
+        />
+      )}
 
       {/* Admin impersonation banner */}
       {isAdminView && (

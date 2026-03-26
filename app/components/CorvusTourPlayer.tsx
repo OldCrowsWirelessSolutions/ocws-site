@@ -235,21 +235,21 @@ function renderVisual(stage: TourStage) {
             {!!d.findings && <div style={v.findingStat}><span style={{ color: '#00C2C7' }}>{d.findings as number}</span> findings</div>}
             {!!d.critical && <div style={v.findingStat}><span style={{ color: '#e05555' }}>{d.critical as number}</span> critical</div>}
           </div>
-          {d.topFinding && (
+          {!!d.topFinding && (
             <div style={v.topFinding}>
               <div style={v.tfLabel}>TOP FINDING</div>
               <div style={v.tfText}>{d.topFinding as string}</div>
             </div>
           )}
-          {d.fix && (
+          {!!d.fix && (
             <div style={v.fixBox}>
               <div style={v.fixLabel}>THE FIX</div>
               <div style={v.fixText}>{d.fix as string}</div>
             </div>
           )}
-          {d.excerpt && (
+          {!!d.excerpt && (
             <div style={v.excerptBox}>
-              <div style={v.excerptLabel}>LEVEL {d.level} EXCERPT</div>
+              <div style={v.excerptLabel}>LEVEL {d.level as string} EXCERPT</div>
               <div style={v.excerptText}>{d.excerpt as string}</div>
             </div>
           )}
@@ -322,7 +322,7 @@ function renderVisual(stage: TourStage) {
     case 'character':
       return (
         <div style={v.characterBox}>
-          {d.quote && <p style={v.characterQuote}>{d.quote as string}</p>}
+          {!!d.quote && <p style={v.characterQuote}>{d.quote as string}</p>}
           <div style={v.characterMeta}>
             Built on 17 years of U.S. Navy Electronic Warfare experience.
             ElevenLabs voice. Adaptive intelligence. No competitor has this.
