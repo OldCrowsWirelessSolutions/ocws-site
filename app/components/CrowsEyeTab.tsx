@@ -13,15 +13,15 @@ interface CrowsEyeTabProps {
 }
 
 const PROCESSING_LINES = [
-  'Reading your RF environment...',
-  'Identifying all networks in range...',
-  'Cross-referencing MAC addresses...',
-  'Analyzing channel congestion...',
-  'Mapping interference patterns...',
-  'Calculating signal strength deltas...',
-  'Reviewing vendor-specific configurations...',
-  'Compiling findings...',
-  'Rendering Verdict...',
+  'Rolling Perception on your RF environment...',
+  'Identifying all networks in range... I see you, channel 11 squatters...',
+  'Cross-referencing MAC addresses... someone in this environment needs to be removed...',
+  'Analyzing channel congestion... as Proverbs 14:4 says, where there are no oxen the manger is clean... your manger is not clean...',
+  'Mapping interference patterns... this is a dungeon crawl and I am reading the room...',
+  'Calculating signal strength deltas... Blastoise uses Surf... it\'s super effective...',
+  'Reviewing vendor configurations... whoever set this up was rolling disadvantage...',
+  'Compiling findings... I want to be the very best at diagnosing your network...',
+  'Rendering Verdict... natural 20 on the analysis roll...',
 ];
 
 const ENVIRONMENTS = [

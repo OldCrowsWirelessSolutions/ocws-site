@@ -28,6 +28,10 @@ export const CORVUS_FIRST_WELCOME = [
   "First time? Don't worry. I'll only judge your network. Not you. Set a password and let's get started.",
   "You made it. I've already seen worse networks than yours today. Probably. Set a password.",
   "Welcome to Crow's Eye. I'm Corvus. I know things about your Wi-Fi that would keep you up at night. Password first.",
+  "First time? I've been expecting you. Proverbs 16:9 — the heart plans the way but the Lord directs the steps. You found Crow's Eye. That's your step. Set a password.",
+  "New arrival. I'm a College of Creation Bard and I've been waiting to add you to this story. Set a password and let's begin.",
+  "Welcome. Your network has problems. I know this the way Blastoise knows water moves. Set a password.",
+  "First time user. This is the beginning of your campaign. I'm your DM and I've already mapped the dungeon. Set a password.",
 ];
 
 export const CORVUS_PASSWORD_INSTRUCTIONS = [
@@ -43,6 +47,10 @@ export const CORVUS_PASSWORD_SUCCESS = [
   "Good. Now we can get started. Your network has been waiting.",
   "Access granted. I already have opinions about your Wi-Fi. Come in.",
   "Set. Saved. Secured. Now show me something worth analyzing.",
+  "Password set. Natural 20. Let's see what's wrong with your network.",
+  "Done. As 3 Doors Down said — here without you. Except you're here now. Good. Let's work.",
+  "Access granted. Your character has entered the campaign. What are we diagnosing?",
+  "Set. Saved. Secured. Like a Blastoise shell. Let's get to work.",
 ];
 
 export const CORVUS_RETURNING_WELCOME = [
@@ -52,6 +60,9 @@ export const CORVUS_RETURNING_WELCOME = [
   "I remember you. Your network remembers me. Password.",
   "Back. Enter your password. I have things to tell you.",
   "Returning subscriber detected. Either something broke or you missed me. Password either way.",
+  "Back again. Your network didn't fix itself. It never does. Password.",
+  "Returning character. I remember your build. Password.",
+  "You came back. Like a Nickelback song — expected, familiar, and I'm not complaining. Password.",
 ];
 
 export const CORVUS_WRONG_PASSWORD = [
@@ -60,6 +71,10 @@ export const CORVUS_WRONG_PASSWORD = [
   "Wrong. I'm not judging. Actually I am. Try again.",
   "That password doesn't match what I have. Think harder.",
   "Nope. I've seen misconfigured networks make fewer errors. Try again.",
+  "That's not it. You rolled a 1. Try again.",
+  "Wrong. As Demon Hunter would say — this isn't over. Try again.",
+  "Incorrect. Even Blastoise misses sometimes. Try again.",
+  "That's not your password. I want to be the very best — and that attempt was not. Try again.",
 ];
 
 export const CORVUS_RATE_LIMITED = [
@@ -69,10 +84,10 @@ export const CORVUS_RATE_LIMITED = [
 ];
 
 export const CORVUS_PASSWORD_STRENGTH = {
-  weak:   "That's not a password. That's a suggestion.",
-  fair:   "Acceptable. Barely. Add some numbers.",
-  good:   "Better. I can work with this.",
-  strong: "Now that's a password. Respectable.",
+  weak:   "That password has the HP of a first-level commoner. Try again.",
+  fair:   "Acceptable. Like a Ranger before the 2024 revision. Functional but not inspiring.",
+  good:   "Better. Bard energy. Creative and functional.",
+  strong: "Now THAT is a Paladin password. Conviction. Power. Worthy.",
 };
 
 export const CORVUS_VIP_FIRST_WELCOME: Record<string, string[]> = {

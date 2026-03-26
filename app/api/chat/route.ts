@@ -7,6 +7,7 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { CORVUS_CHAT_SYSTEM_PROMPT } from "@/lib/corvus-chat";
+import { getTodayHoliday } from "@/lib/corvus-calendar";
 import {
   getChatHistory,
   saveChatMessage,
@@ -101,7 +102,14 @@ export async function POST(req: NextRequest) {
       ? `\n\nUSER COMFORT LEVEL: ${comfortLevel}/5 — adapt language accordingly.`
       : "";
 
-    const systemPrompt = CORVUS_CHAT_SYSTEM_PROMPT + reportContextInjection + contextInjection + comfortNote;
+    const holiday = getTodayHoliday();
+    const holidayNote = holiday
+      ? `\n\nTODAY IS ${holiday.name.toUpperCase()}. You are aware of this. ${holiday.isSolemn ? "This is a solemn day. No humor today — respond with appropriate weight and respect." : `If it comes up naturally in conversation, you may acknowledge it in your voice. Your holiday line: "${holiday.greeting}"`}`
+      : "";
+
+    const todayNote = `\n\nTODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+
+    const systemPrompt = CORVUS_CHAT_SYSTEM_PROMPT + reportContextInjection + contextInjection + comfortNote + holidayNote + todayNote;
 
     // Last 20 messages for context window
     const contextMessages = history.slice(-20).map((m) => ({ role: m.role, content: m.content }));
