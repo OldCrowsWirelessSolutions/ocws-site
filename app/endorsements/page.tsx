@@ -1,6 +1,6 @@
 // app/endorsements/page.tsx
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { getApprovedEndorsements } from "@/lib/endorsements";
 
 export const metadata = {
@@ -12,24 +12,24 @@ export default function EndorsementsPage() {
   const endorsements = getApprovedEndorsements();
 
   return (
-    <div style={{ maxWidth: "900px", margin: "0 auto", padding: "48px 16px 80px" }}>
+    <div style={{ maxWidth: "860px", margin: "0 auto", padding: "60px 24px 80px" }}>
 
       {/* Header */}
       <div style={{ textAlign: "center", marginBottom: "48px" }}>
-        <p style={{ color: "#B8922A", fontSize: "11px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "12px" }}>
+        <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.6rem", color: "#B8922A", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: "12px" }}>
           Professional Endorsements
         </p>
-        <h1 style={{ color: "#ffffff", fontSize: "36px", fontWeight: 800, marginBottom: "16px" }}>
+        <h1 style={{ fontSize: "2.2rem", fontWeight: 800, color: "#F4F6F8", marginBottom: "12px" }}>
           Trusted by Professionals
         </h1>
-        <p style={{ color: "#888888", fontSize: "16px", maxWidth: "560px", margin: "0 auto" }}>
+        <p style={{ fontSize: "1rem", color: "#888888", maxWidth: "560px", margin: "0 auto" }}>
           The people who have seen what Corvus can do — and choose to put their name behind it.
         </p>
       </div>
 
-      {/* Endorsements grid */}
+      {/* Cards */}
       {endorsements.length > 0 ? (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(380px, 1fr))", gap: "24px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
           {endorsements.map((e) => {
             const initials = e.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
             return (
@@ -37,89 +37,130 @@ export default function EndorsementsPage() {
                 key={e.id}
                 style={{
                   background: "#1A2332",
-                  border: "1px solid rgba(184,146,42,0.3)",
-                  borderRadius: "20px",
+                  border: `1px solid ${(e as { featured?: boolean }).featured ? "rgba(184,146,42,0.4)" : "rgba(0,194,199,0.15)"}`,
+                  borderRadius: "16px",
                   padding: "28px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "16px",
+                  boxShadow: (e as { featured?: boolean }).featured ? "0 0 40px rgba(184,146,42,0.06)" : "none",
                 }}
               >
-                {/* Person */}
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  {e.photoUrl ? (
-                    <Image
-                      src={e.photoUrl}
-                      alt={e.name}
-                      width={64}
-                      height={64}
-                      style={{ width: "64px", height: "64px", borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
-                    />
-                  ) : (
-                    <div style={{
-                      width: "64px", height: "64px", borderRadius: "50%", flexShrink: 0,
-                      background: "linear-gradient(135deg, #B8922A, #D4AF37)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      color: "#0D1520", fontSize: "18px", fontWeight: 800,
-                    }}>
-                      {initials}
-                    </div>
-                  )}
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                      <p style={{ color: "#ffffff", fontSize: "17px", fontWeight: 700, margin: 0 }}>{e.name}</p>
+                {/* Person header */}
+                <div style={{ display: "flex", gap: "20px", alignItems: "flex-start", marginBottom: "24px" }}>
+                  <div style={{
+                    width: "80px", height: "80px", borderRadius: "50%",
+                    border: "2px solid #B8922A", overflow: "hidden", flexShrink: 0,
+                  }}>
+                    {e.photoUrl ? (
+                      <Image
+                        src={e.photoUrl}
+                        alt={e.name}
+                        width={80}
+                        height={80}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    ) : (
+                      <div style={{
+                        width: "100%", height: "100%", display: "flex",
+                        alignItems: "center", justifyContent: "center",
+                        background: "rgba(184,146,42,0.15)",
+                        fontFamily: "'Share Tech Mono', monospace",
+                        fontSize: "1.4rem", color: "#B8922A",
+                      }}>
+                        {initials}
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", marginBottom: "4px" }}>
+                      <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "#F4F6F8" }}>{e.name}</span>
                       {e.linkedinUrl && (
                         <a
                           href={e.linkedinUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           aria-label={`${e.name} on LinkedIn`}
-                          style={{ color: "#0077B5" }}
+                          style={{
+                            display: "inline-flex", alignItems: "center", gap: "4px",
+                            fontFamily: "'Share Tech Mono', monospace", fontSize: "0.58rem",
+                            color: "#00C2C7", textDecoration: "none", letterSpacing: "0.08em",
+                            border: "1px solid rgba(0,194,199,0.25)", borderRadius: "4px",
+                            padding: "3px 8px", transition: "all 0.2s",
+                          }}
                         >
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                          </svg>
+                          LinkedIn →
                         </a>
                       )}
                     </div>
-                    <p style={{ color: "#00C2C7", fontSize: "14px", margin: "2px 0 0", fontWeight: 600 }}>{e.title}</p>
-                    <p style={{ color: "#666666", fontSize: "13px", margin: "2px 0 0" }}>{e.company}</p>
+                    <div style={{ fontSize: "0.85rem", color: "#00C2C7", fontWeight: 600, marginBottom: "2px" }}>{e.title}</div>
+                    <div style={{ fontSize: "0.82rem", color: "#888888", marginBottom: "2px" }}>{e.company}</div>
+                    {(e as { location?: string }).location && (
+                      <div style={{ fontSize: "0.75rem", color: "#666666" }}>{(e as { location?: string }).location}</div>
+                    )}
                   </div>
                 </div>
 
-                {/* Quote */}
-                <blockquote style={{
-                  borderLeft: "3px solid #B8922A",
-                  paddingLeft: "16px",
-                  margin: 0,
-                  color: "#cccccc",
-                  fontSize: "15px",
-                  lineHeight: 1.7,
-                  fontStyle: "italic",
-                }}>
-                  &ldquo;{e.quote}&rdquo;
-                </blockquote>
+                {/* Quotes */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                  {e.quotes && e.quotes.length > 0 ? (
+                    e.quotes.map(q => (
+                      <div key={q.id} style={{ borderLeft: "3px solid #B8922A", paddingLeft: "16px" }}>
+                        <div style={{
+                          fontFamily: "'Share Tech Mono', monospace", fontSize: "0.58rem",
+                          color: "#B8922A", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px",
+                        }}>
+                          {q.label}
+                        </div>
+                        <blockquote style={{
+                          margin: 0, fontStyle: "italic", fontSize: "0.9rem",
+                          color: "rgba(244,246,248,0.85)", lineHeight: 1.8,
+                        }}>
+                          &ldquo;{q.text}&rdquo;
+                        </blockquote>
+                      </div>
+                    ))
+                  ) : (
+                    <div style={{ borderLeft: "3px solid #B8922A", paddingLeft: "16px" }}>
+                      <blockquote style={{
+                        margin: 0, fontStyle: "italic", fontSize: "0.9rem",
+                        color: "rgba(244,246,248,0.85)", lineHeight: 1.8,
+                      }}>
+                        &ldquo;{e.quote}&rdquo;
+                      </blockquote>
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })}
         </div>
       ) : (
         <div style={{
-          background: "#1A2332",
-          border: "1px solid rgba(255,255,255,0.08)",
-          borderRadius: "16px",
-          padding: "48px",
-          textAlign: "center",
+          background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: "16px", padding: "48px", textAlign: "center",
         }}>
-          <p style={{ color: "#888888", fontSize: "16px" }}>
-            Endorsements are coming soon. Check back shortly.
-          </p>
+          <p style={{ color: "#888888", fontSize: "1rem" }}>Endorsements are coming soon.</p>
         </div>
       )}
 
-      {/* Back link */}
+      {/* CTA */}
       <div style={{ textAlign: "center", marginTop: "48px" }}>
-        <Link href="/" style={{ color: "#00C2C7", fontSize: "14px", fontWeight: 600 }}>
+        <a
+          href="/crows-eye"
+          style={{
+            display: "inline-block", padding: "14px 32px",
+            background: "rgba(0,194,199,0.1)", border: "1px solid rgba(0,194,199,0.3)",
+            borderRadius: "10px", color: "#00C2C7",
+            fontFamily: "'Share Tech Mono', monospace", fontSize: "0.8rem",
+            letterSpacing: "0.1em", textDecoration: "none",
+          }}
+        >
+          Get Corvus&rsquo; Verdict — Free →
+        </a>
+      </div>
+
+      {/* Back link */}
+      <div style={{ textAlign: "center", marginTop: "24px" }}>
+        <Link href="/" style={{ color: "#555555", fontSize: "0.82rem" }}>
           ← Back to Home
         </Link>
       </div>

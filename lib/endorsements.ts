@@ -13,6 +13,7 @@ export interface Endorsement {
   quotes?: { id: string; label: string; text: string }[];
   linkedinUrl?: string;
   photoUrl?: string;   // optional headshot; initials used as fallback
+  featured?: boolean;
   approved: boolean;   // only true entries render publicly
 }
 
@@ -20,10 +21,12 @@ export const ENDORSEMENTS: Endorsement[] = [
   {
     id: 'eric-mims',
     name: 'Eric Mims',
-    title: 'Director of Enterprise IT Security & CISO',
+    title: 'Executive Director, Enterprise IT Security & Security Operations',
     company: 'University of Houston System',
     location: 'Houston, TX',
     photoUrl: '/endorsements/eric-mims.jpg',
+    linkedinUrl: 'https://www.linkedin.com/in/emims/',
+    featured: true,
     approved: true,
     quote: "Having managed WiFi deployments since the 802.11g era, I've seen how labor-intensive traditional site surveys can be; Crow's Eye by Corvus effectively condenses a week's worth of manual engineering into a single afternoon.",
     quotes: [

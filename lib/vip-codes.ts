@@ -21,7 +21,7 @@ export interface VIPCodeRecord {
 export const VIP_CODES: Record<string, VIPCodeRecord> = {
   "CORVUS-ERIC": {
     name: "Eric Mims",
-    title: "Director Enterprise IT Security & CISO",
+    title: "Executive Director, Enterprise IT Security & Security Operations",
     company: "University of Houston System",
     tier: "vip",
     creditsRemaining: 999999,
