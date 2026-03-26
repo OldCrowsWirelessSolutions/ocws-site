@@ -353,7 +353,14 @@ export async function POST(req: Request) {
       ] : []),
       `IT_COMFORT_LEVEL: ${itComfortLevel}`,
       `IT_COMFORT_LABEL: ${["Just make it work","Basic user","Somewhat technical","IT Proficient","Network Pro"][Math.max(0, Math.min(4, (itComfortLevel as number) - 1))]}`,
-      `Problem description: ${String(notes).trim() || "Not provided"}`,
+      ...(notes?.trim() ? [
+        "",
+        "CLIENT REPORTED SYMPTOMS:",
+        notes.trim(),
+        "IMPORTANT: Cross-reference your findings against these reported symptoms. If you identify issues that directly explain what the client described — call that out explicitly in the finding description. Lead with findings most likely to explain the reported problem.",
+      ] : [
+        `Problem description: Not provided`,
+      ]),
       "",
       "Analyze the screenshots above and return your Verdict as JSON.",
     ];

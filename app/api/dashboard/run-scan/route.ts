@@ -8,42 +8,9 @@ import { saveReport } from '@/lib/reports';
 import type { ReportRecord, ReportSeverity } from '@/lib/reports';
 import { recordUsageEvent } from '@/lib/analytics';
 import type { UsageEvent } from '@/lib/analytics';
+import { trackSubordinateUsage } from '@/lib/vip-codes';
+import { resolveCode } from '@/lib/code-resolver';
 import redis from '@/lib/redis';
-
-// ─── Bypass code detection ────────────────────────────────────────────────────
-// These codes never go through subscription validation or credit deduction.
-
-function isBypassCode(code: string): boolean {
-  const u = code.trim().toUpperCase();
-  return (
-    // Founder
-    u === 'OCWS-CORVUS-FOUNDER-JOSHUA' ||
-    u.startsWith('OCWS-CORVUS-FOUNDER-') ||
-    // Admin
-    u === 'CORVUS-ADMIN' ||
-    u === 'CORVUS-NEST' ||
-    u.startsWith('OCWS-ADMIN-') ||
-    // VIP founding members
-    u === 'CORVUS-ERIC'  || u.startsWith('CORVUS-ERIC-')  ||
-    u === 'CORVUS-MIKE'  || u.startsWith('CORVUS-MIKE-')  ||
-    u === 'CORVUS-NATE'  || u.startsWith('CORVUS-NATE-')  ||
-    // Lifetime members
-    u === 'CORVUS-KYLE'  || u.startsWith('CORVUS-KYLE-')  ||
-    // Try / promo bypass prefixes
-    u.startsWith('CORVUS-TRY-') ||
-    u.startsWith('CORVUS-SUB-')
-  );
-}
-
-function tierForBypassCode(code: string): string {
-  const u = code.trim().toUpperCase();
-  if (u === 'OCWS-CORVUS-FOUNDER-JOSHUA' || u.startsWith('OCWS-CORVUS-FOUNDER-') ||
-      u === 'CORVUS-ADMIN' || u === 'CORVUS-NEST' || u.startsWith('OCWS-ADMIN-')) {
-    return 'vip'; // treat admin/founder as VIP for report retention
-  }
-  if (u === 'CORVUS-KYLE' || u.startsWith('CORVUS-KYLE-')) return 'flock';
-  return 'vip'; // VIP founding members
-}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -82,17 +49,18 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
 
-    const code          = (formData.get('code')        as string | null)?.trim() ?? '';
-    const product       = (formData.get('product')     as string | null)?.trim() ?? 'verdict';
-    const clientName    = (formData.get('clientName')  as string | null)?.trim() ?? '';
-    const street        = (formData.get('street')      as string | null)?.trim() ?? '';
-    const city          = (formData.get('city')        as string | null)?.trim() ?? '';
-    const state         = (formData.get('state')       as string | null)?.trim() ?? 'FL';
-    const zip           = (formData.get('zip')         as string | null)?.trim() ?? '';
-    const ssid          = (formData.get('ssid')        as string | null)?.trim() ?? '';
-    const environment   = (formData.get('environment') as string | null)?.trim() ?? 'indoor';
-    const locationType  = (formData.get('locationType')as string | null)?.trim() ?? '';
-    const comfortLevel  = Number(formData.get('comfortLevel') ?? 2);
+    const code             = (formData.get('code')             as string | null)?.trim() ?? '';
+    const product          = (formData.get('product')          as string | null)?.trim() ?? 'verdict';
+    const clientName       = (formData.get('clientName')       as string | null)?.trim() ?? '';
+    const street           = (formData.get('street')           as string | null)?.trim() ?? '';
+    const city             = (formData.get('city')             as string | null)?.trim() ?? '';
+    const state            = (formData.get('state')            as string | null)?.trim() ?? 'FL';
+    const zip              = (formData.get('zip')              as string | null)?.trim() ?? '';
+    const ssid             = (formData.get('ssid')             as string | null)?.trim() ?? '';
+    const environment      = (formData.get('environment')      as string | null)?.trim() ?? 'indoor';
+    const locationType     = (formData.get('locationType')     as string | null)?.trim() ?? '';
+    const comfortLevel     = Number(formData.get('comfortLevel') ?? 2);
+    const clientComplaints = (formData.get('clientComplaints') as string | null)?.trim() ?? '';
 
     const signalListFile = formData.get('signalList') as File | null;
     const ghz24File      = formData.get('ghz24') instanceof File ? formData.get('ghz24') as File : null;
@@ -105,21 +73,39 @@ export async function POST(request: NextRequest) {
     const productTyped = product as ProductType;
     const address = [street, city, state, zip].filter(Boolean).join(', ');
 
+    // ─── Resolve code type ────────────────────────────────────────────────────
+
+    const resolved = await resolveCode(code);
+
+    if (!resolved.canScan) {
+      if (resolved.kind === 'subordinate') {
+        return NextResponse.json(
+          { error: 'This access code has expired or has already been used.' },
+          { status: 403 }
+        );
+      }
+      if (resolved.kind === 'promo') {
+        return NextResponse.json(
+          { error: 'This promo code has expired or is no longer valid.' },
+          { status: 403 }
+        );
+      }
+      return NextResponse.json({ error: 'Invalid or expired code.' }, { status: 403 });
+    }
+
     // ─── Authorization ────────────────────────────────────────────────────────
 
-    const bypass = isBypassCode(code);
     let validationTier: string = 'vip';
     let validationSubId: string | null = null;
     let validationCodeType: UsageEvent['codeType'] = 'bypass';
 
-    if (bypass) {
-      // Founder / VIP / admin / lifetime — no subscription lookup, no credit deduction
-      validationTier     = tierForBypassCode(code);
-      validationCodeType = code.trim().toUpperCase().startsWith('CORVUS-ERIC')  ||
-                           code.trim().toUpperCase().startsWith('CORVUS-MIKE')  ||
-                           code.trim().toUpperCase().startsWith('CORVUS-NATE')  ||
-                           code.trim().toUpperCase().startsWith('CORVUS-KYLE')
-                           ? 'vip' : 'bypass';
+    if (resolved.isBypass) {
+      // Founder / VIP / admin / lifetime / subordinate / promo — skip subscription lookup
+      validationTier = resolved.tier;
+      validationCodeType =
+        resolved.kind === 'vip' ? 'vip' :
+        resolved.kind === 'subordinate' ? 'bypass' :
+        'bypass';
     } else {
       // Real subscriber code — validate and check credits
       const validation = await validateSubscriptionId(code);
@@ -163,6 +149,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // ─── Track subordinate usage ──────────────────────────────────────────────
+
+    if (resolved.kind === 'subordinate') {
+      await trackSubordinateUsage(code).catch(err =>
+        console.error('trackSubordinateUsage failed:', err)
+      );
+    }
+
     // ─── Convert files to base64 ──────────────────────────────────────────────
 
     const signalBase64 = await fileToBase64(signalListFile);
@@ -189,6 +183,7 @@ export async function POST(request: NextRequest) {
         locationType,
         itComfortLevel: comfortLevel,
         client_ssid: ssid,
+        notes: clientComplaints,
         images: {
           signal: signalBase64,
           ...(scan24Base64 ? { scan24: scan24Base64 } : {}),
@@ -199,7 +194,6 @@ export async function POST(request: NextRequest) {
           ...(scan24Base64 ? { scan24: scan24Mime } : {}),
           ...(scan5Base64  ? { scan5:  scan5Mime  } : {}),
         },
-        notes: '',
         honeypot: '',
       }),
     });
@@ -260,6 +254,7 @@ export async function POST(request: NextRequest) {
       identified_ssid: analyzeData.identified_ssid ?? null,
       router_vendor:   analyzeData.router_vendor   ?? null,
       device:          analyzeData.device          ?? null,
+      clientComplaints: clientComplaints || null,
     };
 
     // ─── Save report ──────────────────────────────────────────────────────────

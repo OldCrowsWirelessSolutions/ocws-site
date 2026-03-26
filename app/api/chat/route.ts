@@ -25,8 +25,9 @@ async function getAccessLevel(code: string): Promise<AccessLevel> {
   if (!code) return "denied";
   const upper = code.toUpperCase();
 
-  // Admin / bypass
-  if (upper === "OCWS-CORVUS-FOUNDER-JOSHUA" || upper === "CORVUS-NEST" || upper === "CORVUS-ADMIN") return "unlimited";
+  // Admin / founder / VIP / lifetime / subordinate bypass codes — all get unlimited
+  const { isKnownBypassCode } = await import("@/lib/code-resolver");
+  if (isKnownBypassCode(upper)) return "unlimited";
   if (process.env.OCWS_ADMIN_SECRET && code === process.env.OCWS_ADMIN_SECRET) return "unlimited";
 
   try {

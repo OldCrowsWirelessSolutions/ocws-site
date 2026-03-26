@@ -169,6 +169,7 @@ export default function CrowsEyeTab({
   const [state, setState] = useState('FL');
   const [zip, setZip] = useState('');
   const [ssid, setSsid] = useState('');
+  const [clientComplaints, setClientComplaints] = useState('');
   const [environment, setEnvironment] = useState('indoor');
   const [locationType, setLocationType] = useState('residential');
   const [comfortLevel, setComfortLevel] = useState<number>(2);
@@ -261,6 +262,7 @@ export default function CrowsEyeTab({
       formData.append('state', state);
       formData.append('zip', zip.trim());
       formData.append('ssid', ssid.trim());
+      formData.append('clientComplaints', clientComplaints.trim());
       formData.append('environment', environment);
       formData.append('locationType', locationType);
       formData.append('comfortLevel', String(comfortLevel));
@@ -855,6 +857,53 @@ export default function CrowsEyeTab({
               value={ssid}
               onChange={e => setSsid(e.target.value)}
             />
+
+            <div style={{ marginBottom: 10 }}>
+              <label style={{ ...labelStyle, marginBottom: 6 }}>
+                Client Complaints &amp; Symptoms
+                <span style={{
+                  display: 'block',
+                  fontFamily: 'sans-serif',
+                  fontSize: '0.7rem',
+                  color: '#888888',
+                  letterSpacing: 0,
+                  textTransform: 'none',
+                  fontWeight: 'normal',
+                  marginTop: 2,
+                }}>
+                  What is the client experiencing? Describe the problem in their words.
+                </span>
+              </label>
+              <textarea
+                placeholder="e.g. Wi-Fi drops every evening around 7pm · Can't get signal in the back office · POS system disconnects during transactions · Dead zone near the conference room..."
+                value={clientComplaints}
+                onChange={e => setClientComplaints(e.target.value)}
+                rows={4}
+                autoComplete="off"
+                autoCorrect="off"
+                style={{
+                  width: '100%',
+                  background: 'rgba(13,21,32,0.8)',
+                  border: '1px solid rgba(0,194,199,0.15)',
+                  borderRadius: 8,
+                  padding: '12px 14px',
+                  color: '#F4F6F8',
+                  fontFamily: "'Exo 2', sans-serif",
+                  fontSize: 16,
+                  lineHeight: 1.6,
+                  resize: 'vertical',
+                  minHeight: 80,
+                  boxSizing: 'border-box',
+                  outline: 'none',
+                  transition: 'border-color 0.2s',
+                }}
+                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(0,194,199,0.4)'; }}
+                onBlur={e => { e.currentTarget.style.borderColor = 'rgba(0,194,199,0.15)'; }}
+              />
+              <div style={{ fontSize: '0.65rem', color: '#888888', marginTop: 4, fontStyle: 'italic' }}>
+                The more detail you provide, the more targeted Corvus&rsquo; analysis will be.
+              </div>
+            </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 12px' }}>
               <div>

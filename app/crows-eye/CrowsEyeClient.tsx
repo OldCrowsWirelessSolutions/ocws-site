@@ -2634,6 +2634,29 @@ export default function CrowsEyeClient() {
             </p>
           </div>
 
+          {/* Client complaints — placed after SSID */}
+          <div>
+            <label className="block text-sm font-medium text-white mb-1">
+              What&rsquo;s wrong? Describe your symptoms
+              <span className="block text-xs font-normal mt-1" style={{ color: 'rgba(136,136,136,0.9)' }}>
+                Describe the problem in your own words — drops, dead zones, slowdowns, disconnections.
+              </span>
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={4}
+              placeholder="e.g. Wi-Fi drops every evening around 7pm · Can't get signal in the back bedroom · Video calls freeze constantly · My Roku disconnects every night..."
+              autoComplete="off"
+              autoCorrect="off"
+              className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
+              style={{ resize: 'vertical', minHeight: 90 }}
+            />
+            <p className="mt-1.5 text-xs ocws-muted2">
+              The more detail you provide, the more targeted Corvus&rsquo; analysis will be.
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
             <div>
               <label className="block text-sm font-medium text-white mb-2">
@@ -2738,20 +2761,6 @@ export default function CrowsEyeClient() {
               />
             </div>
           )}
-        </div>
-
-        {/* Notes */}
-        <div>
-          <label className="block text-sm font-medium text-white mb-1">
-            Describe your problem
-          </label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={4}
-            placeholder="What's slow, what drops, what frustrates you. The more detail, the sharper the Verdict."
-            className="w-full rounded-xl bg-black/40 border border-white/10 px-4 py-3 text-base text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-white/20"
-          />
         </div>
 
         {/* IT Comfort Level */}
