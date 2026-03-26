@@ -29,14 +29,19 @@ function topSeverity(
   return 'info';
 }
 
-async function fileToBase64(file: File): Promise<string> {
+async function fileToBase64(file: Blob): Promise<string> {
   return Buffer.from(await file.arrayBuffer()).toString('base64');
 }
 
-function getMimeType(file: File): string {
-  const t = file.type?.toLowerCase();
+function getMimeType(file: Blob): string {
+  const t = (file as Blob & { type?: string }).type?.toLowerCase() ?? '';
   return ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'].includes(t)
     ? t : 'image/jpeg';
+}
+
+async function blobFromFormData(entry: FormDataEntryValue | null): Promise<Blob | null> {
+  if (!entry || typeof entry === 'string') return null;
+  return entry as Blob;
 }
 
 // ─── Route ───────────────────────────────────────────────────────────────────
@@ -62,9 +67,9 @@ export async function POST(request: NextRequest) {
     const comfortLevel     = Number(formData.get('comfortLevel') ?? 2);
     const clientComplaints = (formData.get('clientComplaints') as string | null)?.trim() ?? '';
 
-    const signalListFile = formData.get('signalList') as File | null;
-    const ghz24File      = formData.get('ghz24') instanceof File ? formData.get('ghz24') as File : null;
-    const ghz5File       = formData.get('ghz5')  instanceof File ? formData.get('ghz5')  as File : null;
+    const signalListFile = await blobFromFormData(formData.get('signalList'));
+    const ghz24File      = await blobFromFormData(formData.get('ghz24'));
+    const ghz5File       = await blobFromFormData(formData.get('ghz5'));
 
     if (!code)           return NextResponse.json({ error: 'Code is required.' }, { status: 400 });
     if (!signalListFile) return NextResponse.json({ error: 'Signal list screenshot is required.' }, { status: 400 });
@@ -170,43 +175,59 @@ export async function POST(request: NextRequest) {
 
     // ─── Call Corvus analyze ──────────────────────────────────────────────────
 
-    const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000';
+    // Derive base URL from the incoming request host — avoids localhost fallback failures on Vercel
+    const host     = request.headers.get('host') ?? 'localhost:3000';
+    const protocol = host.startsWith('localhost') || host.startsWith('127.') ? 'http' : 'https';
+    const baseUrl  = process.env.NEXT_PUBLIC_URL
+      ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
+      ?? `${protocol}://${host}`;
 
-    const analyzeRes = await fetch(`${baseUrl}/api/crows-eye/analyze`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        mode: 'single',
-        name: clientName,
-        address,
-        environment,
-        locationType,
-        itComfortLevel: comfortLevel,
-        client_ssid: ssid,
-        notes: clientComplaints,
-        images: {
-          signal: signalBase64,
-          ...(scan24Base64 ? { scan24: scan24Base64 } : {}),
-          ...(scan5Base64  ? { scan5:  scan5Base64  } : {}),
-        },
-        mimeTypes: {
-          signal: signalMime,
-          ...(scan24Base64 ? { scan24: scan24Mime } : {}),
-          ...(scan5Base64  ? { scan5:  scan5Mime  } : {}),
-        },
-        honeypot: '',
-      }),
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let analyzeData: any;
+    try {
+      const analyzeRes = await fetch(`${baseUrl}/api/crows-eye/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'single',
+          name: clientName,
+          address,
+          environment,
+          locationType,
+          itComfortLevel: comfortLevel,
+          client_ssid: ssid,
+          notes: clientComplaints,
+          images: {
+            signal: signalBase64,
+            ...(scan24Base64 ? { scan24: scan24Base64 } : {}),
+            ...(scan5Base64  ? { scan5:  scan5Base64  } : {}),
+          },
+          mimeTypes: {
+            signal: signalMime,
+            ...(scan24Base64 ? { scan24: scan24Mime } : {}),
+            ...(scan5Base64  ? { scan5:  scan5Mime  } : {}),
+          },
+          honeypot: '',
+        }),
+      });
 
-    if (!analyzeRes.ok) {
-      throw new Error(`Analyze API returned HTTP ${analyzeRes.status}`);
+      if (!analyzeRes.ok) {
+        const errText = await analyzeRes.text().catch(() => '');
+        console.error('[run-scan] analyze API error:', analyzeRes.status, errText);
+        throw new Error(`Analyze API returned HTTP ${analyzeRes.status}: ${errText.slice(0, 200)}`);
+      }
+
+      analyzeData = await analyzeRes.json();
+    } catch (fetchErr) {
+      console.error('[run-scan] fetch to analyze failed:', fetchErr, '| baseUrl:', baseUrl);
+      throw fetchErr;
     }
 
-    const analyzeData = await analyzeRes.json();
-
-    // analyzeData is the raw Corvus JSON — no .ok field, check for required content
-    if (!analyzeData || typeof analyzeData !== 'object' || analyzeData.error) {
-      throw new Error(analyzeData?.error ?? 'Analysis returned empty response.');
+    if (!analyzeData || typeof analyzeData !== 'object') {
+      throw new Error('Analysis returned empty response.');
+    }
+    if (analyzeData.error && !analyzeData.full_findings) {
+      throw new Error(String(analyzeData.error));
     }
 
     // ─── Build report ─────────────────────────────────────────────────────────
