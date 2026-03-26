@@ -102,8 +102,24 @@ const FAQS = [
     a: "$250 flat for Pensacola metro (Escambia + Santa Rosa Counties). $375 for locations in Northwest Florida through Mobile, AL — that's $250 base plus a $125 travel fee. The travel fee applies for locations requiring more than 50 miles round trip from Pensacola.",
   },
   {
+    q: "What is the Fledgling tier?",
+    a: "Fledgling is the entry-level Corvus subscription at $10/mo. It includes 1 free Verdict credit (one-time, does not renew monthly), unlimited Ask Corvus chat, Corvus voice assistant, and Help & Training tours. It's designed for people who want to try Corvus before committing to a full subscription. Upgrade to Nest anytime from your dashboard.",
+  },
+  {
+    q: "What can Corvus chat about?",
+    a: "Corvus can discuss anything in the RF and wireless domain — channel planning, interference types, Wi-Fi security, router configuration, signal theory, enterprise networking, spectrum analysis, and general networking concepts. He draws on a comprehensive knowledge base covering RF history from Hertz (1888) through current standards including Wi-Fi 7 and 6 GHz band usage. He is not a general-purpose chatbot — he is an RF specialist.",
+  },
+  {
+    q: "How current is Corvus' knowledge?",
+    a: "Corvus' core knowledge base covers RF fundamentals through Wi-Fi 7 and current enterprise standards. The platform is designed for quarterly knowledge updates that pull the latest developments in wireless standards, security research, and spectrum policy. His foundational RF expertise — propagation, interference, channel planning, MAC analysis — does not change with standards updates.",
+  },
+  {
+    q: "Can I upgrade from Fledgling to Nest?",
+    a: "Yes. You can upgrade from Fledgling to Nest at any time from your dashboard. Your subscriber code carries over. Upgrading gives you 3 Verdicts per month, 1 Small Reckoning per month, full report download, and all Nest features. The upgrade takes effect on your next billing cycle.",
+  },
+  {
     q: "What are the subscription tiers?",
-    a: "Crow's Eye offers three subscription tiers: Nest ($20/mo or $160/yr) for homeowners and small businesses, Flock ($100/mo or $900/yr) for MSPs, IT consultants, and growing teams, and Murder ($950/mo or $9,500/yr) for enterprise networks, multi-site operators, and mission-critical environments. All tiers are live and available now.",
+    a: "Crow's Eye offers four subscription tiers: Fledgling ($10/mo) for trying Corvus with 1 free Verdict and unlimited chat, Nest ($20/mo or $160/yr) for homeowners and small businesses, Flock ($100/mo or $900/yr) for MSPs, IT consultants, and growing teams, and Murder ($950/mo or $9,500/yr) for enterprise networks, multi-site operators, and mission-critical environments. All tiers are live and available now.",
   },
   {
     q: "Is there a waitlist?",

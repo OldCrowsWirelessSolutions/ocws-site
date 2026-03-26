@@ -4,9 +4,33 @@
 import Link from "next/link";
 import { useState } from "react";
 
-type Tier = "Nest" | "Flock" | "Murder";
+type Tier = "Fledgling" | "Nest" | "Flock" | "Murder";
 
 const tiers = [
+  {
+    id: "Fledgling" as Tier,
+    emoji: "🐦",
+    name: "FLEDGLING",
+    price: "$10/mo",
+    priceAlt: "or $96/yr",
+    monthlyProduct: "fledgling-monthly",
+    annualProduct: "fledgling-annual",
+    monthlyLabel: "Monthly — $10/mo",
+    annualLabel: "Annual — $96/yr",
+    tagline: "Try Corvus with one free Verdict",
+    features: [
+      "1 free Verdict included (one-time)",
+      "Unlimited Ask Corvus chat",
+      "Corvus voice assistant",
+      "Help & Training tours",
+      "Dashboard access",
+      "Upgrade to Nest anytime",
+    ],
+    note: "Chat and voice available immediately. Verdict credit is one-time and does not renew.",
+    featured: false,
+    goldStyle: true,
+    seatOptions: null as null,
+  },
   {
     id: "Nest" as Tier,
     emoji: "🪺",
@@ -29,6 +53,9 @@ const tiers = [
       "Step-by-step repair guide",
       "PDF report download",
       "No report history — download immediately",
+      "Unlimited Ask Corvus chat",
+      "Corvus voice assistant",
+      "Help & Training tours",
       "Email support",
       "1 seat — upgrade to Flock for team access",
     ],
@@ -56,6 +83,9 @@ const tiers = [
       "Additional Standard Reckonings: $75 each",
       "Commercial Reckoning: $200 additional",
       "Everything in Nest",
+      "Unlimited Ask Corvus chat",
+      "Corvus voice assistant",
+      "Help & Training tours",
       "6-month report history",
       "1 seat included — add up to 4 more from $25/mo",
       "6+ seats requires Murder subscription",
@@ -95,6 +125,9 @@ const tiers = [
       "5 seats included — add up to 10 more from $75/mo",
       "15 seat maximum",
       "Everything in Flock",
+      "Unlimited Ask Corvus chat",
+      "Corvus voice assistant",
+      "Help & Training tours",
       "12-month report history",
       "API access 🥚",
       "Dedicated support",
@@ -198,15 +231,16 @@ export default function TiersSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          {/* First 3 tiers */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-6">
+          {/* Subscription tiers */}
           {tiers.map((tier) => (
             <div
               key={tier.id}
               className="relative flex flex-col rounded-2xl p-6 ocws-card-glow"
               style={{
                 background: "#0D1520",
-                border: "1px solid #0D6E7A",
+                border: ("goldStyle" in tier && tier.goldStyle) ? "1px solid rgba(184,146,42,0.5)" : "1px solid #0D6E7A",
+                boxShadow: ("goldStyle" in tier && tier.goldStyle) ? "0 0 20px rgba(184,146,42,0.08)" : undefined,
               }}
             >
               {tier.featured && "badge" in tier && tier.badge && (
@@ -221,7 +255,7 @@ export default function TiersSection() {
               <div className="text-center mb-4">
                 <span className="text-3xl">{tier.emoji}</span>
                 <h3 className="mt-2 text-base font-bold text-white tracking-widest">{tier.name}</h3>
-                <div className="mt-1 text-2xl font-bold" style={{ color: "#00C2C7" }}>{tier.price}</div>
+                <div className="mt-1 text-2xl font-bold" style={{ color: ("goldStyle" in tier && tier.goldStyle) ? "#B8922A" : "#00C2C7" }}>{tier.price}</div>
                 <div className="text-xs" style={{ color: "#888" }}>{tier.priceAlt}</div>
                 <p className="mt-2 text-xs" style={{ color: "#888" }}>{tier.tagline}</p>
               </div>
@@ -229,7 +263,7 @@ export default function TiersSection() {
               <ul className="flex-1 space-y-2 mb-4">
                 {tier.features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-xs" style={{ color: "#aaa" }}>
-                    <span style={{ color: "#00C2C7", flexShrink: 0, marginTop: "2px" }}>✓</span>
+                    <span style={{ color: ("goldStyle" in tier && tier.goldStyle) ? "#B8922A" : "#00C2C7", flexShrink: 0, marginTop: "2px" }}>✓</span>
                     {f}
                   </li>
                 ))}
@@ -242,38 +276,46 @@ export default function TiersSection() {
               )}
 
               {/* Checkout buttons */}
-              <div className="flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={() => openSeatModal(tier.id, tier.monthlyProduct, false)}
-                  disabled={checkingOut !== null}
-                  className="w-full inline-flex items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition ocws-glow-hover"
-                  style={{
-                    background: "#00C2C7",
-                    color: "#0D1520",
-                    border: "none",
-                    opacity: checkingOut !== null && checkingOut !== tier.monthlyProduct ? 0.5 : 1,
-                    cursor: checkingOut !== null ? "not-allowed" : "pointer",
-                  }}
-                >
-                  {checkingOut === tier.monthlyProduct ? "Redirecting…" : tier.monthlyLabel}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => openSeatModal(tier.id, tier.annualProduct, true)}
-                  disabled={checkingOut !== null}
-                  className="w-full inline-flex items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition hover:bg-[#00C2C7]/10 ocws-glow-hover"
-                  style={{
-                    background: "transparent",
-                    color: "#00C2C7",
-                    border: "1px solid rgba(0,194,199,0.35)",
-                    opacity: checkingOut !== null && checkingOut !== tier.annualProduct ? 0.5 : 1,
-                    cursor: checkingOut !== null ? "not-allowed" : "pointer",
-                  }}
-                >
-                  {checkingOut === tier.annualProduct ? "Redirecting…" : tier.annualLabel}
-                </button>
-              </div>
+              {(() => {
+                const isGold = "goldStyle" in tier && tier.goldStyle;
+                const accentColor = isGold ? "#B8922A" : "#00C2C7";
+                const accentBg = isGold ? "rgba(184,146,42,0.12)" : "transparent";
+                const accentBorder = isGold ? "rgba(184,146,42,0.4)" : "rgba(0,194,199,0.35)";
+                return (
+                  <div className="flex flex-col gap-2">
+                    <button
+                      type="button"
+                      onClick={() => openSeatModal(tier.id, tier.monthlyProduct, false)}
+                      disabled={checkingOut !== null}
+                      className="w-full inline-flex items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition"
+                      style={{
+                        background: isGold ? "#B8922A" : "#00C2C7",
+                        color: "#0D1520",
+                        border: "none",
+                        opacity: checkingOut !== null && checkingOut !== tier.monthlyProduct ? 0.5 : 1,
+                        cursor: checkingOut !== null ? "not-allowed" : "pointer",
+                      }}
+                    >
+                      {checkingOut === tier.monthlyProduct ? "Redirecting…" : tier.monthlyLabel}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openSeatModal(tier.id, tier.annualProduct, true)}
+                      disabled={checkingOut !== null}
+                      className="w-full inline-flex items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition"
+                      style={{
+                        background: accentBg,
+                        color: accentColor,
+                        border: `1px solid ${accentBorder}`,
+                        opacity: checkingOut !== null && checkingOut !== tier.annualProduct ? 0.5 : 1,
+                        cursor: checkingOut !== null ? "not-allowed" : "pointer",
+                      }}
+                    >
+                      {checkingOut === tier.annualProduct ? "Redirecting…" : tier.annualLabel}
+                    </button>
+                  </div>
+                );
+              })()}
             </div>
           ))}
 

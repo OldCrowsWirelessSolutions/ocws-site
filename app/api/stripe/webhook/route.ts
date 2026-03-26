@@ -25,6 +25,7 @@ import type { SubscriptionTier, SubscriptionStatus } from "@/lib/subscriptions";
 import {
   sendSubscriptionConfirmation,
   sendWelcomeEmail,
+  sendFledglingWelcomeEmail,
   sendPaymentFailedNotice,
 } from "@/lib/subscription-email";
 
@@ -36,13 +37,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
 
 function stripePriceIdToTier(priceId: string): SubscriptionTier {
   // Map Stripe price IDs to tiers via env vars.
-  // Fallback: parse the price ID string (works for Stripe test mode).
+  if (priceId === process.env.PRICE_FLEDGLING_MONTHLY    || priceId === process.env.PRICE_FLEDGLING_ANNUAL)     return "fledgling";
   if (priceId === process.env.STRIPE_PRICE_NEST_MONTHLY  || priceId === process.env.STRIPE_PRICE_NEST_ANNUAL)   return "nest";
   if (priceId === process.env.STRIPE_PRICE_FLOCK_MONTHLY || priceId === process.env.STRIPE_PRICE_FLOCK_ANNUAL)  return "flock";
   if (priceId === process.env.STRIPE_PRICE_MURDER_MONTHLY|| priceId === process.env.STRIPE_PRICE_MURDER_ANNUAL) return "murder";
   const lower = priceId.toLowerCase();
-  if (lower.includes("murder")) return "murder";
-  if (lower.includes("flock"))  return "flock";
+  if (lower.includes("murder"))    return "murder";
+  if (lower.includes("flock"))     return "flock";
+  if (lower.includes("fledgling")) return "fledgling";
   return "nest";
 }
 
@@ -273,6 +275,11 @@ async function handleCheckoutSubscription(session: Stripe.Checkout.Session) {
     extra_verdict_credits:  0,
   });
 
+  // Fledgling: grant 1 free Verdict credit (one-time, tracked separately)
+  if (tier === "fledgling") {
+    await redis.set(`sub:${code}:fledgling_verdict_used`, "false");
+  }
+
   // Store code record for listAllCodes() and getCodeStats()
   await redis.set(`code:${code}`, JSON.stringify({
     subscriptionId: code,
@@ -293,7 +300,11 @@ async function handleCheckoutSubscription(session: Stripe.Checkout.Session) {
 
   // Send welcome email
   try {
-    await sendWelcomeEmail(email, tier, code, ent.verdicts_per_month);
+    if (tier === "fledgling") {
+      await sendFledglingWelcomeEmail(email, code);
+    } else {
+      await sendWelcomeEmail(email, tier, code, ent.verdicts_per_month);
+    }
   } catch (err) {
     console.error("[webhook] welcome email failed (non-fatal):", err);
   }

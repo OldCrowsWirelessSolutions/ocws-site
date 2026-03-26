@@ -17,6 +17,8 @@ export const PRICE_MAP = {
   VERDICT_12PACK:             process.env.PRICE_VERDICT_12PACK!,
 
   // Subscriptions
+  FLEDGLING_MONTHLY:          process.env.PRICE_FLEDGLING_MONTHLY!,
+  FLEDGLING_ANNUAL:           process.env.PRICE_FLEDGLING_ANNUAL!,
   NEST_MONTHLY:               process.env.PRICE_NEST_MONTHLY!,
   NEST_ANNUAL:                process.env.PRICE_NEST_ANNUAL!,
   FLOCK_MONTHLY:              process.env.PRICE_FLOCK_MONTHLY!,
@@ -44,6 +46,8 @@ export const PRICE_MAP = {
 // ─── Subscription price IDs for checkout mode detection ──────────────────────
 
 export const SUBSCRIPTION_PRICE_IDS = [
+  process.env.PRICE_FLEDGLING_MONTHLY!,
+  process.env.PRICE_FLEDGLING_ANNUAL!,
   process.env.PRICE_NEST_MONTHLY!,
   process.env.PRICE_NEST_ANNUAL!,
   process.env.PRICE_FLOCK_MONTHLY!,
@@ -72,17 +76,19 @@ export const CREDITS_BY_PRICE: Record<string, number> = buildCreditsByPrice();
 // ─── Monthly credits by tier ──────────────────────────────────────────────────
 
 export const MONTHLY_CREDITS: Record<string, number> = {
-  nest:   3,
-  flock:  15,
-  murder: 999999,
+  fledgling: 0,
+  nest:      3,
+  flock:     15,
+  murder:    999999,
 };
 
 // ─── Seats by tier ────────────────────────────────────────────────────────────
 
 export const TIER_SEATS: Record<string, number> = {
-  nest:   1,
-  flock:  5,
-  murder: 15,
+  fledgling: 1,
+  nest:      1,
+  flock:     5,
+  murder:    15,
 };
 
 // ─── Seat add-on prices ───────────────────────────────────────────────────────

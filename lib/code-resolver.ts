@@ -112,8 +112,16 @@ export async function resolveCode(rawCode: string): Promise<ResolvedCode> {
     };
   }
 
-  // ── Real subscriber codes (OCWS-NEST-*, OCWS-FLOCK-*, OCWS-MURDER-*) ────
-  if (code.startsWith("OCWS-")) {
+  // ── Real subscriber codes (OCWS-NEST-*, OCWS-FLOCK-*, OCWS-MURDER-*, CORVUS-FLEDGLING-*) ────
+  if (code.startsWith("OCWS-") || code.startsWith("CORVUS-FLEDGLING-")) {
+    // For Fledgling, canScan depends on whether the free Verdict has been used
+    if (code.startsWith("CORVUS-FLEDGLING-")) {
+      const verdictUsed = await redis.get<string>(`sub:${code}:fledgling_verdict_used`);
+      return {
+        code, kind: "subscriber", tier: "fledgling",
+        isBypass: false, canScan: verdictUsed !== "true", subscriptionId: code,
+      };
+    }
     return {
       code, kind: "subscriber", tier: "unknown", // tier resolved by validateSubscriptionId
       isBypass: false, canScan: true, subscriptionId: code,

@@ -9,7 +9,7 @@ import { isLifetimeCode, getLifetimeCode, getLifetimeCreditsRemaining } from "./
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type SubscriptionTier = "nest" | "flock" | "murder";
+export type SubscriptionTier = "fledgling" | "nest" | "flock" | "murder";
 export type SubscriptionStatus = "active" | "cancelled" | "past_due" | "expired";
 export type ProductType =
   | "verdict"
@@ -76,6 +76,11 @@ export const TIER_ENTITLEMENTS: Record<
     seat_limit: number;
   }
 > = {
+  fledgling: {
+    verdicts_per_month: 1,
+    reckonings_per_month: { small: 0, standard: 0, commercial: 0 },
+    seat_limit: 1,
+  },
   nest: {
     verdicts_per_month: 3,
     reckonings_per_month: { small: 1, standard: 0, commercial: 0 },

@@ -17,6 +17,9 @@ import {
   CORVUS_MIKE_DASHBOARD_BRIEF,
   CORVUS_KYLE_DASHBOARD_BRIEF,
   CORVUS_TEAM_LEAD_DASHBOARD_BRIEF,
+  CORVUS_FLEDGLING_FIRST,
+  CORVUS_FLEDGLING_RETURNING,
+  CORVUS_FLEDGLING_VERDICT_USED,
 } from "@/lib/corvus-ui-strings";
 import { getTodayHoliday, getHolidayGreeting } from "@/lib/corvus-calendar";
 import type { TeamReport } from "@/lib/team-reporting";
@@ -25,7 +28,7 @@ import AudioToggle from "@/app/components/AudioToggle";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type SubscriptionTier = "nest" | "flock" | "murder";
+type SubscriptionTier = "fledgling" | "nest" | "flock" | "murder";
 type ReportType = "verdict" | "reckoning_small" | "reckoning_standard" | "reckoning_commercial" | "reckoning_pro";
 type ReportSeverity = "critical" | "warning" | "info";
 
@@ -76,9 +79,10 @@ interface SubDetails {
 
 type TierCfg = { label: string; color: string; textColor: string; monthlyVerdicts: number; price: string };
 const TIER_CONFIG: Record<SubscriptionTier, TierCfg> = {
-  nest:   { label: "NEST",   color: "#00C2C7", textColor: "#0D1520", monthlyVerdicts: 3,      price: "$20/mo"   },
-  flock:  { label: "FLOCK",  color: "#B8922A", textColor: "#0D1520", monthlyVerdicts: 15,     price: "$100/mo"  },
-  murder: { label: "MURDER", color: "#9B1C1C", textColor: "#ffffff", monthlyVerdicts: 999999, price: "$950/mo"  },
+  fledgling: { label: "FLEDGLING", color: "#B8922A", textColor: "#0D1520", monthlyVerdicts: 1,      price: "$10/mo"   },
+  nest:      { label: "NEST",      color: "#00C2C7", textColor: "#0D1520", monthlyVerdicts: 3,      price: "$20/mo"   },
+  flock:     { label: "FLOCK",     color: "#B8922A", textColor: "#0D1520", monthlyVerdicts: 15,     price: "$100/mo"  },
+  murder:    { label: "MURDER",    color: "#9B1C1C", textColor: "#ffffff", monthlyVerdicts: 999999, price: "$950/mo"  },
 };
 
 function fmtDate(iso: string | null | undefined) {
@@ -322,6 +326,10 @@ export default function DashboardPage() {
   // ── Tour state ──────────────────────────────────────────────────────────────
   const [activeTour, setActiveTour]               = useState<Tour | null>(null);
 
+  // ── Fledgling state ─────────────────────────────────────────────────────────
+  const [fledglingVerdictUsed, setFledglingVerdictUsed] = useState<boolean>(false);
+  const [fledglingIsFirst, setFledglingIsFirst]         = useState<boolean>(true);
+
   // ── Tab persistence via URL hash ────────────────────────────────────────────
   const tabInitialized = useRef(false);
 
@@ -450,6 +458,16 @@ export default function DashboardPage() {
           const sRes = await fetch(`/api/subscriptions/code-stats?code=${encodeURIComponent(code)}`);
           if (sRes.ok) setCodeStats(await sRes.json());
         } catch { /* */ }
+        if (data.tier === "fledgling") {
+          try {
+            const fRes = await fetch(`/api/subscriptions/fledgling-status?code=${encodeURIComponent(code)}`);
+            if (fRes.ok) {
+              const fd = await fRes.json() as { verdictUsed: boolean; isFirst: boolean };
+              setFledglingVerdictUsed(fd.verdictUsed ?? false);
+              setFledglingIsFirst(fd.isFirst ?? true);
+            }
+          } catch { /* */ }
+        }
       }
       try {
         const imp = localStorage.getItem("corvus_admin_impersonating") === "true";
@@ -797,19 +815,27 @@ export default function DashboardPage() {
   // ── Dashboard ─────────────────────────────────────────────────────────────
 
   const isVIP       = sub?.type === "vip";
+  const isSubType   = sub?.type === "subscription";
   const tier        = sub?.tier ?? "nest";
-  const tc          = TIER_CONFIG[tier];
+  const isFledgling = isSubType && tier === "fledgling";
+  const tc          = TIER_CONFIG[tier as SubscriptionTier] ?? TIER_CONFIG["nest"];
   const isUnlimited = sub?.verdicts_unlimited ?? false;
   const verdictsRemaining = sub?.verdicts_remaining ?? 0;
   const verdictsUsed = isUnlimited ? 0 : Math.max(0, tc.monthlyVerdicts - verdictsRemaining);
   const progressPct = isUnlimited ? 0 : Math.min(100, (verdictsUsed / tc.monthlyVerdicts) * 100);
   const rec      = sub?.reckonings_remaining  ?? { small: 0, standard: 0, commercial: 0 };
   const recUnlim = sub?.reckonings_unlimited  ?? { small: false, standard: false, commercial: false };
-  const isSubType  = sub?.type === "subscription";
   const hasTeam    = isSubType && (tier === "flock" || tier === "murder");
   const hasReports = !(isSubType && tier === "nest");
 
   // Tab definitions per user type
+  const fledglingTabs: { id: SubTab; label: string }[] = [
+    { id: "chat",      label: "Ask Corvus"   },
+    { id: "crow",      label: "🦅 My Verdict" },
+    { id: "help",      label: "Help"          },
+    { id: "settings",  label: "Settings"      },
+  ];
+
   const subTabs: { id: SubTab; label: string }[] = [
     { id: "overview",   label: "Overview"    },
     { id: "crow",       label: "🦅 Crow's Eye" },
@@ -837,7 +863,7 @@ export default function DashboardPage() {
     { id: "help",       label: "Help"        },
   ];
 
-  const tabs = isVIP ? vipTabs : subTabs;
+  const tabs = isVIP ? vipTabs : isFledgling ? fledglingTabs : subTabs;
 
   // ── Shared section renderers ──────────────────────────────────────────────
 
@@ -1790,7 +1816,7 @@ export default function DashboardPage() {
       },
     ];
 
-    const tierOrder: Record<SubscriptionTier, number> = { nest: 0, flock: 1, murder: 2 };
+    const tierOrder: Record<SubscriptionTier, number> = { fledgling: -1, nest: 0, flock: 1, murder: 2 };
     const userTierNum = tierOrder[tier] ?? 0;
 
     function productAccess(p: Product): "available" | "upgrade" | "coming-soon" {
@@ -1937,7 +1963,64 @@ export default function DashboardPage() {
     );
   }
 
+  function renderFledglingVerdict() {
+    const verdictLine = corvusLineFresh(
+      fledglingVerdictUsed ? CORVUS_FLEDGLING_VERDICT_USED : (fledglingIsFirst ? CORVUS_FLEDGLING_FIRST : CORVUS_FLEDGLING_RETURNING),
+      "fledgling_verdict"
+    );
+    if (fledglingVerdictUsed) {
+      return (
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          <div style={{ background: "rgba(184,146,42,0.06)", border: "1px solid rgba(184,146,42,0.2)", borderRadius: "16px", padding: "32px", textAlign: "center" }}>
+            <p style={{ color: "#B8922A", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>FREE VERDICT USED</p>
+            <p style={{ color: "#F4F6F8", fontSize: "15px", fontStyle: "italic", lineHeight: 1.7, marginBottom: "24px" }}>&ldquo;{verdictLine}&rdquo;</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxWidth: "360px", margin: "0 auto" }}>
+              <a href="/#pricing" style={{ display: "block", background: "#00C2C7", color: "#0D1520", borderRadius: "10px", padding: "12px 20px", fontSize: "14px", fontWeight: 700, textDecoration: "none", textAlign: "center" }}>
+                Upgrade to Nest — $20/mo →
+              </a>
+              <p style={{ color: "#555555", fontSize: "12px" }}>3 Verdicts/mo · Small Reckonings · Full platform access</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div style={{ background: "rgba(184,146,42,0.06)", border: "1px solid rgba(184,146,42,0.3)", borderRadius: "16px", padding: "28px" }}>
+          <p style={{ color: "#B8922A", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>YOUR FREE VERDICT</p>
+          <p style={{ color: "#F4F6F8", fontSize: "14px", fontStyle: "italic", lineHeight: 1.7, marginBottom: "20px" }}>&ldquo;{verdictLine}&rdquo;</p>
+          <div style={{ background: "rgba(0,194,199,0.06)", border: "1px solid rgba(0,194,199,0.15)", borderRadius: "10px", padding: "16px 18px", marginBottom: "20px" }}>
+            <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>How to use it</p>
+            <ol style={{ color: "#aaaaaa", fontSize: "13px", margin: 0, paddingLeft: "18px", lineHeight: 1.8 }}>
+              <li>Download WiFi Analyzer (free — Google Play or App Store)</li>
+              <li>Take three screenshots: Access Points, 2.4 GHz graph, 5 GHz graph</li>
+              <li>Go to Crow&apos;s Eye and upload your screenshots</li>
+              <li>Enter your subscriber code to unlock your free full Verdict</li>
+            </ol>
+          </div>
+          <a href="/crows-eye" onClick={handleGoToCrowsEye} style={{ display: "inline-block", background: "#B8922A", color: "#0D1520", borderRadius: "10px", padding: "12px 24px", fontSize: "14px", fontWeight: 700, textDecoration: "none" }}>
+            Go to Crow&apos;s Eye →
+          </a>
+        </div>
+        <div style={{ background: "rgba(0,194,199,0.04)", border: "1px solid rgba(0,194,199,0.1)", borderRadius: "12px", padding: "16px 20px" }}>
+          <p style={{ color: "#555555", fontSize: "12px", lineHeight: 1.6 }}>
+            Ready for more? <a href="/#pricing" style={{ color: "#00C2C7" }}>Upgrade to Nest</a> for 3 Verdicts/month, Small Reckonings, and the full Corvus platform.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   function renderTabContent() {
+    if (isFledgling) {
+      switch (activeTab as SubTab) {
+        case "chat":     return renderChat();
+        case "crow":     return renderFledglingVerdict();
+        case "settings": return <SettingsTab code={storedCode} isVIP={false} />;
+        case "help":     return renderHelp();
+        default:         return renderChat();
+      }
+    }
     if (isVIP) {
       switch (activeTab as VIPTab) {
         case "overview":   return renderOverview();
@@ -1982,6 +2065,21 @@ export default function DashboardPage() {
             style={{ background: "rgba(0,0,0,0.2)", border: "1px solid rgba(0,0,0,0.3)", borderRadius: "8px", color: "#0D1520", fontSize: "12px", fontWeight: 700, padding: "6px 14px", cursor: "pointer" }}>
             Exit Admin View
           </button>
+        </div>
+      )}
+
+      {/* Fledgling Banner */}
+      {isFledgling && (
+        <div style={{ background: "linear-gradient(135deg, #7A5A1A 0%, #B8922A 50%, #7A5A1A 100%)", borderRadius: "12px", padding: "16px 24px", marginBottom: "24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+          <div>
+            <p style={{ color: "#0D1520", fontSize: "13px", fontWeight: 800, letterSpacing: "0.1em", margin: "0 0 4px" }}>
+              🐦 FLEDGLING — {details?.customer_name ?? "Subscriber"}
+            </p>
+            <p style={{ color: "rgba(13,21,32,0.7)", fontSize: "12px", margin: 0 }}>
+              {fledglingVerdictUsed ? "Free Verdict used · Upgrade to Nest for more" : "1 free Verdict ready · Ask Corvus anything"}
+            </p>
+          </div>
+          <span style={{ color: "#0D1520", fontSize: "11px", fontWeight: 700, background: "rgba(0,0,0,0.12)", borderRadius: "20px", padding: "4px 12px" }}>FLEDGLING</span>
         </div>
       )}
 

@@ -174,13 +174,34 @@ export default function HomePage() {
 
               {/* Personality note */}
               <div
-                className="rounded-xl px-5 py-4 mb-8"
+                className="rounded-xl px-5 py-4 mb-6"
                 style={{ border: "1px solid #0D6E7A" }}
               >
                 <p className="text-sm leading-relaxed" style={{ color: "#aaa" }}>
                   Impatient. Theatrical. Always correct. Warm underneath. Built by a Navy electronic
                   warfare specialist who spent 17 years hunting signals across 55 countries.
                 </p>
+              </div>
+
+              {/* Corvus capabilities grid */}
+              <div className="grid grid-cols-2 gap-3 mb-8">
+                {[
+                  { icon: "📡", label: "RF Analysis", desc: "Reads scanner screenshots, identifies every network, cross-references MAC vendors" },
+                  { icon: "💬", label: "Ask Corvus", desc: "Chat with Corvus about RF, Wi-Fi, interference — he answers like he was there" },
+                  { icon: "🎙️", label: "Voice Assistant", desc: "Corvus speaks. Briefings, analysis narration, dashboard greetings — all in his voice" },
+                  { icon: "🎓", label: "Guided Tours", desc: "Interactive walkthroughs of every dashboard feature with live glowing indicators" },
+                  { icon: "📊", label: "Reckoning Reports", desc: "Multi-location site assessments with remediation plans and compliance-ready PDFs" },
+                  { icon: "🔔", label: "Team Intel", desc: "Team activity reporting, Corvus briefings, scan history for every member" },
+                ].map(({ icon, label, desc }) => (
+                  <div
+                    key={label}
+                    className="rounded-xl p-3"
+                    style={{ background: "rgba(0,194,199,0.04)", border: "1px solid rgba(0,194,199,0.1)" }}
+                  >
+                    <p className="text-base mb-1">{icon} <span className="text-sm font-bold text-white">{label}</span></p>
+                    <p className="text-xs leading-relaxed" style={{ color: "#666" }}>{desc}</p>
+                  </div>
+                ))}
               </div>
 
               <Link

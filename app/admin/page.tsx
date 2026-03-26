@@ -22,7 +22,7 @@ function AdminCrowsEyeTab() {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type SubscriptionTier  = "nest" | "flock" | "murder";
+type SubscriptionTier  = "fledgling" | "nest" | "flock" | "murder";
 type SubscriptionStatus = "active" | "cancelled" | "past_due" | "expired";
 
 type PromoType = "verdict" | "reckoning_small" | "reckoning_standard" | "reckoning_commercial" | "reckoning_pro";
@@ -101,9 +101,10 @@ const ADMIN_TABS: { id: AdminTab; label: string }[] = [
 const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY || "SpectrumLife2026!!";
 
 const TIER_COLORS: Record<SubscriptionTier, { bg: string; text: string }> = {
-  nest:   { bg: "#00C2C7", text: "#0D1520" },
-  flock:  { bg: "#B8922A", text: "#0D1520" },
-  murder: { bg: "#9B1C1C", text: "#ffffff" },
+  fledgling: { bg: "#7A5A1A", text: "#ffffff" },
+  nest:      { bg: "#00C2C7", text: "#0D1520" },
+  flock:     { bg: "#B8922A", text: "#0D1520" },
+  murder:    { bg: "#9B1C1C", text: "#ffffff" },
 };
 
 const STATUS_COLORS: Record<SubscriptionStatus, string> = {
@@ -114,7 +115,7 @@ const STATUS_COLORS: Record<SubscriptionStatus, string> = {
 };
 
 const MONTHLY_VERDICTS: Record<SubscriptionTier, number> = {
-  nest: 3, flock: 15, murder: 999999,
+  fledgling: 0, nest: 3, flock: 15, murder: 999999,
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -1329,7 +1330,7 @@ export default function AdminPage() {
                 </thead>
                 <tbody>
                   {subscribers.map(sub => {
-                    const seatRules = { nest: { included: 1, max: 1 }, flock: { included: 1, max: 5 }, murder: { included: 5, max: 15 } }[sub.tier] ?? { included: 1, max: 1 };
+                    const seatRules = { fledgling: { included: 1, max: 1 }, nest: { included: 1, max: 1 }, flock: { included: 1, max: 5 }, murder: { included: 5, max: 15 } }[sub.tier] ?? { included: 1, max: 1 };
                     const totalSeats = seatRules.included + (sub.additionalSeats ?? 0);
                     const isExpanded = expandedSubscriber === sub.subscription_id;
                     return (

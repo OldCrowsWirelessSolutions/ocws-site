@@ -28,15 +28,17 @@ function getTransporter() {
 }
 
 const TIER_NAMES: Record<SubscriptionTier, string> = {
-  nest:   "Nest",
-  flock:  "Flock",
-  murder: "Murder",
+  fledgling: "Fledgling",
+  nest:      "Nest",
+  flock:     "Flock",
+  murder:    "Murder",
 };
 
 const TIER_PRICES: Record<SubscriptionTier, string> = {
-  nest:   "$20/mo",
-  flock:  "$100/mo",
-  murder: "$950/mo",
+  fledgling: "$10/mo",
+  nest:      "$20/mo",
+  flock:     "$100/mo",
+  murder:    "$950/mo",
 };
 
 // ─── Subscription confirmation ────────────────────────────────────────────────
@@ -456,6 +458,105 @@ export async function sendCodeRecoveryEmail(
     text,
     html,
     replyTo,
+  });
+}
+
+// ─── Fledgling welcome email ──────────────────────────────────────────────────
+
+export async function sendFledglingWelcomeEmail(
+  email: string,
+  code: string
+): Promise<void> {
+  const from = process.env.SMTP_FROM;
+  const bcc  = process.env.OCWS_CONTACT_TO ?? "joshua@oldcrowswireless.com";
+
+  const text = [
+    `Welcome to Corvus — Your Fledgling Subscription is Active`,
+    ``,
+    `Your subscriber code: ${code}`,
+    ``,
+    `You have 1 free Verdict credit ready to use.`,
+    ``,
+    `SETTING UP YOUR DASHBOARD:`,
+    `Go to oldcrowswireless.com/dashboard, enter your code, and set a password on first login.`,
+    ``,
+    `HOW TO USE YOUR FREE VERDICT:`,
+    `1. Download WiFi Analyzer (free — green icon, Google Play or App Store)`,
+    `2. Take three screenshots — Access Points, 2.4 GHz graph, 5 GHz graph`,
+    `3. Go to oldcrowswireless.com/crows-eye`,
+    `4. Upload screenshots, analyze, and enter ${code} to unlock your free Verdict`,
+    ``,
+    `Ready for more? Upgrade to a Nest subscription at any time from your dashboard.`,
+    ``,
+    `— Corvus`,
+    `Old Crows Wireless Solutions`,
+    `oldcrowswireless.com`,
+  ].join("\n");
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.6;max-width:600px;margin:0 auto;">
+      <div style="background:#0D1520;padding:24px 32px;border-radius:12px 12px 0 0;">
+        <p style="color:#B8922A;font-size:12px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin:0 0 8px;">
+          Old Crows Wireless Solutions LLC
+        </p>
+        <h1 style="color:#ffffff;font-size:22px;margin:0;">Welcome to Corvus — Fledgling</h1>
+      </div>
+      <div style="background:#1A2332;padding:32px;border-radius:0 0 12px 12px;border:1px solid rgba(255,255,255,0.08);">
+        <p style="color:#aaaaaa;margin:0 0 20px;">
+          Your <strong style="color:#ffffff;">Fledgling</strong> subscription is active. You have <strong style="color:#B8922A;">1 free Verdict</strong> waiting for you.
+        </p>
+
+        <div style="background:#0D1520;border:1px solid #7A5A1A;border-radius:12px;padding:20px 24px;margin:0 0 24px;text-align:center;">
+          <p style="color:#B8922A;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;margin:0 0 8px;">
+            Your Subscriber Code
+          </p>
+          <p style="color:#ffffff;font-size:28px;font-weight:700;letter-spacing:0.12em;font-family:monospace;margin:0;">
+            ${escapeHtml(code)}
+          </p>
+        </div>
+
+        <div style="background:rgba(184,146,42,0.06);border:1px solid rgba(184,146,42,0.2);border-radius:8px;padding:14px 18px;margin:0 0 20px;">
+          <p style="color:#B8922A;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 10px;">How to use your free Verdict</p>
+          <ol style="color:#aaaaaa;font-size:13px;margin:0;padding-left:20px;">
+            <li style="margin-bottom:6px;">Download WiFi Analyzer (free — green icon, Google Play or App Store)</li>
+            <li style="margin-bottom:6px;">Take three screenshots — Access Points, 2.4 GHz graph, 5 GHz graph</li>
+            <li style="margin-bottom:6px;">Go to <a href="https://oldcrowswireless.com/crows-eye" style="color:#00C2C7;">oldcrowswireless.com/crows-eye</a></li>
+            <li style="margin-bottom:6px;">Upload screenshots and analyze</li>
+            <li>Enter <strong style="color:#ffffff;">${escapeHtml(code)}</strong> to unlock your free Verdict</li>
+          </ol>
+        </div>
+
+        <div style="background:rgba(0,194,199,0.06);border:1px solid rgba(0,194,199,0.2);border-radius:8px;padding:14px 18px;margin:0 0 20px;">
+          <p style="color:#00C2C7;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 8px;">Setting Up Your Dashboard</p>
+          <p style="color:#aaaaaa;font-size:13px;margin:0;">
+            Go to <a href="https://oldcrowswireless.com/dashboard" style="color:#00C2C7;">oldcrowswireless.com/dashboard</a>, enter your code, and create a password on your first login. You can chat with Corvus and access your Verdict from your dashboard.
+          </p>
+        </div>
+
+        <p style="color:#aaaaaa;font-size:13px;margin:0 0 8px;">
+          Ready for more scans, Reckonings, and team features? Upgrade to <strong style="color:#ffffff;">Nest</strong> at any time from your dashboard.
+        </p>
+        <p style="color:#555555;font-size:11px;margin:24px 0 0;">
+          &copy; 2026 Old Crows Wireless Solutions LLC.
+        </p>
+      </div>
+    </div>
+  `;
+
+  if (!from) {
+    console.log("[subscription-email] sendFledglingWelcomeEmail: SMTP_FROM not set. Code:", code);
+    return;
+  }
+
+  const transporter = getTransporter();
+  await transporter.sendMail({
+    from,
+    to: email,
+    bcc,
+    subject: `Welcome to Corvus — your free Verdict is ready`,
+    text,
+    html,
+    replyTo: bcc,
   });
 }
 

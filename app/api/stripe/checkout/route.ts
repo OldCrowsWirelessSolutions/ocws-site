@@ -19,16 +19,20 @@ const PRICE_ID_ENV: Record<string, string> = {
   "credit-6pack":         "STRIPE_PRICE_CREDIT_6PACK",
   "credit-12pack":        "STRIPE_PRICE_CREDIT_12PACK",
   // Subscription plans
-  "nest-monthly":    "STRIPE_PRICE_NEST_MONTHLY",
-  "nest-annual":     "STRIPE_PRICE_NEST_ANNUAL",
-  "flock-monthly":   "STRIPE_PRICE_FLOCK_MONTHLY",
-  "flock-annual":    "STRIPE_PRICE_FLOCK_ANNUAL",
-  "murder-monthly":  "STRIPE_PRICE_MURDER_MONTHLY",
-  "murder-annual":   "STRIPE_PRICE_MURDER_ANNUAL",
+  "fledgling-monthly": "PRICE_FLEDGLING_MONTHLY",
+  "fledgling-annual":  "PRICE_FLEDGLING_ANNUAL",
+  "nest-monthly":      "STRIPE_PRICE_NEST_MONTHLY",
+  "nest-annual":       "STRIPE_PRICE_NEST_ANNUAL",
+  "flock-monthly":     "STRIPE_PRICE_FLOCK_MONTHLY",
+  "flock-annual":      "STRIPE_PRICE_FLOCK_ANNUAL",
+  "murder-monthly":    "STRIPE_PRICE_MURDER_MONTHLY",
+  "murder-annual":     "STRIPE_PRICE_MURDER_ANNUAL",
 };
 
 // Recurring price IDs — these use mode: "subscription"
 const SUBSCRIPTION_PRICE_IDS = new Set([
+  process.env.PRICE_FLEDGLING_MONTHLY,
+  process.env.PRICE_FLEDGLING_ANNUAL,
   "price_1TEV81PXI1fk4YpacVKKcIze", // Nest monthly
   "price_1TEV9WPXI1fk4Ypa6KioV00n", // Nest annual
   "price_1TEVBCPXI1fk4YpaUhBqj7o5", // Flock monthly

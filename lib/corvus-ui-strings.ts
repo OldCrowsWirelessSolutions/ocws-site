@@ -362,6 +362,32 @@ export const CORVUS_TEAM_LEAD_DASHBOARD_BRIEF = (
   ];
 };
 
+// ─── Fledgling dashboard strings ──────────────────────────────────────────────
+
+export const CORVUS_FLEDGLING_FIRST = [
+  "New Fledgling. Good. You made it to the right place. You have one free Verdict waiting. Let's not waste it.",
+  "First time here. Welcome to the nest — well, not the Nest tier, but close enough. One free Verdict. Let's use it well.",
+  "Fledgling subscriber. I see you. You have one Verdict credit and a lot to learn about your network. Let's begin.",
+  "Welcome. I'm Corvus. You have one free Verdict. I have opinions about every Wi-Fi network I've ever seen. This is going to go well.",
+  "Fledgling detected. One Verdict credit ready. Ask me anything about RF, or use it to scan your network. Either way — welcome.",
+];
+
+export const CORVUS_FLEDGLING_RETURNING = [
+  "Welcome back, Fledgling. Still here. Still watching your spectrum.",
+  "Returning Fledgling. Your network hasn't diagnosed itself while you were gone. Come in.",
+  "You came back. Good. Fledgling tier. One free Verdict. I remember.",
+  "Welcome back. I'm here. Your network is here. Let's see what needs attention.",
+  "Fledgling subscriber returning. I've been keeping an eye on things. Come in.",
+];
+
+export const CORVUS_FLEDGLING_VERDICT_USED = [
+  "You've used your free Verdict. When you're ready for more scans, Reckonings, and full platform access — Nest is waiting for you.",
+  "Free Verdict used. Your network has been seen. When you're ready to go deeper, Nest gives you three Verdicts a month plus Reckonings.",
+  "One Verdict. Used. That's the Fledgling experience. Upgrade to Nest whenever the data starts to feel insufficient.",
+  "Your complimentary Verdict has been spent. Good intel requires good investment. Nest is the next step.",
+  "Verdict used. You've had a taste of what Corvus sees. Nest takes it further — three Verdicts, Reckonings, full platform.",
+];
+
 // ─── Verdict quote pool ────────────────────────────────────────────────────────
 
 export const CORVUS_VERDICT_QUOTES = [
