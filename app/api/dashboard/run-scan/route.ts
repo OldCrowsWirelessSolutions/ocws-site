@@ -3,6 +3,7 @@ export const maxDuration = 60;
 
 import { NextRequest, NextResponse } from 'next/server';
 import { validateSubscriptionId, consumeCredit, updateSubscription } from '@/lib/subscriptions';
+import { POST as analyzePost } from '@/app/api/crows-eye/analyze/route';
 import type { ProductType } from '@/lib/subscriptions';
 import { saveReport } from '@/lib/reports';
 import type { ReportRecord, ReportSeverity } from '@/lib/reports';
@@ -173,19 +174,12 @@ export async function POST(request: NextRequest) {
     const scan5Base64  = ghz5File  ? await fileToBase64(ghz5File)  : null;
     const scan5Mime    = ghz5File  ? getMimeType(ghz5File)  : 'image/jpeg';
 
-    // ─── Call Corvus analyze ──────────────────────────────────────────────────
-
-    // Derive base URL from the incoming request host — avoids localhost fallback failures on Vercel
-    const host     = request.headers.get('host') ?? 'localhost:3000';
-    const protocol = host.startsWith('localhost') || host.startsWith('127.') ? 'http' : 'https';
-    const baseUrl  = process.env.NEXT_PUBLIC_URL
-      ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
-      ?? `${protocol}://${host}`;
+    // ─── Call Corvus analyze (direct function call — bypasses HTTP/auth layer) ──
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let analyzeData: any;
     try {
-      const analyzeRes = await fetch(`${baseUrl}/api/crows-eye/analyze`, {
+      const analyzeReq = new Request('http://localhost/api/crows-eye/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -211,15 +205,17 @@ export async function POST(request: NextRequest) {
         }),
       });
 
+      const analyzeRes = await analyzePost(analyzeReq);
+
       if (!analyzeRes.ok) {
         const errText = await analyzeRes.text().catch(() => '');
-        console.error('[run-scan] analyze API error:', analyzeRes.status, errText);
-        throw new Error(`Analyze API returned HTTP ${analyzeRes.status}: ${errText.slice(0, 200)}`);
+        console.error('[run-scan] analyze error:', analyzeRes.status, errText);
+        throw new Error(`Analyze failed (${analyzeRes.status}): ${errText.slice(0, 200)}`);
       }
 
       analyzeData = await analyzeRes.json();
     } catch (fetchErr) {
-      console.error('[run-scan] fetch to analyze failed:', fetchErr, '| baseUrl:', baseUrl);
+      console.error('[run-scan] analyze call failed:', fetchErr);
       throw fetchErr;
     }
 
