@@ -29,6 +29,38 @@ function makeEmptyLocation(): LocationEntry {
   };
 }
 
+async function compressImage(file: File, maxSizeKB = 800): Promise<File> {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d')!;
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 1200;
+      let { width, height } = img;
+      if (width > MAX) { height = (height * MAX) / width; width = MAX; }
+      if (height > MAX) { width = (width * MAX) / height; height = MAX; }
+      canvas.width = width;
+      canvas.height = height;
+      ctx.drawImage(img, 0, 0, width, height);
+      let quality = 0.85;
+      const attempt = () => {
+        canvas.toBlob((blob) => {
+          if (!blob) { resolve(file); return; }
+          if (blob.size / 1024 <= maxSizeKB || quality <= 0.2) {
+            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+          } else {
+            quality -= 0.1;
+            attempt();
+          }
+        }, 'image/jpeg', quality);
+      };
+      attempt();
+    };
+    img.onerror = () => resolve(file);
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 interface TeaserProblem {
   title: string;
   teaser: string;
@@ -777,8 +809,9 @@ export default function CrowsEyeClient() {
         const mimeTypes: Record<string, string> = {};
         for (const slot of ["signal", "scan24", "scan5"] as UploadSlot[]) {
           if (files[slot]) {
-            images[slot] = await fileToBase64(files[slot]!);
-            mimeTypes[slot] = files[slot]!.type || "image/jpeg";
+            const compressed = await compressImage(files[slot]!);
+            images[slot] = await fileToBase64(compressed);
+            mimeTypes[slot] = "image/jpeg";
           }
         }
         bodyPayload = {
@@ -805,8 +838,9 @@ export default function CrowsEyeClient() {
             const mimeTypes: Record<string, string> = {};
             for (const slot of ["signal", "scan24", "scan5"] as UploadSlot[]) {
               if (loc.files[slot]) {
-                images[slot] = await fileToBase64(loc.files[slot]!);
-                mimeTypes[slot] = loc.files[slot]!.type || "image/jpeg";
+                const compressed = await compressImage(loc.files[slot]!);
+                images[slot] = await fileToBase64(compressed);
+                mimeTypes[slot] = "image/jpeg";
               }
             }
             return {

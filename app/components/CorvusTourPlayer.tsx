@@ -27,6 +27,18 @@ export default function CorvusTourPlayer({ level, visitorName, onComplete, inlin
     return () => stopCorvusAudio();
   }, []);
 
+  // ESC key to dismiss tour
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        stopCorvusAudio();
+        onComplete?.();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onComplete]);
+
   const playAudio = useCallback(async (text: string) => {
     if (muted) return;
     await speakAsCorvus(
@@ -48,15 +60,10 @@ export default function CorvusTourPlayer({ level, visitorName, onComplete, inlin
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
-  // Stage phase — auto-advance
+  // Stage phase — play audio only, no auto-advance (user must click Next)
   useEffect(() => {
     if (phase !== 'stages' || !currentStage) return;
     playAudio(currentStage.corvusLine);
-    if (currentStage.duration > 0) {
-      autoAdvanceRef.current = setTimeout(() => {
-        advanceStage();
-      }, currentStage.duration * 1000 + 1500);
-    }
     return () => {
       if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current);
     };
@@ -102,7 +109,7 @@ export default function CorvusTourPlayer({ level, visitorName, onComplete, inlin
             </span>
           )}
           {onComplete && (
-            <button style={s.closeBtn} onClick={onComplete}>✕</button>
+            <button style={s.closeBtn} onClick={() => { stopCorvusAudio(); onComplete(); }}>✕ Exit</button>
           )}
         </div>
       </div>
@@ -373,7 +380,7 @@ const s: Record<string, React.CSSProperties> = {
   headerRight: { display: 'flex', alignItems: 'center', gap: '0.75rem' },
   muteBtn: { background: 'transparent', border: 'none', fontSize: '1rem', cursor: 'pointer' },
   progress: { color: '#555', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.78rem' },
-  closeBtn: { background: 'transparent', border: 'none', color: '#555', fontSize: '1rem', cursor: 'pointer' },
+  closeBtn: { background: 'rgba(224,85,85,0.1)', border: '1px solid rgba(224,85,85,0.3)', color: '#e05555', fontSize: '0.75rem', cursor: 'pointer', borderRadius: '6px', padding: '4px 10px', fontFamily: 'Share Tech Mono, monospace', letterSpacing: '0.05em' },
   progressBar: { height: '3px', background: '#1A2332' },
   progressFill: { height: '100%', background: 'linear-gradient(90deg, #0D6E7A, #00C2C7)', transition: 'width 0.5s ease' },
   main: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflow: 'auto' },

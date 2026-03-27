@@ -486,6 +486,7 @@ export default function DashboardPage() {
       try {
         const tourKey = `corvus_tour_seen_${code}`;
         if (!localStorage.getItem(tourKey)) {
+          localStorage.setItem(tourKey, 'true'); // Set immediately — prevents loop if browser closes mid-tour
           const upperCode = code.toUpperCase();
           const isJoshuaCode = ["OCWS-CORVUS-FOUNDER-JOSHUA", "CORVUS-ADMIN", "CORVUS-NEST", "OCWS-ADMIN-2026"].includes(upperCode);
           if (!isJoshuaCode) {
@@ -572,6 +573,7 @@ export default function DashboardPage() {
       try {
         const tourKey = `corvus_tour_seen_${code}`;
         if (!localStorage.getItem(tourKey)) {
+          localStorage.setItem(tourKey, 'true'); // Set immediately — prevents loop if browser closes mid-tour
           const isJoshuaCode = ["OCWS-CORVUS-FOUNDER-JOSHUA", "CORVUS-ADMIN", "CORVUS-NEST", "OCWS-ADMIN-2026"].includes(code);
           if (!isJoshuaCode) {
             const isVIPCode = ["CORVUS-NATE", "CORVUS-NATE-2026", "CORVUS-MIKE", "CORVUS-MIKE-2026", "CORVUS-ERIC", "CORVUS-ERIC-2026"].includes(code) || data.type === "vip";
@@ -950,12 +952,12 @@ export default function DashboardPage() {
           <div style={card}>
             <p style={{ ...sectionLabel, marginBottom: "8px" }}>Quick Actions</p>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <Link href="/crows-eye" onClick={handleGoToCrowsEye} style={{ display: "block", background: "#00C2C7", color: "#0D1520", borderRadius: "10px", padding: "11px 16px", fontSize: "13px", fontWeight: 700, textDecoration: "none", textAlign: "center" }}>
+              <button onClick={() => navigateTab("crow")} style={{ display: "block", background: "#00C2C7", color: "#0D1520", borderRadius: "10px", padding: "11px 16px", fontSize: "13px", fontWeight: 700, border: "none", cursor: "pointer", textAlign: "center", width: "100%" }}>
                 Run a Verdict →
-              </Link>
-              <Link href="/crows-eye" onClick={handleGoToCrowsEye} style={{ display: "block", background: "rgba(184,146,42,0.1)", border: "1px solid rgba(184,146,42,0.3)", color: "#B8922A", borderRadius: "10px", padding: "11px 16px", fontSize: "13px", fontWeight: 700, textDecoration: "none", textAlign: "center" }}>
+              </button>
+              <button onClick={() => navigateTab("crow")} style={{ display: "block", background: "rgba(184,146,42,0.1)", border: "1px solid rgba(184,146,42,0.3)", color: "#B8922A", borderRadius: "10px", padding: "11px 16px", fontSize: "13px", fontWeight: 700, cursor: "pointer", textAlign: "center", width: "100%" }}>
                 Run a Reckoning →
-              </Link>
+              </button>
             </div>
           </div>
         </div>
@@ -991,9 +993,9 @@ export default function DashboardPage() {
           <div style={{ ...card, textAlign: "center", padding: "40px" }}>
             <p style={{ color: "#555555", fontSize: "14px", marginBottom: "8px" }}>No scans yet.</p>
             <p style={{ color: "#888888", fontSize: "13px", marginBottom: "20px" }}>Run your first Verdict or Reckoning to start tracking.</p>
-            <Link href="/crows-eye" onClick={handleGoToCrowsEye} style={{ display: "inline-block", background: "#00C2C7", color: "#0D1520", borderRadius: "10px", padding: "10px 24px", fontSize: "14px", fontWeight: 700, textDecoration: "none" }}>
-              Go to Crow&rsquo;s Eye →
-            </Link>
+            <button onClick={() => navigateTab("crow")} style={{ display: "inline-block", background: "#00C2C7", color: "#0D1520", borderRadius: "10px", padding: "10px 24px", fontSize: "14px", fontWeight: 700, border: "none", cursor: "pointer" }}>
+              Run Your First Scan →
+            </button>
           </div>
         )}
 
@@ -1038,9 +1040,9 @@ export default function DashboardPage() {
         ) : reports.length === 0 ? (
           <div style={{ textAlign: "center", padding: "32px 16px" }}>
             <p style={{ color: "#555555", fontSize: "14px", marginBottom: "10px" }}>No reports yet.</p>
-            <Link href="/crows-eye" onClick={handleGoToCrowsEye} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: "#00C2C7", color: "#0D1520", borderRadius: "10px", padding: "10px 26px", fontSize: "14px", fontWeight: 700, textDecoration: "none" }}>
-              Go to Crow&rsquo;s Eye →
-            </Link>
+            <button onClick={() => navigateTab("crow")} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: "#00C2C7", color: "#0D1520", borderRadius: "10px", padding: "10px 26px", fontSize: "14px", fontWeight: 700, border: "none", cursor: "pointer" }}>
+              Run a Scan →
+            </button>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -2061,7 +2063,7 @@ export default function DashboardPage() {
     if (isFledgling) {
       switch (activeTab as SubTab) {
         case "chat":     return renderChat();
-        case "crow":     return renderFledglingVerdict();
+        case "crow":     return renderCrowsEye();
         case "settings": return <SettingsTab code={storedCode} isVIP={false} />;
         case "help":     return renderHelp();
         default:         return renderChat();

@@ -68,13 +68,17 @@ export async function POST(request: NextRequest) {
     const comfortLevel     = Number(formData.get('comfortLevel') ?? 2);
     const clientComplaints = (formData.get('clientComplaints') as string | null)?.trim() ?? '';
 
-    const signalListFile = await blobFromFormData(formData.get('signalList'));
-    const ghz24File      = await blobFromFormData(formData.get('ghz24'));
-    const ghz5File       = await blobFromFormData(formData.get('ghz5'));
+    const locationCount  = parseInt((formData.get('locationCount') as string | null) ?? '1', 10);
+    const isMultiLocation = locationCount > 1;
+    const isHybrid = (formData.get('isHybrid') as string | null) === 'true';
 
-    if (!code)           return NextResponse.json({ error: 'Code is required.' }, { status: 400 });
-    if (!signalListFile) return NextResponse.json({ error: 'Signal list screenshot is required.' }, { status: 400 });
-    if (!clientName)     return NextResponse.json({ error: 'Client name is required.' }, { status: 400 });
+    const signalListFile = isMultiLocation ? null : await blobFromFormData(formData.get('signalList'));
+    const ghz24File      = isMultiLocation ? null : await blobFromFormData(formData.get('ghz24'));
+    const ghz5File       = isMultiLocation ? null : await blobFromFormData(formData.get('ghz5'));
+
+    if (!code)       return NextResponse.json({ error: 'Code is required.' }, { status: 400 });
+    if (!clientName) return NextResponse.json({ error: 'Client name is required.' }, { status: 400 });
+    if (!isMultiLocation && !signalListFile) return NextResponse.json({ error: 'Signal list screenshot is required.' }, { status: 400 });
 
     const productTyped = product as ProductType;
     const address = [street, city, state, zip].filter(Boolean).join(', ');
@@ -165,14 +169,82 @@ export async function POST(request: NextRequest) {
 
     // ─── Convert files to base64 ──────────────────────────────────────────────
 
-    const signalBase64 = await fileToBase64(signalListFile);
-    const signalMime   = getMimeType(signalListFile);
+    // Build analyze body — single vs. multi-location
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let analyzeBody: Record<string, any>;
 
-    const scan24Base64 = ghz24File ? await fileToBase64(ghz24File) : null;
-    const scan24Mime   = ghz24File ? getMimeType(ghz24File) : 'image/jpeg';
+    if (isMultiLocation) {
+      // Parse per-location files from formData
+      const locations: Array<{
+        name: string;
+        images: Record<string, string>;
+        mimeTypes: Record<string, string>;
+      }> = [];
 
-    const scan5Base64  = ghz5File  ? await fileToBase64(ghz5File)  : null;
-    const scan5Mime    = ghz5File  ? getMimeType(ghz5File)  : 'image/jpeg';
+      for (let i = 0; i < locationCount; i++) {
+        const locName     = (formData.get(`location_${i}_name`) as string | null)?.trim() || `Location ${i + 1}`;
+        const locSignal   = await blobFromFormData(formData.get(`location_${i}_signalList`));
+        const locGhz24    = await blobFromFormData(formData.get(`location_${i}_ghz24`));
+        const locGhz5     = await blobFromFormData(formData.get(`location_${i}_ghz5`));
+
+        if (!locSignal) continue; // skip incomplete locations
+
+        const images: Record<string, string> = { signal: await fileToBase64(locSignal) };
+        const mimeTypes: Record<string, string> = { signal: getMimeType(locSignal) };
+        if (locGhz24) { images.scan24 = await fileToBase64(locGhz24); mimeTypes.scan24 = getMimeType(locGhz24); }
+        if (locGhz5)  { images.scan5  = await fileToBase64(locGhz5);  mimeTypes.scan5  = getMimeType(locGhz5);  }
+
+        locations.push({ name: locName, images, mimeTypes });
+      }
+
+      if (locations.length === 0) {
+        return NextResponse.json({ error: 'No valid location images provided.' }, { status: 400 });
+      }
+
+      analyzeBody = {
+        mode: 'site',
+        name: clientName,
+        address,
+        environment,
+        locationType,
+        itComfortLevel: comfortLevel,
+        client_ssid: ssid,
+        notes: clientComplaints,
+        locations,
+        isHybrid,
+        honeypot: '',
+      };
+    } else {
+      const signalBase64 = await fileToBase64(signalListFile!);
+      const signalMime   = getMimeType(signalListFile!);
+      const scan24Base64 = ghz24File ? await fileToBase64(ghz24File) : null;
+      const scan24Mime   = ghz24File ? getMimeType(ghz24File) : 'image/jpeg';
+      const scan5Base64  = ghz5File  ? await fileToBase64(ghz5File)  : null;
+      const scan5Mime    = ghz5File  ? getMimeType(ghz5File)  : 'image/jpeg';
+
+      analyzeBody = {
+        mode: 'single',
+        name: clientName,
+        address,
+        environment,
+        locationType,
+        itComfortLevel: comfortLevel,
+        client_ssid: ssid,
+        notes: clientComplaints,
+        images: {
+          signal: signalBase64,
+          ...(scan24Base64 ? { scan24: scan24Base64 } : {}),
+          ...(scan5Base64  ? { scan5:  scan5Base64  } : {}),
+        },
+        mimeTypes: {
+          signal: signalMime,
+          ...(scan24Base64 ? { scan24: scan24Mime } : {}),
+          ...(scan5Base64  ? { scan5:  scan5Mime  } : {}),
+        },
+        isHybrid,
+        honeypot: '',
+      };
+    }
 
     // ─── Call Corvus analyze (direct function call — bypasses HTTP/auth layer) ──
 
@@ -182,27 +254,7 @@ export async function POST(request: NextRequest) {
       const analyzeReq = new Request('http://localhost/api/crows-eye/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mode: 'single',
-          name: clientName,
-          address,
-          environment,
-          locationType,
-          itComfortLevel: comfortLevel,
-          client_ssid: ssid,
-          notes: clientComplaints,
-          images: {
-            signal: signalBase64,
-            ...(scan24Base64 ? { scan24: scan24Base64 } : {}),
-            ...(scan5Base64  ? { scan5:  scan5Base64  } : {}),
-          },
-          mimeTypes: {
-            signal: signalMime,
-            ...(scan24Base64 ? { scan24: scan24Mime } : {}),
-            ...(scan5Base64  ? { scan5:  scan5Mime  } : {}),
-          },
-          honeypot: '',
-        }),
+        body: JSON.stringify(analyzeBody),
       });
 
       const analyzeRes = await analyzePost(analyzeReq);

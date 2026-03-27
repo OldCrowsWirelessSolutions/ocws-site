@@ -7,14 +7,31 @@ const LOCKED_SPEED = 1.5;
 export async function POST(req: NextRequest) {
   try {
     const { text } = await req.json();
-    if (!text?.trim()) return new NextResponse('bad request', { status: 400 });
+    if (!text?.trim()) {
+      console.error('[elevenlabs/speak] no text provided');
+      return new NextResponse('bad request', { status: 400 });
+    }
+
+    const apiKey = process.env.ELEVENLABS_API_KEY;
+    const voiceId = process.env.ELEVENLABS_VOICE_ID;
+
+    if (!apiKey) {
+      console.error('[elevenlabs/speak] ELEVENLABS_API_KEY not set');
+      return new NextResponse('api key not configured', { status: 500 });
+    }
+    if (!voiceId) {
+      console.error('[elevenlabs/speak] ELEVENLABS_VOICE_ID not set');
+      return new NextResponse('voice id not configured', { status: 500 });
+    }
+
+    console.log('[elevenlabs/speak] calling ElevenLabs, voice:', voiceId, 'text length:', text.length);
 
     const r = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${process.env.ELEVENLABS_VOICE_ID}`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
       {
         method: 'POST',
         headers: {
-          'xi-api-key': process.env.ELEVENLABS_API_KEY!,
+          'xi-api-key': apiKey,
           'Content-Type': 'application/json',
           'Accept': 'audio/mpeg',
         },
@@ -32,13 +49,22 @@ export async function POST(req: NextRequest) {
       }
     );
 
+    console.log('[elevenlabs/speak] ElevenLabs response status:', r.status);
+
     if (!r.ok) {
       const errText = await r.text().catch(() => '');
-      console.error('ElevenLabs error:', r.status, errText);
+      console.error('[elevenlabs/speak] ElevenLabs error:', r.status, errText);
       return new NextResponse('elevenlabs error', { status: 500 });
     }
 
     const audio = await r.arrayBuffer();
+    console.log('[elevenlabs/speak] audio buffer size:', audio.byteLength);
+
+    if (audio.byteLength < 100) {
+      console.error('[elevenlabs/speak] audio buffer too small — empty response from ElevenLabs');
+      return new NextResponse('empty audio response', { status: 500 });
+    }
+
     return new NextResponse(audio, {
       headers: {
         'Content-Type': 'audio/mpeg',
@@ -47,7 +73,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (e) {
-    console.error('ElevenLabs route error:', e);
+    console.error('[elevenlabs/speak] route error:', e);
     return new NextResponse('error', { status: 500 });
   }
 }

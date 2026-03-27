@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface CrowsEyeTabProps {
   code: string;
@@ -155,6 +155,38 @@ const labelStyle: React.CSSProperties = {
   textTransform: 'uppercase',
 };
 
+async function compressImage(file: File, maxSizeKB = 800): Promise<File> {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d')!;
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 1200;
+      let { width, height } = img;
+      if (width > MAX) { height = (height * MAX) / width; width = MAX; }
+      if (height > MAX) { width = (width * MAX) / height; height = MAX; }
+      canvas.width = width;
+      canvas.height = height;
+      ctx.drawImage(img, 0, 0, width, height);
+      let quality = 0.85;
+      const attempt = () => {
+        canvas.toBlob((blob) => {
+          if (!blob) { resolve(file); return; }
+          if (blob.size / 1024 <= maxSizeKB || quality <= 0.2) {
+            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+          } else {
+            quality -= 0.1;
+            attempt();
+          }
+        }, 'image/jpeg', quality);
+      };
+      attempt();
+    };
+    img.onerror = () => resolve(file);
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 export default function CrowsEyeTab({
   code,
   isVIP,
@@ -167,6 +199,7 @@ export default function CrowsEyeTab({
   // Mode / size
   const [mode, setMode] = useState<'verdict' | 'reckoning'>('verdict');
   const [size, setSize] = useState<'small' | 'standard' | 'commercial' | 'pro'>('small');
+  const [isHybrid, setIsHybrid] = useState(false);
 
   // Instructions collapsible
   const [showInstructions, setShowInstructions] = useState<boolean>(false);
@@ -183,10 +216,51 @@ export default function CrowsEyeTab({
   const [locationType, setLocationType] = useState('residential');
   const [comfortLevel, setComfortLevel] = useState<number>(2);
 
-  // File uploads
+  // File uploads (Verdict / Reckoning Small — single location)
   const [signalListFile, setSignalListFile] = useState<File | null>(null);
   const [ghz24File, setGhz24File] = useState<File | null>(null);
   const [ghz5File, setGhz5File] = useState<File | null>(null);
+
+  // Multi-location Reckoning (standard / commercial)
+  interface ReckoningLocation {
+    id: number;
+    name: string;
+    signalListFile: File | null;
+    ghz24File: File | null;
+    ghz5File: File | null;
+  }
+  const [reckoningLocations, setReckoningLocations] = useState<ReckoningLocation[]>([
+    { id: 1, name: '', signalListFile: null, ghz24File: null, ghz5File: null },
+  ]);
+
+  const getMaxLocations = useCallback(() => {
+    if (size === 'standard') return 5;
+    if (size === 'commercial') return 15;
+    return 1;
+  }, [size]);
+
+  const addLocation = () => {
+    setReckoningLocations(prev => {
+      if (prev.length >= getMaxLocations()) return prev;
+      return [...prev, { id: Date.now(), name: '', signalListFile: null, ghz24File: null, ghz5File: null }];
+    });
+  };
+
+  const removeLocation = (id: number) => {
+    setReckoningLocations(prev => prev.length > 1 ? prev.filter(l => l.id !== id) : prev);
+  };
+
+  const updateLocation = (id: number, field: keyof ReckoningLocation, value: string | File | null) => {
+    setReckoningLocations(prev => prev.map(l => l.id === id ? { ...l, [field]: value } : l));
+  };
+
+  // Reset locations and hybrid flag when switching modes/sizes
+  useEffect(() => {
+    if (mode === 'reckoning' && (size === 'standard' || size === 'commercial')) {
+      setReckoningLocations([{ id: 1, name: '', signalListFile: null, ghz24File: null, ghz5File: null }]);
+    }
+    if (mode !== 'reckoning') setIsHybrid(false);
+  }, [mode, size]);
 
   // Processing
   const [isProcessing, setIsProcessing] = useState(false);
@@ -245,14 +319,25 @@ export default function CrowsEyeTab({
     ? 'verdict'
     : `reckoning_${size}` as string;
 
+  const isMultiLocation = mode === 'reckoning' && (size === 'standard' || size === 'commercial');
+
   const handleRunScan = async () => {
-    if (!signalListFile) {
-      setError('Signal List upload is required.');
-      return;
-    }
     if (!clientName.trim()) {
       setError('Client name is required.');
       return;
+    }
+
+    if (isMultiLocation) {
+      const readyLocations = reckoningLocations.filter(l => l.signalListFile);
+      if (readyLocations.length === 0) {
+        setError('At least one location with a Signal List screenshot is required.');
+        return;
+      }
+    } else {
+      if (!signalListFile) {
+        setError('Signal List upload is required.');
+        return;
+      }
     }
 
     setError(null);
@@ -275,9 +360,23 @@ export default function CrowsEyeTab({
       formData.append('environment', environment);
       formData.append('locationType', locationType);
       formData.append('comfortLevel', String(comfortLevel));
-      formData.append('signalList', signalListFile);
-      if (ghz24File) formData.append('ghz24', ghz24File);
-      if (ghz5File) formData.append('ghz5', ghz5File);
+      if (mode === 'reckoning') formData.append('isHybrid', String(isHybrid));
+
+      if (isMultiLocation) {
+        const readyLocations = reckoningLocations.filter(l => l.signalListFile);
+        formData.append('locationCount', String(readyLocations.length));
+        for (let i = 0; i < readyLocations.length; i++) {
+          const loc = readyLocations[i];
+          formData.append(`location_${i}_name`, loc.name || `Location ${i + 1}`);
+          formData.append(`location_${i}_signalList`, await compressImage(loc.signalListFile as File));
+          if (loc.ghz24File) formData.append(`location_${i}_ghz24`, await compressImage(loc.ghz24File));
+          if (loc.ghz5File) formData.append(`location_${i}_ghz5`, await compressImage(loc.ghz5File));
+        }
+      } else {
+        formData.append('signalList', await compressImage(signalListFile as File));
+        if (ghz24File) formData.append('ghz24', await compressImage(ghz24File));
+        if (ghz5File) formData.append('ghz5', await compressImage(ghz5File));
+      }
 
       const res = await fetch('/api/dashboard/run-scan', {
         method: 'POST',
@@ -458,6 +557,7 @@ export default function CrowsEyeTab({
     setSignalListFile(null);
     setGhz24File(null);
     setGhz5File(null);
+    setReckoningLocations([{ id: 1, name: '', signalListFile: null, ghz24File: null, ghz5File: null }]);
   };
 
   // File upload row
@@ -716,6 +816,53 @@ export default function CrowsEyeTab({
             }}>
               Pro Certified Reckoning includes professional review and certification by an OCWS-certified technician.
               An OCWS team member will contact you to schedule your Pro-level assessment.
+            </div>
+          )}
+
+          {/* Hybrid Reckoning toggle — VIP, flock, murder only */}
+          {(isVIP || ['flock', 'murder'].includes(tier)) && size !== 'pro' && (
+            <div style={{
+              marginTop: 12,
+              background: isHybrid ? 'rgba(0,194,199,0.08)' : 'rgba(13,21,32,0.4)',
+              border: isHybrid ? '1px solid rgba(0,194,199,0.3)' : '1px solid rgba(255,255,255,0.08)',
+              borderRadius: 8,
+              padding: '10px 14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+              cursor: 'pointer',
+            }}
+            onClick={() => setIsHybrid(h => !h)}
+            >
+              <div>
+                <div style={{ fontFamily: 'monospace', fontSize: '0.7rem', color: isHybrid ? '#00C2C7' : 'rgba(244,246,248,0.7)', fontWeight: 700, letterSpacing: '0.06em' }}>
+                  Hybrid Reckoning
+                </div>
+                <div style={{ fontFamily: 'monospace', fontSize: '0.6rem', color: '#888', marginTop: 2 }}>
+                  Cross-structure analysis — multiple buildings, mixed environments
+                </div>
+              </div>
+              <div style={{
+                width: 36,
+                height: 20,
+                borderRadius: 10,
+                background: isHybrid ? '#00C2C7' : 'rgba(255,255,255,0.12)',
+                position: 'relative',
+                transition: 'background 0.2s',
+                flexShrink: 0,
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  top: 3,
+                  left: isHybrid ? 19 : 3,
+                  width: 14,
+                  height: 14,
+                  borderRadius: '50%',
+                  background: isHybrid ? '#0D1520' : 'rgba(244,246,248,0.5)',
+                  transition: 'left 0.2s',
+                }} />
+              </div>
             </div>
           )}
         </div>
@@ -980,42 +1127,132 @@ export default function CrowsEyeTab({
             </div>
           </div>
 
-          {/* Upload slots */}
-          <div style={{
-            background: 'rgba(13,21,32,0.5)',
-            border: '1px solid rgba(255,255,255,0.07)',
-            borderRadius: 10,
-            padding: '18px 16px',
-            marginBottom: 20,
-          }}>
+          {/* Upload slots — single location (Verdict or Reckoning Small) */}
+          {!isMultiLocation && (
             <div style={{
-              fontFamily: 'monospace',
-              fontSize: '0.6rem',
-              color: '#888',
-              letterSpacing: '0.2em',
-              textTransform: 'uppercase',
-              marginBottom: 14,
+              background: 'rgba(13,21,32,0.5)',
+              border: '1px solid rgba(255,255,255,0.07)',
+              borderRadius: 10,
+              padding: '18px 16px',
+              marginBottom: 20,
             }}>
-              Screenshots
+              <div style={{
+                fontFamily: 'monospace',
+                fontSize: '0.6rem',
+                color: '#888',
+                letterSpacing: '0.2em',
+                textTransform: 'uppercase',
+                marginBottom: 14,
+              }}>
+                Screenshots
+              </div>
+              <FileUploadSlot
+                label="Signal List / AP List"
+                required
+                file={signalListFile}
+                onChange={setSignalListFile}
+              />
+              <FileUploadSlot
+                label="2.4 GHz Channel Graph (optional)"
+                file={ghz24File}
+                onChange={setGhz24File}
+              />
+              <FileUploadSlot
+                label="5 GHz Channel Graph (optional)"
+                file={ghz5File}
+                onChange={setGhz5File}
+              />
             </div>
+          )}
 
-            <FileUploadSlot
-              label="Signal List / AP List"
-              required
-              file={signalListFile}
-              onChange={setSignalListFile}
-            />
-            <FileUploadSlot
-              label="2.4 GHz Channel Graph (optional)"
-              file={ghz24File}
-              onChange={setGhz24File}
-            />
-            <FileUploadSlot
-              label="5 GHz Channel Graph (optional)"
-              file={ghz5File}
-              onChange={setGhz5File}
-            />
-          </div>
+          {/* Multi-location upload cards (Reckoning Standard / Commercial) */}
+          {isMultiLocation && (
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <div style={{ fontFamily: 'monospace', fontSize: '0.6rem', color: '#B8922A', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+                  Scan Locations ({reckoningLocations.length} of {getMaxLocations()})
+                </div>
+                <button
+                  onClick={addLocation}
+                  disabled={reckoningLocations.length >= getMaxLocations()}
+                  style={{
+                    padding: '5px 14px',
+                    background: 'rgba(0,194,199,0.08)',
+                    border: '1px solid rgba(0,194,199,0.2)',
+                    borderRadius: 6,
+                    color: reckoningLocations.length >= getMaxLocations() ? 'rgba(0,194,199,0.3)' : '#00C2C7',
+                    fontFamily: 'monospace',
+                    fontSize: '0.7rem',
+                    cursor: reckoningLocations.length >= getMaxLocations() ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  + Add Location
+                </button>
+              </div>
+
+              {reckoningLocations.map((loc, index) => (
+                <div key={loc.id} style={{
+                  background: 'rgba(13,21,32,0.5)',
+                  border: '1px solid rgba(0,194,199,0.15)',
+                  borderRadius: 10,
+                  padding: '14px 16px',
+                  marginBottom: 12,
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <div style={{ fontFamily: 'monospace', fontSize: '0.6rem', color: '#00C2C7', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                      Location {index + 1}
+                    </div>
+                    {reckoningLocations.length > 1 && (
+                      <button
+                        onClick={() => removeLocation(loc.id)}
+                        style={{ background: 'transparent', border: 'none', color: '#e05555', fontFamily: 'monospace', fontSize: '0.65rem', cursor: 'pointer', padding: '2px 6px' }}
+                      >
+                        ✕ Remove
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    placeholder={`Location name (e.g. Main Office, Floor 2...)`}
+                    value={loc.name}
+                    onChange={e => updateLocation(loc.id, 'name', e.target.value)}
+                    style={{ ...inputStyle, marginBottom: 10, fontSize: 16 }}
+                    autoComplete="off"
+                  />
+                  <FileUploadSlot
+                    label="Signal List / AP List"
+                    required
+                    file={loc.signalListFile}
+                    onChange={f => updateLocation(loc.id, 'signalListFile', f)}
+                  />
+                  <FileUploadSlot
+                    label="2.4 GHz Channel Graph (optional)"
+                    file={loc.ghz24File}
+                    onChange={f => updateLocation(loc.id, 'ghz24File', f)}
+                  />
+                  <FileUploadSlot
+                    label="5 GHz Channel Graph (optional)"
+                    file={loc.ghz5File}
+                    onChange={f => updateLocation(loc.id, 'ghz5File', f)}
+                  />
+                </div>
+              ))}
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 4 }}>
+                <div style={{ fontFamily: 'monospace', fontSize: '0.6rem', color: '#888', letterSpacing: '0.08em' }}>
+                  {reckoningLocations.filter(l => l.signalListFile).length} of {reckoningLocations.length} location{reckoningLocations.length !== 1 ? 's' : ''} ready
+                </div>
+                {reckoningLocations.length < getMaxLocations() && (
+                  <button
+                    onClick={addLocation}
+                    style={{ background: 'transparent', border: '1px solid rgba(0,194,199,0.15)', borderRadius: 6, color: '#888', fontFamily: 'monospace', fontSize: '0.6rem', padding: '4px 12px', cursor: 'pointer' }}
+                  >
+                    + Add another location
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Error */}
           {error && (
@@ -1037,21 +1274,21 @@ export default function CrowsEyeTab({
           {size !== 'pro' && (
             <button
               onClick={handleRunScan}
-              disabled={!signalListFile || !clientName.trim()}
+              disabled={!clientName.trim() || (isMultiLocation ? reckoningLocations.filter(l => l.signalListFile).length === 0 : !signalListFile)}
               style={{
                 width: '100%',
                 padding: '14px 0',
-                background: (!signalListFile || !clientName.trim())
+                background: (!clientName.trim() || (isMultiLocation ? reckoningLocations.filter(l => l.signalListFile).length === 0 : !signalListFile))
                   ? 'rgba(0,194,199,0.15)'
                   : 'linear-gradient(135deg, #00C2C7 0%, #00A8B0 100%)',
                 border: 'none',
                 borderRadius: 10,
-                color: (!signalListFile || !clientName.trim()) ? 'rgba(0,194,199,0.4)' : '#0D1520',
+                color: (!clientName.trim() || (isMultiLocation ? reckoningLocations.filter(l => l.signalListFile).length === 0 : !signalListFile)) ? 'rgba(0,194,199,0.4)' : '#0D1520',
                 fontFamily: 'monospace',
                 fontSize: '0.85rem',
                 fontWeight: 700,
                 letterSpacing: '0.1em',
-                cursor: (!signalListFile || !clientName.trim()) ? 'not-allowed' : 'pointer',
+                cursor: (!clientName.trim() || (isMultiLocation ? reckoningLocations.filter(l => l.signalListFile).length === 0 : !signalListFile)) ? 'not-allowed' : 'pointer',
                 textTransform: 'uppercase',
               }}
             >
