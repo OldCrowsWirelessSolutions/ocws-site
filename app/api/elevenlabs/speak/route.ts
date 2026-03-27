@@ -2,8 +2,6 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 
-const LOCKED_SPEED = 1.5;
-
 export async function POST(req: NextRequest) {
   try {
     const { text } = await req.json();
@@ -13,21 +11,17 @@ export async function POST(req: NextRequest) {
     }
 
     const apiKey = process.env.ELEVENLABS_API_KEY;
-    const voiceId = process.env.ELEVENLABS_VOICE_ID;
+    const voiceId = 'Oq6YjhFgak69fZQyDSCd';
 
     if (!apiKey) {
       console.error('[elevenlabs/speak] ELEVENLABS_API_KEY not set');
       return new NextResponse('api key not configured', { status: 500 });
     }
-    if (!voiceId) {
-      console.error('[elevenlabs/speak] ELEVENLABS_VOICE_ID not set');
-      return new NextResponse('voice id not configured', { status: 500 });
-    }
 
     console.log('[elevenlabs/speak] calling ElevenLabs, voice:', voiceId, 'text length:', text.length);
 
     const r = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?optimize_streaming_latency=0`,
       {
         method: 'POST',
         headers: {
@@ -37,13 +31,10 @@ export async function POST(req: NextRequest) {
         },
         body: JSON.stringify({
           text,
-          model_id: 'eleven_turbo_v2_5',
+          model_id: 'eleven_monolingual_v1',
           voice_settings: {
-            stability: 0.35,
+            stability: 0.25,
             similarity_boost: 0.85,
-            style: 0.72,
-            use_speaker_boost: true,
-            speed: LOCKED_SPEED,
           },
         }),
       }
@@ -53,7 +44,7 @@ export async function POST(req: NextRequest) {
 
     if (!r.ok) {
       const errText = await r.text().catch(() => '');
-      console.error('[elevenlabs/speak] ElevenLabs error:', r.status, errText);
+      console.error('[elevenlabs/speak] ElevenLabs full error:', errText);
       return new NextResponse('elevenlabs error', { status: 500 });
     }
 
