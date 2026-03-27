@@ -272,7 +272,7 @@ export default function CrowsEyeTab({
   const [error, setError] = useState<string | null>(null);
 
   // Derived
-  const canUseStandardOrCommercial = ['flock', 'murder', 'vip'].includes(tier);
+  const canUseStandardOrCommercial = isVIP || ['flock', 'murder', 'vip'].includes(tier);
   const isOneTimePurchaser = !tier || tier === 'none';
   const isMonthlySubscriber = ['nest', 'flock', 'murder'].includes(tier) && !isVIP;
 
@@ -757,10 +757,10 @@ export default function CrowsEyeTab({
           <div style={labelStyle}>Reckoning Size</div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {([
-              { key: 'small', label: 'Small', desc: '1 location', always: true },
-              { key: 'standard', label: 'Standard', desc: '2–5 locations', always: false },
-              { key: 'commercial', label: 'Commercial', desc: '6–15 locations', always: false },
-              { key: 'pro', label: 'Pro Certified', desc: 'Enterprise', always: true },
+              { key: 'small', label: 'Small', desc: '1–5 locations', always: true },
+              { key: 'standard', label: 'Standard', desc: '6–15 locations', always: false },
+              { key: 'commercial', label: 'Commercial', desc: '16+ locations', always: false },
+              { key: 'pro', label: 'Pro Certified', desc: 'Joshua certifies every scan', always: true },
             ] as { key: 'small'|'standard'|'commercial'|'pro'; label: string; desc: string; always: boolean }[]).map(opt => {
               const isAvailable = opt.always || canUseStandardOrCommercial;
               const isSelected = size === opt.key;
