@@ -119,7 +119,14 @@ export default function CorvusTourPlayer({ level, visitorName, onComplete, inlin
 
         {phase === 'opening' && (
           <div style={s.openingWrap}>
-            <Image src="/corvus_still_clean.png" alt="Corvus" width={160} height={220} style={{ objectFit: 'contain', marginBottom: '1.5rem' }} />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/corvus_still_clean.png"
+              alt="Corvus"
+              width={160}
+              style={{ width: '160px', height: 'auto', objectFit: 'contain', display: 'block', marginBottom: '1.5rem' }}
+              onError={e => { (e.target as HTMLImageElement).src = '/corvus_still.png'; }}
+            />
             <div style={s.openingLine}>{script.openingLine}</div>
             <div style={s.audioIndicator}>
               {audioPlaying && <span style={s.audioDot} />}
@@ -133,7 +140,13 @@ export default function CorvusTourPlayer({ level, visitorName, onComplete, inlin
         {phase === 'stages' && currentStage && (
           <div style={s.stageWrap}>
             <div style={s.stageLeft}>
-              <Image src="/corvus_still_clean.png" alt="Corvus" width={120} height={168} style={{ objectFit: 'contain' }} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/corvus_still_clean.png"
+                alt="Corvus"
+                style={{ width: '120px', height: 'auto', objectFit: 'contain' }}
+                onError={e => { (e.target as HTMLImageElement).src = '/corvus_still.png'; }}
+              />
               <div style={s.stageCorvusBox}>
                 <div style={s.corvusLabel}>CORVUS</div>
                 <p style={s.corvusQuote}>{currentStage.corvusLine}</p>
@@ -162,9 +175,20 @@ export default function CorvusTourPlayer({ level, visitorName, onComplete, inlin
               )}
 
               {currentStage.visualType !== 'cta' && (
-                <button style={s.nextBtn} onClick={advanceStage}>
-                  {stageIndex < script.stages.length - 1 ? 'Next →' : 'Finish'}
-                </button>
+                <div style={s.navRow}>
+                  {stageIndex > 0 && (
+                    <button style={s.backBtn} onClick={() => {
+                      stopCorvusAudio();
+                      if (autoAdvanceRef.current) clearTimeout(autoAdvanceRef.current);
+                      setStageIndex(prev => prev - 1);
+                    }}>
+                      ← Back
+                    </button>
+                  )}
+                  <button style={s.nextBtn} onClick={advanceStage}>
+                    {stageIndex < script.stages.length - 1 ? 'Next →' : 'Finish'}
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -172,7 +196,20 @@ export default function CorvusTourPlayer({ level, visitorName, onComplete, inlin
 
         {phase === 'closing' && (
           <div style={s.closingWrap}>
-            <Image src="/corvus_still_clean.png" alt="Corvus" width={140} height={196} style={{ objectFit: 'contain', marginBottom: '1.5rem' }} />
+            <button style={s.closingBackBtn} onClick={() => {
+              stopCorvusAudio();
+              setPhase('stages');
+              setStageIndex(script.stages.length - 1);
+            }}>
+              ← Back
+            </button>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/corvus_still_clean.png"
+              alt="Corvus"
+              style={{ width: '140px', height: 'auto', objectFit: 'contain', marginBottom: '1.5rem' }}
+              onError={e => { (e.target as HTMLImageElement).src = '/corvus_still.png'; }}
+            />
             <p style={s.closingLine}>{script.closingLine}</p>
             <div style={s.closingActions}>
               <a href={script.ctaUrl} style={s.closingCta}>{script.ctaText} →</a>
@@ -355,6 +392,9 @@ const s: Record<string, React.CSSProperties> = {
   stageTitleRow: { borderBottom: '1px solid rgba(0,194,199,0.15)', paddingBottom: '0.5rem' },
   stageTitle: { color: '#F4F6F8', fontSize: '1.3rem', fontWeight: 700, margin: 0 },
   stageBody: { color: '#aaa', fontSize: '0.92rem', lineHeight: 1.6, margin: 0 },
+  navRow: { display: 'flex', gap: '0.6rem', alignItems: 'center', marginTop: '0.5rem', flexWrap: 'wrap' as const },
+  backBtn: { background: 'transparent', border: '1px solid rgba(255,255,255,0.12)', color: '#888', borderRadius: '8px', padding: '10px 18px', fontSize: '0.88rem', cursor: 'pointer' },
+  closingBackBtn: { background: 'transparent', border: 'none', color: '#555', fontSize: '0.82rem', cursor: 'pointer', alignSelf: 'flex-start' as const, marginBottom: '0.5rem' },
   nextBtn: { background: '#1A2332', border: '1px solid rgba(0,194,199,0.3)', color: '#00C2C7', borderRadius: '8px', padding: '10px 24px', fontSize: '0.9rem', cursor: 'pointer', alignSelf: 'flex-start', marginTop: '0.5rem' },
   ctaBtn: { display: 'inline-block', background: 'linear-gradient(135deg, #0D6E7A, #00C2C7)', color: '#fff', borderRadius: '8px', padding: '13px 28px', textDecoration: 'none', fontWeight: 700, fontSize: '1rem', marginTop: '0.5rem', alignSelf: 'flex-start' },
   closingWrap: { textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem', maxWidth: '520px' },

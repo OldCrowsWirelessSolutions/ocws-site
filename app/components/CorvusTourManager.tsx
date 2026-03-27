@@ -3,6 +3,7 @@ import { useState } from 'react';
 import CorvusTourPlayer from './CorvusTourPlayer';
 import { TourLevel } from '@/lib/corvusTour';
 import { TOUR_LEVEL_LABELS, TOUR_LEVEL_DURATIONS } from '@/lib/corvusTourScript';
+import { unlockAudio } from '@/lib/corvusAudio';
 
 type Props = {
   authKey: string;
@@ -138,7 +139,7 @@ export default function CorvusTourManager({ authKey, isAdmin = false }: Props) {
               />
             </div>
           </div>
-          <button style={s.playBtn} onClick={() => setPlaying(true)}>
+          <button style={s.playBtn} onClick={() => { unlockAudio(); setPlaying(true); }}>
             ▶ Play Tour Now
           </button>
           <p style={s.playHint}>Launches fullscreen on this device instantly. Hand it to them.</p>

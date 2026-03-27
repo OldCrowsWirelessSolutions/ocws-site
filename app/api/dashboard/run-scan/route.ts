@@ -347,6 +347,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ error: 'Analysis failed. Please try again.' }, { status: 500 });
+    return NextResponse.json({
+      error: 'Analysis failed. Please try again.',
+      detail: err instanceof Error ? err.message : String(err),
+    }, { status: 500 });
   }
 }

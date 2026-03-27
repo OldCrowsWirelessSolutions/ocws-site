@@ -34,14 +34,26 @@ export default function Navbar() {
   const hasEndorsements = getApprovedEndorsements().length > 0;
 
   // Check login state from localStorage
-  useEffect(() => {
+  const refreshAuthState = () => {
     try {
       const code = localStorage.getItem("corvus_sub_code");
       const adminAuth = localStorage.getItem("corvus_admin_auth");
       setIsLoggedIn(!!code);
       setIsAdmin(!!adminAuth);
     } catch { /* */ }
+  };
+
+  useEffect(() => {
+    refreshAuthState();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
+
+  // Sync across tabs and same-page login/logout
+  useEffect(() => {
+    window.addEventListener('storage', refreshAuthState);
+    return () => window.removeEventListener('storage', refreshAuthState);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     setOpen(false);

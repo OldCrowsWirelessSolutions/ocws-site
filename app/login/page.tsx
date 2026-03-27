@@ -24,6 +24,7 @@ import TributeMessagePanel from "@/app/components/TributeMessage";
 import { TRIBUTE_MESSAGES } from "@/lib/tribute-messages";
 import type { TributeMessage } from "@/lib/tribute-messages";
 import { speakCorvus } from "@/lib/elevenlabs";
+import { unlockAudio } from "@/lib/corvusAudio";
 import { getTodayHoliday, getHolidayGreeting } from "@/lib/corvus-calendar";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -404,6 +405,7 @@ export default function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    unlockAudio(); // iOS Safari nuclear unlock — must be synchronous in gesture handler
     const raw = codeInput.trim();
     if (!raw) return;
     setError(""); setLoading(true);

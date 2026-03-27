@@ -1,60 +1,53 @@
-import { NextRequest, NextResponse } from 'next/server'
+export const runtime = 'nodejs';
 
-// Voice speed is locked at 1.5x — matches client-side constant
-const LOCKED_SPEED = 1.5
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: NextRequest) {
+const LOCKED_SPEED = 1.5;
+
+export async function POST(req: NextRequest) {
   try {
-    const { text } = await request.json() as { text?: string; speed?: number }
+    const { text } = await req.json();
+    if (!text?.trim()) return new NextResponse('bad request', { status: 400 });
 
-    if (!text || typeof text !== 'string' || text.length > 3000) {
-      return NextResponse.json({ error: 'Invalid text' }, { status: 400 })
-    }
-
-    const voiceId = process.env.ELEVENLABS_VOICE_ID
-    const apiKey = process.env.ELEVENLABS_API_KEY
-
-    if (!voiceId || !apiKey) {
-      return NextResponse.json({ error: 'ElevenLabs not configured' }, { status: 500 })
-    }
-
-    const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`,
+    const r = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${process.env.ELEVENLABS_VOICE_ID}`,
       {
         method: 'POST',
         headers: {
-          'xi-api-key': apiKey,
+          'xi-api-key': process.env.ELEVENLABS_API_KEY!,
           'Content-Type': 'application/json',
+          'Accept': 'audio/mpeg',
         },
         body: JSON.stringify({
           text,
           model_id: 'eleven_turbo_v2_5',
           voice_settings: {
-            stability: 0.25,
+            stability: 0.35,
             similarity_boost: 0.85,
-            style: 0.80,
+            style: 0.72,
             use_speaker_boost: true,
-            speed: LOCKED_SPEED, // Always 1.5x — locked
+            speed: LOCKED_SPEED,
           },
         }),
       }
-    )
+    );
 
-    if (!response.ok) {
-      return NextResponse.json({ error: 'TTS failed' }, { status: 500 })
+    if (!r.ok) {
+      const errText = await r.text().catch(() => '');
+      console.error('ElevenLabs error:', r.status, errText);
+      return new NextResponse('elevenlabs error', { status: 500 });
     }
 
-    const audioBuffer = await response.arrayBuffer()
-
-    return new NextResponse(audioBuffer, {
+    const audio = await r.arrayBuffer();
+    return new NextResponse(audio, {
       headers: {
         'Content-Type': 'audio/mpeg',
-        'Content-Length': audioBuffer.byteLength.toString(),
-        'Cache-Control': 'no-store, no-cache',
+        'Content-Length': String(audio.byteLength),
+        'Cache-Control': 'no-store',
       },
-    })
-  } catch (error) {
-    console.error('ElevenLabs proxy error:', error)
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+    });
+  } catch (e) {
+    console.error('ElevenLabs route error:', e);
+    return new NextResponse('error', { status: 500 });
   }
 }

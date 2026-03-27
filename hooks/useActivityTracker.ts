@@ -38,24 +38,6 @@ export function useActivityTracker() {
       }
     }, 30_000);
 
-    // Domain exit detection — log out when navigating to an external domain
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const anchor = target.closest('a') as HTMLAnchorElement | null;
-      if (!anchor?.href) return;
-      try {
-        const url = new URL(anchor.href);
-        const isExternal =
-          url.hostname !== window.location.hostname &&
-          url.hostname !== '' &&
-          !url.hostname.endsWith('oldcrowswireless.com');
-        if (isExternal && isLoggedIn()) {
-          handleLogout('domain_exit');
-        }
-      } catch { /* invalid URL — ignore */ }
-    };
-    document.addEventListener('click', handleClick);
-
     // Multi-tab logout: if another tab clears corvus_sub_code, redirect here too
     const handleStorage = (e: StorageEvent) => {
       if (e.key === 'corvus_sub_code' && !e.newValue) {
@@ -68,7 +50,6 @@ export function useActivityTracker() {
       ACTIVITY_EVENTS.forEach(event => {
         document.removeEventListener(event, handleActivity);
       });
-      document.removeEventListener('click', handleClick);
       window.removeEventListener('storage', handleStorage);
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
