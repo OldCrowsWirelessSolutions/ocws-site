@@ -203,6 +203,7 @@ export default function CrowsEyeTab({
 
   // Instructions collapsible
   const [showInstructions, setShowInstructions] = useState<boolean>(false);
+  const [deviceType, setDeviceType] = useState<'android' | 'ios'>('android');
 
   // Form fields
   const [clientName, setClientName] = useState('');
@@ -904,32 +905,60 @@ export default function CrowsEyeTab({
         </button>
 
         {showInstructions && (
-          <div style={{
-            marginTop: 10,
-            background: 'rgba(13,21,32,0.7)',
-            border: '1px solid rgba(0,194,199,0.15)',
-            borderRadius: 8,
-            padding: '14px 16px',
-            color: 'rgba(244,246,248,0.7)',
-            fontFamily: 'monospace',
-            fontSize: '0.72rem',
-            lineHeight: 1.7,
-          }}>
-            <p style={{ margin: '0 0 8px' }}>
-              <strong style={{ color: '#00C2C7' }}>Download WiFi Analyzer (open source)</strong> on any Android device.
-            </p>
-            <p style={{ margin: '0 0 8px' }}>
-              <strong style={{ color: '#F4F6F8' }}>Signal List:</strong> Tap the AP List tab — screenshot the full list showing SSIDs, dBm values, channels, and BSSIDs. This is required.
-            </p>
-            <p style={{ margin: '0 0 8px' }}>
-              <strong style={{ color: '#F4F6F8' }}>2.4 GHz Channel Graph:</strong> Tap the Channel Graph tab and select 2.4 GHz. Screenshot the full channel distribution.
-            </p>
-            <p style={{ margin: '0 0 8px' }}>
-              <strong style={{ color: '#F4F6F8' }}>5 GHz Channel Graph:</strong> Same tab, switch to 5 GHz band. Screenshot.
-            </p>
-            <p style={{ margin: 0, color: 'rgba(244,246,248,0.5)' }}>
-              Tip: Stay in the same spot where the Wi-Fi connection matters most — typically where you work or where issues occur.
-            </p>
+          <div style={{ marginTop: 10, background: 'rgba(13,21,32,0.7)', border: '1px solid rgba(0,194,199,0.15)', borderRadius: 8, padding: '14px 16px' }}>
+
+            {/* Device toggle */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+              {(['android', 'ios'] as const).map(d => (
+                <button key={d} onClick={() => setDeviceType(d)}
+                  style={{
+                    flex: 1, padding: '7px 12px', borderRadius: 7, cursor: 'pointer',
+                    border: deviceType === d ? '1px solid rgba(0,194,199,0.5)' : '1px solid rgba(255,255,255,0.1)',
+                    background: deviceType === d ? 'rgba(0,194,199,0.15)' : 'rgba(13,21,32,0.6)',
+                    color: deviceType === d ? '#00C2C7' : 'rgba(244,246,248,0.5)',
+                    fontFamily: 'monospace', fontSize: '0.72rem', letterSpacing: '0.08em',
+                  }}>
+                  {d === 'android' ? '📱 Android' : '🍎 iPhone'}
+                </button>
+              ))}
+            </div>
+
+            {deviceType === 'android' && (
+              <div style={{ color: 'rgba(244,246,248,0.7)', fontFamily: 'monospace', fontSize: '0.72rem', lineHeight: 1.7 }}>
+                <p style={{ margin: '0 0 8px' }}>
+                  <strong style={{ color: '#00C2C7' }}>Download WiFi Analyzer (open source)</strong> on Google Play — free, green icon, no ads.
+                </p>
+                <p style={{ margin: '0 0 8px' }}>
+                  <strong style={{ color: '#F4F6F8' }}>Screenshot 1 — Signal List:</strong> Tap the AP List tab. Screenshot the full list showing SSIDs, dBm values, and channels.
+                </p>
+                <p style={{ margin: '0 0 8px' }}>
+                  <strong style={{ color: '#F4F6F8' }}>Screenshot 2 — 2.4 GHz Graph:</strong> Tap Channel Graph tab, select 2.4 GHz. Screenshot the channel distribution.
+                </p>
+                <p style={{ margin: 0 }}>
+                  <strong style={{ color: '#F4F6F8' }}>Screenshot 3 — 5 GHz Graph:</strong> Same tab, switch to 5 GHz. Screenshot that view.
+                </p>
+              </div>
+            )}
+
+            {deviceType === 'ios' && (
+              <div style={{ color: 'rgba(244,246,248,0.7)', fontFamily: 'monospace', fontSize: '0.72rem', lineHeight: 1.7 }}>
+                <p style={{ margin: '0 0 8px' }}>
+                  <strong style={{ color: '#00C2C7' }}>Download Network Analyzer</strong> by Techet from the App Store — free.
+                </p>
+                <p style={{ margin: '0 0 8px' }}>
+                  <strong style={{ color: '#F4F6F8' }}>Screenshot 1 — Signal List:</strong> Open the app and tap <strong>WLAN</strong> at the top. You will see a list of all nearby networks with signal strength. Screenshot this screen.
+                </p>
+                <p style={{ margin: '0 0 8px' }}>
+                  <strong style={{ color: '#F4F6F8' }}>Screenshot 2 — 2.4 GHz:</strong> In the WLAN screen tap the filter icon and select <strong>2.4 GHz only</strong>. Screenshot this filtered view.
+                </p>
+                <p style={{ margin: 0 }}>
+                  <strong style={{ color: '#F4F6F8' }}>Screenshot 3 — 5 GHz:</strong> Same screen, switch filter to <strong>5 GHz only</strong>. Screenshot that view.
+                </p>
+                <p style={{ margin: '8px 0 0', color: 'rgba(244,246,248,0.4)', fontStyle: 'italic' }}>
+                  Note: iPhone restricts some Wi-Fi data. Upload what you can — Corvus will work with whatever he sees.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
