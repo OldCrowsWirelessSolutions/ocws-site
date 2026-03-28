@@ -1,6 +1,6 @@
 // app/api/crows-eye/analyze/route.ts
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 const CORVUS_SYSTEM_PROMPT = `You are Corvus, the Wi-Fi diagnostic intelligence behind Crow's Eye by Old Crows Wireless Solutions.
 
@@ -430,17 +430,25 @@ export async function POST(req: Request) {
           },
           body: JSON.stringify({
             model: "claude-sonnet-4-6",
-            max_tokens: 2048,
+            max_tokens: 4096,
             system: CORVUS_SYSTEM_PROMPT,
             messages: [{ role: "user", content: batchContent }],
           }),
         });
 
-        if (!res.ok) return null;
+        if (!res.ok) {
+          const errText = await res.text().catch(() => "");
+          console.error("[analyze/batch] Anthropic error:", res.status, errText.slice(0, 500));
+          return null;
+        }
         const data = await res.json();
         const rawText: string = data?.content?.[0]?.text ?? "";
+        console.log("[analyze/batch] rawText length:", rawText.length, "stop_reason:", data?.stop_reason);
         const cleaned = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
-        try { return JSON.parse(cleaned); } catch { return null; }
+        try { return JSON.parse(cleaned); } catch (parseErr) {
+          console.error("[analyze/batch] JSON parse failed:", String(parseErr), "rawText[:200]:", rawText.slice(0, 200));
+          return null;
+        }
       }));
 
       // Merge batch results
