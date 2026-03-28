@@ -155,7 +155,7 @@ const labelStyle: React.CSSProperties = {
   textTransform: 'uppercase',
 };
 
-async function compressImage(file: File, maxSizeKB = 800): Promise<File> {
+async function compressImage(file: File, maxSizeKB = 300): Promise<File> {
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d')!;
@@ -372,14 +372,16 @@ export default function CrowsEyeTab({
         for (let i = 0; i < readyLocations.length; i++) {
           const loc = readyLocations[i];
           formData.append(`location_${i}_name`, loc.name || `Location ${i + 1}`);
-          formData.append(`location_${i}_signalList`, await compressImage(loc.signalListFile as File));
-          if (loc.ghz24File) formData.append(`location_${i}_ghz24`, await compressImage(loc.ghz24File));
-          if (loc.ghz5File) formData.append(`location_${i}_ghz5`, await compressImage(loc.ghz5File));
+          const locationCount = readyLocations.length;
+          const maxKB = locationCount >= 10 ? 150 : locationCount >= 5 ? 200 : locationCount >= 3 ? 250 : 300;
+          formData.append(`location_${i}_signalList`, await compressImage(loc.signalListFile as File, maxKB));
+          if (loc.ghz24File) formData.append(`location_${i}_ghz24`, await compressImage(loc.ghz24File, maxKB));
+          if (loc.ghz5File) formData.append(`location_${i}_ghz5`, await compressImage(loc.ghz5File, maxKB));
         }
       } else {
-        formData.append('signalList', await compressImage(signalListFile as File));
-        if (ghz24File) formData.append('ghz24', await compressImage(ghz24File));
-        if (ghz5File) formData.append('ghz5', await compressImage(ghz5File));
+        formData.append('signalList', await compressImage(signalListFile as File, 300));
+        if (ghz24File) formData.append('ghz24', await compressImage(ghz24File, 300));
+        if (ghz5File) formData.append('ghz5', await compressImage(ghz5File, 300));
       }
 
       const res = await fetch('/api/dashboard/run-scan', {
