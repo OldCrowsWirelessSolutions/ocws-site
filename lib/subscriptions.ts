@@ -230,6 +230,33 @@ export async function validateSubscriptionId(
 ): Promise<ValidationResult> {
   const code = input.trim().toUpperCase();
 
+  // -1. Demo tokens (CORVUS-DEMO-XXXXXXXXXX) — time-limited client demo sessions
+  if (code.startsWith("CORVUS-DEMO-")) {
+    const { validateDemoToken } = await import("@/lib/demoTokens");
+    const result = await validateDemoToken(code);
+    if (!result.valid || !result.session) {
+      return { valid: false, type: null, error: "Demo token is invalid, expired, or has reached its use limit." };
+    }
+    const session = result.session;
+    const tierMap: Record<string, SubscriptionTier> = {
+      fledgling: "fledgling",
+      nest:      "nest",
+      flock:     "flock",
+      full:      "flock",
+    };
+    const tier = tierMap[session.accessLevel] ?? "fledgling";
+    return {
+      valid: true,
+      type: "founder",
+      tier,
+      customer_name: session.clientName ?? "Demo User",
+      verdicts_remaining: 999999,
+      verdicts_unlimited: tier === "flock",
+      reckonings_remaining: { small: session.allowReckoning ? 999999 : 0, standard: 0, commercial: 0 },
+      reckonings_unlimited: { small: session.allowReckoning ?? false, standard: false, commercial: false },
+    };
+  }
+
   // 0. Lifetime Flock codes (CORVUS-KYLE) — limited monthly credits from Redis
   if (isLifetimeCode(code)) {
     const member = getLifetimeCode(code)!;

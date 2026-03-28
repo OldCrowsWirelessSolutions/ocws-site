@@ -6,12 +6,14 @@
 import redis from "@/lib/redis";
 import { validateSubordinateCode } from "@/lib/vip-codes";
 import { isVIPCode } from "@/lib/vip-codes";
+import type { DemoSession } from "@/lib/demoTokens";
 
 export type CodeKind =
   | "founder"       // OCWS-CORVUS-FOUNDER-JOSHUA, CORVUS-NEST, OCWS-ADMIN-*
   | "admin"         // CORVUS-ADMIN
   | "vip"           // CORVUS-ERIC, CORVUS-MIKE, CORVUS-NATE
   | "lifetime"      // CORVUS-KYLE
+  | "demo"          // CORVUS-DEMO-XXXXXXXXXX (time-limited client demo tokens)
   | "subordinate"   // CORVUS-SUB-XXXXXX (issued by VIPs)
   | "promo"         // CORVUS-TRY-*, admin-generated promo codes via lib/promo-codes.ts
   | "subscriber"    // OCWS-NEST-*, OCWS-FLOCK-*, OCWS-MURDER-* (real paid subscribers)
@@ -24,6 +26,7 @@ export interface ResolvedCode {
   isBypass: boolean;   // true = skip validateSubscriptionId / credit deduction
   canScan: boolean;    // true = allowed to run Crow's Eye scans
   subscriptionId: string | null; // non-null only for kind === "subscriber"
+  demoSession?: DemoSession;     // non-null only for kind === "demo"
 }
 
 // ─── Pattern helpers ──────────────────────────────────────────────────────────
@@ -76,6 +79,27 @@ export async function resolveCode(rawCode: string): Promise<ResolvedCode> {
     };
   }
 
+  // ── Demo tokens (CORVUS-DEMO-XXXXXXXXXX) ─────────────────────────────────
+  if (code.startsWith("CORVUS-DEMO-")) {
+    const { validateDemoToken } = await import("@/lib/demoTokens");
+    const result = await validateDemoToken(code);
+    if (!result.valid || !result.session) {
+      return { code, kind: "demo", tier: "none", isBypass: false, canScan: false, subscriptionId: null };
+    }
+    const session = result.session;
+    const tierMap: Record<string, string> = {
+      fledgling: "fledgling",
+      nest:      "nest",
+      flock:     "flock",
+      full:      "vip",
+    };
+    return {
+      code, kind: "demo", tier: tierMap[session.accessLevel] ?? "nest",
+      isBypass: true, canScan: true, subscriptionId: null,
+      demoSession: session,
+    };
+  }
+
   // ── Subordinate codes (CORVUS-SUB-XXXXXX) ────────────────────────────────
   if (code.startsWith("CORVUS-SUB-")) {
     const subRecord = await validateSubordinateCode(code);
@@ -93,7 +117,7 @@ export async function resolveCode(rawCode: string): Promise<ResolvedCode> {
 
   // ── Admin-generated promo codes (via lib/promo-codes.ts, stored at promo:CODE) ──
   if (code.startsWith("CORVUS-TRY-") || code.startsWith("CORVUS-PROMO-") ||
-      code.startsWith("CORVUS-DEMO-") || code.startsWith("CORVUS-UH-")) {
+      code.startsWith("CORVUS-UH-")) {
     // Promo codes that are in INTERNAL_CODES (like CORVUS-TRY-9R4M) are validated
     // by validateSubscriptionId; but check redis-backed ones too
     const promoRecord = await redis.get<{ used?: boolean; deactivated?: boolean; expiresAt?: string }>(`promo:${code}`);
