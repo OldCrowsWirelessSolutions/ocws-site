@@ -51,14 +51,37 @@ export default function CorvusTourPlayer({ level, visitorName, onComplete, inlin
   // Opening phase
   useEffect(() => {
     if (phase !== 'opening') return;
-    playAudio(script.openingLine);
-    const t = setTimeout(() => {
+
+    let advanced = false;
+
+    const advance = () => {
+      if (advanced) return;
+      advanced = true;
       setPhase('stages');
       setStageIndex(0);
-    }, 6500);
-    return () => clearTimeout(t);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase]);
+    };
+
+    if (muted) {
+      // Audio is off — just show the text for 4 seconds then advance
+      const t = setTimeout(advance, 4000);
+      return () => clearTimeout(t);
+    }
+
+    // Audio on — advance when Corvus finishes speaking
+    speakAsCorvus(
+      script.openingLine,
+      () => {}, // onStart
+      () => {   // onEnd — advance after short pause
+        setTimeout(advance, 600);
+      }
+    );
+
+    // Fallback — if audio fails silently (mobile block, network error)
+    // advance after 10 seconds max
+    const fallback = setTimeout(advance, 10000);
+
+    return () => clearTimeout(fallback);
+  }, [phase, muted]);  // eslint-disable-line
 
   // Stage phase — play audio only, no auto-advance (user must click Next)
   useEffect(() => {
