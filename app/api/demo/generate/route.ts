@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateDemoToken, getDemoTokenURL, DemoAccessLevel } from '@/lib/demoTokens'
 
-const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY!
+const ADMIN_KEY = process.env.ADMIN_DEMO_KEY ?? process.env.NEXT_PUBLIC_ADMIN_KEY ?? 'SpectrumLife2026!!'
 const VIP_CODES = [process.env.VIP_NATE_CODE, process.env.VIP_MIKE_CODE, process.env.VIP_ERIC_CODE]
 
 export async function POST(req: NextRequest) {
