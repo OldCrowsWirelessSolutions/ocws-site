@@ -397,59 +397,67 @@ export async function POST(req: Request) {
         batches.push(locationPayloads.slice(i, i + BATCH_SIZE));
       }
 
-      const batchResults = await Promise.all(batches.map(async (batchLocs) => {
-        const batchContent: (ImageEntry | TextEntry)[] = [];
-        for (const loc of batchLocs) {
-          const locName = String(loc.name || "Unnamed Location").trim();
-          const locMeta = [loc.locType, loc.structureRel].filter(Boolean).join(", ");
-          for (const [slot, label] of Object.entries(slotLabels)) {
-            if (loc.images?.[slot]) {
-              batchContent.push({
-                type: "image",
-                source: {
-                  type: "base64",
-                  media_type: sanitizeMime(loc.mimeTypes?.[slot] ?? "image/jpeg"),
-                  data: loc.images[slot],
-                },
-              });
-              batchContent.push({
-                type: "text",
-                text: `[Above image: ${locName}${locMeta ? ` (${locMeta})` : ""} — ${label}]`,
-              });
+      // Run batches in parallel groups of 5 to avoid Anthropic rate limits
+      const PARALLEL_LIMIT = 5;
+      const batchResults: (Record<string, unknown> | null)[] = [];
+
+      for (let i = 0; i < batches.length; i += PARALLEL_LIMIT) {
+        const parallelGroup = batches.slice(i, i + PARALLEL_LIMIT);
+        const groupResults = await Promise.all(parallelGroup.map(async (batchLocs) => {
+          const batchContent: (ImageEntry | TextEntry)[] = [];
+          for (const loc of batchLocs) {
+            const locName = String(loc.name || "Unnamed Location").trim();
+            const locMeta = [loc.locType, loc.structureRel].filter(Boolean).join(", ");
+            for (const [slot, label] of Object.entries(slotLabels)) {
+              if (loc.images?.[slot]) {
+                batchContent.push({
+                  type: "image",
+                  source: {
+                    type: "base64",
+                    media_type: sanitizeMime(loc.mimeTypes?.[slot] ?? "image/jpeg"),
+                    data: loc.images[slot],
+                  },
+                });
+                batchContent.push({
+                  type: "text",
+                  text: `[Above image: ${locName}${locMeta ? ` (${locMeta})` : ""} — ${label}]`,
+                });
+              }
             }
           }
-        }
-        batchContent.push({ type: "text", text: contextLines.join("\n") });
+          batchContent.push({ type: "text", text: contextLines.join("\n") });
 
-        const res = await fetch("https://api.anthropic.com/v1/messages", {
-          method: "POST",
-          headers: {
-            "x-api-key": apiKey,
-            "anthropic-version": "2023-06-01",
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "claude-sonnet-4-6",
-            max_tokens: 4096,
-            system: CORVUS_SYSTEM_PROMPT,
-            messages: [{ role: "user", content: batchContent }],
-          }),
-        });
+          const res = await fetch("https://api.anthropic.com/v1/messages", {
+            method: "POST",
+            headers: {
+              "x-api-key": apiKey,
+              "anthropic-version": "2023-06-01",
+              "content-type": "application/json",
+            },
+            body: JSON.stringify({
+              model: "claude-sonnet-4-6",
+              max_tokens: 4096,
+              system: CORVUS_SYSTEM_PROMPT,
+              messages: [{ role: "user", content: batchContent }],
+            }),
+          });
 
-        if (!res.ok) {
-          const errText = await res.text().catch(() => "");
-          console.error("[analyze/batch] Anthropic error:", res.status, errText.slice(0, 500));
-          return null;
-        }
-        const data = await res.json();
-        const rawText: string = data?.content?.[0]?.text ?? "";
-        console.log("[analyze/batch] rawText length:", rawText.length, "stop_reason:", data?.stop_reason);
-        const cleaned = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
-        try { return JSON.parse(cleaned); } catch (parseErr) {
-          console.error("[analyze/batch] JSON parse failed:", String(parseErr), "rawText[:200]:", rawText.slice(0, 200));
-          return null;
-        }
-      }));
+          if (!res.ok) {
+            const errText = await res.text().catch(() => "");
+            console.error("[analyze/batch] Anthropic error:", res.status, errText.slice(0, 500));
+            return null;
+          }
+          const data = await res.json();
+          const rawText: string = data?.content?.[0]?.text ?? "";
+          console.log("[analyze/batch] rawText length:", rawText.length, "stop_reason:", data?.stop_reason);
+          const cleaned = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
+          try { return JSON.parse(cleaned); } catch (parseErr) {
+            console.error("[analyze/batch] JSON parse failed:", String(parseErr), "rawText[:200]:", rawText.slice(0, 200));
+            return null;
+          }
+        }));
+        batchResults.push(...groupResults);
+      }
 
       // Merge batch results
       const validResults = batchResults.filter(Boolean);
