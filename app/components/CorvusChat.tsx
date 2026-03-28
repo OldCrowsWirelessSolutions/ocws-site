@@ -234,11 +234,50 @@ export default function CorvusChat({
 
       if (data.response) {
         const aiId = `msg-${Date.now()}-a`;
+
+        // Pre-fetch audio in parallel while text renders — eliminates voice lag
+        let audioDataUrl: string | null = null;
+        const audioEnabled = typeof window !== 'undefined' && localStorage.getItem('corvus_audio') !== 'false' && process.env.NEXT_PUBLIC_ELEVENLABS_ENABLED === 'true';
+
+        if (audioEnabled) {
+          try {
+            const audioRes = await fetch('/api/elevenlabs/speak', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text: data.response.substring(0, 2500) }),
+            });
+            if (audioRes.ok) {
+              const blob = await audioRes.blob();
+              if (blob.size >= 100) {
+                audioDataUrl = await new Promise<string>((resolve, reject) => {
+                  const reader = new FileReader();
+                  reader.onload = () => resolve(reader.result as string);
+                  reader.onerror = reject;
+                  reader.readAsDataURL(blob);
+                });
+              }
+            }
+          } catch { /* non-fatal — fall back to normal speakCorvusFull */ }
+        }
+
         setMessages((prev) => [...prev, { id: aiId, role: "assistant", content: data.response! }]);
         setTypingId(aiId);
-        speakCorvusFull(data.response!, 'chat');
+
         if (data.messagesRemaining !== undefined) {
           setMessagesRemaining(data.messagesRemaining);
+        }
+
+        // Play pre-fetched audio if available, otherwise fall back to speakCorvusFull
+        if (audioDataUrl) {
+          try {
+            const audio = new Audio(audioDataUrl);
+            audio.preload = 'auto';
+            await audio.play();
+          } catch {
+            speakCorvusFull(data.response!, 'chat');
+          }
+        } else {
+          speakCorvusFull(data.response!, 'chat');
         }
       } else if (data.error) {
         const errId = `msg-${Date.now()}-e`;
