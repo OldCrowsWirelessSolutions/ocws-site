@@ -234,9 +234,9 @@ export default function CrowsEyeTab({
   ]);
 
   const getMaxLocations = useCallback(() => {
-    if (size === 'standard') return 5;
-    if (size === 'commercial') return 15;
-    return 1;
+    if (size === 'standard') return 15;
+    if (size === 'commercial') return 30;
+    return 5;
   }, [size]);
 
   const addLocation = () => {
@@ -254,13 +254,17 @@ export default function CrowsEyeTab({
     setReckoningLocations(prev => prev.map(l => l.id === id ? { ...l, [field]: value } : l));
   };
 
-  // Reset locations and hybrid flag when switching modes/sizes
+  // Only reset locations when MODE changes (not when size changes — preserve uploaded files)
+  const prevModeRef = useRef<'verdict' | 'reckoning'>(mode);
   useEffect(() => {
-    if (mode === 'reckoning' && (size === 'standard' || size === 'commercial')) {
-      setReckoningLocations([{ id: 1, name: '', signalListFile: null, ghz24File: null, ghz5File: null }]);
+    if (prevModeRef.current !== mode) {
+      prevModeRef.current = mode;
+      if (mode === 'reckoning') {
+        setReckoningLocations([{ id: Date.now(), name: '', signalListFile: null, ghz24File: null, ghz5File: null }]);
+      }
+      if (mode !== 'reckoning') setIsHybrid(false);
     }
-    if (mode !== 'reckoning') setIsHybrid(false);
-  }, [mode, size]);
+  }, [mode]);
 
   // Processing
   const [isProcessing, setIsProcessing] = useState(false);
@@ -272,7 +276,7 @@ export default function CrowsEyeTab({
   const [error, setError] = useState<string | null>(null);
 
   // Derived
-  const canUseStandardOrCommercial = isVIP || ['flock', 'murder', 'vip'].includes(tier);
+  const canUseStandardOrCommercial = isVIP || ['flock', 'murder', 'vip', 'full'].includes(tier);
   const isOneTimePurchaser = !tier || tier === 'none';
   const isMonthlySubscriber = ['nest', 'flock', 'murder'].includes(tier) && !isVIP;
 
@@ -820,7 +824,7 @@ export default function CrowsEyeTab({
           )}
 
           {/* Hybrid Reckoning toggle — VIP, flock, murder only */}
-          {(isVIP || ['flock', 'murder'].includes(tier)) && size !== 'pro' && (
+          {(isVIP || ['flock', 'murder', 'vip', 'full'].includes(tier)) && size !== 'pro' && (
             <div style={{
               marginTop: 12,
               background: isHybrid ? 'rgba(0,194,199,0.08)' : 'rgba(13,21,32,0.4)',

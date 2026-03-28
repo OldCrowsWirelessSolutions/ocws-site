@@ -55,7 +55,7 @@ export default function CorvusTourPlayer({ level, visitorName, onComplete, inlin
     const t = setTimeout(() => {
       setPhase('stages');
       setStageIndex(0);
-    }, 4500);
+    }, 6500);
     return () => clearTimeout(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
@@ -74,6 +74,10 @@ export default function CorvusTourPlayer({ level, visitorName, onComplete, inlin
   useEffect(() => {
     if (phase !== 'closing') return;
     playAudio(script.closingLine);
+    const t = setTimeout(() => {
+      onComplete?.();
+    }, 5500);
+    return () => clearTimeout(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
@@ -151,7 +155,7 @@ export default function CorvusTourPlayer({ level, visitorName, onComplete, inlin
               <img
                 src="/corvus_still_clean.png"
                 alt="Corvus"
-                style={{ width: '120px', height: 'auto', objectFit: 'contain' }}
+                style={{ width: 'min(120px, 100%)', height: 'auto', objectFit: 'contain' }}
                 onError={e => { (e.target as HTMLImageElement).src = '/corvus_still.png'; }}
               />
               <div style={s.stageCorvusBox}>
@@ -194,6 +198,9 @@ export default function CorvusTourPlayer({ level, visitorName, onComplete, inlin
                   )}
                   <button style={s.nextBtn} onClick={advanceStage}>
                     {stageIndex < script.stages.length - 1 ? 'Next →' : 'Finish'}
+                  </button>
+                  <button style={s.skipBtn} onClick={() => { stopCorvusAudio(); onComplete?.(); }}>
+                    Skip Tour
                   </button>
                 </div>
               )}
@@ -388,8 +395,8 @@ const s: Record<string, React.CSSProperties> = {
   openingLine: { color: '#F4F6F8', fontSize: 'clamp(1rem, 2.5vw, 1.35rem)', fontStyle: 'italic', lineHeight: 1.6, marginBottom: '1rem' },
   audioIndicator: { display: 'flex', alignItems: 'center', gap: '0.4rem' },
   audioDot: { width: '8px', height: '8px', borderRadius: '50%', background: '#00C2C7', animation: 'pulse 1s infinite' },
-  stageWrap: { display: 'grid', gridTemplateColumns: '220px 1fr', gap: '2rem', width: '100%', maxWidth: '900px', alignItems: 'start' },
-  stageLeft: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' },
+  stageWrap: { display: 'grid', gridTemplateColumns: 'min(220px, 30%) 1fr', gap: '1.5rem', width: '100%', maxWidth: '900px', alignItems: 'start' },
+  stageLeft: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', minWidth: 0 },
   stageCorvusBox: { background: '#1A2332', borderLeft: '3px solid #00C2C7', padding: '0.75rem 1rem', borderRadius: '0 8px 8px 0', width: '100%' },
   corvusLabel: { color: '#00C2C7', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.65rem', letterSpacing: '0.12em', marginBottom: '0.3rem' },
   corvusQuote: { color: '#ccc', fontSize: '0.85rem', fontStyle: 'italic', lineHeight: 1.6, margin: 0 },
@@ -403,13 +410,14 @@ const s: Record<string, React.CSSProperties> = {
   backBtn: { background: 'transparent', border: '1px solid rgba(255,255,255,0.12)', color: '#888', borderRadius: '8px', padding: '10px 18px', fontSize: '0.88rem', cursor: 'pointer' },
   closingBackBtn: { background: 'transparent', border: 'none', color: '#555', fontSize: '0.82rem', cursor: 'pointer', alignSelf: 'flex-start' as const, marginBottom: '0.5rem' },
   nextBtn: { background: '#1A2332', border: '1px solid rgba(0,194,199,0.3)', color: '#00C2C7', borderRadius: '8px', padding: '10px 24px', fontSize: '0.9rem', cursor: 'pointer', alignSelf: 'flex-start', marginTop: '0.5rem' },
+  skipBtn: { background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)', borderRadius: '8px', padding: '10px 18px', fontSize: '0.78rem', cursor: 'pointer', marginLeft: 'auto' },
   ctaBtn: { display: 'inline-block', background: 'linear-gradient(135deg, #0D6E7A, #00C2C7)', color: '#fff', borderRadius: '8px', padding: '13px 28px', textDecoration: 'none', fontWeight: 700, fontSize: '1rem', marginTop: '0.5rem', alignSelf: 'flex-start' },
   closingWrap: { textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem', maxWidth: '520px' },
   closingLine: { color: '#F4F6F8', fontSize: '1.2rem', fontStyle: 'italic', lineHeight: 1.6, margin: 0 },
   closingActions: { display: 'flex', flexDirection: 'column', gap: '0.6rem', width: '100%' },
   closingCta: { display: 'block', background: 'linear-gradient(135deg, #0D6E7A, #00C2C7)', color: '#fff', borderRadius: '8px', padding: '13px', textDecoration: 'none', fontWeight: 700, fontSize: '1rem', textAlign: 'center' },
   closingSecondary: { display: 'block', color: '#00C2C7', fontSize: '0.9rem', textDecoration: 'none', textAlign: 'center' },
-  closingDismiss: { background: 'transparent', border: 'none', color: '#555', fontSize: '0.85rem', cursor: 'pointer' },
+  closingDismiss: { background: 'rgba(0,194,199,0.12)', border: '1px solid rgba(0,194,199,0.35)', borderRadius: '8px', color: '#00C2C7', fontFamily: 'monospace', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.08em', padding: '9px 20px', cursor: 'pointer' },
 };
 
 const v: Record<string, React.CSSProperties> = {

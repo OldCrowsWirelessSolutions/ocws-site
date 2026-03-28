@@ -5,6 +5,8 @@ import TiersSection from "./components/TiersSection";
 import FAQPreview from "./components/FAQPreview";
 import CorvusClickableImage from "./components/CorvusClickableImage";
 import { getApprovedEndorsements } from "@/lib/endorsements";
+import HeroSection from "./components/HeroSection";
+import HowToScan from "./components/HowToScan";
 
 export const metadata = {
   title: "Old Crows Wireless Solutions — Corvus sees what your ISP won't tell you.",
@@ -17,123 +19,10 @@ export default function HomePage() {
   return (
     <>
       {/* ── SECTION 1: HERO ── */}
-      <section
-        className="py-20 px-6 text-center"
-        style={{ background: "#0D1520" }}
-      >
-        <div className="max-w-2xl mx-auto">
-          {/* Corvus video */}
-          <div className="mb-8 mx-auto" style={{ maxWidth: "480px" }}>
-            <video
-              src="/corvus.mp4"
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-full rounded-2xl"
-              style={{ border: "2px solid #00C2C7", background: "#0D1520", display: "block" }}
-            />
-          </div>
-
-          {/* Eyebrow */}
-          <p
-            className="text-xs font-semibold uppercase tracking-widest mb-4"
-            style={{ color: "#00C2C7", letterSpacing: "0.2em" }}
-          >
-            Crow&rsquo;s Eye by Corvus
-          </p>
-
-          {/* H1 */}
-          <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-6">
-            Corvus sees what your ISP won&rsquo;t tell you.
-          </h1>
-
-          {/* Subtext */}
-          <p className="text-base md:text-lg mb-8 leading-relaxed" style={{ color: "#aaa" }}>
-            Got slow Wi-Fi, dead zones, or drops that never get explained? Upload your scanner
-            screenshots. Corvus reads your environment and tells you exactly what&rsquo;s wrong.
-            Free instant analysis. Full Verdict for $50.
-          </p>
-
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
-            <Link
-              href="/crows-eye"
-              className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-base font-bold ocws-glow-hover min-w-[200px]"
-              style={{ background: "#00C2C7", color: "#0D1520" }}
-            >
-              Get Corvus&rsquo; Verdict — Free
-            </Link>
-            <Link
-              href="/learn"
-              className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-base font-semibold ocws-glow-hover min-w-[200px]"
-              style={{ border: "1px solid #00C2C7", color: "#00C2C7", background: "transparent" }}
-            >
-              See How It Works
-            </Link>
-          </div>
-
-          {/* Corvus quote */}
-          <div
-            className="rounded-2xl px-6 py-4 mx-auto max-w-lg"
-            style={{ border: "1px solid #B8922A" }}
-          >
-            <p className="text-sm italic" style={{ color: "#B8922A" }}>
-              &ldquo;I&rsquo;ve already rendered my Verdict. You&rsquo;re just here for the sentencing.&rdquo;
-            </p>
-            <p className="mt-2 text-xs" style={{ color: "#666" }}>— Corvus</p>
-          </div>
-        </div>
-      </section>
+      <HeroSection />
 
       {/* ── SECTION 2: HOW IT WORKS ── */}
-      <section className="py-20" style={{ background: "#1A2332" }}>
-        <div className="ocws-container">
-          <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
-            Three screenshots. One Verdict.
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            {[
-              {
-                step: "1",
-                title: "Download WiFi Analyzer",
-                desc: "Free from Google Play or App Store. Green icon. No account required.",
-              },
-              {
-                step: "2",
-                title: "Take three screenshots",
-                desc: "Access Points list, 2.4 GHz Channel Graph, 5 GHz Channel Graph. We show you exactly how.",
-              },
-              {
-                step: "3",
-                title: "Upload to Crow's Eye",
-                desc: "Corvus analyzes every network in your environment and renders his Verdict.",
-              },
-              {
-                step: "★",
-                title: "Need the whole picture?",
-                desc: "The Full Reckoning maps your entire facility — room by room, floor by floor. From $150.",
-              },
-            ].map(({ step, title, desc }) => (
-              <div
-                key={step}
-                className="rounded-2xl p-6 flex flex-col items-start"
-                style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.08)" }}
-              >
-                <div
-                  className="flex items-center justify-center rounded-full text-base font-bold mb-4"
-                  style={{ width: "40px", height: "40px", background: "#00C2C7", color: "#0D1520", flexShrink: 0 }}
-                >
-                  {step}
-                </div>
-                <h3 className="text-base font-bold text-white mb-2">{title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: "#888" }}>{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <HowToScan />
 
       {/* ── SECTION 3: MEET CORVUS ── */}
       <section className="py-20" style={{ background: "#0D1520" }}>
@@ -160,12 +49,12 @@ export default function HomePage() {
               <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
                 Meet Corvus.
               </h2>
-              <p className="text-base leading-relaxed mb-4" style={{ color: "#aaa" }}>
+              <p className="text-base leading-relaxed mb-4" style={{ color: "#B8CCD8" }}>
                 Corvus is the AI intelligence engine behind Crow&rsquo;s Eye. He has read thousands of
                 wireless environments. He knows what your ISP isn&rsquo;t telling you. He has opinions
                 about your router. He will share them.
               </p>
-              <p className="text-base leading-relaxed mb-6" style={{ color: "#aaa" }}>
+              <p className="text-base leading-relaxed mb-6" style={{ color: "#B8CCD8" }}>
                 Corvus reads your scanner screenshots, identifies every network in your environment,
                 cross-references MAC addresses against known vendors, and delivers a complete diagnosis
                 with step-by-step fix instructions specific to your exact equipment. He does not guess.
@@ -177,7 +66,7 @@ export default function HomePage() {
                 className="rounded-xl px-5 py-4 mb-6"
                 style={{ border: "1px solid #0D6E7A" }}
               >
-                <p className="text-sm leading-relaxed" style={{ color: "#aaa" }}>
+                <p className="text-sm leading-relaxed" style={{ color: "#B8CCD8" }}>
                   Impatient. Theatrical. Always correct. Warm underneath. Built by a Navy electronic
                   warfare specialist who spent 17 years hunting signals across 55 countries.
                 </p>
@@ -199,7 +88,7 @@ export default function HomePage() {
                     style={{ background: "rgba(0,194,199,0.04)", border: "1px solid rgba(0,194,199,0.1)" }}
                   >
                     <p className="text-base mb-1">{icon} <span className="text-sm font-bold text-white">{label}</span></p>
-                    <p className="text-xs leading-relaxed" style={{ color: "#666" }}>{desc}</p>
+                    <p className="text-xs leading-relaxed" style={{ color: "#7A9AAB" }}>{desc}</p>
                   </div>
                 ))}
               </div>
@@ -227,7 +116,7 @@ export default function HomePage() {
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                 Trusted by Professionals
               </h2>
-              <p className="text-base" style={{ color: "#aaa" }}>
+              <p className="text-base" style={{ color: "#B8CCD8" }}>
                 The people who have seen what Corvus can do.
               </p>
             </div>
@@ -285,7 +174,7 @@ export default function HomePage() {
                           )}
                         </div>
                         <p className="text-sm font-medium" style={{ color: "#00C2C7" }}>{e.title}</p>
-                        <p className="text-xs" style={{ color: "#666" }}>{e.company}</p>
+                        <p className="text-xs" style={{ color: "#7A9AAB" }}>{e.company}</p>
                       </div>
                     </div>
 
@@ -295,7 +184,7 @@ export default function HomePage() {
                         {(e.quotes as {id: string; label: string; text: string}[]).map(q => (
                           <div key={q.id}>
                             <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', color: '#00C2C7', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '6px' }}>{q.label}</p>
-                            <blockquote className="text-sm leading-relaxed italic pl-4" style={{ color: "#cccccc", borderLeft: "3px solid #B8922A", margin: 0 }}>
+                            <blockquote className="text-sm leading-relaxed italic pl-4" style={{ color: "#D8E4F0", borderLeft: "3px solid #B8922A", margin: 0 }}>
                               &ldquo;{q.text}&rdquo;
                             </blockquote>
                           </div>
@@ -305,7 +194,7 @@ export default function HomePage() {
                       <blockquote
                         className="flex-1 text-sm leading-relaxed italic pl-4"
                         style={{
-                          color: "#cccccc",
+                          color: "#D8E4F0",
                           borderLeft: "3px solid #B8922A",
                         }}
                       >
@@ -345,7 +234,7 @@ export default function HomePage() {
           <div style={{ border: "1px solid rgba(0,194,199,0.2)", borderRadius: "12px", overflow: "hidden", marginBottom: "40px" }}>
             {/* Header */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", background: "#1A2332", padding: "16px 24px", alignItems: "center" }}>
-              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.65rem", color: "#888888", letterSpacing: "0.15em", textTransform: "uppercase" }}>Traditional Wi-Fi Tools</span>
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.65rem", color: "#8AAABB", letterSpacing: "0.15em", textTransform: "uppercase" }}>Traditional Wi-Fi Tools</span>
               <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.7rem", color: "#B8922A", textAlign: "center", padding: "0 20px" }}>VS</span>
               <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.65rem", color: "#00C2C7", letterSpacing: "0.15em", textTransform: "uppercase", textAlign: "right" }}>Corvus</span>
             </div>
@@ -410,7 +299,7 @@ export default function HomePage() {
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
               Crow&rsquo;s Eye &mdash; Coming to Your Phone
             </h2>
-            <p className="text-base mb-10" style={{ color: "#888" }}>
+            <p className="text-base mb-10" style={{ color: "#8AAABB" }}>
               The full power of Corvus in your pocket. Launching on iOS and Android.
             </p>
 
@@ -428,7 +317,7 @@ export default function HomePage() {
                   <path d="M23 10.5L16.5 14 23 17.5 26 14 23 10.5Z" fill="#fbbf24" />
                 </svg>
                 <div className="text-left">
-                  <div className="text-[10px] font-medium" style={{ color: "#888" }}>Coming Soon on</div>
+                  <div className="text-[10px] font-medium" style={{ color: "#8AAABB" }}>Coming Soon on</div>
                   <div className="text-sm font-bold text-white">Google Play</div>
                 </div>
               </a>
@@ -444,7 +333,7 @@ export default function HomePage() {
                   <path d="M15.5 3C15.8 5.5 13.4 7.5 11.2 7.5C10.9 5.1 13.3 3.1 15.5 3Z" fill="white" />
                 </svg>
                 <div className="text-left">
-                  <div className="text-[10px] font-medium" style={{ color: "#888" }}>Coming Soon on the</div>
+                  <div className="text-[10px] font-medium" style={{ color: "#8AAABB" }}>Coming Soon on the</div>
                   <div className="text-sm font-bold text-white">App Store</div>
                 </div>
               </a>
@@ -471,7 +360,7 @@ export default function HomePage() {
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
             Corvus&rsquo; Verdicts in the wild.
           </h2>
-          <p className="text-base mb-10" style={{ color: "#888" }}>
+          <p className="text-base mb-10" style={{ color: "#8AAABB" }}>
             Real scans. Real findings. Real fixes.
           </p>
 
@@ -482,7 +371,7 @@ export default function HomePage() {
               style={{ background: "#1A2332", borderTop: "3px solid #B8922A" }}
             >
               <h3 className="text-lg font-bold text-white mb-1">Pilchers Barbershop</h3>
-              <p className="text-xs mb-4" style={{ color: "#888" }}>Retail · Pensacola FL</p>
+              <p className="text-xs mb-4" style={{ color: "#8AAABB" }}>Retail · Pensacola FL</p>
               <ul className="space-y-2 mb-5">
                 <li className="text-sm" style={{ color: "#ef4444" }}>● CoxWiFi co-channel on CH 11</li>
                 <li className="text-sm" style={{ color: "#f59e0b" }}>● Three networks competing for airtime</li>
@@ -499,7 +388,7 @@ export default function HomePage() {
               style={{ background: "#1A2332", borderTop: "3px solid #B8922A" }}
             >
               <h3 className="text-lg font-bold text-white mb-1">Olive Baptist Church</h3>
-              <p className="text-xs mb-4" style={{ color: "#888" }}>Church · Pensacola FL</p>
+              <p className="text-xs mb-4" style={{ color: "#8AAABB" }}>Church · Pensacola FL</p>
               <ul className="space-y-2 mb-5">
                 <li className="text-sm" style={{ color: "#ef4444" }}>● Open network — zero security on both bands</li>
                 <li className="text-sm" style={{ color: "#ef4444" }}>● Channel 6 carrying 7+ competing networks</li>
@@ -522,7 +411,7 @@ export default function HomePage() {
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Need boots on the ground?
           </h2>
-          <p className="text-base mb-10 max-w-2xl" style={{ color: "#aaa" }}>
+          <p className="text-base mb-10 max-w-2xl" style={{ color: "#B8CCD8" }}>
             Crow&rsquo;s Eye tells you what&rsquo;s wrong. Sometimes you need someone to come fix it.
             Joshua Turner personally conducts every on-site RF assessment and certifies every report.
           </p>
@@ -533,7 +422,7 @@ export default function HomePage() {
               style={{ background: "#0D1520", border: "1px solid #0D6E7A" }}
             >
               <h3 className="text-base font-bold text-white mb-1">Pensacola Metro Area</h3>
-              <p className="text-xs mb-3" style={{ color: "#888" }}>Escambia County + Santa Rosa County</p>
+              <p className="text-xs mb-3" style={{ color: "#8AAABB" }}>Escambia County + Santa Rosa County</p>
               <div className="text-3xl font-bold mb-1" style={{ color: "#00C2C7" }}>$250 flat</div>
             </div>
 
@@ -542,18 +431,18 @@ export default function HomePage() {
               style={{ background: "#0D1520", border: "1px solid #0D6E7A" }}
             >
               <h3 className="text-base font-bold text-white mb-1">Northwest FL to Mobile AL</h3>
-              <p className="text-xs mb-3" style={{ color: "#888" }}>Outside Pensacola metro</p>
+              <p className="text-xs mb-3" style={{ color: "#8AAABB" }}>Outside Pensacola metro</p>
               <div className="text-3xl font-bold mb-1" style={{ color: "#00C2C7" }}>$375</div>
-              <p className="text-xs" style={{ color: "#888" }}>($250 base + $125 travel fee)</p>
+              <p className="text-xs" style={{ color: "#8AAABB" }}>($250 base + $125 travel fee)</p>
             </div>
 
             <div
               className="rounded-2xl p-6"
               style={{ background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.06)" }}
             >
-              <h3 className="text-base font-bold mb-1" style={{ color: "#888" }}>Outside Service Area</h3>
-              <p className="text-xs mb-3" style={{ color: "#666" }}>Not available</p>
-              <p className="text-sm" style={{ color: "#666" }}>Crow&rsquo;s Eye Verdict recommended instead</p>
+              <h3 className="text-base font-bold mb-1" style={{ color: "#8AAABB" }}>Outside Service Area</h3>
+              <p className="text-xs mb-3" style={{ color: "#7A9AAB" }}>Not available</p>
+              <p className="text-sm" style={{ color: "#7A9AAB" }}>Crow&rsquo;s Eye Verdict recommended instead</p>
             </div>
           </div>
 
@@ -562,7 +451,7 @@ export default function HomePage() {
             Florida to Mobile AL. Travel fee of $125 applies for locations requiring more than 50
             miles round trip from Pensacola.
           </p>
-          <p className="text-xs mb-6" style={{ color: "#888" }}>
+          <p className="text-xs mb-6" style={{ color: "#8AAABB" }}>
             Properties with detached structures, large outdoor areas, or complex multi-building layouts may require additional time. Discussed and confirmed before booking.
           </p>
 
@@ -606,13 +495,13 @@ export default function HomePage() {
                 Built on 17 years of U.S. Navy Electronic Warfare experience
               </p>
 
-              <p className="text-base leading-relaxed mb-4" style={{ color: "#aaa" }}>
+              <p className="text-base leading-relaxed mb-4" style={{ color: "#B8CCD8" }}>
                 In October 2025 our house caught fire. During the cleanup, my wife noticed she
                 couldn&rsquo;t get a cell signal anywhere near the structure. She didn&rsquo;t know
                 why. I did &mdash; superheated metal wiring changes the magnetic field. The Navy
                 taught me that. Old Crows Wireless Solutions was born that night.
               </p>
-              <p className="text-base leading-relaxed mb-6" style={{ color: "#aaa" }}>
+              <p className="text-base leading-relaxed mb-6" style={{ color: "#B8CCD8" }}>
                 The name is a homage to the Association of Old Crows — the fraternal organization of
                 electronic warfare professionals. I have operated in over 55 countries &mdash; from
                 the Strait of Magellan to the Arctic Circle. I have seen what RF does in every
@@ -627,7 +516,7 @@ export default function HomePage() {
                 <p className="text-sm italic" style={{ color: "#B8922A" }}>
                   &ldquo;God opened this door. We walked through it.&rdquo;
                 </p>
-                <p className="mt-1 text-xs" style={{ color: "#666" }}>
+                <p className="mt-1 text-xs" style={{ color: "#7A9AAB" }}>
                   — Joshua Turner, Managing Member, OCWS LLC
                 </p>
               </div>

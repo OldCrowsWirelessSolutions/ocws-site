@@ -79,7 +79,14 @@ export default function TourPage() {
   return (
     <div style={s.page}>
       <div style={s.card}>
-        <Image src="/corvus_still_clean.png" alt="Corvus" width={100} height={140} style={{ objectFit: 'contain' }} />
+        <video
+          src="/corvus.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          style={{ width: '100%', maxWidth: '320px', borderRadius: '12px', marginBottom: '0.5rem' }}
+        />
         <div style={s.badge}>CORVUS · PERSONAL TOUR</div>
         <h1 style={s.title}>
           {name ? `${name}, Corvus is ready for you.` : 'Corvus is ready for you.'}
@@ -117,7 +124,7 @@ function getLevelLabel(level: TourLevel) {
 const s: Record<string, React.CSSProperties> = {
   page: { minHeight: '100vh', background: '#0D1520', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' },
   center: { textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' },
-  card: { background: '#1A2332', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '16px', padding: '2.5rem 2rem', maxWidth: '460px', width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' },
+  card: { background: '#1A2332', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '16px', padding: '2rem 2rem 2.5rem', maxWidth: '520px', width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' },
   badge: { color: '#00C2C7', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.72rem', letterSpacing: '0.15em' },
   title: { color: '#F4F6F8', fontSize: '1.35rem', fontWeight: 700, margin: 0, lineHeight: 1.3 },
   sub: { color: '#888', fontSize: '0.9rem', lineHeight: 1.6, margin: 0 },

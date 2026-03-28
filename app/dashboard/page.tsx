@@ -183,7 +183,7 @@ function CorvusDashGreeting(props: DashGreetingProps) {
     const code = props.storedCode.toUpperCase();
     let line: string;
 
-    const isJoshua = ["OCWS-CORVUS-FOUNDER-JOSHUA", "CORVUS-ADMIN", "CORVUS-NEST", "OCWS-ADMIN-2026"].includes(code);
+    const isJoshua = ["OCWS-CORVUS-FOUNDER-JOSHUA", "CORVUS-ADMIN", "CORVUS-NEST", "OCWS-ADMIN-2026", "ADMIN"].includes(code);
     const isEric   = ["CORVUS-ERIC", "CORVUS-ERIC-2026"].includes(code);
     const isNate   = ["CORVUS-NATE", "CORVUS-NATE-2026"].includes(code);
     const isMike   = ["CORVUS-MIKE", "CORVUS-MIKE-2026"].includes(code);
@@ -489,7 +489,7 @@ export default function DashboardPage() {
         if (!localStorage.getItem(tourKey)) {
           localStorage.setItem(tourKey, 'true'); // Set immediately — prevents loop if browser closes mid-tour
           const upperCode = code.toUpperCase();
-          const isJoshuaCode = ["OCWS-CORVUS-FOUNDER-JOSHUA", "CORVUS-ADMIN", "CORVUS-NEST", "OCWS-ADMIN-2026"].includes(upperCode);
+          const isJoshuaCode = ["OCWS-CORVUS-FOUNDER-JOSHUA", "CORVUS-ADMIN", "CORVUS-NEST", "OCWS-ADMIN-2026", "ADMIN"].includes(upperCode);
           if (!isJoshuaCode) {
             const isVIPCode = ["CORVUS-NATE", "CORVUS-NATE-2026", "CORVUS-MIKE", "CORVUS-MIKE-2026", "CORVUS-ERIC", "CORVUS-ERIC-2026"].includes(upperCode) || data.type === "vip";
             const isKyleCode = upperCode === "CORVUS-KYLE";
@@ -575,7 +575,7 @@ export default function DashboardPage() {
         const tourKey = `corvus_tour_seen_${code}`;
         if (!localStorage.getItem(tourKey)) {
           localStorage.setItem(tourKey, 'true'); // Set immediately — prevents loop if browser closes mid-tour
-          const isJoshuaCode = ["OCWS-CORVUS-FOUNDER-JOSHUA", "CORVUS-ADMIN", "CORVUS-NEST", "OCWS-ADMIN-2026"].includes(code);
+          const isJoshuaCode = ["OCWS-CORVUS-FOUNDER-JOSHUA", "CORVUS-ADMIN", "CORVUS-NEST", "OCWS-ADMIN-2026", "ADMIN"].includes(code);
           if (!isJoshuaCode) {
             const isVIPCode = ["CORVUS-NATE", "CORVUS-NATE-2026", "CORVUS-MIKE", "CORVUS-MIKE-2026", "CORVUS-ERIC", "CORVUS-ERIC-2026"].includes(code) || data.type === "vip";
             const isKyleCode = code === "CORVUS-KYLE";
@@ -1958,7 +1958,7 @@ export default function DashboardPage() {
       <CrowsEyeTab
         code={storedCode}
         isVIP={isVIP}
-        tier={tier}
+        tier={isVIP ? "vip" : tier}
         creditsRemaining={verdictsRemaining}
         reckoningCredits={rec}
         onScanComplete={() => loadReports(storedCode)}
