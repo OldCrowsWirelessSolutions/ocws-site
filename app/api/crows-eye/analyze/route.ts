@@ -398,7 +398,7 @@ export async function POST(req: Request) {
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-6",
-        max_tokens: 8192,
+        max_tokens: isSiteMode ? 4096 : 8192,
         system: CORVUS_SYSTEM_PROMPT,
         messages: [{ role: "user", content }],
       }),
