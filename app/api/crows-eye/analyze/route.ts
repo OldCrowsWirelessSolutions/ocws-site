@@ -465,19 +465,21 @@ export async function POST(req: Request) {
         return Response.json({ ok: false, error: "Analysis failed. Please try again." }, { status: 502 });
       }
 
-      const merged = validResults[0] as Record<string, unknown>;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const merged: any = { ...validResults[0] };
       if (!merged) {
         return Response.json({ ok: false, error: "Analysis failed. Please try again." }, { status: 502 });
       }
+
       for (let i = 1; i < validResults.length; i++) {
-        const r = validResults[i];
+        const r = validResults[i] as any;
         if (!r) continue;
-        merged.full_findings = [...(merged.full_findings || []), ...(r.full_findings || [])];
-        merged.recommendations = [...(merged.recommendations || []), ...(r.recommendations || [])];
-        merged.problems_found = (merged.problems_found || 0) + (r.problems_found || 0);
-        merged.critical_count = (merged.critical_count || 0) + (r.critical_count || 0);
-        merged.warning_count = (merged.warning_count || 0) + (r.warning_count || 0);
-        merged.good_count = (merged.good_count || 0) + (r.good_count || 0);
+        merged.full_findings = [...(merged.full_findings ?? []), ...(r.full_findings ?? [])];
+        merged.recommendations = [...(merged.recommendations ?? []), ...(r.recommendations ?? [])];
+        merged.problems_found = (merged.problems_found ?? 0) + (r.problems_found ?? 0);
+        merged.critical_count = (merged.critical_count ?? 0) + (r.critical_count ?? 0);
+        merged.warning_count = (merged.warning_count ?? 0) + (r.warning_count ?? 0);
+        merged.good_count = (merged.good_count ?? 0) + (r.good_count ?? 0);
         if (!merged.corvus_opening && r.corvus_opening) merged.corvus_opening = r.corvus_opening;
         if (!merged.corvus_summary && r.corvus_summary) merged.corvus_summary = r.corvus_summary;
       }
