@@ -389,6 +389,86 @@ export async function POST(req: Request) {
 
     content.push({ type: "text", text: contextLines.join("\n") });
 
+    // For site mode with many locations — analyze in parallel batches of 2
+    if (isSiteMode && locationPayloads.length > 2) {
+      const BATCH_SIZE = 2;
+      const batches: typeof locationPayloads[] = [];
+      for (let i = 0; i < locationPayloads.length; i += BATCH_SIZE) {
+        batches.push(locationPayloads.slice(i, i + BATCH_SIZE));
+      }
+
+      const batchResults = await Promise.all(batches.map(async (batchLocs) => {
+        const batchContent: (ImageEntry | TextEntry)[] = [];
+        for (const loc of batchLocs) {
+          const locName = String(loc.name || "Unnamed Location").trim();
+          const locMeta = [loc.locType, loc.structureRel].filter(Boolean).join(", ");
+          for (const [slot, label] of Object.entries(slotLabels)) {
+            if (loc.images?.[slot]) {
+              batchContent.push({
+                type: "image",
+                source: {
+                  type: "base64",
+                  media_type: sanitizeMime(loc.mimeTypes?.[slot] ?? "image/jpeg"),
+                  data: loc.images[slot],
+                },
+              });
+              batchContent.push({
+                type: "text",
+                text: `[Above image: ${locName}${locMeta ? ` (${locMeta})` : ""} — ${label}]`,
+              });
+            }
+          }
+        }
+        batchContent.push({ type: "text", text: contextLines.join("\n") });
+
+        const res = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "x-api-key": apiKey,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-6",
+            max_tokens: 2048,
+            system: CORVUS_SYSTEM_PROMPT,
+            messages: [{ role: "user", content: batchContent }],
+          }),
+        });
+
+        if (!res.ok) return null;
+        const data = await res.json();
+        const rawText: string = data?.content?.[0]?.text ?? "";
+        const cleaned = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
+        try { return JSON.parse(cleaned); } catch { return null; }
+      }));
+
+      // Merge batch results
+      const validResults = batchResults.filter(Boolean);
+      if (validResults.length === 0) {
+        return Response.json({ ok: false, error: "Analysis failed. Please try again." }, { status: 502 });
+      }
+
+      const merged = validResults[0];
+      for (let i = 1; i < validResults.length; i++) {
+        const r = validResults[i];
+        if (!r) continue;
+        merged.full_findings = [...(merged.full_findings || []), ...(r.full_findings || [])];
+        merged.recommendations = [...(merged.recommendations || []), ...(r.recommendations || [])];
+        merged.problems_found = (merged.problems_found || 0) + (r.problems_found || 0);
+        merged.critical_count = (merged.critical_count || 0) + (r.critical_count || 0);
+        merged.warning_count = (merged.warning_count || 0) + (r.warning_count || 0);
+        merged.good_count = (merged.good_count || 0) + (r.good_count || 0);
+        if (!merged.corvus_opening && r.corvus_opening) merged.corvus_opening = r.corvus_opening;
+        if (!merged.corvus_summary && r.corvus_summary) merged.corvus_summary = r.corvus_summary;
+      }
+
+      return Response.json({ ok: true, ...merged }, { status: 200 });
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 250000); // 250s timeout
+
     const anthropicRes = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -396,6 +476,7 @@ export async function POST(req: Request) {
         "anthropic-version": "2023-06-01",
         "content-type": "application/json",
       },
+      signal: controller.signal,
       body: JSON.stringify({
         model: "claude-sonnet-4-6",
         max_tokens: isSiteMode ? 4096 : 8192,
@@ -403,6 +484,8 @@ export async function POST(req: Request) {
         messages: [{ role: "user", content }],
       }),
     });
+
+    clearTimeout(timeoutId);
 
     if (!anthropicRes.ok) {
       const errText = await anthropicRes.text().catch(() => "");
