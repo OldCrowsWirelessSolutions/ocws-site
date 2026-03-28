@@ -465,7 +465,10 @@ export async function POST(req: Request) {
         return Response.json({ ok: false, error: "Analysis failed. Please try again." }, { status: 502 });
       }
 
-      const merged = validResults[0];
+      const merged = validResults[0] as Record<string, unknown>;
+      if (!merged) {
+        return Response.json({ ok: false, error: "Analysis failed. Please try again." }, { status: 502 });
+      }
       for (let i = 1; i < validResults.length; i++) {
         const r = validResults[i];
         if (!r) continue;
