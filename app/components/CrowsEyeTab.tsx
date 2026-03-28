@@ -394,7 +394,7 @@ export default function CrowsEyeTab({
 
       if (!res.ok || data.error) {
         console.error('[handleRunScan] server error:', res.status, data.error, data.detail);
-        setError(data.error || 'Scan failed. Please try again.');
+        setError(`${data.error || 'Scan failed.'} (${res.status}${data.detail ? ': ' + data.detail : ''})`);
         return;
       }
 
