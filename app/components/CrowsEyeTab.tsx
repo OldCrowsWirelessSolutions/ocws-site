@@ -384,6 +384,7 @@ export default function CrowsEyeTab({
         if (ghz5File) formData.append('ghz5', await compressImage(ghz5File, 300));
       }
 
+      console.log('[handleRunScan] sending request, locationCount:', isMultiLocation ? reckoningLocations.filter(l => l.signalListFile).length : 1);
       const res = await fetch('/api/dashboard/run-scan', {
         method: 'POST',
         body: formData,
@@ -392,6 +393,7 @@ export default function CrowsEyeTab({
       const data = await res.json();
 
       if (!res.ok || data.error) {
+        console.error('[handleRunScan] server error:', res.status, data.error, data.detail);
         setError(data.error || 'Scan failed. Please try again.');
         return;
       }
@@ -399,7 +401,8 @@ export default function CrowsEyeTab({
       setReport(data.report);
       onScanComplete?.();
     } catch (err) {
-      setError('Network error. Please check your connection and try again.');
+      console.error('[handleRunScan] error:', err);
+      setError(err instanceof Error ? err.message : 'Scan failed. Please try again.');
     } finally {
       setIsProcessing(false);
     }
