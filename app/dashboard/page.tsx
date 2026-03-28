@@ -113,7 +113,7 @@ const sectionLabel: React.CSSProperties = {
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
-type SubTab  = "overview" | "reports" | "analytics" | "credits" | "team" | "billing" | "chat" | "products" | "crow" | "settings" | "help" | "tour" | "demo";
+type SubTab  = "overview" | "reports" | "analytics" | "credits" | "team" | "billing" | "chat" | "products" | "crow" | "settings" | "help" | "tour";
 type VIPTab  = "overview" | "reports" | "analytics" | "codes"   | "team" | "chat"  | "products" | "crow" | "settings" | "help" | "tour" | "code-manager";
 type AnyTab  = SubTab | VIPTab;
 
@@ -879,7 +879,6 @@ export default function DashboardPage() {
     { id: "chat",      label: "Ask Corvus"   },
     { id: "crow",      label: "🦅 My Verdict" },
     { id: "tour",      label: "🎬 Tour"       },
-    { id: "demo",      label: "Share Demo"   },
     { id: "help",      label: "Help"          },
     { id: "settings",  label: "Settings"      },
   ];
@@ -2032,98 +2031,6 @@ export default function DashboardPage() {
     );
   }
 
-  function renderFledglingDemo() {
-    const [demoGenerating, setDemoGenerating] = React.useState(false);
-    const [demoToken, setDemoToken] = React.useState("");
-    const [demoURL, setDemoURL] = React.useState("");
-    const [demoCopied, setDemoCopied] = React.useState(false);
-    const [demoLabel, setDemoLabel] = React.useState("");
-    const [demoError, setDemoError] = React.useState("");
-
-    async function handleGenerateDemo() {
-      if (demoGenerating) return;
-      setDemoGenerating(true); setDemoError(""); setDemoToken(""); setDemoURL("");
-      try {
-        const res = await fetch("/api/demo/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            accessLevel: "fledgling",
-            expiresInHours: 48,
-            maxUses: 5,
-            createdBy: storedCode,
-            label: demoLabel || "Fledgling Demo",
-            allowPDF: false,
-            allowReckoning: false,
-          }),
-        });
-        const data = await res.json() as { token?: string; url?: string; error?: string };
-        if (data.error) { setDemoError(data.error); return; }
-        if (data.token && data.url) {
-          setDemoToken(data.token);
-          setDemoURL(data.url);
-        }
-      } catch { setDemoError("Connection error. Please try again."); }
-      finally { setDemoGenerating(false); }
-    }
-
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-        <div style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "28px" }}>
-          <p style={{ color: "#B8922A", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>Share a Demo Link</p>
-          <p style={{ color: "#888888", fontSize: "13px", lineHeight: 1.6, marginBottom: "20px" }}>
-            Generate a time-limited link to show someone exactly what Corvus can do. No account needed on their end — they just click and experience it.
-          </p>
-          <div style={{ marginBottom: "14px" }}>
-            <label style={{ color: "#555555", fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Label (optional)</label>
-            <input
-              type="text"
-              value={demoLabel}
-              onChange={e => setDemoLabel(e.target.value)}
-              placeholder="e.g. Client Name or Company"
-              style={{ ...inputStyle, marginBottom: 0 }}
-            />
-          </div>
-          <div style={{ background: "rgba(0,194,199,0.05)", border: "1px solid rgba(0,194,199,0.12)", borderRadius: "10px", padding: "12px 16px", marginBottom: "16px" }}>
-            <p style={{ color: "#555555", fontSize: "11px", lineHeight: 1.6, margin: 0 }}>
-              Links expire in <strong style={{ color: "#aaaaaa" }}>48 hours</strong> · Up to <strong style={{ color: "#aaaaaa" }}>5 uses</strong> · Fledgling access level
-            </p>
-          </div>
-          {demoError && <p style={{ color: "#F87171", fontSize: "12px", marginBottom: "12px" }}>{demoError}</p>}
-          <button
-            onClick={handleGenerateDemo}
-            disabled={demoGenerating}
-            style={{ background: demoGenerating ? "#0D6E7A" : "#B8922A", color: "#0D1520", border: "none", borderRadius: "10px", fontSize: "13px", fontWeight: 700, padding: "12px 24px", cursor: demoGenerating ? "not-allowed" : "pointer" }}
-          >
-            {demoGenerating ? "Generating…" : "Generate Demo Link"}
-          </button>
-
-          {demoURL && (
-            <div style={{ marginTop: "20px", background: "rgba(184,146,42,0.08)", border: "1px solid rgba(184,146,42,0.3)", borderRadius: "12px", padding: "18px 20px" }}>
-              <p style={{ color: "#B8922A", fontSize: "10px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>Demo Link Ready</p>
-              <p style={{ color: "#F4F6F8", fontSize: "12px", fontFamily: "monospace", wordBreak: "break-all", marginBottom: "12px", lineHeight: 1.6 }}>{demoURL}</p>
-              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                <button
-                  onClick={() => { navigator.clipboard.writeText(demoURL); setDemoCopied(true); setTimeout(() => setDemoCopied(false), 2000); }}
-                  style={{ background: demoCopied ? "rgba(74,222,128,0.12)" : "rgba(184,146,42,0.15)", border: `1px solid ${demoCopied ? "rgba(74,222,128,0.4)" : "rgba(184,146,42,0.4)"}`, borderRadius: "8px", color: demoCopied ? "#4ADE80" : "#B8922A", fontSize: "12px", fontWeight: 700, padding: "8px 16px", cursor: "pointer" }}
-                >
-                  {demoCopied ? "Copied!" : "Copy Link"}
-                </button>
-                <button
-                  onClick={handleGenerateDemo}
-                  disabled={demoGenerating}
-                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#888888", fontSize: "12px", padding: "8px 16px", cursor: "pointer" }}
-                >
-                  New Link
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
   function renderFledglingVerdict() {
     const verdictLine = corvusLineFresh(
       fledglingVerdictUsed ? CORVUS_FLEDGLING_VERDICT_USED : (fledglingIsFirst ? CORVUS_FLEDGLING_FIRST : CORVUS_FLEDGLING_RETURNING),
@@ -2178,7 +2085,6 @@ export default function DashboardPage() {
         case "chat":     return renderChat();
         case "crow":     return renderCrowsEye();
         case "tour":     return renderFledglingTour();
-        case "demo":     return renderFledglingDemo();
         case "settings": return <SettingsTab code={storedCode} isVIP={false} />;
         case "help":     return renderHelp();
         default:         return renderChat();
