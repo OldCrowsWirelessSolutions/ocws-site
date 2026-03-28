@@ -8,10 +8,10 @@ const VIP_CODES = [
   process.env.VIP_ERIC_CODE,
 ];
 
-function getRole(authKey: string): 'admin' | 'vip' | 'team_lead' | null {
+function getRole(authKey: string): 'admin' | 'vip' | null {
   if (authKey === ADMIN_KEY) return 'admin';
-  if (VIP_CODES.includes(authKey)) return 'vip';
-  return 'team_lead';
+  if ((VIP_CODES as (string | undefined)[]).includes(authKey)) return 'vip';
+  return null;
 }
 
 export async function POST(req: NextRequest) {

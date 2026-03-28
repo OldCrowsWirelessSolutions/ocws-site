@@ -84,7 +84,7 @@ export default function CorvusTourManager({ authKey, isAdmin = false }: Props) {
           toEmail: emailTo,
           toName: generated?.name || undefined,
           tourUrl: url,
-          tourLevel: shareLevel,
+          tourLevel: generated?.level ?? shareLevel,
         }),
       });
       const data = await res.json();

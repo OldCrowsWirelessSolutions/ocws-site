@@ -59,10 +59,16 @@ export async function speakAsCorvus(
       body: JSON.stringify({ text: text.replace(/["""'']/g, '') }),
     });
 
-    if (!res.ok) { onEnd?.(); return; }
+    if (!res.ok) {
+      console.warn('[Corvus audio] /api/elevenlabs/speak returned', res.status);
+      onEnd?.(); return;
+    }
 
     const buf = await res.arrayBuffer();
-    if (!buf?.byteLength) { onEnd?.(); return; }
+    if (!buf?.byteLength) {
+      console.warn('[Corvus audio] empty audio buffer — ElevenLabs returned 0 bytes');
+      onEnd?.(); return;
+    }
 
     const audio = await ctx.decodeAudioData(buf);
     const src = ctx.createBufferSource();

@@ -20,10 +20,9 @@ export async function POST(req: NextRequest) {
     const { authKey, action, code, email, notes, credits } = await req.json();
 
     const isAdmin = authKey === ADMIN_KEY;
-    const isVIP = VIP_CODES.includes(authKey);
-    const isTeamLead = !isAdmin && !isVIP;
+    const isVIP = (VIP_CODES as (string | undefined)[]).includes(authKey);
 
-    if (!isAdmin && !isVIP && !isTeamLead) {
+    if (!isAdmin && !isVIP) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
