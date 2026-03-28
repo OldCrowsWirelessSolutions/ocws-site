@@ -329,7 +329,7 @@ export default function Navbar() {
           <div className="absolute left-0 right-0 top-[60px] mx-auto w-[min(96%,900px)]">
             <div
               className="rounded-2xl border border-white/10 backdrop-blur p-3 shadow-[0_20px_60px_rgba(0,0,0,0.6)]"
-              style={{ background: "rgba(13,21,32,0.97)" }}
+              style={{ background: "rgba(13,21,32,0.97)", overflowY: 'auto', maxHeight: '100vh', WebkitOverflowScrolling: 'touch' }}
             >
               <div className="px-2 pt-1 pb-2 text-xs text-white/60">Navigate</div>
 

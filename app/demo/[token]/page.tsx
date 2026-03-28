@@ -105,7 +105,7 @@ export default function DemoLandingPage() {
           <span style={s.uses}>{session!.usesRemaining} use{session!.usesRemaining !== 1 ? 's' : ''} remaining</span>
         )}
       </div>
-      <button style={s.launchBtn} onClick={() => router.push('/crows-eye?demo=true')}>
+      <button style={s.launchBtn} onClick={() => router.push('/dashboard')}>
         Launch Crow's Eye →
       </button>
       <p style={s.footer}>

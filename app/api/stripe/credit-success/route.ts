@@ -9,8 +9,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', req.url))
   }
 
-  const redirectUrl = new URL('/crows-eye', req.url)
-  if (resume) redirectUrl.searchParams.set('resume', 'true')
+  const redirectUrl = new URL('/dashboard', req.url)
 
   return NextResponse.redirect(redirectUrl)
 }

@@ -93,7 +93,7 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
           bodyText: `Start with a free teaser analysis — see how many problems Corvus finds before you pay a cent. Full Verdict unlocks for $50.`,
           visualType: 'cta',
           ctaText: 'Run Corvus on Your Network — $50',
-          ctaUrl: '/crows-eye',
+          ctaUrl: '/dashboard',
           duration: 0,
         },
       ],
@@ -101,7 +101,7 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
         ? `"${name}. Go fix your WiFi. I'll be here when it breaks again."`
         : `"Go fix your WiFi. I'll be here when it breaks again."`,
       ctaText: 'Start Your Verdict — $50',
-      ctaUrl: '/crows-eye',
+      ctaUrl: '/dashboard',
     },
 
     // ── FLOCK — MSP / IT Pro ──────────────────────────────────────────────
@@ -351,7 +351,7 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
           bodyText: `Try a free teaser scan. Run a full Verdict for $50. Or start a subscription today. Corvus is ready.`,
           visualType: 'cta',
           ctaText: 'Start Your First Verdict',
-          ctaUrl: '/crows-eye',
+          ctaUrl: '/dashboard',
           duration: 0,
         },
       ],
@@ -359,7 +359,7 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
         ? `"${name}. You've seen what I do. Now let me do it for you."`
         : `"You've seen what I do. Now let me do it for you."`,
       ctaText: 'Start Your First Verdict',
-      ctaUrl: '/crows-eye',
+      ctaUrl: '/dashboard',
     },
 
     // ── VERDICT — Single product ──────────────────────────────────────────
@@ -416,13 +416,13 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
           bodyText: `$50. Under 5 minutes. Router-specific fix instructions. PDF download. No technician. No appointment. No $75 visit fee.`,
           visualType: 'cta',
           ctaText: 'Get Your Verdict — $50',
-          ctaUrl: '/crows-eye',
+          ctaUrl: '/dashboard',
           duration: 0,
         },
       ],
       closingLine: `"Go upload your scan. I'll do the rest."`,
       ctaText: 'Get Your Verdict — $50',
-      ctaUrl: '/crows-eye',
+      ctaUrl: '/dashboard',
     },
 
     // ── RECKONING — Multi-location ────────────────────────────────────────
@@ -488,13 +488,13 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
           bodyText: `Upload your scans. Set your locations. Corvus renders The Full Reckoning.`,
           visualType: 'cta',
           ctaText: 'Start Your Reckoning',
-          ctaUrl: '/crows-eye',
+          ctaUrl: '/dashboard',
           duration: 0,
         },
       ],
       closingLine: `"Multiple buildings. One Verdict. That's The Full Reckoning."`,
       ctaText: 'Start Your Full Reckoning',
-      ctaUrl: '/crows-eye',
+      ctaUrl: '/dashboard',
     },
 
     // ── COMPARE — Competitive ─────────────────────────────────────────────
@@ -557,13 +557,13 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
           bodyText: `Try Corvus free. See what he finds. Then decide.`,
           visualType: 'cta',
           ctaText: 'Try Corvus Free',
-          ctaUrl: '/crows-eye',
+          ctaUrl: '/dashboard',
           duration: 0,
         },
       ],
       closingLine: `"The comparison is over. You already know the answer."`,
       ctaText: 'Start Your Free Teaser Scan',
-      ctaUrl: '/crows-eye',
+      ctaUrl: '/dashboard',
     },
   };
 

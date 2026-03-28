@@ -525,6 +525,33 @@ export default function DashboardPage() {
   }, [loadReports, loadSeatInfo, loadVipSubordinates, loadVipTeamActivity, loadTeamActivity, loadMyAnalytics, loadTeamReport]);
 
   useEffect(() => {
+    // Handle Stripe redirect back to dashboard
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('verdict') === 'unlocked') {
+        const saved = sessionStorage.getItem('corvus_pending_result');
+        if (saved) {
+          // Store for CrowsEyeTab to pick up
+          sessionStorage.setItem('corvus_dashboard_pending_verdict', saved);
+          sessionStorage.removeItem('corvus_pending_result');
+        }
+        // Clean URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete('verdict');
+        url.searchParams.delete('session_id');
+        window.history.replaceState({}, '', url.toString());
+        // Navigate to crow tab after dashboard loads
+        setTimeout(() => navigateTab('crow'), 1000);
+      }
+      if (params.get('reckoning') === 'purchased') {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('reckoning');
+        url.searchParams.delete('type');
+        window.history.replaceState({}, '', url.toString());
+        setTimeout(() => navigateTab('crow'), 1000);
+      }
+    } catch { /* non-fatal */ }
+
     try {
       const saved = localStorage.getItem("corvus_sub_code");
       if (!saved) { setPhase("auth"); return; }

@@ -151,7 +151,7 @@ export async function POST(req: NextRequest) {
       line_items: lineItems,
       success_url: isSubscription
         ? `${origin}/dashboard?subscribed=true&session_id={CHECKOUT_SESSION_ID}`
-        : `${origin}/crows-eye?verdict=unlocked&session_id={CHECKOUT_SESSION_ID}`,
+        : `${origin}/dashboard?verdict=unlocked&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: isSubscription
         ? `${origin}/?cancelled=true`
         : `${origin}/crows-eye?verdict=cancelled`,

@@ -127,7 +127,7 @@ export async function sendSubscriptionConfirmation(opts: {
         </div>
 
         <p style="color:#aaaaaa;font-size:13px;margin:0 0 8px;">
-          <strong style="color:#ffffff;">How to use it:</strong> Go to <a href="https://oldcrowswireless.com/crows-eye" style="color:#00C2C7;">oldcrowswireless.com/crows-eye</a>, enter your Subscription ID in the Subscription ID field, and click Apply Subscription. Your included credits will be applied automatically.
+          <strong style="color:#ffffff;">How to use it:</strong> Go to <a href="https://oldcrowswireless.com/dashboard" style="color:#00C2C7;">oldcrowswireless.com/dashboard</a>, enter your Subscription ID in the Subscription ID field, and click Apply Subscription. Your included credits will be applied automatically.
         </p>
         <p style="color:#555555;font-size:11px;margin:24px 0 0;">
           &copy; 2026 Old Crows Wireless Solutions LLC. Corvus&rsquo; Verdict and Crow&rsquo;s Eye are unregistered trademarks of Old Crows Wireless Solutions LLC.
@@ -267,7 +267,7 @@ export async function sendWelcomeEmail(
     ``,
     `Your subscriber code: ${code}`,
     ``,
-    `This code unlocks your full Verdict at oldcrowswireless.com/crows-eye.`,
+    `This code unlocks your full Verdict at oldcrowswireless.com/dashboard.`,
     `Enter it when Corvus renders your free teaser analysis.`,
     ``,
     `You have ${credits} Verdicts included this month.`,
@@ -280,7 +280,7 @@ export async function sendWelcomeEmail(
     `How to use Crow's Eye:`,
     `1. Download WiFi Analyzer (free — green icon, Google Play or App Store)`,
     `2. Take three screenshots — Access Points, 2.4 GHz graph, 5 GHz graph`,
-    `3. Go to oldcrowswireless.com/crows-eye`,
+    `3. Go to oldcrowswireless.com/dashboard`,
     `4. Upload screenshots and analyze`,
     `5. Enter ${code} to unlock your full Verdict`,
     ``,
@@ -318,7 +318,7 @@ export async function sendWelcomeEmail(
 
         <p style="color:#aaaaaa;font-size:13px;margin:0 0 8px;">
           This code unlocks your full Verdict at
-          <a href="https://oldcrowswireless.com/crows-eye" style="color:#00C2C7;">oldcrowswireless.com/crows-eye</a>.
+          <a href="https://oldcrowswireless.com/dashboard" style="color:#00C2C7;">oldcrowswireless.com/dashboard</a>.
           Enter it when Corvus renders your free teaser analysis.
         </p>
         <p style="color:#aaaaaa;font-size:13px;margin:0 0 20px;">
@@ -336,7 +336,7 @@ export async function sendWelcomeEmail(
           <ol style="color:#aaaaaa;font-size:13px;margin:0;padding-left:20px;">
             <li style="margin-bottom:6px;">Download WiFi Analyzer (free — green icon, Google Play or App Store)</li>
             <li style="margin-bottom:6px;">Take three screenshots — Access Points, 2.4 GHz graph, 5 GHz graph</li>
-            <li style="margin-bottom:6px;">Go to <a href="https://oldcrowswireless.com/crows-eye" style="color:#00C2C7;">oldcrowswireless.com/crows-eye</a></li>
+            <li style="margin-bottom:6px;">Go to <a href="https://oldcrowswireless.com/dashboard" style="color:#00C2C7;">oldcrowswireless.com/dashboard</a></li>
             <li style="margin-bottom:6px;">Upload screenshots and analyze</li>
             <li>Enter <strong style="color:#ffffff;">${escapeHtml(code)}</strong> to unlock your full Verdict</li>
           </ol>
@@ -396,7 +396,7 @@ export async function sendCodeRecoveryEmail(
     ``,
     `Tier: ${tierName}`,
     ``,
-    `Use this code at oldcrowswireless.com/crows-eye to unlock your full Verdict.`,
+    `Use this code at oldcrowswireless.com/dashboard to unlock your full Verdict.`,
     `Access your dashboard at oldcrowswireless.com/dashboard.`,
     ``,
     `If you did not request this email, please contact joshua@oldcrowswireless.com`,
@@ -427,7 +427,7 @@ export async function sendCodeRecoveryEmail(
 
         <p style="color:#aaaaaa;font-size:13px;margin:0 0 8px;">
           Use this code at
-          <a href="https://oldcrowswireless.com/crows-eye" style="color:#00C2C7;">oldcrowswireless.com/crows-eye</a>
+          <a href="https://oldcrowswireless.com/dashboard" style="color:#00C2C7;">oldcrowswireless.com/dashboard</a>
           to unlock your full Verdict.
         </p>
         <p style="color:#aaaaaa;font-size:13px;margin:0 0 20px;">
@@ -483,7 +483,7 @@ export async function sendFledglingWelcomeEmail(
     `HOW TO USE YOUR FREE VERDICT:`,
     `1. Download WiFi Analyzer (free — green icon, Google Play or App Store)`,
     `2. Take three screenshots — Access Points, 2.4 GHz graph, 5 GHz graph`,
-    `3. Go to oldcrowswireless.com/crows-eye`,
+    `3. Go to oldcrowswireless.com/dashboard`,
     `4. Upload screenshots, analyze, and enter ${code} to unlock your free Verdict`,
     ``,
     `Ready for more? Upgrade to a Nest subscription at any time from your dashboard.`,
@@ -520,7 +520,7 @@ export async function sendFledglingWelcomeEmail(
           <ol style="color:#aaaaaa;font-size:13px;margin:0;padding-left:20px;">
             <li style="margin-bottom:6px;">Download WiFi Analyzer (free — green icon, Google Play or App Store)</li>
             <li style="margin-bottom:6px;">Take three screenshots — Access Points, 2.4 GHz graph, 5 GHz graph</li>
-            <li style="margin-bottom:6px;">Go to <a href="https://oldcrowswireless.com/crows-eye" style="color:#00C2C7;">oldcrowswireless.com/crows-eye</a></li>
+            <li style="margin-bottom:6px;">Go to <a href="https://oldcrowswireless.com/dashboard" style="color:#00C2C7;">oldcrowswireless.com/dashboard</a></li>
             <li style="margin-bottom:6px;">Upload screenshots and analyze</li>
             <li>Enter <strong style="color:#ffffff;">${escapeHtml(code)}</strong> to unlock your free Verdict</li>
           </ol>

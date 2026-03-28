@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
         reckoningType,
         tier,
       },
-      success_url: `${origin}/crows-eye?reckoning=purchased&type=${reckoningType}`,
+      success_url: `${origin}/dashboard?reckoning=purchased&type=${reckoningType}`,
       cancel_url:  `${origin}/dashboard`,
     });
 
