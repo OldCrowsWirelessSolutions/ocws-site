@@ -323,7 +323,7 @@ export default function CrowsEyeTab({
     ? 'verdict'
     : `reckoning_${size}` as string;
 
-  const isMultiLocation = mode === 'reckoning' && (size === 'standard' || size === 'commercial');
+  const isMultiLocation = mode === 'reckoning';
 
   const handleRunScan = async () => {
     if (!clientName.trim()) {
