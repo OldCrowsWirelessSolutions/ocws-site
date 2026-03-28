@@ -11,6 +11,7 @@ import CorvusTour from "@/app/components/CorvusTour";
 import CorvusTourPlayer from "@/app/components/CorvusTourPlayer";
 import CorvusTourManager from "@/app/components/CorvusTourManager";
 import CodeManagerTab from "@/app/components/CodeManagerTab";
+import DemoTokenManager from "@/app/components/DemoTokenManager";
 import { TOURS, type Tour } from "@/lib/corvus-tours";
 import type { TourLevel } from "@/lib/corvusTour";
 import {
@@ -1546,6 +1547,12 @@ export default function DashboardPage() {
             <p style={{ color: "#888888", fontSize: "13px" }}>Maximum {sub?.vip_max_subordinates ?? 5} active codes. Revoke one to generate another.</p>
           </div>
         )}
+        <div style={{ marginTop: "32px" }}>
+          <p style={{ color: "#D4AF37", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
+            Demo Token Generator
+          </p>
+          <DemoTokenManager authKey={storedCode} isAdmin={false} />
+        </div>
       </div>
     );
   }
