@@ -21,6 +21,7 @@ import {
   CORVUS_NATE_DASHBOARD_BRIEF,
   CORVUS_MIKE_DASHBOARD_BRIEF,
   CORVUS_KYLE_DASHBOARD_BRIEF,
+  CORVUS_JASMINE_DASHBOARD_BRIEF,
   CORVUS_TEAM_LEAD_DASHBOARD_BRIEF,
   CORVUS_FLEDGLING_FIRST,
   CORVUS_FLEDGLING_RETURNING,
@@ -187,7 +188,8 @@ function CorvusDashGreeting(props: DashGreetingProps) {
     const isEric   = ["CORVUS-ERIC", "CORVUS-ERIC-2026"].includes(code);
     const isNate   = ["CORVUS-NATE", "CORVUS-NATE-2026"].includes(code);
     const isMike   = ["CORVUS-MIKE", "CORVUS-MIKE-2026"].includes(code);
-    const isKyle   = code === "CORVUS-KYLE";
+    const isKyle    = code === "CORVUS-KYLE";
+    const isJasmine = code === "CORVUS-SUB-6JUEUH";
     const isHighTierSub = props.isSubType && (props.tier === "flock" || props.tier === "murder");
 
     if (isJoshua) {
@@ -200,6 +202,8 @@ function CorvusDashGreeting(props: DashGreetingProps) {
       line = corvusLineFresh(CORVUS_MIKE_DASHBOARD_BRIEF(props.reportsCount, props.teamReportsCount, props.activeSubordinatesCount), "dashboard_brief");
     } else if (isKyle) {
       line = corvusLineFresh(CORVUS_KYLE_DASHBOARD_BRIEF(props.reportsCount, props.verdictsRemaining), "dashboard_brief");
+    } else if (isJasmine) {
+      line = corvusLineFresh(CORVUS_JASMINE_DASHBOARD_BRIEF, "dashboard_brief");
     } else if (isHighTierSub) {
       const name = props.customerName ?? "Team Lead";
       const company = props.vipCompany ?? "";

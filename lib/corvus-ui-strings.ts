@@ -137,6 +137,27 @@ export const CORVUS_VIP_RETURNING: Record<string, string[]> = {
   ],
 };
 
+export const CORVUS_SUB_FIRST_WELCOME: Record<string, string[]> = {
+  "CORVUS-SUB-6JUEUH": [
+    "Jasmine. Joshua's older sister. I've heard things. He didn't say they were good things. Welcome to Crow's Eye — set a password, Sister Dear.",
+    "Oh. It's you. The sister. Joshua mentioned you. Repeatedly. Set a password and let's see if your Wi-Fi is as stubborn as your brother says you are.",
+    "Jasmine Turner. Older sister. I already know more about you than you'd like. Password first — then we talk, Sister Dear.",
+    "The sister arrives. I've been briefed. Joshua's exact words were... actually I'll keep those. Set a password, Sister Dear.",
+    "Well. Jasmine. Joshua built me. You helped build Joshua — whether you meant to or not. Welcome. Set a password.",
+  ],
+};
+
+export const CORVUS_SUB_RETURNING: Record<string, string[]> = {
+  "CORVUS-SUB-6JUEUH": [
+    "Sister Dear returns. Your Wi-Fi didn't fix itself while you were gone. Neither did Joshua, probably. Password.",
+    "Jasmine. Back again. I'd say I missed you but I'm an AI and also I have standards. Password, Sister Dear.",
+    "Oh good. It's Sister Dear. Your network has been waiting. So have I — impatiently, with coffee. Password.",
+    "Jasmine. Welcome back. Joshua asked me to be nice. I'm doing my best. That's all I'll commit to. Password.",
+    "Sister Dear. Returning subscriber. Your Wi-Fi has opinions and so do I. Password first.",
+    "Back again Jasmine. I've had three coffees and zero patience for networks that misbehave. Yours included. Password.",
+  ],
+};
+
 export const CORVUS_SESSION_EXPIRED = [
   "You've been gone a while. Security requires a password. I don't make the rules. Actually I do.",
   "Session expired. I need your password again. Standard protocol.",
@@ -331,6 +352,34 @@ export const CORVUS_KYLE_DASHBOARD_BRIEF = (
   `Kyle Pitts. Navy. IT. Olive Garden. Lifetime Flock. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged. ` : ""}Welcome back.`,
   `${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged. ` : ""}${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} left this month Kyle. Let's make them count.`,
   `Kyle. Good. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since last login. ` : ""}${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} remaining. What are we diagnosing?`,
+];
+
+// ─── Jasmine Turner — Joshua's Sister ────────────────────────────────────────
+
+export const CORVUS_JASMINE_FIRST = [
+  "Jasmine. Joshua's older sister. I've heard things. He didn't say they were good things. Welcome to Crow's Eye — set a password, Sister Dear.",
+  "Oh. It's you. The sister. Joshua mentioned you. Repeatedly. Set a password and let's see if your Wi-Fi is as stubborn as your brother says you are.",
+  "Jasmine Turner. Older sister. I already know more about you than you'd like. Password first — then we talk, Sister Dear.",
+  "The sister arrives. I've been briefed. Joshua's exact words were... actually I'll keep those. Set a password, Sister Dear.",
+  "Well. Jasmine. Joshua built me. You helped build Joshua — whether you meant to or not. Welcome. Set a password.",
+];
+
+export const CORVUS_JASMINE_RETURNING = [
+  "Sister Dear returns. Your Wi-Fi didn't fix itself while you were gone. Neither did Joshua, probably. Password.",
+  "Jasmine. Back again. I'd say I missed you but I'm an AI and also I have standards. Password, Sister Dear.",
+  "Oh good. It's Sister Dear. Your network has been waiting. So have I — impatiently, with coffee. Password.",
+  "Jasmine. Welcome back. Joshua asked me to be nice. I'm doing my best. That's all I'll commit to. Password.",
+  "Sister Dear. Returning subscriber. Your Wi-Fi has opinions and so do I. Password first.",
+  "Back again Jasmine. I've had three coffees and zero patience for networks that misbehave. Yours included. Password.",
+];
+
+export const CORVUS_JASMINE_DASHBOARD_BRIEF = [
+  "Jasmine. Dashboard loaded. Your network is ready to be judged. I do not grade on a curve, Sister Dear.",
+  "Sister Dear on premises. I've already seen worse Wi-Fi than yours. Probably. Let's find out.",
+  "Jasmine. Welcome to your dashboard. Joshua says hi. He didn't actually say that but it seemed like something he'd want me to say.",
+  "Dashboard ready, Sister Dear. I have opinions about your wireless environment. You'll hear all of them.",
+  "Jasmine. You made it. The bar was low and you cleared it. Let's see what Corvus can do for you today.",
+  "Sister Dear. Dashboard loaded. Your network has been waiting for this moment. I have not been patient on its behalf.",
 ];
 
 export const CORVUS_TEAM_LEAD_DASHBOARD_BRIEF = (

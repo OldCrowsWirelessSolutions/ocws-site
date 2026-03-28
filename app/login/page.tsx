@@ -14,6 +14,8 @@ import {
   CORVUS_PASSWORD_STRENGTH,
   CORVUS_VIP_FIRST_WELCOME,
   CORVUS_VIP_RETURNING,
+  CORVUS_SUB_FIRST_WELCOME,
+  CORVUS_SUB_RETURNING,
   CORVUS_SESSION_EXPIRED,
   CORVUS_FORGOT_PASSWORD,
   CORVUS_JOSHUA_LOGIN_FIRST,
@@ -301,11 +303,13 @@ export default function LoginPage() {
       instructionRef.current = pick(CORVUS_PASSWORD_INSTRUCTIONS);
       speakCorvus(corvusLineRef.current);
     } else if (step === "sub_create_password") {
-      corvusLineRef.current = pick(CORVUS_FIRST_WELCOME);
+      const lines = CORVUS_SUB_FIRST_WELCOME[pendingCode] ?? CORVUS_FIRST_WELCOME;
+      corvusLineRef.current = pick(lines);
       instructionRef.current = pick(CORVUS_PASSWORD_INSTRUCTIONS);
       speakCorvus(corvusLineRef.current);
     } else if (step === "sub_enter_password") {
-      corvusLineRef.current = pick(sessionExpired ? CORVUS_SESSION_EXPIRED : CORVUS_RETURNING_WELCOME);
+      const lines = sessionExpired ? CORVUS_SESSION_EXPIRED : (CORVUS_SUB_RETURNING[pendingCode] ?? CORVUS_RETURNING_WELCOME);
+      corvusLineRef.current = pick(lines);
       instructionRef.current = pick(CORVUS_PASSWORD_INSTRUCTIONS);
       speakCorvus(corvusLineRef.current);
     } else {
