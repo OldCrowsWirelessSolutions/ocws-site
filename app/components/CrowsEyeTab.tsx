@@ -1185,21 +1185,26 @@ export default function CrowsEyeTab({
                 Screenshots
               </div>
               <FileUploadSlot
-                label="Signal List / AP List"
+                label={deviceType === 'ios' ? 'WLAN Screen' : 'Signal List / AP List'}
                 required
                 file={signalListFile}
                 onChange={setSignalListFile}
               />
               <FileUploadSlot
-                label="2.4 GHz Channel Graph (optional)"
+                label={deviceType === 'ios' ? '2.4 GHz Filtered View (optional)' : '2.4 GHz Channel Graph (optional)'}
                 file={ghz24File}
                 onChange={setGhz24File}
               />
               <FileUploadSlot
-                label="5 GHz Channel Graph (optional)"
+                label={deviceType === 'ios' ? '5 GHz Filtered View (optional)' : '5 GHz Channel Graph (optional)'}
                 file={ghz5File}
                 onChange={setGhz5File}
               />
+              {deviceType === 'ios' && (
+                <p style={{ margin: '6px 0 0', fontFamily: 'monospace', fontSize: '0.65rem', color: 'rgba(244,246,248,0.35)', fontStyle: 'italic' }}>
+                  iPhone restricts some Wi-Fi data. Upload what you can — Corvus will work with whatever he sees.
+                </p>
+              )}
             </div>
           )}
 
@@ -1258,18 +1263,18 @@ export default function CrowsEyeTab({
                     autoComplete="off"
                   />
                   <FileUploadSlot
-                    label="Signal List / AP List"
+                    label={deviceType === 'ios' ? 'WLAN Screen' : 'Signal List / AP List'}
                     required
                     file={loc.signalListFile}
                     onChange={f => updateLocation(loc.id, 'signalListFile', f)}
                   />
                   <FileUploadSlot
-                    label="2.4 GHz Channel Graph (optional)"
+                    label={deviceType === 'ios' ? '2.4 GHz Filtered View (optional)' : '2.4 GHz Channel Graph (optional)'}
                     file={loc.ghz24File}
                     onChange={f => updateLocation(loc.id, 'ghz24File', f)}
                   />
                   <FileUploadSlot
-                    label="5 GHz Channel Graph (optional)"
+                    label={deviceType === 'ios' ? '5 GHz Filtered View (optional)' : '5 GHz Channel Graph (optional)'}
                     file={loc.ghz5File}
                     onChange={f => updateLocation(loc.id, 'ghz5File', f)}
                   />
