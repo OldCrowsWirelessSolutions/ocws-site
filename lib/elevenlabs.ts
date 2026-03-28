@@ -58,30 +58,43 @@ export async function speakCorvus(
       return;
     }
 
-    const url = URL.createObjectURL(blob);
-    const audio = new Audio(url);
+    // Convert to base64 data URL — more reliable than createObjectURL on iOS/Android
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+
+    const audio = new Audio(dataUrl);
+    audio.preload = 'auto';
     currentAudio = audio;
 
     audio.onended = () => {
-      URL.revokeObjectURL(url);
       if (currentAudio === audio) currentAudio = null;
     };
 
-    audio.onerror = () => {
-      console.error('[speakCorvus] playback error');
-      URL.revokeObjectURL(url);
+    audio.onerror = (e) => {
+      console.error('[speakCorvus] playback error', e);
       if (currentAudio === audio) currentAudio = null;
     };
 
+    // Attempt immediate play
     try {
       await audio.play();
       console.log('[speakCorvus] playing');
     } catch (playError: unknown) {
-      if ((playError as Error).name === 'NotAllowedError') {
+      const name = (playError as Error).name;
+      if (name === 'NotAllowedError' || name === 'NotSupportedError') {
         console.warn('[speakCorvus] autoplay blocked — queued for next user interaction');
-        document.addEventListener('click', async () => {
-          try { await audio.play(); } catch { /* ignored */ }
-        }, { once: true });
+        const playOnGesture = async () => {
+          try {
+            audio.load();
+            await audio.play();
+          } catch { /* ignored */ }
+        };
+        document.addEventListener('touchend', playOnGesture, { once: true });
+        document.addEventListener('click', playOnGesture, { once: true });
       } else {
         console.error('[speakCorvus] play error:', playError);
       }
