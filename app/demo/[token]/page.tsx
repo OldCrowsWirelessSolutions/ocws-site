@@ -105,7 +105,11 @@ export default function DemoLandingPage() {
           <span style={s.uses}>{session!.usesRemaining} use{session!.usesRemaining !== 1 ? 's' : ''} remaining</span>
         )}
       </div>
-      <button style={s.launchBtn} onClick={() => router.push('/dashboard')}>
+      <button style={s.launchBtn} onClick={() => {
+        sessionStorage.setItem('corvus_demo_token', token);
+        sessionStorage.setItem('corvus_demo_session', JSON.stringify(session));
+        router.push('/dashboard?demo_token=' + token);
+      }}>
         Launch Crow's Eye →
       </button>
       <p style={s.footer}>

@@ -525,6 +525,21 @@ export default function DashboardPage() {
   }, [loadReports, loadSeatInfo, loadVipSubordinates, loadVipTeamActivity, loadTeamActivity, loadMyAnalytics, loadTeamReport]);
 
   useEffect(() => {
+    // Handle demo token redirect from QR code scan
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const demoToken = params.get('demo_token');
+      if (demoToken) {
+        // Store token for dashboard to pick up
+        sessionStorage.setItem('corvus_demo_token', demoToken);
+        localStorage.setItem('corvus_sub_code', demoToken);
+        // Clean URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete('demo_token');
+        window.history.replaceState({}, '', url.toString());
+      }
+    } catch { /* non-fatal */ }
+
     // Handle Stripe redirect back to dashboard
     try {
       const params = new URLSearchParams(window.location.search);

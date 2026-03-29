@@ -1783,7 +1783,7 @@ export default function AdminPage() {
                 <tbody>
                   {promoCodes.map(p => {
                     const status = getPromoStatus(p);
-                    const promoUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://oldcrowswireless.com'}/dashboard?promo=${p.code}`;
+                    const promoUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://oldcrowswireless.com'}/dashboard?sub_code=${p.code}`;
                     return (
                       <React.Fragment key={p.code}>
                       <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
