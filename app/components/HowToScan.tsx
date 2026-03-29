@@ -12,7 +12,7 @@ const STEPS = [
     imgAlt: 'WiFi Analyzer app — available on Google Play',
     badge: {
       android: 'https://play.google.com/store/apps/details?id=com.vrem.wifianalyzer',
-      ios: 'https://apps.apple.com/us/app/wifi-analyzer/id1286522951',
+      ios: 'https://apps.apple.com/us/app/ubiquiti-wifiman/id1385561119',
     },
   },
   {

@@ -476,6 +476,7 @@ export default function CrowsEyeClient() {
   const [ssid, setSsid] = useState("");
   const [multiSsid, setMultiSsid] = useState(false);
   const [ssidDescription, setSsidDescription] = useState("");
+  const [scanDevice, setScanDevice] = useState<'android' | 'ios'>('android');
   const [errorMsg, setErrorMsg] = useState("");
 
   const [honeypot, setHoneypot] = useState("");
@@ -2163,7 +2164,7 @@ export default function CrowsEyeClient() {
 
           {/* Apple App Store badge */}
           <a
-            href="https://apps.apple.com/us/app/wifi-analyzer/id1286522951"
+            href="https://apps.apple.com/us/app/ubiquiti-wifiman/id1385561119"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 px-4 py-3 rounded-xl transition"
@@ -2179,7 +2180,7 @@ export default function CrowsEyeClient() {
             </svg>
             <div>
               <p className="text-white/55 text-xs leading-none mb-0.5">IPHONE USERS</p>
-              <p className="text-white font-semibold text-sm leading-none">WiFi Analyzer by Zolt&#225;n Pall&#225;ghy</p>
+              <p className="text-white font-semibold text-sm leading-none">WiFiman by Ubiquiti</p>
             </div>
           </a>
         </div>
@@ -2188,6 +2189,31 @@ export default function CrowsEyeClient() {
           Android: look for the green icon that says <span className="text-white/70">WiFi Analyzer (open-source)</span> — free with no ads.
         </p>
 
+        {/* Device toggle */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+          {(['android', 'ios'] as const).map(d => (
+            <button key={d} onClick={() => setScanDevice(d)}
+              style={{
+                flex: 1, padding: '10px 12px', borderRadius: 8, cursor: 'pointer',
+                border: scanDevice === d ? '1px solid rgba(0,194,199,0.5)' : '1px solid rgba(255,255,255,0.1)',
+                background: scanDevice === d ? 'rgba(0,194,199,0.15)' : 'rgba(13,21,32,0.6)',
+                color: scanDevice === d ? '#00C2C7' : 'rgba(244,246,248,0.5)',
+                fontFamily: 'monospace', fontSize: '0.8rem', fontWeight: scanDevice === d ? 700 : 400,
+              }}>
+              {d === 'android' ? '📱 Android — WiFi Analyzer' : '🍎 iPhone — WiFiman'}
+            </button>
+          ))}
+        </div>
+
+        {/* Corvus tip */}
+        <div style={{ background: 'rgba(184,146,42,0.08)', border: '1px solid rgba(184,146,42,0.2)', borderRadius: 8, padding: '12px 16px', marginBottom: 16 }}>
+          <p style={{ color: '#B8922A', fontFamily: 'monospace', fontSize: '0.75rem', margin: 0, lineHeight: 1.6 }}>
+            🐦‍⬛ <strong>Corvus:</strong> {scanDevice === 'android'
+              ? '"Three screenshots. That\'s all I need. Signal list, 2.4 GHz graph, 5 GHz graph. Give me those and I\'ll tell you everything that\'s wrong."'
+              : '"iPhone users — WiFiman gives me what I need. Three screenshots from the SCAN tab: full list, 2.4GHz filtered, 5GHz filtered. I\'ve been tested on it. I know what I\'m looking at."'}
+          </p>
+        </div>
+
         {/* Steps */}
         <ol className="space-y-6">
 
@@ -2195,8 +2221,19 @@ export default function CrowsEyeClient() {
           <li className="flex gap-4 items-start">
             <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold" style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.30)", color: "var(--ocws-cyan)" }}>1</div>
             <div>
-              <p className="text-white font-semibold text-sm">Download WiFi Analyzer (open source)</p>
-              <p className="ocws-muted text-sm mt-0.5 leading-relaxed">Search &ldquo;WiFi Analyzer open source&rdquo; on the Google Play Store. Free. Green icon. Install it.</p>
+              {scanDevice === 'android' ? (
+                <>
+                  <p className="text-white font-semibold text-sm">Download WiFi Analyzer (open source)</p>
+                  <p className="ocws-muted text-sm mt-0.5 leading-relaxed"><strong style={{ color: '#00C2C7' }}>Download WiFi Analyzer (open source)</strong> on Google Play — free, green icon, no ads.</p>
+                  <a href="https://play.google.com/store/apps/details?id=com.vrem.wifianalyzer" target="_blank" rel="noopener noreferrer" style={{ color: '#00C2C7', fontSize: '0.8rem' }}>→ Get it on Google Play</a>
+                </>
+              ) : (
+                <>
+                  <p className="text-white font-semibold text-sm">Download WiFiman by Ubiquiti</p>
+                  <p className="ocws-muted text-sm mt-0.5 leading-relaxed"><strong style={{ color: '#00C2C7' }}>Download WiFiman by Ubiquiti</strong> on the App Store — free, no ads, works on all iPhones.</p>
+                  <a href="https://apps.apple.com/us/app/ubiquiti-wifiman/id1385561119" target="_blank" rel="noopener noreferrer" style={{ color: '#00C2C7', fontSize: '0.8rem' }}>→ Get it on the App Store</a>
+                </>
+              )}
             </div>
           </li>
 
@@ -2213,38 +2250,59 @@ export default function CrowsEyeClient() {
           <li className="flex gap-4 items-start">
             <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold" style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.30)", color: "var(--ocws-cyan)" }}>3</div>
             <div>
-              <p className="text-white font-semibold text-sm">Tap &ldquo;Access Points&rdquo; at the bottom of the screen — screenshot this</p>
-              <p className="ocws-muted text-sm mt-0.5 leading-relaxed">
-                You will see a list of every Wi-Fi network nearby. Each one shows the network name, signal strength (the number like <span className="text-white/80 font-medium">-52 dBm</span>), and channel number. This is your <span className="text-white/80 font-medium">Signal List screenshot</span>.
-              </p>
+              {scanDevice === 'android' ? (
+                <>
+                  <p className="text-white font-semibold text-sm">Tap &ldquo;Access Points&rdquo; — screenshot this</p>
+                  <p className="ocws-muted text-sm mt-0.5 leading-relaxed">Tap the <strong>Access Points</strong> tab at the bottom. You&rsquo;ll see a list of every Wi-Fi network nearby with signal strength in dBm and channel numbers. Screenshot this screen.</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-white font-semibold text-sm">Tap SCAN — screenshot the full list</p>
+                  <p className="ocws-muted text-sm mt-0.5 leading-relaxed">Open WiFiman and tap <strong>SCAN</strong> at the bottom. You&rsquo;ll see every nearby network with signal strength in dBm and channel. Screenshot this full list — this is your Signal List.</p>
+                </>
+              )}
             </div>
           </li>
 
-          {/* Step 4 — NEW */}
+          {/* Step 4 */}
           <li className="flex gap-4 items-start">
             <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold" style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.30)", color: "var(--ocws-cyan)" }}>4</div>
             <div className="flex-1">
-              <p className="text-white font-semibold text-sm">Switch to 2.4 GHz view and screenshot the Channel Graph</p>
-              <p className="ocws-muted text-sm mt-0.5 leading-relaxed">
-                Tap <span className="text-white/80 font-medium">&ldquo;Channel Graph&rdquo;</span> at the bottom of the screen. In the top right corner you will see <span className="text-white/80 font-medium">&ldquo;2.4 GHz&rdquo;</span> — make sure it says 2.4 GHz. If it says 5 GHz, tap it to switch. You will see colored bars showing channel congestion. Screenshot this.
-              </p>
-              <div className="mt-3 px-4 py-3 rounded-xl text-sm ocws-muted leading-relaxed" style={{ borderLeft: "3px solid rgba(0,212,255,0.5)", background: "rgba(0,212,255,0.05)" }}>
-                <span className="text-white/70 font-semibold">Tip:</span> The 2.4 GHz view shows channels 1 through 13. If you see lots of overlapping bars, your network is congested.
-              </div>
+              {scanDevice === 'android' ? (
+                <>
+                  <p className="text-white font-semibold text-sm">Switch to 2.4 GHz and screenshot the Channel Graph</p>
+                  <p className="ocws-muted text-sm mt-0.5 leading-relaxed">Tap <strong>Channel Graph</strong> then select <strong>2.4 GHz</strong> at the top. Screenshot the channel distribution graph showing which channels are congested.</p>
+                  <div className="mt-3 px-4 py-3 rounded-xl text-sm ocws-muted leading-relaxed" style={{ borderLeft: "3px solid rgba(0,212,255,0.5)", background: "rgba(0,212,255,0.05)" }}>
+                    <span className="text-white/70 font-semibold">Tip:</span> The 2.4 GHz view shows channels 1 through 13. If you see lots of overlapping bars, your network is congested.
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-white font-semibold text-sm">Tap the 2.4GHz filter — screenshot the filtered list</p>
+                  <p className="ocws-muted text-sm mt-0.5 leading-relaxed">In the SCAN tab, tap the <strong>2.4GHz</strong> filter button at the top. The list now shows only 2.4 GHz networks. Screenshot this filtered view.</p>
+                </>
+              )}
             </div>
           </li>
 
-          {/* Step 5 — NEW */}
+          {/* Step 5 */}
           <li className="flex gap-4 items-start">
             <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold" style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.30)", color: "var(--ocws-cyan)" }}>5</div>
             <div className="flex-1">
-              <p className="text-white font-semibold text-sm">Switch to 5 GHz view and screenshot the Channel Graph</p>
-              <p className="ocws-muted text-sm mt-0.5 leading-relaxed">
-                Tap the <span className="text-white/80 font-medium">&ldquo;2.4 GHz&rdquo;</span> text in the top right corner — it will switch to <span className="text-white/80 font-medium">&ldquo;5 GHz&rdquo;</span>. Screenshot this new view.
-              </p>
-              <div className="mt-3 px-4 py-3 rounded-xl text-sm ocws-muted leading-relaxed" style={{ borderLeft: "3px solid rgba(0,212,255,0.5)", background: "rgba(0,212,255,0.05)" }}>
-                <span className="text-white/70 font-semibold">Tip:</span> If the 5 GHz screen looks empty, that is normal — 5 GHz has shorter range and you may not see many networks.
-              </div>
+              {scanDevice === 'android' ? (
+                <>
+                  <p className="text-white font-semibold text-sm">Switch to 5 GHz and screenshot the Channel Graph</p>
+                  <p className="ocws-muted text-sm mt-0.5 leading-relaxed">Tap the <strong>2.4 GHz</strong> label at the top right to switch to <strong>5 GHz</strong>. Screenshot the 5 GHz channel graph.</p>
+                  <div className="mt-3 px-4 py-3 rounded-xl text-sm ocws-muted leading-relaxed" style={{ borderLeft: "3px solid rgba(0,212,255,0.5)", background: "rgba(0,212,255,0.05)" }}>
+                    <span className="text-white/70 font-semibold">Tip:</span> If the 5 GHz screen looks empty, that is normal — 5 GHz has shorter range and you may not see many networks.
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-white font-semibold text-sm">Tap the 5GHz filter — screenshot the filtered list</p>
+                  <p className="ocws-muted text-sm mt-0.5 leading-relaxed">Tap the <strong>5GHz</strong> filter button at the top. Screenshot this filtered view showing only 5 GHz networks.</p>
+                </>
+              )}
             </div>
           </li>
 
