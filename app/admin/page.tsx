@@ -29,7 +29,7 @@ function AdminCrowsEyeTab() {
 type SubscriptionTier  = "fledgling" | "nest" | "flock" | "murder";
 type SubscriptionStatus = "active" | "cancelled" | "past_due" | "expired";
 
-type PromoType = "verdict" | "reckoning_small" | "reckoning_standard" | "reckoning_commercial" | "reckoning_pro";
+type PromoType = "verdict" | "reckoning_small" | "reckoning_standard" | "reckoning_commercial" | "reckoning_pro" | "sub_fledgling" | "sub_nest" | "sub_flock" | "sub_murder" | "sub_any";
 type PromoStatus = "active" | "used" | "expired" | "deactivated";
 
 interface PromoCodeRecord {
@@ -50,6 +50,11 @@ const PROMO_TYPE_LABELS: Record<PromoType, string> = {
   reckoning_standard:    "Standard Reckoning",
   reckoning_commercial:  "Commercial Reckoning",
   reckoning_pro:         "Pro Reckoning",
+  sub_fledgling:         "Fledgling Sub",
+  sub_nest:              "Nest Sub",
+  sub_flock:             "Flock Sub",
+  sub_murder:            "Murder Sub",
+  sub_any:               "Any Sub",
 };
 
 function getPromoStatus(p: PromoCodeRecord): PromoStatus {
@@ -275,10 +280,11 @@ export default function AdminPage() {
   const [credFeedback, setCredFeedback]   = useState("");
 
   // Promo code generator
-  type PromoProduct2 = "verdict" | "reckoning_small" | "reckoning_standard" | "reckoning_commercial" | "reckoning_pro" | "all_reckonings" | "both";
+  type PromoProduct2 = "verdict" | "reckoning_small" | "reckoning_standard" | "reckoning_commercial" | "reckoning_pro" | "all_reckonings" | "both" | "sub_fledgling" | "sub_nest" | "sub_flock" | "sub_murder" | "sub_any";
   type ExpiryType2   = "single_use" | "24h" | "48h" | "72h" | "7d" | "14d" | "30d";
   const [promoProducts, setPromoProducts] = useState<PromoProduct2>("verdict");
   const [promoExpiryType, setPromoExpiryType] = useState<ExpiryType2>("single_use");
+  const [promoQrCode, setPromoQrCode] = useState<string | null>(null);
   const [promoNote, setPromoNote]         = useState("");
   const [promoExpires, setPromoExpires]   = useState("");
   const [generatingPromo, setGeneratingPromo]     = useState(false);
@@ -1705,6 +1711,11 @@ export default function AdminPage() {
                     { val: "reckoning_pro",        label: "Pro Reckoning" },
                     { val: "all_reckonings",       label: "All Reckonings" },
                     { val: "both",                 label: "Verdict + All Reckonings" },
+                    { val: "sub_fledgling",        label: "🪺 Fledgling Subscription" },
+                    { val: "sub_nest",             label: "🐦‍⬛ Nest Subscription" },
+                    { val: "sub_flock",            label: "🐦‍⬛ Flock Subscription" },
+                    { val: "sub_murder",           label: "💀 Murder Subscription" },
+                    { val: "sub_any",              label: "Any Subscription (recipient chooses tier)" },
                   ] as { val: PromoProduct2; label: string }[]).map(({ val, label }) => (
                     <button key={val} type="button" onClick={() => setPromoProducts(val)}
                       style={{ display: "flex", alignItems: "center", gap: "8px", padding: "7px 10px", fontSize: "12px", borderRadius: "7px", cursor: "pointer", textAlign: "left", background: promoProducts === val ? "rgba(0,194,199,0.12)" : "rgba(255,255,255,0.02)", border: `1px solid ${promoProducts === val ? "rgba(0,194,199,0.35)" : "rgba(255,255,255,0.07)"}`, color: promoProducts === val ? "#00C2C7" : "#888" }}>
@@ -1772,8 +1783,10 @@ export default function AdminPage() {
                 <tbody>
                   {promoCodes.map(p => {
                     const status = getPromoStatus(p);
+                    const promoUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://oldcrowswireless.com'}/dashboard?promo=${p.code}`;
                     return (
-                      <tr key={p.code} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
+                      <React.Fragment key={p.code}>
+                      <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
                         <td style={{ color: "#00C2C7", padding: "10px", fontFamily: "monospace", fontSize: "11px", whiteSpace: "nowrap" }}>{p.code}</td>
                         <td style={{ color: "#aaa", padding: "10px", whiteSpace: "nowrap" }}>{PROMO_TYPE_LABELS[p.type]}</td>
                         <td style={{ color: "#666", padding: "10px", maxWidth: "160px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.note || "—"}</td>
@@ -1786,14 +1799,33 @@ export default function AdminPage() {
                           {p.usedBy ?? (p.usedAt ? fmtDate(p.usedAt, true) : "—")}
                         </td>
                         <td style={{ padding: "10px" }}>
-                          <button
-                            onClick={() => handleDeactivatePromo(p.code)}
-                            disabled={status !== "active"}
-                            style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: "6px", color: status === "active" ? "#F87171" : "#444", fontSize: "11px", padding: "4px 10px", cursor: status === "active" ? "pointer" : "not-allowed" }}>
-                            Deactivate
-                          </button>
+                          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                            <button
+                              onClick={() => handleDeactivatePromo(p.code)}
+                              disabled={status !== "active"}
+                              style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: "6px", color: status === "active" ? "#F87171" : "#444", fontSize: "11px", padding: "4px 10px", cursor: status === "active" ? "pointer" : "not-allowed" }}>
+                              Deactivate
+                            </button>
+                            <button
+                              onClick={() => setPromoQrCode(promoQrCode === p.code ? null : p.code)}
+                              style={{ background: promoQrCode === p.code ? "rgba(184,146,42,0.15)" : "rgba(0,194,199,0.08)", border: `1px solid ${promoQrCode === p.code ? "rgba(184,146,42,0.3)" : "rgba(0,194,199,0.15)"}`, color: promoQrCode === p.code ? "#B8922A" : "#00C2C7", borderRadius: "6px", fontSize: "11px", padding: "4px 10px", cursor: "pointer", fontFamily: "monospace" }}>
+                              {promoQrCode === p.code ? "✕ QR" : "⊞ QR"}
+                            </button>
+                          </div>
                         </td>
                       </tr>
+                      {promoQrCode === p.code && (
+                        <tr>
+                          <td colSpan={8} style={{ padding: "12px 10px", background: "rgba(0,194,199,0.03)", borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
+                            <QRCodeDisplay
+                              url={promoUrl}
+                              label={`Promo — ${p.code}`}
+                              size={160}
+                            />
+                          </td>
+                        </tr>
+                      )}
+                      </React.Fragment>
                     );
                   })}
                 </tbody>
