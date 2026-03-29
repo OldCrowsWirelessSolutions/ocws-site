@@ -39,10 +39,15 @@ export async function GET(req: NextRequest) {
     // Active subscriber codes — scan code:* keys and count active ones
     let activeSubscribers = 0;
     try {
-      const codeKeys = await redis.keys("code:*") as string[];
-      if (codeKeys.length > 0) {
+      // Only count real subscriber codes — CORVUS-FLEDGLING-*, CORVUS-NEST-*, CORVUS-FLOCK-*, CORVUS-MURDER-*
+      const codeKeys = await redis.keys("code:CORVUS-*") as string[];
+      const subKeys = codeKeys.filter(k => {
+        const upper = k.toUpperCase();
+        return upper.includes('FLEDGLING') || upper.includes('NEST-') || upper.includes('FLOCK-') || upper.includes('MURDER-');
+      });
+      if (subKeys.length > 0) {
         const records = await Promise.all(
-          codeKeys.map(k => redis.get<{ active?: boolean }>(k))
+          subKeys.map(k => redis.get<{ active?: boolean }>(k))
         );
         activeSubscribers = records.filter(r => r != null && r.active !== false).length;
       }

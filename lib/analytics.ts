@@ -57,6 +57,10 @@ export interface PlatformAnalytics {
   productBreakdown: ProductBreakdown[];
   severityBreakdown: SeverityBreakdown;
   tierBreakdown: TierBreakdown[];
+  activeSubscriptions: number;
+  activeCodes: number;
+  scansToday: number;
+  totalCritical: number;
 }
 
 // ─── Redis keys ───────────────────────────────────────────────────────────────
@@ -215,12 +219,41 @@ export async function getPlatformAnalytics(days = 30): Promise<PlatformAnalytics
     good:     Number(sevRaw.good     ?? 0),
   };
 
+  // Active subscriptions — real subscriber codes only
+  let activeSubscriptions = 0;
+  let activeCodes = 0;
+  try {
+    const codeKeys = await redis.keys("code:CORVUS-*") as string[];
+    activeCodes = codeKeys.length;
+    const subKeys = codeKeys.filter(k => {
+      const upper = k.toUpperCase();
+      return upper.includes('FLEDGLING') || upper.includes('NEST-') || upper.includes('FLOCK-') || upper.includes('MURDER-');
+    });
+    if (subKeys.length > 0) {
+      const records = await Promise.all(
+        subKeys.map(k => redis.get<{ active?: boolean }>(k))
+      );
+      activeSubscriptions = records.filter(r => r != null && r.active !== false).length;
+    }
+  } catch { /* non-fatal */ }
+
+  // Scans today
+  const todayKey = `analytics:daily:${new Date().toISOString().slice(0, 10)}`;
+  const scansToday = Number((await redis.hget(todayKey, "count")) ?? 0);
+
+  // Total critical findings
+  const totalCritical = severityBreakdown.critical;
+
   return {
     totalScans,
     scansByDay: dailyCountsRaw,
     productBreakdown,
     severityBreakdown,
     tierBreakdown,
+    activeSubscriptions,
+    activeCodes,
+    scansToday,
+    totalCritical,
   };
 }
 
