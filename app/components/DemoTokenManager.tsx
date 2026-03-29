@@ -72,6 +72,11 @@ export default function DemoTokenManager({ authKey, isAdmin = false }: Props) {
 
   async function generateToken() {
     setGenerating(true); setError(''); setNewTokenUrl('')
+    if (!clientName.trim()) {
+      setError('Please enter the recipient name in the Issued To field.');
+      setGenerating(false);
+      return;
+    }
     try {
       const res = await fetch('/api/demo/generate', {
         method: 'POST',
@@ -143,14 +148,14 @@ export default function DemoTokenManager({ authKey, isAdmin = false }: Props) {
           </div>
           <div style={s.field}>
             <label style={s.label}>Label (optional)</label>
-            <input style={s.input} type="text" value={label} onChange={e => setLabel(e.target.value)} placeholder="e.g. Pilcher's Demo" />
+            <input style={s.input} type="text" value={label} onChange={e => setLabel(e.target.value)} placeholder="Label (optional — e.g. John Smith for Acme Co)" />
           </div>
           <div style={s.field}>
-            <label style={s.label}>Client Name (optional)</label>
+            <label style={s.label}>Issued To (required)</label>
             <input
-              style={s.input}
+              style={{ ...s.input, borderColor: !clientName.trim() ? 'rgba(248,113,113,0.4)' : 'rgba(0,194,199,0.2)' }}
               type="text"
-              placeholder='e.g. "Pastor Jim", "ABC Hotel", "Nate Farrelly"'
+              placeholder="Issued To — recipient full name (required)"
               value={clientName}
               onChange={e => setClientName(e.target.value)}
             />

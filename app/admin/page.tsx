@@ -2139,7 +2139,8 @@ export default function AdminPage() {
     const accentCyan = "#00C2C7";
 
     interface ProductDef {
-      id: string; name: string; tagline: string; description: string;
+      id: string; name: string; tagline?: string; description?: string;
+      price?: string; highlight?: string;
       tiers: string[]; comingSoon?: boolean; accent: string;
     }
 
@@ -2185,6 +2186,51 @@ export default function AdminPage() {
         accent: accentCyan,
       },
       {
+        id: "fledgling",
+        name: "Fledgling Subscription",
+        price: "$10/mo or $80/yr",
+        description: "Entry-level access. Includes 1 free Verdict credit and 30 days of Talk to Corvus — direct RF chat with no scan required. No recurring Verdicts included after the first.",
+        tiers: ["fledgling"],
+        highlight: "Talk to Corvus included",
+        accent: accentCyan,
+      },
+      {
+        id: "nest",
+        name: "Nest Subscription",
+        price: "$19/mo or $149/yr",
+        description: "3 Verdicts per month. Full dashboard access. Extra credits available at $15 each.",
+        tiers: ["nest", "flock", "murder", "vip"],
+        highlight: "3 Verdicts/month",
+        accent: accentCyan,
+      },
+      {
+        id: "flock",
+        name: "Flock Subscription",
+        price: "$99/mo or $899/yr",
+        description: "15 Verdicts per month. White-label PDF reports. Full Reckoning included. Extra credits at $10 each.",
+        tiers: ["flock", "murder", "vip"],
+        highlight: "15 Verdicts + Reckoning",
+        accent: accentGold,
+      },
+      {
+        id: "murder",
+        name: "Murder Subscription",
+        price: "$249/mo or $1,999/yr",
+        description: "Unlimited Verdicts. Full design suite. Everything included.",
+        tiers: ["murder", "vip"],
+        highlight: "Unlimited",
+        accent: "#9B1C1C",
+      },
+      {
+        id: "corvus_chat",
+        name: "Talk to Corvus",
+        price: "Included with all tiers",
+        description: "Direct RF intelligence chat. Ask Corvus anything about your wireless environment without running a scan. Fledgling gets 30 days. All paid tiers get unlimited access.",
+        tiers: ["fledgling", "nest", "flock", "murder", "vip"],
+        highlight: "All tiers",
+        accent: accentCyan,
+      },
+      {
         id: "reckoning_pro",
         name: "Pro Reckoning",
         tagline: "Multi-site portfolio analysis",
@@ -2219,7 +2265,7 @@ export default function AdminPage() {
     };
 
     const tierBadgeColor: Record<string, string> = {
-      nest: "#00C2C7", flock: "#B8922A", murder: "#9B1C1C", vip: "#D4AF37",
+      fledgling: "#888888", nest: "#00C2C7", flock: "#B8922A", murder: "#9B1C1C", vip: "#D4AF37",
     };
 
     return (
@@ -2252,7 +2298,21 @@ export default function AdminPage() {
                 }
               </div>
 
-              <p style={{ color: "#888888", fontSize: "12px", lineHeight: 1.6, margin: 0 }}>{p.description}</p>
+              {p.price && (
+                <div style={{ color: '#00C2C7', fontSize: '0.78rem', fontFamily: 'monospace', marginBottom: 4 }}>
+                  {p.price}
+                </div>
+              )}
+              {p.description && (
+                <div style={{ color: '#7A9AAB', fontSize: '0.72rem', lineHeight: 1.5, marginBottom: 8 }}>
+                  {p.description}
+                </div>
+              )}
+              {p.highlight && (
+                <div style={{ display: 'inline-block', background: 'rgba(184,146,42,0.1)', border: '1px solid rgba(184,146,42,0.25)', borderRadius: 4, color: '#B8922A', fontSize: '0.65rem', fontFamily: 'monospace', padding: '2px 8px', marginBottom: 8 }}>
+                  {p.highlight}
+                </div>
+              )}
 
               {!p.comingSoon && (
                 <div>
