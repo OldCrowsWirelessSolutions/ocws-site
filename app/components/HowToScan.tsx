@@ -7,7 +7,7 @@ const STEPS = [
     number: 1,
     title: 'Download WiFi Analyzer',
     instruction: 'Search "WiFi Analyzer open source" on Google Play. Free. Green icon. No ads. Install it.',
-    detail: 'Android only. iPhone users: search "WiFi Analyzer" by Zoltán Palághy on the App Store.',
+    detail: 'Android only. iPhone users: search "WiFiman" by Ubiquiti on the App Store — free, no ads.',
     img: 'https://vremsoftwaredevelopment.github.io/WiFiAnalyzer/images/feature-graphic.png',
     imgAlt: 'WiFi Analyzer app — available on Google Play',
     badge: {

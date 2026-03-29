@@ -943,16 +943,16 @@ export default function CrowsEyeTab({
             {deviceType === 'ios' && (
               <div style={{ color: 'rgba(244,246,248,0.7)', fontFamily: 'monospace', fontSize: '0.72rem', lineHeight: 1.7 }}>
                 <p style={{ margin: '0 0 8px' }}>
-                  <strong style={{ color: '#00C2C7' }}>Download Network Analyzer</strong> by Techet from the App Store — free.
+                  <strong style={{ color: '#00C2C7' }}>App: WiFiman by Ubiquiti</strong> — free, no ads, US App Store{'\n'}Search: &ldquo;WiFiman&rdquo; by Ubiquiti
                 </p>
                 <p style={{ margin: '0 0 8px' }}>
-                  <strong style={{ color: '#F4F6F8' }}>Screenshot 1 — Signal List:</strong> Open the app and tap <strong>WLAN</strong> at the top. You will see a list of all nearby networks with signal strength. Screenshot this screen.
+                  <strong style={{ color: '#F4F6F8' }}>Screenshot 1 —</strong> Tap <strong>SCAN</strong> at the bottom. Screenshot the full list showing all networks, signal strength (dBm), and channels.
                 </p>
                 <p style={{ margin: '0 0 8px' }}>
-                  <strong style={{ color: '#F4F6F8' }}>Screenshot 2 — 2.4 GHz:</strong> In the WLAN screen tap the filter icon and select <strong>2.4 GHz only</strong>. Screenshot this filtered view.
+                  <strong style={{ color: '#F4F6F8' }}>Screenshot 2 —</strong> In the SCAN tab tap <strong>&ldquo;2.4GHz&rdquo;</strong> filter at the top. Screenshot the filtered list.
                 </p>
                 <p style={{ margin: 0 }}>
-                  <strong style={{ color: '#F4F6F8' }}>Screenshot 3 — 5 GHz:</strong> Same screen, switch filter to <strong>5 GHz only</strong>. Screenshot that view.
+                  <strong style={{ color: '#F4F6F8' }}>Screenshot 3 —</strong> Tap <strong>&ldquo;5GHz&rdquo;</strong> filter. Screenshot that view.
                 </p>
                 <p style={{ margin: '8px 0 0', color: 'rgba(244,246,248,0.4)', fontStyle: 'italic' }}>
                   Note: iPhone restricts some Wi-Fi data. Upload what you can — Corvus will work with whatever he sees.

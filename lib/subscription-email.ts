@@ -481,8 +481,8 @@ export async function sendFledglingWelcomeEmail(
     `Go to oldcrowswireless.com/dashboard, enter your code, and set a password on first login.`,
     ``,
     `HOW TO USE YOUR FREE VERDICT:`,
-    `1. Download WiFi Analyzer (free — green icon, Google Play or App Store)`,
-    `2. Take three screenshots — Access Points, 2.4 GHz graph, 5 GHz graph`,
+    `1. Android: download WiFi Analyzer (free, Google Play). iPhone: download WiFiman by Ubiquiti (free, App Store)`,
+    `2. Take three screenshots — signal list, 2.4 GHz filtered, 5 GHz filtered`,
     `3. Go to oldcrowswireless.com/dashboard`,
     `4. Upload screenshots, analyze, and enter ${code} to unlock your free Verdict`,
     ``,
@@ -518,8 +518,8 @@ export async function sendFledglingWelcomeEmail(
         <div style="background:rgba(184,146,42,0.06);border:1px solid rgba(184,146,42,0.2);border-radius:8px;padding:14px 18px;margin:0 0 20px;">
           <p style="color:#B8922A;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 10px;">How to use your free Verdict</p>
           <ol style="color:#aaaaaa;font-size:13px;margin:0;padding-left:20px;">
-            <li style="margin-bottom:6px;">Download WiFi Analyzer (free — green icon, Google Play or App Store)</li>
-            <li style="margin-bottom:6px;">Take three screenshots — Access Points, 2.4 GHz graph, 5 GHz graph</li>
+            <li style="margin-bottom:6px;">Android: download WiFi Analyzer (free, Google Play). iPhone: download WiFiman by Ubiquiti (free, App Store)</li>
+            <li style="margin-bottom:6px;">Take three screenshots — signal list, 2.4 GHz filtered, 5 GHz filtered</li>
             <li style="margin-bottom:6px;">Go to <a href="https://oldcrowswireless.com/dashboard" style="color:#00C2C7;">oldcrowswireless.com/dashboard</a></li>
             <li style="margin-bottom:6px;">Upload screenshots and analyze</li>
             <li>Enter <strong style="color:#ffffff;">${escapeHtml(code)}</strong> to unlock your free Verdict</li>
