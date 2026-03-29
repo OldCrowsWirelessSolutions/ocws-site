@@ -16,24 +16,26 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const allKeys = await redis.keys("sub:*");
-    const keys = (allKeys as string[]).filter(k =>
-      !k.includes(':fledgling_verdict_used') &&
-      !k.includes(':codes') &&
-      !k.includes(':seat_') &&
-      !k.includes(':team_lead') &&
-      !k.includes(':seat_history') &&
-      !k.includes(':seat_members') &&
-      !k.includes(':seat_count')
-    );
+    const allKeys = await redis.keys("sub:*") as string[];
+
+    // Only keep top-level subscription keys — sub:CORVUS-XXXX-XXXXXX
+    // Exclude metadata keys like sub:CODE:fledgling_verdict_used, sub:CODE:codes, etc.
+    const keys = allKeys.filter(k => {
+      const parts = k.split(':');
+      // Valid subscription key has exactly 2 parts: sub:CORVUS-TIER-SUFFIX
+      return parts.length === 2 && parts[1].startsWith('CORVUS-');
+    });
+
     if (!keys.length) return Response.json({ subscribers: [] });
 
     const records = await Promise.all(
       keys.map((k) => redis.get<SubscriptionRecord>(k))
     );
 
-    const subscribers = (records.filter(Boolean) as SubscriptionRecord[]).sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    const subscribers = (records.filter(r =>
+      r != null && r.subscription_id && r.customer_email
+    ) as SubscriptionRecord[]).sort(
+      (a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime()
     );
 
     return Response.json({ subscribers });
