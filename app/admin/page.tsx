@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import CorvusChat from "@/app/components/CorvusChat";
@@ -1949,7 +1949,8 @@ export default function AdminPage() {
                   {v.subordinates.map((s) => {
                     const isExpired = new Date() >= new Date(s.expiresAt);
                     return (
-                      <tr key={s.code} style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
+                      <React.Fragment key={s.code}>
+                      <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
                         <td style={{ color: "#ffffff", padding: "8px 10px", fontFamily: "monospace", fontSize: "11px" }}>{s.code}</td>
                         <td style={{ color: "#888888", padding: "8px 10px" }}>{new Date(s.issuedAt).toLocaleDateString()}</td>
                         <td style={{ color: "#888888", padding: "8px 10px" }}>{new Date(s.expiresAt).toLocaleDateString()}</td>
@@ -1998,6 +1999,7 @@ export default function AdminPage() {
                           </td>
                         </tr>
                       )}
+                      </React.Fragment>
                     );
                   })}
                 </tbody>
