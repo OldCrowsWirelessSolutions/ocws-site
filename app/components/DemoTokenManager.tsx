@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import QRCodeDisplay from './QRCodeDisplay'
 
 type DemoToken = {
   token: string
@@ -48,6 +49,7 @@ export default function DemoTokenManager({ authKey, isAdmin = false }: Props) {
   const [error, setError] = useState('')
   const [newTokenUrl, setNewTokenUrl] = useState('')
   const [copied, setCopied] = useState(false)
+  const [qrToken, setQrToken] = useState<string | null>(null)
 
   useEffect(() => { fetchTokens() }, [])
 
@@ -172,6 +174,9 @@ export default function DemoTokenManager({ authKey, isAdmin = false }: Props) {
             <div style={s.newTokenLabel}>TOKEN GENERATED</div>
             <div style={s.newTokenUrl}>{newTokenUrl}</div>
             <button style={s.copyBtn} onClick={() => copyUrl(newTokenUrl)}>{copied ? '✓ Copied!' : 'Copy URL'}</button>
+            <div style={{ marginTop: 16, borderTop: '1px solid rgba(0,194,199,0.15)', paddingTop: 16 }}>
+              <QRCodeDisplay url={newTokenUrl} label="Scan to access demo" size={180} />
+            </div>
           </div>
         )}
         <button style={{ ...s.genBtn, opacity: generating ? 0.6 : 1 }} onClick={generateToken} disabled={generating}>
@@ -209,8 +214,19 @@ export default function DemoTokenManager({ authKey, isAdmin = false }: Props) {
                   </div>
                   <div style={s.tokenActions}>
                     <button style={s.copySmall} onClick={() => copyUrl(url)}>Copy URL</button>
+                    <button
+                      style={{ background: qrToken === t.token ? 'rgba(184,146,42,0.2)' : 'rgba(0,194,199,0.08)', border: `1px solid ${qrToken === t.token ? 'rgba(184,146,42,0.4)' : 'rgba(0,194,199,0.2)'}`, borderRadius: 6, color: qrToken === t.token ? '#B8922A' : '#00C2C7', padding: '5px 10px', fontSize: '0.68rem', fontFamily: 'monospace', cursor: 'pointer' }}
+                      onClick={() => setQrToken(qrToken === t.token ? null : t.token)}
+                    >
+                      {qrToken === t.token ? '✕ QR' : '⊞ QR'}
+                    </button>
                     {isAdmin && <button style={s.revokeBtn} onClick={() => revokeToken(t.token)}>Revoke</button>}
                   </div>
+                  {qrToken === t.token && (
+                    <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(0,194,199,0.1)' }}>
+                      <QRCodeDisplay url={url} label={`Demo — ${t.label || t.token}`} size={160} />
+                    </div>
+                  )}
                 </div>
               )
             })}

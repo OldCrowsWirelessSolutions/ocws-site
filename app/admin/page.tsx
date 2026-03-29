@@ -10,6 +10,7 @@ import DemoTokenManager from "@/app/components/DemoTokenManager";
 import CorvusTourManager from "@/app/components/CorvusTourManager";
 import CodeManagerTab from "@/app/components/CodeManagerTab";
 import { CORVUS_JOSHUA_DASHBOARD_LOAD } from "@/lib/corvus-ui-strings";
+import QRCodeDisplay from "@/app/components/QRCodeDisplay";
 
 function AdminCrowsEyeTab() {
   return (
@@ -312,6 +313,7 @@ export default function AdminPage() {
   const [vipData, setVipData]           = useState<VIPSubRecord[]>([]);
   const [loadingVip, setLoadingVip]     = useState(false);
   const [vipPasswords, setVipPasswords] = useState<Record<string, boolean>>({});
+  const [vipQrCode, setVipQrCode]       = useState<string | null>(null);
   const [resettingPw, setResettingPw]   = useState<string | null>(null);
 
   // Platform analytics
@@ -1959,23 +1961,43 @@ export default function AdminPage() {
                           </span>
                         </td>
                         <td style={{ padding: "8px 10px" }}>
-                          {s.active && !isExpired && (
+                          <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                            {s.active && !isExpired && (
+                              <button
+                                onClick={async () => {
+                                  await fetch("/api/admin/codes/revoke", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+                                    body: JSON.stringify({ code: s.code }),
+                                  });
+                                  loadVipActivity();
+                                  flash(`Revoked: ${s.code}`);
+                                }}
+                                style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: "5px", color: "#F87171", fontSize: "10px", padding: "3px 8px", cursor: "pointer" }}>
+                                Revoke
+                              </button>
+                            )}
                             <button
-                              onClick={async () => {
-                                await fetch("/api/admin/codes/revoke", {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
-                                  body: JSON.stringify({ code: s.code }),
-                                });
-                                loadVipActivity();
-                                flash(`Revoked: ${s.code}`);
+                              onClick={() => {
+                                setVipQrCode(vipQrCode === s.code ? null : s.code);
                               }}
-                              style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)", borderRadius: "5px", color: "#F87171", fontSize: "10px", padding: "3px 8px", cursor: "pointer" }}>
-                              Revoke
+                              style={{ background: vipQrCode === s.code ? "rgba(184,146,42,0.15)" : "rgba(0,194,199,0.08)", border: `1px solid ${vipQrCode === s.code ? "rgba(184,146,42,0.3)" : "rgba(0,194,199,0.15)"}`, color: vipQrCode === s.code ? "#B8922A" : "#00C2C7", borderRadius: "5px", padding: "3px 8px", fontSize: "0.65rem", fontFamily: "monospace", cursor: "pointer" }}>
+                              {vipQrCode === s.code ? "✕ QR" : "⊞ QR"}
                             </button>
-                          )}
+                          </div>
                         </td>
                       </tr>
+                      {vipQrCode === s.code && (
+                        <tr>
+                          <td colSpan={7} style={{ padding: "12px 8px", background: "rgba(0,194,199,0.04)" }}>
+                            <QRCodeDisplay
+                              url={`${typeof window !== "undefined" ? window.location.origin : "https://oldcrowswireless.com"}/dashboard?code=${s.code}`}
+                              label={`Dashboard access — ${s.code}`}
+                              size={160}
+                            />
+                          </td>
+                        </tr>
+                      )}
                     );
                   })}
                 </tbody>
