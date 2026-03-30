@@ -303,7 +303,7 @@ function renderVisual(stage: TourStage) {
             {!!d.findings && <div style={v.findingStat}><span style={{ color: '#00C2C7' }}>{d.findings as number}</span> findings</div>}
             {!!d.critical && <div style={v.findingStat}><span style={{ color: '#e05555' }}>{d.critical as number}</span> critical</div>}
           </div>
-          {!!d.topFinding && (
+          {typeof d.topFinding === 'string' && d.topFinding && (
             <div style={v.topFinding}>
               <div style={v.tfLabel}>TOP FINDING</div>
               <div style={v.tfText}>{d.topFinding as string}</div>
