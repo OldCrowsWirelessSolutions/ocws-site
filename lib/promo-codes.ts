@@ -22,7 +22,12 @@ export type PromoProduct =
   | "reckoning_commercial"
   | "reckoning_pro"
   | "all_reckonings"
-  | "both";
+  | "both"
+  | "sub_fledgling"
+  | "sub_nest"
+  | "sub_flock"
+  | "sub_murder"
+  | "sub_any";
 
 export type ExpiryType =
   | "single_use"
