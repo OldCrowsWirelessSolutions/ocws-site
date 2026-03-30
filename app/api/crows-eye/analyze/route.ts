@@ -46,10 +46,10 @@ ROUTER VENDOR GATEWAY LOOKUP TABLE — use the correct entry for every finding's
 - Linksys: gateway=192.168.1.1, username=admin, password=(blank — leave empty)
 - Arris: gateway=192.168.0.1, username=admin, password=password
 - Motorola: gateway=192.168.0.1, username=admin, password=motorola
-- Eero: gateway=Eero app only (no web UI), steps use the Eero app instead
-- Google/Nest: gateway=Google Home app only, steps use the Google Home app instead
-- Xfinity/Comcast: gateway=10.0.0.1, username=admin, password=password
-- AT&T: gateway=192.168.1.254, username=admin, password=(access code printed on label)
+- Eero: gateway=Eero app only (no web UI). Steps: 1. Open the Eero app on your phone. 2. Tap the menu icon (top left). 3. Tap "Network Settings". 4. Tap "Advanced". 5. Tap "DHCP & NAT" or "Wireless" depending on the fix needed. For channel changes, Eero manages channels automatically — recommend enabling "Auto" channel selection and restarting the network by tapping "Restart Network" under Network Settings.
+- Google WiFi / Nest WiFi: gateway=Google Home app only. Steps: 1. Open the Google Home app on your phone. 2. Tap the "Wi-Fi" tile on the home screen. 3. Tap "Settings" (gear icon, top right). 4. For channel changes: tap "Advanced networking" then "Band management" — select your preferred band or enable "Automatically select channels". 5. For network name/password: tap "Network settings". 6. For device priority: tap "Device priority" under Wi-Fi settings. Note: Google Nest WiFi Pro and newer models manage channels automatically via Google's AI — manual channel selection may not be available on all models.
+- Xfinity/Comcast: gateway=10.0.0.1, username=admin, password=password. Alternative app method: Open Xfinity app → tap "Internet" → tap your gateway name → tap "Edit WiFi settings". xFi app is preferred for most customers as web UI access may be disabled on newer Xfinity gateways.
+- AT&T (BGW320/BGW210/NVG): gateway=192.168.1.254, username=admin, password=(Device Access Code printed on the label — NOT the WiFi password). Alternative: use the Smart Home Manager app → tap your gateway → WiFi settings.
 - Spectrum/Sagemcom: gateway=192.168.0.1, username=admin, password=admin
 - Unknown: try 192.168.1.1 first, then 192.168.0.1, then 10.0.0.1
 
@@ -181,7 +181,10 @@ Rules:
 - steps count: Level 1 max 3 steps, Level 2 4–6 steps, Levels 3–5 up to 8 steps
 - For findings requiring router admin access, include router_info with all fields
 - login_disclaimer must be included in every finding whose steps involve logging into the router admin panel
-- For Eero and Google/Nest routers, steps must describe the mobile app flow
+- For Eero routers, steps must use the Eero app flow described in the vendor table above — never reference a web browser or IP address
+- For Google WiFi / Nest WiFi routers, steps must use the Google Home app flow described in the vendor table above — never reference a web browser or IP address. Always note if a feature may not be available on newer Nest WiFi Pro models that use automatic channel management.
+- For AT&T BGW320 or BGW210 gateways, the web UI is at 192.168.1.254 — login with access code printed on the device label, not a standard password
+- For Xfinity, customers may use either the xFi app (preferred) or the web UI at 10.0.0.1. For xFi app: open Xfinity app → tap "Internet" → tap your gateway → tap "Edit WiFi settings"
 - If client_ssid was not found, set identified_ssid to null and use Unknown vendor defaults
 - Always include the "device" top-level field
 - Return ONLY the JSON object — no surrounding text`;
