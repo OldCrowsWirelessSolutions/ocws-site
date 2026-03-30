@@ -350,9 +350,9 @@ export async function validateSubscriptionId(
         return {
           valid: true,
           type: 'founder' as const,
-          tier: 'fledgling' as const,
+          tier: promoProducts.startsWith('sub_') ? (promoProducts.replace('sub_', '') as 'fledgling' | 'nest' | 'flock' | 'murder') : 'fledgling',
           customer_name: 'Guest',
-          verdicts_remaining: isVerdict ? 1 : 0,
+          verdicts_remaining: isVerdict || promoProducts === 'sub_fledgling' || promoProducts === 'sub_any' ? 1 : 0,
           verdicts_unlimited: false,
           reckonings_remaining: {
             small: isSmall ? 1 : 0,
