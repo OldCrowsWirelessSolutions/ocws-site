@@ -1769,6 +1769,23 @@ export default function CrowsEyeClient() {
       // ── FOOTER (final page) ───────────────────────────────────────────────
       drawFooter();
 
+      // ── GOOGLE REVIEW CALLOUT ─────────────────────────────────────────────
+      const REVIEW_H = 48;
+      ensure(REVIEW_H + 10);
+      sf(NAVY); doc.roundedRect(ML, y, CW, REVIEW_H, 5, 5, "F");
+      sd(GOLD); doc.setLineWidth(0.5); doc.roundedRect(ML, y, CW, REVIEW_H, 5, 5, "S");
+      sd(GOLD); doc.setLineWidth(3); doc.line(ML, y + 5, ML, y + REVIEW_H - 5);
+      st(GOLD); fn("bold", 7); txt("ENJOYING CROW'S EYE?", ML + 10, y + 14, 7);
+      st(WHITE); fn("normal", 7.5);
+      txt("Leave us a Google review — it helps other small businesses find Corvus.", ML + 10, y + 26, 7.5);
+      txt("It takes 30 seconds and means everything to a small business.", ML + 10, y + 37, 7.5);
+      st(CYAN); fn("bold", 7.5);
+      const reviewUrl = "https://g.page/r/CZBz3UO1fcs0EBM/review";
+      txt(reviewUrl, ML + 10, y + 48, 7.5);
+      // Make it a clickable link
+      doc.link(ML + 10, y + 42, CW - 20, 10, { url: reviewUrl });
+      y += REVIEW_H + 10;
+
       // ── SAVE ──────────────────────────────────────────────────────────────
       const safeName = (name || "Client").replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, " ");
       const fileDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
