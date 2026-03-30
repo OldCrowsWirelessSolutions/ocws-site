@@ -580,9 +580,55 @@ export default function DashboardPage() {
     } catch { /* non-fatal */ }
 
     try {
+      // Check for demo session first — bypass subscription validation entirely
+      const demoSession = sessionStorage.getItem('corvus_demo_session');
+      const demoToken = sessionStorage.getItem('corvus_demo_token') || localStorage.getItem('corvus_sub_code');
+
+      if (demoSession && demoToken && demoToken.startsWith('CORVUS-DEMO-')) {
+        try {
+          const session = JSON.parse(demoSession);
+          // Validate demo token is not expired
+          if (session.expiresAt && Date.now() < session.expiresAt) {
+            // Build a synthetic ValidationResult from the demo session
+            const tierMap: Record<string, string> = {
+              fledgling: 'fledgling',
+              nest: 'nest',
+              flock: 'flock',
+              full: 'flock',
+            };
+            const tier = tierMap[session.accessLevel] ?? 'fledgling';
+            const syntheticSub = {
+              valid: true,
+              type: 'founder' as const,
+              tier,
+              customer_name: session.clientName || 'Demo User',
+              verdicts_remaining: 999999,
+              verdicts_unlimited: tier === 'flock',
+              reckonings_remaining: { small: session.allowReckoning ? 999999 : 0, standard: 0, commercial: 0 },
+              reckonings_unlimited: { small: session.allowReckoning ?? false, standard: false, commercial: false },
+              extra_verdict_credits: 0,
+              credit_pricing: { single: 15, pack6: 75, pack12: 120 },
+              reckoning_pricing: { small: 150, standard: 350, commercial: 750 },
+            };
+            setSub(syntheticSub as ValidationResult);
+            setStoredCode(demoToken);
+            setPhase('dashboard');
+            return;
+          }
+        } catch { /* fall through to normal auth */ }
+      }
+
       const saved = localStorage.getItem("corvus_sub_code");
       if (!saved) { setPhase("auth"); return; }
-      // Session persists until explicit logout — no time-based expiry
+
+      // Don't try to validate demo tokens as subscriptions
+      if (saved.startsWith('CORVUS-DEMO-')) {
+        // Demo token in localStorage but no valid session — send to auth
+        localStorage.removeItem('corvus_sub_code');
+        setPhase("auth");
+        return;
+      }
+
       loadDashboard(saved);
     } catch { setPhase("auth"); }
   }, [loadDashboard]);
