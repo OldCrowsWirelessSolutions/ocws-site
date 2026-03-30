@@ -60,6 +60,11 @@ function randomSuffix(len: number): string {
 function codePrefix(products: PromoProduct): string {
   if (products === "verdict") return "OCWS-VERDICT";
   if (products === "both" || products === "all_reckonings") return "OCWS-MULTI";
+  if (products === "sub_fledgling") return "OCWS-FLEDGLING";
+  if (products === "sub_nest") return "OCWS-NEST-PROMO";
+  if (products === "sub_flock") return "OCWS-FLOCK-PROMO";
+  if (products === "sub_murder") return "OCWS-MURDER-PROMO";
+  if (products === "sub_any") return "OCWS-SUB";
   return "OCWS-RECKONING";
 }
 

@@ -336,7 +336,7 @@ export async function validateSubscriptionId(
   }
 
   // 1b — Redis-backed promo codes (OCWS-VERDICT-*, OCWS-RECKONING-*, OCWS-MULTI-*)
-  if (code.startsWith('OCWS-VERDICT-') || code.startsWith('OCWS-RECKONING-') || code.startsWith('OCWS-MULTI-') || code.startsWith('OCWS-SUB-')) {
+  if (code.startsWith('OCWS-VERDICT-') || code.startsWith('OCWS-RECKONING-') || code.startsWith('OCWS-MULTI-') || code.startsWith('OCWS-SUB') || code.startsWith('OCWS-FLEDGLING-') || code.startsWith('OCWS-NEST-PROMO-') || code.startsWith('OCWS-FLOCK-PROMO-') || code.startsWith('OCWS-MURDER-PROMO-')) {
     try {
       const { validatePromoCode } = await import('./promo-codes');
       const promo = await validatePromoCode(code);
