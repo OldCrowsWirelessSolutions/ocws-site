@@ -9,6 +9,11 @@ const VALID_TYPES: PromoType[] = [
   "reckoning_standard",
   "reckoning_commercial",
   "reckoning_pro",
+  "sub_fledgling",
+  "sub_nest",
+  "sub_flock",
+  "sub_murder",
+  "sub_any",
 ];
 
 const VALID_EXPIRY_TYPES: ExpiryType[] = [

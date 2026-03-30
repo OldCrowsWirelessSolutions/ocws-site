@@ -540,6 +540,18 @@ export default function DashboardPage() {
       }
     } catch { /* non-fatal */ }
 
+    // Handle promo code from QR scan
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const subCode = params.get('sub_code');
+      if (subCode) {
+        localStorage.setItem('corvus_sub_code', subCode.trim().toUpperCase());
+        const url = new URL(window.location.href);
+        url.searchParams.delete('sub_code');
+        window.history.replaceState({}, '', url.toString());
+      }
+    } catch { /* non-fatal */ }
+
     // Handle Stripe redirect back to dashboard
     try {
       const params = new URLSearchParams(window.location.search);

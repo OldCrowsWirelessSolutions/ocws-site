@@ -834,6 +834,11 @@ export default function AdminPage() {
       : promoProducts === "reckoning_standard" ? "reckoning_standard"
       : promoProducts === "reckoning_commercial" ? "reckoning_commercial"
       : promoProducts === "reckoning_pro" ? "reckoning_pro"
+      : promoProducts === "sub_fledgling" ? "sub_fledgling"
+      : promoProducts === "sub_nest" ? "sub_nest"
+      : promoProducts === "sub_flock" ? "sub_flock"
+      : promoProducts === "sub_murder" ? "sub_murder"
+      : promoProducts === "sub_any" ? "sub_any"
       : "verdict";
     try {
       const res = await fetch("/api/admin/promo/generate", {
@@ -1665,6 +1670,29 @@ export default function AdminPage() {
               </div>
             ))}
           </div>
+
+          {promoDeactivated > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+              <button
+                onClick={async () => {
+                  if (!confirm(`Delete all ${promoDeactivated} deactivated codes? This cannot be undone.`)) return;
+                  try {
+                    const res = await fetch('/api/admin/promo/clear-deactivated', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
+                    });
+                    if (res.ok) {
+                      flash(`Cleared ${promoDeactivated} deactivated codes`);
+                      loadPromoCodes();
+                    }
+                  } catch { flash('Failed to clear codes', true); }
+                }}
+                style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', borderRadius: 7, color: '#F87171', fontSize: '12px', padding: '7px 16px', cursor: 'pointer' }}
+              >
+                🗑 Clear {promoDeactivated} Deactivated
+              </button>
+            </div>
+          )}
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: "16px", marginBottom: "20px" }}>
             <form onSubmit={handleGeneratePromo}>
