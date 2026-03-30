@@ -8,7 +8,12 @@ export type PromoType =
   | "reckoning_small"
   | "reckoning_standard"
   | "reckoning_commercial"
-  | "reckoning_pro";
+  | "reckoning_pro"
+  | "sub_fledgling"
+  | "sub_nest"
+  | "sub_flock"
+  | "sub_murder"
+  | "sub_any";
 
 export type PromoProduct =
   | "verdict"
