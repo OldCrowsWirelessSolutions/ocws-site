@@ -337,23 +337,22 @@ export async function validateSubscriptionId(
     try {
       const { validatePromoCode } = await import('./promo-codes');
       const promo = await validatePromoCode(code);
-      if (promo && promo.active !== false) {
+      if (promo) {
+        const p = promo.products;
+        const multiReckoning = p === 'all_reckonings' || p === 'both';
         return {
           valid: true,
           type: 'founder' as const,
           tier: 'fledgling' as const,
           customer_name: 'Guest',
-          verdicts_remaining: promo.type === 'verdict' ? 1 : 0,
+          verdicts_remaining: p === 'verdict' || p === 'both' ? 1 : 0,
           verdicts_unlimited: false,
           reckonings_remaining: {
-            small: promo.type === 'reckoning_small' ? 1 : promo.type === 'all_reckonings' || promo.type === 'both' ? 1 : 0,
-            standard: promo.type === 'reckoning_standard' ? 1 : promo.type === 'all_reckonings' || promo.type === 'both' ? 1 : 0,
-            commercial: promo.type === 'reckoning_commercial' ? 1 : promo.type === 'all_reckonings' || promo.type === 'both' ? 1 : 0,
+            small:      p === 'reckoning_small'     || multiReckoning ? 1 : 0,
+            standard:   p === 'reckoning_standard'  || multiReckoning ? 1 : 0,
+            commercial: p === 'reckoning_commercial'|| multiReckoning ? 1 : 0,
           },
           reckonings_unlimited: { small: false, standard: false, commercial: false },
-          extra_verdict_credits: 0,
-          credit_pricing: { single: '1 Credit', singlePrice: 15, sixPack: '6 Credits', sixPackPrice: 75, twelvePack: '12 Credits', twelvePackPrice: 120 },
-          reckoning_pricing: { small: 'Small', smallPrice: 150, standard: 'Standard', standardPrice: 350, commercial: 'Commercial', commercialPrice: 750 },
         };
       }
     } catch { /* fall through */ }
