@@ -585,44 +585,47 @@ export default function DashboardPage() {
 
       // Demo tokens — validate via API directly, bypass subscription validator
       if (saved.startsWith('CORVUS-DEMO-')) {
-        try {
-          const res = await fetch('/api/demo/validate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: saved }),
-          });
-          const data = await res.json();
-          if (data.valid && data.session) {
-            const session = data.session;
-            const tierMap: Record<string, string> = {
-              fledgling: 'fledgling',
-              nest: 'nest',
-              flock: 'flock',
-              full: 'flock',
-            };
-            const tier = tierMap[session.accessLevel] ?? 'fledgling';
-            const syntheticSub = {
-              valid: true,
-              type: 'founder' as const,
-              tier,
-              customer_name: session.clientName || 'Demo User',
-              verdicts_remaining: 999999,
-              verdicts_unlimited: tier === 'flock',
-              reckonings_remaining: { small: session.allowReckoning ? 999999 : 0, standard: 0, commercial: 0 },
-              reckonings_unlimited: { small: session.allowReckoning ?? false, standard: false, commercial: false },
-              extra_verdict_credits: 0,
-              credit_pricing: { single: '1 Credit', singlePrice: 15, sixPack: '6 Credits', sixPackPrice: 75, twelvePack: '12 Credits', twelvePackPrice: 120 },
-              reckoning_pricing: { small: 'Small', smallPrice: 150, standard: 'Standard', standardPrice: 350, commercial: 'Commercial', commercialPrice: 750 },
-            };
-            setSub(syntheticSub as ValidationResult);
-            setStoredCode(saved);
-            setPhase('dashboard');
-            return;
-          }
-        } catch { /* fall through */ }
-        // Demo token invalid or expired
-        localStorage.removeItem('corvus_sub_code');
-        setPhase("auth");
+        const validateDemo = async () => {
+          try {
+            const res = await fetch('/api/demo/validate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token: saved }),
+            });
+            const data = await res.json();
+            if (data.valid && data.session) {
+              const session = data.session;
+              const tierMap: Record<string, string> = {
+                fledgling: 'fledgling',
+                nest: 'nest',
+                flock: 'flock',
+                full: 'flock',
+              };
+              const tier = tierMap[session.accessLevel] ?? 'fledgling';
+              const syntheticSub = {
+                valid: true,
+                type: 'founder' as const,
+                tier,
+                customer_name: session.clientName || 'Demo User',
+                verdicts_remaining: 999999,
+                verdicts_unlimited: tier === 'flock',
+                reckonings_remaining: { small: session.allowReckoning ? 999999 : 0, standard: 0, commercial: 0 },
+                reckonings_unlimited: { small: session.allowReckoning ?? false, standard: false, commercial: false },
+                extra_verdict_credits: 0,
+                credit_pricing: { single: '1 Credit', singlePrice: 15, sixPack: '6 Credits', sixPackPrice: 75, twelvePack: '12 Credits', twelvePackPrice: 120 },
+                reckoning_pricing: { small: 'Small', smallPrice: 150, standard: 'Standard', standardPrice: 350, commercial: 'Commercial', commercialPrice: 750 },
+              };
+              setSub(syntheticSub as ValidationResult);
+              setStoredCode(saved);
+              setPhase('dashboard');
+              return;
+            }
+          } catch { /* fall through */ }
+          // Demo token invalid or expired
+          localStorage.removeItem('corvus_sub_code');
+          setPhase("auth");
+        };
+        validateDemo();
         return;
       }
 
