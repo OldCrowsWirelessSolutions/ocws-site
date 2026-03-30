@@ -946,13 +946,13 @@ export default function CrowsEyeTab({
                   <strong style={{ color: '#00C2C7' }}>App: WiFiman by Ubiquiti</strong> — free, no ads, US App Store{'\n'}Search: &ldquo;WiFiman&rdquo; by Ubiquiti
                 </p>
                 <p style={{ margin: '0 0 8px' }}>
-                  <strong style={{ color: '#F4F6F8' }}>Screenshot 1 —</strong> Tap <strong>SCAN</strong> at the bottom. Screenshot the full list showing all networks, signal strength (dBm), and channels.
+                  <strong style={{ color: '#F4F6F8' }}>Screenshot 1 —</strong> Tap <strong>Signal</strong> at the bottom. Screenshot your connected network details.
                 </p>
                 <p style={{ margin: '0 0 8px' }}>
-                  <strong style={{ color: '#F4F6F8' }}>Screenshot 2 —</strong> In the SCAN tab tap <strong>&ldquo;2.4GHz&rdquo;</strong> filter at the top. Screenshot the filtered list.
+                  <strong style={{ color: '#F4F6F8' }}>Screenshot 2 —</strong> Tap <strong>Speed</strong> at the bottom. Run a speed test and screenshot the results.
                 </p>
                 <p style={{ margin: 0 }}>
-                  <strong style={{ color: '#F4F6F8' }}>Screenshot 3 —</strong> Tap <strong>&ldquo;5GHz&rdquo;</strong> filter. Screenshot that view.
+                  <strong style={{ color: '#F4F6F8' }}>Screenshot 3 —</strong> Tap <strong>Discovery</strong> at the bottom. Screenshot the device list.
                 </p>
                 <p style={{ margin: '8px 0 0', color: 'rgba(244,246,248,0.4)', fontStyle: 'italic' }}>
                   Note: iPhone restricts some Wi-Fi data. Upload what you can — Corvus will work with whatever he sees.
@@ -1185,18 +1185,18 @@ export default function CrowsEyeTab({
                 Screenshots
               </div>
               <FileUploadSlot
-                label={deviceType === 'ios' ? 'WLAN Screen' : 'Signal List / AP List'}
+                label={deviceType === 'ios' ? 'Signal Screen — Current Network (required)' : 'Signal List / AP List'}
                 required
                 file={signalListFile}
                 onChange={setSignalListFile}
               />
               <FileUploadSlot
-                label={deviceType === 'ios' ? '2.4 GHz Filtered View (optional)' : '2.4 GHz Channel Graph (optional)'}
+                label={deviceType === 'ios' ? 'Speed Test Results (optional)' : '2.4 GHz Channel Graph (optional)'}
                 file={ghz24File}
                 onChange={setGhz24File}
               />
               <FileUploadSlot
-                label={deviceType === 'ios' ? '5 GHz Filtered View (optional)' : '5 GHz Channel Graph (optional)'}
+                label={deviceType === 'ios' ? 'Discovery / Device List (optional)' : '5 GHz Channel Graph (optional)'}
                 file={ghz5File}
                 onChange={setGhz5File}
               />
