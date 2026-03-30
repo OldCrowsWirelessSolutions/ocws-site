@@ -7,12 +7,12 @@ const STEPS = [
     number: 1,
     title: 'Download WiFi Analyzer',
     instruction: 'Search "WiFi Analyzer open source" on Google Play. Free. Green icon. No ads. Install it.',
-    detail: 'Android only. iPhone users: search "WiFiman" by Ubiquiti on the App Store — free, no ads.',
+    detail: 'Android only. iPhone users: search "AirPort Utility" by Apple on the App Store — free, made by Apple. Then go to Settings → AirPort Utility → turn on WiFi Scanner.',
     img: 'https://vremsoftwaredevelopment.github.io/WiFiAnalyzer/images/feature-graphic.png',
     imgAlt: 'WiFi Analyzer app — available on Google Play',
     badge: {
       android: 'https://play.google.com/store/apps/details?id=com.vrem.wifianalyzer',
-      ios: 'https://apps.apple.com/us/app/ubiquiti-wifiman/id1385561119',
+      ios: 'https://apps.apple.com/us/app/airport-utility/id427276530',
     },
   },
   {

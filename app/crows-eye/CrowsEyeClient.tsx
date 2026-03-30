@@ -2181,7 +2181,7 @@ export default function CrowsEyeClient() {
 
           {/* Apple App Store badge */}
           <a
-            href="https://apps.apple.com/us/app/ubiquiti-wifiman/id1385561119"
+            href="https://apps.apple.com/us/app/airport-utility/id427276530"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 px-4 py-3 rounded-xl transition"
@@ -2197,7 +2197,7 @@ export default function CrowsEyeClient() {
             </svg>
             <div>
               <p className="text-white/55 text-xs leading-none mb-0.5">IPHONE USERS</p>
-              <p className="text-white font-semibold text-sm leading-none">WiFiman by Ubiquiti</p>
+              <p className="text-white font-semibold text-sm leading-none">AirPort Utility by Apple</p>
             </div>
           </a>
         </div>
@@ -2217,7 +2217,7 @@ export default function CrowsEyeClient() {
                 color: scanDevice === d ? '#00C2C7' : 'rgba(244,246,248,0.5)',
                 fontFamily: 'monospace', fontSize: '0.8rem', fontWeight: scanDevice === d ? 700 : 400,
               }}>
-              {d === 'android' ? '📱 Android — WiFi Analyzer' : '🍎 iPhone — WiFiman'}
+              {d === 'android' ? '📱 Android — WiFi Analyzer' : '🍎 iPhone — AirPort Utility'}
             </button>
           ))}
         </div>
@@ -2227,7 +2227,7 @@ export default function CrowsEyeClient() {
           <p style={{ color: '#B8922A', fontFamily: 'monospace', fontSize: '0.75rem', margin: 0, lineHeight: 1.6 }}>
             🐦‍⬛ <strong>Corvus:</strong> {scanDevice === 'android'
               ? '"Three screenshots. That\'s all I need. Signal list, 2.4 GHz graph, 5 GHz graph. Give me those and I\'ll tell you everything that\'s wrong."'
-              : '"iPhone users — WiFiman gives me what I need. Three screenshots from the SCAN tab: full list, 2.4GHz filtered, 5GHz filtered. I\'ve been tested on it. I know what I\'m looking at."'}
+              : '"iPhone users — AirPort Utility gives me exactly what I need. Open it, tap WiFi Scan, tap Scan. Three screenshots: full list, 2.4 GHz networks, 5 GHz networks. Same quality as Android. I know what I\'m looking at."'}
           </p>
         </div>
 
@@ -2246,9 +2246,9 @@ export default function CrowsEyeClient() {
                 </>
               ) : (
                 <>
-                  <p className="text-white font-semibold text-sm">Download WiFiman by Ubiquiti</p>
-                  <p className="ocws-muted text-sm mt-0.5 leading-relaxed"><strong style={{ color: '#00C2C7' }}>Download WiFiman by Ubiquiti</strong> on the App Store — free, no ads, works on all iPhones.</p>
-                  <a href="https://apps.apple.com/us/app/ubiquiti-wifiman/id1385561119" target="_blank" rel="noopener noreferrer" style={{ color: '#00C2C7', fontSize: '0.8rem' }}>→ Get it on the App Store</a>
+                  <p className="text-white font-semibold text-sm">Download AirPort Utility by Apple</p>
+                  <p className="ocws-muted text-sm mt-0.5 leading-relaxed"><strong style={{ color: '#00C2C7' }}>Download AirPort Utility</strong> on the App Store — free, made by Apple. Then go to Settings → AirPort Utility → turn on WiFi Scanner.</p>
+                  <a href="https://apps.apple.com/us/app/airport-utility/id427276530" target="_blank" rel="noopener noreferrer" style={{ color: '#00C2C7', fontSize: '0.8rem' }}>→ Get it on the App Store</a>
                 </>
               )}
             </div>
@@ -2275,7 +2275,7 @@ export default function CrowsEyeClient() {
               ) : (
                 <>
                   <p className="text-white font-semibold text-sm">Tap SCAN — screenshot the full list</p>
-                  <p className="ocws-muted text-sm mt-0.5 leading-relaxed">Open WiFiman and tap <strong>SCAN</strong> at the bottom. You&rsquo;ll see every nearby network with signal strength in dBm and channel. Screenshot this full list — this is your Signal List.</p>
+                  <p className="ocws-muted text-sm mt-0.5 leading-relaxed">Open AirPort Utility and tap <strong>WiFi Scan</strong>, then tap <strong>Scan</strong>. You&rsquo;ll see every nearby network with signal strength and channel. Screenshot this full list — this is your Signal List.</p>
                 </>
               )}
             </div>

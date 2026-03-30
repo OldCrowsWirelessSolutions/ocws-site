@@ -943,19 +943,19 @@ export default function CrowsEyeTab({
             {deviceType === 'ios' && (
               <div style={{ color: 'rgba(244,246,248,0.7)', fontFamily: 'monospace', fontSize: '0.72rem', lineHeight: 1.7 }}>
                 <p style={{ margin: '0 0 8px' }}>
-                  <strong style={{ color: '#00C2C7' }}>App: WiFiman by Ubiquiti</strong> — free, no ads, US App Store{'\n'}Search: &ldquo;WiFiman&rdquo; by Ubiquiti
+                  <strong style={{ color: '#00C2C7' }}>Download AirPort Utility</strong> — free, made by Apple, US App Store. Then go to Settings → AirPort Utility → turn on WiFi Scanner.
                 </p>
                 <p style={{ margin: '0 0 8px' }}>
-                  <strong style={{ color: '#F4F6F8' }}>Screenshot 1 —</strong> Tap <strong>Signal</strong> at the bottom. Screenshot your connected network details.
+                  <strong style={{ color: '#F4F6F8' }}>Screenshot 1 — All Networks:</strong> Open AirPort Utility → tap <strong>WiFi Scan</strong> → tap <strong>Scan</strong>. Screenshot the full list showing all nearby networks with SSID, channel, and signal strength.
                 </p>
                 <p style={{ margin: '0 0 8px' }}>
-                  <strong style={{ color: '#F4F6F8' }}>Screenshot 2 —</strong> Tap <strong>Speed</strong> at the bottom. Run a speed test and screenshot the results.
+                  <strong style={{ color: '#F4F6F8' }}>Screenshot 2 — 2.4 GHz Networks:</strong> After scanning, look at the channel column — mentally note or filter networks on channels 1-11. Screenshot this view showing 2.4 GHz networks.
                 </p>
                 <p style={{ margin: 0 }}>
-                  <strong style={{ color: '#F4F6F8' }}>Screenshot 3 —</strong> Tap <strong>Discovery</strong> at the bottom. Screenshot the device list.
+                  <strong style={{ color: '#F4F6F8' }}>Screenshot 3 — 5 GHz Networks:</strong> Same scan results — note networks on channels 36 and above. Screenshot this view showing 5 GHz networks.
                 </p>
                 <p style={{ margin: '8px 0 0', color: 'rgba(244,246,248,0.4)', fontStyle: 'italic' }}>
-                  Note: iPhone restricts some Wi-Fi data. Upload what you can — Corvus will work with whatever he sees.
+                  AirPort Utility shows all nearby networks — same data Corvus gets from Android. Full Verdict quality on iPhone.
                 </p>
               </div>
             )}
@@ -1185,18 +1185,18 @@ export default function CrowsEyeTab({
                 Screenshots
               </div>
               <FileUploadSlot
-                label={deviceType === 'ios' ? 'Signal Screen — Current Network (required)' : 'Signal List / AP List'}
+                label={deviceType === 'ios' ? 'AirPort Utility — WiFi Scan Results (required)' : 'Signal List / AP List'}
                 required
                 file={signalListFile}
                 onChange={setSignalListFile}
               />
               <FileUploadSlot
-                label={deviceType === 'ios' ? 'Speed Test Results (optional)' : '2.4 GHz Channel Graph (optional)'}
+                label={deviceType === 'ios' ? '2.4 GHz Networks Screenshot (optional)' : '2.4 GHz Channel Graph (optional)'}
                 file={ghz24File}
                 onChange={setGhz24File}
               />
               <FileUploadSlot
-                label={deviceType === 'ios' ? 'Discovery / Device List (optional)' : '5 GHz Channel Graph (optional)'}
+                label={deviceType === 'ios' ? '5 GHz Networks Screenshot (optional)' : '5 GHz Channel Graph (optional)'}
                 file={ghz5File}
                 onChange={setGhz5File}
               />
