@@ -338,21 +338,28 @@ export async function validateSubscriptionId(
       const { validatePromoCode } = await import('./promo-codes');
       const promo = await validatePromoCode(code);
       if (promo) {
-        const p = promo.products;
-        const multiReckoning = p === 'all_reckonings' || p === 'both';
+        const promoProducts = promo.products as string;
+        const isVerdict = promoProducts === 'verdict' || promoProducts === 'both';
+        const isSmall = promoProducts === 'reckoning_small' || promoProducts === 'all_reckonings' || promoProducts === 'both';
+        const isStandard = promoProducts === 'reckoning_standard' || promoProducts === 'all_reckonings' || promoProducts === 'both';
+        const isCommercial = promoProducts === 'reckoning_commercial' || promoProducts === 'all_reckonings' || promoProducts === 'both';
+
         return {
           valid: true,
           type: 'founder' as const,
           tier: 'fledgling' as const,
           customer_name: 'Guest',
-          verdicts_remaining: p === 'verdict' || p === 'both' ? 1 : 0,
+          verdicts_remaining: isVerdict ? 1 : 0,
           verdicts_unlimited: false,
           reckonings_remaining: {
-            small:      p === 'reckoning_small'     || multiReckoning ? 1 : 0,
-            standard:   p === 'reckoning_standard'  || multiReckoning ? 1 : 0,
-            commercial: p === 'reckoning_commercial'|| multiReckoning ? 1 : 0,
+            small: isSmall ? 1 : 0,
+            standard: isStandard ? 1 : 0,
+            commercial: isCommercial ? 1 : 0,
           },
           reckonings_unlimited: { small: false, standard: false, commercial: false },
+          extra_verdict_credits: isVerdict ? 1 : 0,
+          credit_pricing: { single: '1 Credit', singlePrice: 15, sixPack: '6 Credits', sixPackPrice: 75, twelvePack: '12 Credits', twelvePackPrice: 120 },
+          reckoning_pricing: { small: 'Small', smallPrice: 150, standard: 'Standard', standardPrice: 350, commercial: 'Commercial', commercialPrice: 750 },
         };
       }
     } catch { /* fall through */ }
