@@ -540,15 +540,19 @@ export default function DashboardPage() {
       }
     } catch { /* non-fatal */ }
 
-    // Handle promo code from QR scan
+    // Handle promo code from QR scan — auto-login
     try {
       const params = new URLSearchParams(window.location.search);
       const subCode = params.get('sub_code');
       if (subCode) {
-        localStorage.setItem('corvus_sub_code', subCode.trim().toUpperCase());
+        const cleaned = subCode.trim().toUpperCase();
+        localStorage.setItem('corvus_sub_code', cleaned);
         const url = new URL(window.location.href);
         url.searchParams.delete('sub_code');
         window.history.replaceState({}, '', url.toString());
+        // Auto-validate and load dashboard immediately
+        loadDashboard(cleaned);
+        return;
       }
     } catch { /* non-fatal */ }
 
