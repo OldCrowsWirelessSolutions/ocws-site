@@ -607,8 +607,8 @@ export default function DashboardPage() {
               reckonings_remaining: { small: session.allowReckoning ? 999999 : 0, standard: 0, commercial: 0 },
               reckonings_unlimited: { small: session.allowReckoning ?? false, standard: false, commercial: false },
               extra_verdict_credits: 0,
-              credit_pricing: { single: 15, pack6: 75, pack12: 120 },
-              reckoning_pricing: { small: 150, standard: 350, commercial: 750 },
+              credit_pricing: { single: '1 Credit', singlePrice: 15, sixPack: '6 Credits', sixPackPrice: 75, twelvePack: '12 Credits', twelvePackPrice: 120 },
+              reckoning_pricing: { small: 'Small', smallPrice: 150, standard: 'Standard', standardPrice: 350, commercial: 'Commercial', commercialPrice: 750 },
             };
             setSub(syntheticSub as ValidationResult);
             setStoredCode(demoToken);
