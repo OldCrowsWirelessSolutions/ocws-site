@@ -54,6 +54,9 @@ export interface ValidationResult {
   vip_title?: string;
   vip_company?: string;
   vip_max_subordinates?: number;
+  extra_verdict_credits?: number;
+  credit_pricing?: { single: string; singlePrice: number; sixPack: string; sixPackPrice: number; twelvePack: string; twelvePackPrice: number };
+  reckoning_pricing?: { small?: string; smallPrice?: number; standard?: string; standardPrice?: number; commercial?: string; commercialPrice?: number };
   error?: string;
 }
 
