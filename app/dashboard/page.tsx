@@ -580,16 +580,20 @@ export default function DashboardPage() {
     } catch { /* non-fatal */ }
 
     try {
-      // Check for demo session first — bypass subscription validation entirely
-      const demoSession = sessionStorage.getItem('corvus_demo_session');
-      const demoToken = sessionStorage.getItem('corvus_demo_token') || localStorage.getItem('corvus_sub_code');
+      const saved = localStorage.getItem("corvus_sub_code");
+      if (!saved) { setPhase("auth"); return; }
 
-      if (demoSession && demoToken && demoToken.startsWith('CORVUS-DEMO-')) {
+      // Demo tokens — validate via API directly, bypass subscription validator
+      if (saved.startsWith('CORVUS-DEMO-')) {
         try {
-          const session = JSON.parse(demoSession);
-          // Validate demo token is not expired
-          if (session.expiresAt && Date.now() < session.expiresAt) {
-            // Build a synthetic ValidationResult from the demo session
+          const res = await fetch('/api/demo/validate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: saved }),
+          });
+          const data = await res.json();
+          if (data.valid && data.session) {
+            const session = data.session;
             const tierMap: Record<string, string> = {
               fledgling: 'fledgling',
               nest: 'nest',
@@ -611,19 +615,12 @@ export default function DashboardPage() {
               reckoning_pricing: { small: 'Small', smallPrice: 150, standard: 'Standard', standardPrice: 350, commercial: 'Commercial', commercialPrice: 750 },
             };
             setSub(syntheticSub as ValidationResult);
-            setStoredCode(demoToken);
+            setStoredCode(saved);
             setPhase('dashboard');
             return;
           }
-        } catch { /* fall through to normal auth */ }
-      }
-
-      const saved = localStorage.getItem("corvus_sub_code");
-      if (!saved) { setPhase("auth"); return; }
-
-      // Don't try to validate demo tokens as subscriptions
-      if (saved.startsWith('CORVUS-DEMO-')) {
-        // Demo token in localStorage but no valid session — send to auth
+        } catch { /* fall through */ }
+        // Demo token invalid or expired
         localStorage.removeItem('corvus_sub_code');
         setPhase("auth");
         return;
