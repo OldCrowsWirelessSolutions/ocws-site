@@ -112,6 +112,9 @@ export default function CorvusChat({
   const greetedRef                          = useRef(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef                      = useRef<any>(null);
+  const [attachments, setAttachments] = useState<Array<{file: File, base64: string, mediaType: string, name: string}>>([]);
+  const [attachmentError, setAttachmentError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-scroll
   useEffect(() => {
@@ -205,7 +208,13 @@ export default function CorvusChat({
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, message: text, comfortLevel, reportContext }),
+        body: JSON.stringify({
+          code,
+          message: text,
+          comfortLevel,
+          reportContext,
+          attachments: attachments.map(a => ({ base64: a.base64, mediaType: a.mediaType, name: a.name })),
+        }),
       });
       const data = await res.json() as {
         response?: string;
@@ -214,6 +223,7 @@ export default function CorvusChat({
         messagesRemaining?: number;
         error?: string;
       };
+      setAttachments([]);
 
       if (data.limited) {
         // Show limit message as Corvus message + upgrade prompt
@@ -376,6 +386,36 @@ export default function CorvusChat({
 
     recognitionRef.current = recognition;
     recognition.start();
+  }
+
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setAttachmentError('');
+    const newAttachments: Array<{file: File, base64: string, mediaType: string, name: string}> = [];
+    for (const file of files) {
+      const allowed = ['image/jpeg','image/png','image/gif','image/webp','application/pdf'];
+      if (!allowed.includes(file.type)) {
+        setAttachmentError(`${file.name} is not supported. Use JPG, PNG, GIF, WEBP, or PDF.`);
+        continue;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        setAttachmentError(`${file.name} is too large. Max 10MB.`);
+        continue;
+      }
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result as string).split(',')[1]);
+        reader.readAsDataURL(file);
+      });
+      newAttachments.push({ file, base64, mediaType: file.type, name: file.name });
+    }
+    setAttachments(prev => [...prev, ...newAttachments].slice(0, 5));
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+
+  function removeAttachment(index: number) {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
   }
 
   // ── Styles ────────────────────────────────────────────────────────────────
@@ -561,12 +601,57 @@ export default function CorvusChat({
           <div ref={bottomRef} />
         </div>
 
+        {/* Attachment previews */}
+        {attachments.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '8px 12px', borderTop: '1px solid rgba(0,194,199,0.1)' }}>
+            {attachments.map((a, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(0,194,199,0.08)', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '6px', padding: '4px 8px' }}>
+                <span style={{ fontSize: '11px', color: '#00C2C7', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {a.mediaType === 'application/pdf' ? '📄' : '🖼'} {a.name}
+                </span>
+                <button onClick={() => removeAttachment(i)} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '12px', padding: '0 2px' }}>✕</button>
+              </div>
+            ))}
+          </div>
+        )}
+        {attachmentError && (
+          <div style={{ padding: '4px 12px', color: '#F87171', fontSize: '11px' }}>{attachmentError}</div>
+        )}
         <div style={inputBarStyle}>
           <input ref={inputRef} type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} disabled={loading || limited} placeholder={limited ? "Subscribe to continue…" : isListening ? "Listening…" : "Ask Corvus…"}
             style={{ flex: 1, background: "#0D1520", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "8px", padding: "9px 12px", color: "#ffffff", fontSize: "13px", outline: "none", fontFamily: "inherit", opacity: limited ? 0.4 : 1 }}
             onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,194,199,0.5)"; }}
             onBlur={(e)  => { e.currentTarget.style.borderColor = "rgba(0,194,199,0.2)"; }}
           />
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+            multiple
+            onChange={handleFileSelect}
+            style={{ display: 'none' }}
+          />
+          {/* Attachment button */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={loading || limited || attachments.length >= 5}
+            title="Attach image or PDF"
+            style={{
+              background: attachments.length > 0 ? 'rgba(0,194,199,0.15)' : 'transparent',
+              border: '1px solid rgba(0,194,199,0.2)',
+              borderRadius: '50%',
+              width: '36px',
+              height: '36px',
+              color: attachments.length > 0 ? '#00C2C7' : '#888',
+              cursor: 'pointer',
+              fontSize: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >📎</button>
           <button
             onClick={handleVoiceInput}
             disabled={loading || limited}
@@ -761,6 +846,22 @@ export default function CorvusChat({
             <div ref={bottomRef} />
           </div>
 
+          {/* Attachment previews */}
+          {attachments.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '8px 12px', borderTop: '1px solid rgba(0,194,199,0.1)' }}>
+              {attachments.map((a, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(0,194,199,0.08)', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '6px', padding: '4px 8px' }}>
+                  <span style={{ fontSize: '11px', color: '#00C2C7', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {a.mediaType === 'application/pdf' ? '📄' : '🖼'} {a.name}
+                  </span>
+                  <button onClick={() => removeAttachment(i)} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '12px', padding: '0 2px' }}>✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+          {attachmentError && (
+            <div style={{ padding: '4px 12px', color: '#F87171', fontSize: '11px' }}>{attachmentError}</div>
+          )}
           {/* Input bar */}
           <div style={inputBarStyle}>
             <input
@@ -786,6 +887,35 @@ export default function CorvusChat({
               onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,194,199,0.5)"; }}
               onBlur={(e)  => { e.currentTarget.style.borderColor = "rgba(0,194,199,0.2)"; }}
             />
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+              multiple
+              onChange={handleFileSelect}
+              style={{ display: 'none' }}
+            />
+            {/* Attachment button */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={loading || limited || attachments.length >= 5}
+              title="Attach image or PDF"
+              style={{
+                background: attachments.length > 0 ? 'rgba(0,194,199,0.15)' : 'transparent',
+                border: '1px solid rgba(0,194,199,0.2)',
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                color: attachments.length > 0 ? '#00C2C7' : '#888',
+                cursor: 'pointer',
+                fontSize: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >📎</button>
             <button
               onClick={handleVoiceInput}
               disabled={loading || limited}

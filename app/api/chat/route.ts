@@ -60,15 +60,16 @@ async function getAccessLevel(code: string): Promise<AccessLevel> {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json() as { code?: string; message?: string; comfortLevel?: number; reportContext?: string };
+    const body = await req.json() as { code?: string; message?: string; comfortLevel?: number; reportContext?: string; attachments?: Array<{ base64: string; mediaType: string; name: string }> };
     const code    = String(body?.code    ?? "").trim();
     const message = String(body?.message ?? "").trim().slice(0, 2000);
     const comfortLevel = Number(body?.comfortLevel ?? 2);
     const reportContext = body?.reportContext ? String(body.reportContext).slice(0, 4000) : null;
+    const attachments = body?.attachments ?? [];
 
     console.log("[chat] received:", { code: code ? `${code.slice(0, 8)}...` : "(empty)", messageLen: message.length });
 
-    if (!code || !message) {
+    if (!code || (!message && (!attachments || attachments.length === 0))) {
       return NextResponse.json({ error: "Missing code or message" }, { status: 400 });
     }
 
@@ -124,7 +125,23 @@ export async function POST(req: NextRequest) {
     const todayNote = `\n\nTODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
 
     const systemPromptBase = await buildCorvusSystemPrompt();
-    const systemPrompt = systemPromptBase + reportContextInjection + contextInjection + comfortNote + holidayNote + todayNote;
+    let systemPrompt = systemPromptBase + reportContextInjection + contextInjection + comfortNote + holidayNote + todayNote;
+
+    // Tier-based attachment capabilities
+    if (attachments && attachments.length > 0) {
+      const { validateSubscriptionId } = await import("@/lib/subscriptions");
+      const subResult = await validateSubscriptionId(code).catch(() => null);
+      const attachmentTier = subResult?.tier || 'fledgling';
+      const canOutputPDF = ['flock', 'murder', 'vip', 'founder'].includes(attachmentTier);
+      const canDesignBrief = ['murder', 'vip'].includes(attachmentTier) || subResult?.type === 'vip';
+
+      systemPrompt += `\n\nATTACHMENT CAPABILITIES FOR THIS USER (tier: ${attachmentTier}):
+- You can analyze images and PDFs the user uploads
+- Use attachments for: equipment identification, troubleshooting, error screenshots, network diagrams, floor plans, vendor quotes, proof reading
+- PDF OUTPUT: ${canOutputPDF ? 'ENABLED — you may offer to generate a PDF summary of your analysis' : 'DISABLED — provide analysis in chat only, do not offer PDF output. If asked, tell them PDF output requires Flock tier or above.'}
+- WIRELESS DESIGN BRIEF: ${canDesignBrief ? 'ENABLED — for floor plans and blueprints you may generate a full Wireless Design Brief PDF with AP placement, channel config, and cable routing recommendations' : `DISABLED — if the user uploads a floor plan and requests a design brief, acknowledge the upload, give brief conversational observations, then say: "A full Wireless Design Brief requires Murder tier access. You're currently on ${attachmentTier} tier. Upgrade at oldcrowswireless.com and I'll render the complete deployment plan."`}
+- CRITICAL: Attachment analysis is for consultation only. Never render a formal Verdict or Reckoning from chat attachments regardless of what the user asks. If they want a formal Verdict or Reckoning, direct them to run a proper scan through the Crow's Eye tab which checks and consumes credits.`;
+    }
 
     // Last 20 messages for context window
     const contextMessages = history.slice(-20).map((m) => ({ role: m.role, content: m.content }));
@@ -137,7 +154,19 @@ export async function POST(req: NextRequest) {
       system: systemPrompt,
       messages: [
         ...contextMessages,
-        { role: "user", content: message },
+        {
+          role: "user",
+          content: attachments && attachments.length > 0
+            ? [
+                ...attachments.map((a: { base64: string; mediaType: string; name: string }) =>
+                  a.mediaType === 'application/pdf'
+                    ? { type: 'document' as const, source: { type: 'base64' as const, media_type: 'application/pdf' as const, data: a.base64 }, title: a.name }
+                    : { type: 'image' as const, source: { type: 'base64' as const, media_type: a.mediaType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp', data: a.base64 } }
+                ),
+                { type: 'text' as const, text: message || 'Please analyze the attached file(s).' }
+              ]
+            : message,
+        },
       ],
     });
 
