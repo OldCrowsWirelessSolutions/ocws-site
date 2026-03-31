@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import DesignBriefTab from './DesignBriefTab';
 
 interface CrowsEyeTabProps {
   code: string;
@@ -198,6 +199,9 @@ export default function CrowsEyeTab({
   navigateToChat,
   lockedSSID,
 }: CrowsEyeTabProps) {
+  const isMurderOrVip = isVIP || ['murder', 'vip', 'full'].includes(tier?.toLowerCase());
+  const [activeTab, setActiveTab] = useState<'verdict' | 'design-brief'>('verdict');
+
   // Mode / size
   const [mode, setMode] = useState<'verdict' | 'reckoning'>('verdict');
   const [size, setSize] = useState<'small' | 'standard' | 'commercial' | 'pro'>('small');
@@ -657,6 +661,35 @@ export default function CrowsEyeTab({
 
   return (
     <div style={{ color: '#F4F6F8', fontFamily: 'monospace' }}>
+
+      {/* Tab bar */}
+      <div style={{ display: 'flex', gap: '4px', marginBottom: '24px', borderBottom: '1px solid #1A2332', paddingBottom: '0' }}>
+        {[
+          { id: 'verdict', label: "Crow's Eye" },
+          ...(isMurderOrVip ? [{ id: 'design-brief', label: 'Design Brief' }] : []),
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as 'verdict' | 'design-brief')}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              padding: '8px 16px', fontSize: '13px', fontFamily: 'Share Tech Mono, monospace',
+              letterSpacing: '0.05em', color: activeTab === tab.id ? '#00C2C7' : '#888',
+              borderBottom: activeTab === tab.id ? '2px solid #00C2C7' : '2px solid transparent',
+              marginBottom: '-1px', transition: 'all 0.15s',
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'design-brief' && (
+        <DesignBriefTab subscriptionCode={code} tier={tier} />
+      )}
+
+      {activeTab === 'verdict' && (
+      <>
 
       {/* Credits display */}
       <div style={{
@@ -1875,6 +1908,8 @@ export default function CrowsEyeTab({
             </div>
           )}
         </div>
+      )}
+      </>
       )}
     </div>
   );
