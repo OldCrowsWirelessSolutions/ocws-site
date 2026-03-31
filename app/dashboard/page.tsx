@@ -272,6 +272,7 @@ export default function DashboardPage() {
   const [expandedReport, setExpandedReport]     = useState<string | null>(null);
   const [isAdminView, setIsAdminView]           = useState(false);
   const [activeTab, setActiveTab]               = useState<AnyTab>("overview");
+  const [demoLockedSSID, setDemoLockedSSID]     = useState<string | undefined>(undefined);
 
   interface SubordinateRecord {
     code: string; issuedBy: string; issuedByName: string;
@@ -621,6 +622,7 @@ export default function DashboardPage() {
               };
               setSub(syntheticSub as ValidationResult);
               setStoredCode(saved);
+              if (session.lockedSSID) setDemoLockedSSID(session.lockedSSID);
               setPhase('dashboard');
               return;
             }
@@ -2071,6 +2073,7 @@ export default function DashboardPage() {
         reckoningCredits={rec}
         onScanComplete={() => loadReports(storedCode)}
         navigateToChat={() => navigateTab("chat")}
+        lockedSSID={demoLockedSSID}
       />
     );
   }

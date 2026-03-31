@@ -7,7 +7,7 @@ const VIP_CODES = [process.env.VIP_NATE_CODE, process.env.VIP_MIKE_CODE, process
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { authKey, accessLevel = 'fledgling', maxUses = 1, label, clientName, allowPDF, allowReckoning } = body
+    const { authKey, accessLevel = 'fledgling', maxUses = 1, label, clientName, allowPDF, allowReckoning, lockedSSID, locationLabel } = body
 
     // Support both expiresInHours (number) and expiryType (string like "48h", "7d")
     let expiresInHours = body.expiresInHours ?? 24;
@@ -41,6 +41,8 @@ export async function POST(req: NextRequest) {
       clientName,
       allowPDF: (allowPDF ?? body.allowPdf ?? false),
       allowReckoning: allowReckoning ?? false,
+      lockedSSID: lockedSSID || undefined,
+      locationLabel: locationLabel || undefined,
     })
 
     const tokenUrl = getDemoTokenURL(token.token);

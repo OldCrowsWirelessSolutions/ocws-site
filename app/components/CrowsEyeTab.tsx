@@ -10,6 +10,7 @@ interface CrowsEyeTabProps {
   reckoningCredits: { small: number; standard: number; commercial: number };
   onScanComplete?: () => void;
   navigateToChat?: () => void;
+  lockedSSID?: string;
 }
 
 const PROCESSING_LINES = [
@@ -195,6 +196,7 @@ export default function CrowsEyeTab({
   reckoningCredits,
   onScanComplete,
   navigateToChat,
+  lockedSSID,
 }: CrowsEyeTabProps) {
   // Mode / size
   const [mode, setMode] = useState<'verdict' | 'reckoning'>('verdict');
@@ -288,6 +290,11 @@ export default function CrowsEyeTab({
       if (stored !== null) setShowInstructions(stored === 'true');
     } catch {}
   }, []);
+
+  // Pre-fill SSID when locked by team lead
+  useEffect(() => {
+    if (lockedSSID) setSsid(lockedSSID);
+  }, [lockedSSID]);
 
   const toggleInstructions = () => {
     setShowInstructions(prev => {
@@ -1044,12 +1051,18 @@ export default function CrowsEyeTab({
             </div>
 
             <label style={labelStyle}>Client's Wi-Fi Network Name (SSID)</label>
+            {lockedSSID && (
+              <div style={{ fontSize: '11px', color: '#00C2C7', marginBottom: '4px', fontFamily: 'Share Tech Mono, monospace' }}>
+                🔒 Network locked by team lead: {lockedSSID}
+              </div>
+            )}
             <input
-              style={inputStyle}
+              style={{ ...inputStyle, ...(lockedSSID ? { opacity: 0.7, cursor: 'not-allowed', borderColor: 'rgba(0,194,199,0.4)' } : {}) }}
               type="text"
               placeholder="e.g. Smith_Home_WiFi or NETGEAR_5G"
               value={ssid}
-              onChange={e => setSsid(e.target.value)}
+              onChange={e => !lockedSSID ? setSsid(e.target.value) : undefined}
+              readOnly={!!lockedSSID}
             />
 
             <div style={{ marginBottom: 10 }}>

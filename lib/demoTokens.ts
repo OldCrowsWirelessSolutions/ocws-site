@@ -17,6 +17,8 @@ export type DemoTokenConfig = {
   clientName?: string
   allowPDF: boolean
   allowReckoning: boolean
+  lockedSSID?: string
+  locationLabel?: string
 }
 
 export type DemoToken = {
@@ -34,6 +36,8 @@ export type DemoToken = {
   revoked: boolean
   lastUsedAt?: number
   lastUsedIP?: string
+  lockedSSID?: string
+  locationLabel?: string
 }
 
 export type DemoSession = {
@@ -44,6 +48,8 @@ export type DemoSession = {
   allowReckoning: boolean
   usesRemaining: number | 'unlimited'
   clientName?: string
+  lockedSSID?: string
+  locationLabel?: string
 }
 
 const TOKEN_PREFIX = 'demo:token:'
@@ -70,6 +76,8 @@ export async function generateDemoToken(config: DemoTokenConfig): Promise<DemoTo
     allowPDF,
     allowReckoning,
     revoked: false,
+    lockedSSID: config.lockedSSID,
+    locationLabel: config.locationLabel,
   }
 
   const ttlSeconds = Math.ceil((expiresAt - now) / 1000) + 3600
@@ -115,6 +123,8 @@ export async function validateDemoToken(
       allowReckoning: data.allowReckoning,
       usesRemaining,
       clientName: data.clientName,
+      lockedSSID: data.lockedSSID,
+      locationLabel: data.locationLabel,
     },
   }
 }

@@ -44,6 +44,8 @@ export default function DemoTokenManager({ authKey, isAdmin = false }: Props) {
   const [maxUses, setMaxUses] = useState(1)
   const [label, setLabel] = useState('')
   const [clientName, setClientName] = useState('')
+  const [lockedSSID, setLockedSSID] = useState('')
+  const [locationLabel, setLocationLabel] = useState('')
   const [allowPDF, setAllowPDF] = useState(false)
   const [allowReckoning, setAllowReckoning] = useState(false)
   const [error, setError] = useState('')
@@ -81,13 +83,15 @@ export default function DemoTokenManager({ authKey, isAdmin = false }: Props) {
       const res = await fetch('/api/demo/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ authKey, accessLevel, expiresInHours, maxUses, label: label || undefined, clientName: clientName || undefined, allowPDF, allowReckoning }),
+        body: JSON.stringify({ authKey, accessLevel, expiresInHours, maxUses, label: label || undefined, clientName: clientName || undefined, allowPDF, allowReckoning, lockedSSID: lockedSSID.trim() || undefined, locationLabel: locationLabel.trim() || undefined }),
       })
       const data = await res.json()
       if (data.success) {
         setNewTokenUrl(data.url)
         setLabel('')
         setClientName('')
+        setLockedSSID('')
+        setLocationLabel('')
         await fetchTokens()
       } else {
         setError(data.error || 'Failed to generate token')
@@ -160,6 +164,26 @@ export default function DemoTokenManager({ authKey, isAdmin = false }: Props) {
               onChange={e => setClientName(e.target.value)}
             />
           </div>
+          <div style={s.field}>
+            <label style={s.label}>Location Label <span style={{color:'#888',fontSize:'11px'}}>(optional)</span></label>
+            <input
+              style={s.input}
+              type="text"
+              placeholder="e.g. Suite 3B, East Wing Floor 2"
+              value={locationLabel}
+              onChange={e => setLocationLabel(e.target.value)}
+            />
+          </div>
+          <div style={s.field}>
+            <label style={s.label}>Lock to SSID <span style={{color:'#888',fontSize:'11px'}}>(optional — pre-fills and locks the network field)</span></label>
+            <input
+              style={s.input}
+              type="text"
+              placeholder="e.g. Smith_Office_WiFi"
+              value={lockedSSID}
+              onChange={e => setLockedSSID(e.target.value)}
+            />
+          </div>
         </div>
         {isAdmin && (
           <div style={s.checkRow}>
@@ -217,8 +241,37 @@ export default function DemoTokenManager({ authKey, isAdmin = false }: Props) {
                     {t.allowReckoning && ' · Reckoning'}
                     {t.createdBy !== 'admin' && ` · by ${t.createdBy}`}
                   </div>
+                  {(t.locationLabel || t.lockedSSID) && (
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '6px' }}>
+                      {t.locationLabel && (
+                        <span style={{ color: '#B8922A', fontSize: '11px', fontFamily: 'Share Tech Mono, monospace' }}>
+                          📍 {t.locationLabel}
+                        </span>
+                      )}
+                      {t.lockedSSID && (
+                        <span style={{ color: '#00C2C7', fontSize: '11px', fontFamily: 'Share Tech Mono, monospace' }}>
+                          🔒 SSID: {t.lockedSSID}
+                        </span>
+                      )}
+                    </div>
+                  )}
                   <div style={s.tokenActions}>
                     <button style={s.copySmall} onClick={() => copyUrl(url)}>Copy URL</button>
+                    <button
+                      onClick={() => {
+                        const newSSID = prompt('Update locked SSID (leave blank to clear):', t.lockedSSID || '');
+                        const newLabel = prompt('Update location label (leave blank to clear):', t.locationLabel || '');
+                        if (newSSID === null && newLabel === null) return;
+                        fetch('/api/demo/update', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ authKey, token: t.token, lockedSSID: newSSID?.trim() || undefined, locationLabel: newLabel?.trim() || undefined }),
+                        }).then(() => fetchTokens());
+                      }}
+                      style={{ background: 'transparent', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '6px', color: '#00C2C7', fontSize: '11px', padding: '3px 8px', cursor: 'pointer' }}
+                    >
+                      ✏️ Edit Lock
+                    </button>
                     <button
                       style={{ background: qrToken === t.token ? 'rgba(184,146,42,0.2)' : 'rgba(0,194,199,0.08)', border: `1px solid ${qrToken === t.token ? 'rgba(184,146,42,0.4)' : 'rgba(0,194,199,0.2)'}`, borderRadius: 6, color: qrToken === t.token ? '#B8922A' : '#00C2C7', padding: '5px 10px', fontSize: '0.68rem', fontFamily: 'monospace', cursor: 'pointer' }}
                       onClick={() => setQrToken(qrToken === t.token ? null : t.token)}
