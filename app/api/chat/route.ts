@@ -13,12 +13,23 @@ import {
   saveChatMessage,
   getMessageCount,
   incrementMessageCount,
-  getLastVerdictForCode,
 } from "@/lib/chat";
+import { getReportsForCode, type ReportRecord } from "@/lib/reports";
 import { validateSubscriptionId } from "@/lib/subscriptions";
 import { recordChatEvent } from "@/lib/analytics";
 
 const FREE_MESSAGE_LIMIT = 3;
+
+function buildReportContext(reports: ReportRecord[]): string {
+  return reports.map((r, i) => {
+    const data = typeof r.reportData === 'string' ? JSON.parse(r.reportData) : r.reportData;
+    const findings = data?.full_findings?.slice(0, 5).map((f: { title: string; severity: string }) => `  - ${f.title} (${f.severity})`).join('\n') || '';
+    return `SCAN ${i + 1} — ${r.locationName || 'Unknown Location'} — ${new Date(r.createdAt).toLocaleDateString()}
+Severity: ${r.severity} | Findings: ${r.findingCount}
+${findings}
+Summary: ${data?.corvus_summary || 'No summary'}`;
+  }).join('\n\n');
+}
 
 type AccessLevel = "unlimited" | "free" | "denied";
 
@@ -85,17 +96,18 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Build context ─────────────────────────────────────────────────────────
-    const [history, lastVerdict] = await Promise.all([
+    const [history, recentReports] = await Promise.all([
       getChatHistory(code),
-      getLastVerdictForCode(code),
+      getReportsForCode(code),
     ]);
+    const lastVerdict = recentReports.length > 0 ? buildReportContext(recentReports.slice(0, 5)) : null;
 
     const reportContextInjection = reportContext
       ? `\n\nACTIVE REPORT CONTEXT — USE THIS FOR ALL RESPONSES:\n${reportContext}\n\nCRITICAL: Answer all questions with specific reference to THIS scan. Never give generic Wi-Fi advice when you have specific data from this report. Reference specific findings, locations, and recommendations from the report above.`
       : "";
 
     const contextInjection = !reportContext && lastVerdict
-      ? `\n\nUSER'S LAST VERDICT CONTEXT:\n${lastVerdict}\n\nReference this naturally if relevant to the conversation.`
+      ? `\n\nUSER'S SCAN HISTORY (${recentReports.length} scan${recentReports.length !== 1 ? 's' : ''} on record — most recent first):\n${lastVerdict}\n\nReference scan history naturally when relevant. If the user asks about previous scans, comparisons, or trends — use this data. If they ask about a specific location reference the matching scan.`
       : "";
 
     const comfortNote = comfortLevel

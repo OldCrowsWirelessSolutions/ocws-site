@@ -5,7 +5,7 @@
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
-import { getReportsForSubscription, getReportsForEmail } from "@/lib/reports";
+import { getReportsForSubscription, getReportsForEmail, getReportsForCode } from "@/lib/reports";
 import { validateSubscriptionId } from "@/lib/subscriptions";
 
 const FOUNDING_CODES = new Set(["CORVUS-NEST", "CORVUS-NATE", "CORVUS-MIKE", "CORVUS-ERIC"]);
@@ -22,7 +22,8 @@ export async function POST(req: Request) {
     if (code === "OCWS-CORVUS-FOUNDER-JOSHUA" || FOUNDING_CODES.has(code) || rawCode === (process.env.OCWS_ADMIN_SECRET ?? "")) {
       // Founding/admin codes: fetch by codeUsed index via subscriptionId=code
       const reports = await getReportsForSubscription(code);
-      return NextResponse.json({ reports });
+      const finalReports = reports.length > 0 ? reports : await getReportsForCode(code);
+      return NextResponse.json({ reports: finalReports });
     }
 
     // Full subscription ID (OCWS-TIER-XXXXXXXX)
@@ -32,7 +33,8 @@ export async function POST(req: Request) {
     }
 
     const reports = await getReportsForSubscription(code);
-    return NextResponse.json({ reports });
+    const finalReports = reports.length > 0 ? reports : await getReportsForCode(code);
+    return NextResponse.json({ reports: finalReports });
   } catch (err) {
     console.error("[reports/list]", err);
     return NextResponse.json({ reports: [], error: "List failed" }, { status: 500 });

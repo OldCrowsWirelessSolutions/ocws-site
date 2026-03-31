@@ -78,6 +78,21 @@ export async function getReportsForSubscription(subscriptionId: string): Promise
   return fetchReports(ids);
 }
 
+export async function getReportsForCode(codeUsed: string): Promise<ReportRecord[]> {
+  // Try subscription-based lookup first
+  const subIds = (await redis.zrange(SUB_REPORTS_KEY(codeUsed), 0, -1, { rev: true })) as string[];
+  if (subIds.length > 0) return fetchReports(subIds);
+
+  // Fall back to codeUsed scan
+  const allKeys = await redis.keys('report:*') as string[];
+  const records: ReportRecord[] = [];
+  for (const key of allKeys) {
+    const raw = await redis.get<ReportRecord>(key);
+    if (raw && raw.codeUsed === codeUsed) records.push(raw);
+  }
+  return records.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
 // ─── List by email ────────────────────────────────────────────────────────────
 
 export async function getReportsForEmail(email: string): Promise<ReportRecord[]> {

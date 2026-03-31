@@ -18,7 +18,9 @@ import redis from '@/lib/redis';
 function retentionDaysForTier(tier: string): number {
   if (tier === 'vip' || tier === 'murder') return 365;
   if (tier === 'flock') return 180;
-  return 0; // nest: no storage
+  if (tier === 'nest') return 90;
+  if (tier === 'fledgling') return 30;
+  return 30; // promo/demo codes get 30 days
 }
 
 function topSeverity(
