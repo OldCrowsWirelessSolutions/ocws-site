@@ -15,6 +15,8 @@ type DemoToken = {
   allowReckoning: boolean
   revoked: boolean
   lastUsedAt?: number
+  lockedSSID?: string
+  locationLabel?: string
 }
 
 type Props = {
