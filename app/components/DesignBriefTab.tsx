@@ -20,6 +20,31 @@ interface LocationInfo {
 const LOCATION_TYPES = ['Residential', 'Office', 'Retail', 'Restaurant/QSR', 'Healthcare', 'Education', 'Hospitality', 'Industrial', 'Warehouse', 'Public Safety', 'Government', 'Other'];
 const CONSTRUCTION_TYPES = ['Wood Frame', 'Concrete', 'Steel/Metal', 'Brick/Masonry', 'Mixed', 'Unknown'];
 
+function ScanFileSlot({ label, file, setter }: { label: string; file: File | null; setter: (f: File | null) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const slotStyle = {
+    border: `2px dashed ${file ? '#0D6E7A' : '#1A2332'}`,
+    borderRadius: '8px', padding: '20px', textAlign: 'center' as const,
+    cursor: 'pointer', background: file ? '#0D6E7A11' : 'transparent',
+    transition: 'all 0.2s',
+  };
+  return (
+    <div style={{ marginBottom: '10px' }}>
+      <input ref={inputRef} type="file" accept=".csv,.txt" style={{ display: 'none' }} onChange={e => e.target.files?.[0] && setter(e.target.files[0])} />
+      <div style={slotStyle} onClick={() => inputRef.current?.click()}>
+        {file ? (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 8px' }}>
+            <span style={{ color: '#0D6E7A', fontSize: '13px' }}>✓ {file.name}</span>
+            <button onClick={e => { e.stopPropagation(); setter(null); }} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '12px' }}>✕</button>
+          </div>
+        ) : (
+          <div style={{ color: '#888', fontSize: '12px' }}>{label}</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function DesignBriefTab({ subscriptionCode, tier }: Props) {
   const [locationInfo, setLocationInfo] = useState<LocationInfo>({
     name: '', type: 'Residential', sqft: '', stories: '1', construction: 'Unknown', notes: ''
@@ -363,28 +388,9 @@ export default function DesignBriefTab({ subscriptionCode, tier }: Props) {
       <div style={{ background: '#1A2332', borderRadius: '8px', padding: '16px', marginBottom: '24px' }}>
         <div style={{ color: '#0D6E7A', fontSize: '11px', fontFamily: 'Share Tech Mono, monospace', marginBottom: '4px' }}>WIRELESS SCAN FILES</div>
         <div style={{ color: '#888', fontSize: '11px', marginBottom: '12px' }}>Optional — include scan data for deeper analysis. Same files as Crow's Eye.</div>
-        {[
-          { label: 'All Networks / Signal List', file: signalFile, setter: setSignalFile },
-          { label: '2.4 GHz Networks', file: ghz24File, setter: setGhz24File },
-          { label: '5 GHz Networks', file: ghz5File, setter: setGhz5File },
-        ].map(({ label, file, setter }) => {
-          const inputRef = useRef<HTMLInputElement>(null);
-          return (
-            <div key={label} style={{ marginBottom: '10px' }}>
-              <input ref={inputRef} type="file" accept=".csv,.txt" style={{ display: 'none' }} onChange={e => e.target.files?.[0] && setter(e.target.files[0])} />
-              <div style={uploadSlotStyle(!!file)} onClick={() => inputRef.current?.click()}>
-                {file ? (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 8px' }}>
-                    <span style={{ color: '#0D6E7A', fontSize: '13px' }}>✓ {file.name}</span>
-                    <button onClick={e => { e.stopPropagation(); setter(null); }} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '12px' }}>✕</button>
-                  </div>
-                ) : (
-                  <div style={{ color: '#888', fontSize: '12px' }}>{label}</div>
-                )}
-              </div>
-            </div>
-          );
-        })}
+        <ScanFileSlot label="All Networks / Signal List" file={signalFile} setter={setSignalFile} />
+        <ScanFileSlot label="2.4 GHz Networks" file={ghz24File} setter={setGhz24File} />
+        <ScanFileSlot label="5 GHz Networks" file={ghz5File} setter={setGhz5File} />
       </div>
 
       <button
