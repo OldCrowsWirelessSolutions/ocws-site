@@ -12,6 +12,7 @@ import CorvusTourPlayer from "@/app/components/CorvusTourPlayer";
 import CorvusTourManager from "@/app/components/CorvusTourManager";
 import CodeManagerTab from "@/app/components/CodeManagerTab";
 import DemoTokenManager from "@/app/components/DemoTokenManager";
+import OnboardingWalkthrough from "@/app/components/OnboardingWalkthrough";
 import { TOURS, type Tour } from "@/lib/corvus-tours";
 import type { TourLevel } from "@/lib/corvusTour";
 import {
@@ -2065,7 +2066,9 @@ export default function DashboardPage() {
 
   function renderCrowsEye() {
     return (
-      <CrowsEyeTab
+      <>
+        <OnboardingWalkthrough subscriptionCode={storedCode} />
+        <CrowsEyeTab
         code={storedCode}
         isVIP={isVIP}
         tier={isVIP ? "vip" : tier}
@@ -2075,6 +2078,7 @@ export default function DashboardPage() {
         navigateToChat={() => navigateTab("chat")}
         lockedSSID={demoLockedSSID}
       />
+      </>
     );
   }
 
