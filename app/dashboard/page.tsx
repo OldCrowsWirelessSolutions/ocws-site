@@ -12,6 +12,7 @@ import CorvusTourPlayer from "@/app/components/CorvusTourPlayer";
 import CorvusTourManager from "@/app/components/CorvusTourManager";
 import CodeManagerTab from "@/app/components/CodeManagerTab";
 import DemoTokenManager from "@/app/components/DemoTokenManager";
+import ClientManagerTab from "@/app/components/ClientManagerTab";
 import OnboardingWalkthrough from "@/app/components/OnboardingWalkthrough";
 import { TOURS, type Tour } from "@/lib/corvus-tours";
 import type { TourLevel } from "@/lib/corvusTour";
@@ -116,8 +117,8 @@ const sectionLabel: React.CSSProperties = {
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
-type SubTab  = "overview" | "reports" | "analytics" | "credits" | "team" | "billing" | "chat" | "products" | "crow" | "settings" | "help" | "tour";
-type VIPTab  = "overview" | "reports" | "analytics" | "codes"   | "team" | "chat"  | "products" | "crow" | "settings" | "help" | "tour" | "code-manager";
+type SubTab  = "overview" | "reports" | "analytics" | "credits" | "team" | "billing" | "chat" | "products" | "crow" | "settings" | "help" | "tour" | "clients";
+type VIPTab  = "overview" | "reports" | "analytics" | "codes"   | "team" | "chat"  | "products" | "crow" | "settings" | "help" | "tour" | "code-manager" | "clients";
 type AnyTab  = SubTab | VIPTab;
 
 // ─── TabBar ───────────────────────────────────────────────────────────────────
@@ -1008,6 +1009,7 @@ export default function DashboardPage() {
     { id: "analytics",  label: "Analytics"   },
     { id: "credits",    label: "Buy Credits" },
     ...(hasTeam || isVIP ? [{ id: "team" as SubTab, label: "Team" }] : []),
+    ...((tier === "flock" || tier === "murder") ? [{ id: "clients" as SubTab, label: "👥 Clients" }] : []),
     ...(isSubType ? [{ id: "billing" as SubTab, label: "Account & Billing" }] : []),
     { id: "products",   label: "Products"    },
     { id: "chat",       label: "Ask Corvus"  },
@@ -1022,6 +1024,7 @@ export default function DashboardPage() {
     { id: "analytics",  label: "Analytics"   },
     { id: "codes",      label: "Sub Codes"   },
     { id: "team",       label: "Team Activity" },
+    { id: "clients",    label: "👥 Clients"    },
     { id: "tour",         label: "🎬 Tour"        },
     { id: "code-manager", label: "Code Manager" },
     { id: "products",   label: "Products"    },
@@ -2226,6 +2229,7 @@ export default function DashboardPage() {
         case "analytics":  return renderAnalytics();
         case "codes":      return renderVipCodes();
         case "team":       return renderVipTeamActivity();
+        case "clients":      return <ClientManagerTab subscriptionCode={storedCode} tier={tier} reports={reports} />;
         case "tour":         return <CorvusTourManager authKey={storedCode} />;
         case "code-manager": return <CodeManagerTab authKey={storedCode} role="vip" />;
         case "products":   return renderProducts();
@@ -2242,6 +2246,7 @@ export default function DashboardPage() {
       case "analytics":  return renderAnalytics();
       case "credits":    return renderCredits();
       case "team":       return renderTeam();
+      case "clients":    return <ClientManagerTab subscriptionCode={storedCode} tier={tier} reports={reports} />;
       case "billing":    return renderBilling();
       case "products":   return renderProducts();
       case "chat":       return renderChat();
