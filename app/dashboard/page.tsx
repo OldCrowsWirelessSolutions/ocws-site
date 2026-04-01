@@ -272,7 +272,7 @@ export default function DashboardPage() {
   const [reportsLoading, setReportsLoading]     = useState(false);
   const [expandedReport, setExpandedReport]     = useState<string | null>(null);
   const [isAdminView, setIsAdminView]           = useState(false);
-  const [activeTab, setActiveTab]               = useState<AnyTab>("overview");
+  const [activeTab, setActiveTab]               = useState<AnyTab>("crow");
   const [demoLockedSSID, setDemoLockedSSID]     = useState<string | undefined>(undefined);
 
   interface SubordinateRecord {
@@ -456,6 +456,10 @@ export default function DashboardPage() {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subscription_id: code }),
       });
+      if (!res.ok) {
+        setAuthError("Connection error. Please try again.");
+        setPhase("auth"); return;
+      }
       const data: ValidationResult = await res.json();
       if (!data.valid || (data.type !== "subscription" && data.type !== "founder" && data.type !== "admin" && data.type !== "vip")) {
         setAuthError(data.error ?? "Invalid or inactive subscription.");
