@@ -493,6 +493,7 @@ export default function DashboardPage() {
       } catch { /* */ }
       setStoredCode(code);
       setPhase("dashboard");
+      if (["OCWS-CORVUS-FOUNDER-JOSHUA", "CORVUS-ADMIN", "CORVUS-NEST", "OCWS-ADMIN-2026", "ADMIN"].includes(code.toUpperCase())) setActiveTab("overview");
       // Auto-tour: show on first login per code, tier-appropriate level
       try {
         const tourKey = `corvus_tour_seen_${code}`;
@@ -685,6 +686,7 @@ export default function DashboardPage() {
         } catch { /* */ }
       }
       setStoredCode(code); setPhase("dashboard");
+      if (["OCWS-CORVUS-FOUNDER-JOSHUA", "CORVUS-ADMIN", "CORVUS-NEST", "OCWS-ADMIN-2026", "ADMIN"].includes(code.toUpperCase())) setActiveTab("overview");
       // Auto-tour on first login
       try {
         const tourKey = `corvus_tour_seen_${code}`;
