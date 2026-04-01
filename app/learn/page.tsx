@@ -84,7 +84,7 @@ const sections = [
     title: 'Subscription Tiers',
     content: [
       {
-        heading: '🐣 Fledgling — $10/mo or $100/yr',
+        heading: 'Fledgling — $10/mo or $100/yr',
         text: '1 Verdict per month. Corvus chat access. 30-day report history. Perfect for homeowners who want to check in on their network periodically.',
       },
       {

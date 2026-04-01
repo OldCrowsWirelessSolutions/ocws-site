@@ -14,7 +14,7 @@ type DemoSession = {
 }
 
 const ACCESS_LABELS: Record<string, string> = {
-  fledgling: '🐣 Fledgling Preview',
+  fledgling: 'Fledgling Preview',
   nest: '🪺 Nest Access',
   flock: '🐦‍⬛ Flock Access',
   full: '💀 Full Platform Access',

@@ -1739,7 +1739,7 @@ export default function AdminPage() {
                     { val: "reckoning_pro",        label: "Pro Reckoning" },
                     { val: "all_reckonings",       label: "All Reckonings" },
                     { val: "both",                 label: "Verdict + All Reckonings" },
-                    { val: "sub_fledgling",        label: "🐣 Fledgling Subscription" },
+                    { val: "sub_fledgling",        label: "Fledgling Subscription" },
                     { val: "sub_nest",             label: "🪺 Nest Subscription" },
                     { val: "sub_flock",            label: "🐦‍⬛ Flock Subscription" },
                     { val: "sub_murder",           label: "💀 Murder Subscription" },
