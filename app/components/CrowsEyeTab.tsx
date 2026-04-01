@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import DesignBriefTab from './DesignBriefTab';
+import CorvusTooltip from './CorvusTooltip';
 
 interface CrowsEyeTabProps {
   code: string;
@@ -1083,7 +1084,9 @@ export default function CrowsEyeTab({
               </div>
             </div>
 
-            <label style={labelStyle}>Client's Wi-Fi Network Name (SSID)</label>
+            <CorvusTooltip tip="Enter the exact network name your client connects to. Corvus uses this to identify your router's make and model." position="right">
+              <label style={labelStyle}>Client's Wi-Fi Network Name (SSID)</label>
+            </CorvusTooltip>
             {lockedSSID && (
               <div style={{ fontSize: '11px', color: '#00C2C7', marginBottom: '4px', fontFamily: 'Share Tech Mono, monospace' }}>
                 🔒 Network locked by team lead: {lockedSSID}
@@ -1230,22 +1233,28 @@ export default function CrowsEyeTab({
               }}>
                 Screenshots
               </div>
-              <FileUploadSlot
-                label={deviceType === 'ios' ? 'AirPort Utility — WiFi Scan Results (required)' : 'Signal List / AP List'}
-                required
-                file={signalListFile}
-                onChange={setSignalListFile}
-              />
-              <FileUploadSlot
-                label={deviceType === 'ios' ? '2.4 GHz Networks Screenshot (optional)' : '2.4 GHz Channel Graph (optional)'}
-                file={ghz24File}
-                onChange={setGhz24File}
-              />
-              <FileUploadSlot
-                label={deviceType === 'ios' ? '5 GHz Networks Screenshot (optional)' : '5 GHz Channel Graph (optional)'}
-                file={ghz5File}
-                onChange={setGhz5File}
-              />
+              <CorvusTooltip tip="Required. iOS: AirPort Utility → WiFi Scan → Scan, then screenshot. Android: WiFiman → Networks, then screenshot." position="right">
+                <FileUploadSlot
+                  label={deviceType === 'ios' ? 'AirPort Utility — WiFi Scan Results (required)' : 'Signal List / AP List'}
+                  required
+                  file={signalListFile}
+                  onChange={setSignalListFile}
+                />
+              </CorvusTooltip>
+              <CorvusTooltip tip="Optional but recommended. iOS: tap the 2.4 GHz filter in WiFi Scan. Android: WiFiman → Channel Graph → 2.4 GHz." position="right">
+                <FileUploadSlot
+                  label={deviceType === 'ios' ? '2.4 GHz Networks Screenshot (optional)' : '2.4 GHz Channel Graph (optional)'}
+                  file={ghz24File}
+                  onChange={setGhz24File}
+                />
+              </CorvusTooltip>
+              <CorvusTooltip tip="Optional but recommended. iOS: tap the 5 GHz filter in WiFi Scan. Android: WiFiman → Channel Graph → 5 GHz." position="right">
+                <FileUploadSlot
+                  label={deviceType === 'ios' ? '5 GHz Networks Screenshot (optional)' : '5 GHz Channel Graph (optional)'}
+                  file={ghz5File}
+                  onChange={setGhz5File}
+                />
+              </CorvusTooltip>
               {deviceType === 'ios' && (
                 <p style={{ margin: '6px 0 0', fontFamily: 'monospace', fontSize: '0.65rem', color: 'rgba(244,246,248,0.35)', fontStyle: 'italic' }}>
                   iPhone restricts some Wi-Fi data. Upload what you can — Corvus will work with whatever he sees.
