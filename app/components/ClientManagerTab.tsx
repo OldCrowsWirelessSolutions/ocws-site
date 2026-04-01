@@ -38,7 +38,7 @@ const STATUS_COLORS = {
   closed: { color: '#888', bg: 'rgba(136,136,136,0.12)', border: 'rgba(136,136,136,0.35)' },
 };
 
-const EMPTY_FORM = { name: '', email: '', phone: '', company: '', address: '', status: 'active' as const, notes: '' };
+const EMPTY_FORM: { name: string; email: string; phone: string; company: string; address: string; status: 'active' | 'follow-up' | 'closed'; notes: string } = { name: '', email: '', phone: '', company: '', address: '', status: 'active', notes: '' };
 
 export default function ClientManagerTab({ subscriptionCode, tier, reports = [] }: Props) {
   const [clients, setClients] = useState<Client[]>([]);
