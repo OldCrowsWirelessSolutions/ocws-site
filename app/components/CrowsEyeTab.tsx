@@ -468,15 +468,13 @@ export default function CrowsEyeTab({
     if (!report || pdfGenerating) return;
     setPdfGenerating(true);
     try {
-      const { jsPDF } = await import("jspdf");
-      const doc = new jsPDF({ unit: "pt", format: "letter" });
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF({ unit: 'pt', format: 'letter' });
       doc.setLineHeightFactor(1.4);
 
-      // ── Page geometry ────────────────────────────────────────────────────
       const PW = 612, PH = 792, ML = 36, MR = 36, CW = PW - ML - MR;
       const FOOTER_H = 36, SAFE_BTM = PH - FOOTER_H - 8;
 
-      // ── Brand colors ─────────────────────────────────────────────────────
       const NAVY:  [number,number,number] = [26,  35,  50];
       const NAVYL: [number,number,number] = [26,  38,  69];
       const NAVYD: [number,number,number] = [13,  21,  32];
@@ -493,50 +491,46 @@ export default function CrowsEyeTab({
         CRITICAL: RED, WARNING: GOLD, GOOD: GREEN,
       };
 
-      // ── Metadata ─────────────────────────────────────────────────────────
-      const now = new Date(report.createdAt);
-      const dateStr = now.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-      const reportId = report.reportId;
+      const now = new Date(report.createdAt || Date.now());
+      const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-      // ── Y cursor & page counter ───────────────────────────────────────────
       let y = 0, pg = 1;
 
-      // ── Helpers ──────────────────────────────────────────────────────────
       const sf = (c: [number,number,number]) => doc.setFillColor(c[0], c[1], c[2]);
       const st = (c: [number,number,number]) => doc.setTextColor(c[0], c[1], c[2]);
       const sd = (c: [number,number,number]) => doc.setDrawColor(c[0], c[1], c[2]);
-      const fn = (style: "normal"|"bold"|"italic"|"bolditalic", sz: number) => {
-        doc.setFont("helvetica", style); doc.setFontSize(sz);
+      const fn = (style: 'normal'|'bold'|'italic'|'bolditalic', sz: number) => {
+        doc.setFont('helvetica', style); doc.setFontSize(sz);
       };
       const th = (n: number, sz: number) => n * sz * 1.4;
       const wrap = (t: string, maxW: number) => doc.splitTextToSize(t, maxW);
       function txt(lines: string | string[], x: number, topY: number, sz: number): number {
-        const arr = typeof lines === "string" ? [lines] : lines;
+        const arr = typeof lines === 'string' ? [lines] : lines;
         doc.text(arr, x, topY + sz * 0.8);
         return th(arr.length, sz);
       }
 
-      function drawBg() { sf(NAVY); doc.rect(0, 0, PW, PH, "F"); }
+      function drawBg() { sf(NAVY); doc.rect(0, 0, PW, PH, 'F'); }
 
       function drawFooter() {
-        sf(NAVY); doc.rect(0, PH - FOOTER_H, PW, FOOTER_H, "F");
-        const copyrightText = "\u00A9 2026 Old Crows Wireless Solutions LLC. Corvus, Crow\u2019s Eye, The Full Reckoning, and Corvus\u2019 Verdict are unregistered trademarks of Old Crows Wireless Solutions LLC. All rights reserved.";
-        st(DGRAY); fn("normal", 6.5);
+        sf(NAVYD); doc.rect(0, PH - FOOTER_H, PW, FOOTER_H, 'F');
+        const copyrightText = '\u00A9 2026 Old Crows Wireless Solutions LLC. Corvus, Crow\u2019s Eye, The Full Reckoning, and Corvus\u2019 Verdict are unregistered trademarks of Old Crows Wireless Solutions LLC. All rights reserved.';
+        st(DGRAY); fn('normal', 6.5);
         const copyrightLines = doc.splitTextToSize(copyrightText, PW - ML - MR - 30);
         const lineH = 6.5 * 1.4;
         const blockH = copyrightLines.length * lineH;
         const startY = PH - FOOTER_H + (FOOTER_H - blockH) / 2 + 6.5 * 0.8;
-        doc.text(copyrightLines, PW / 2, startY, { align: "center" });
-        st(DGRAY); fn("normal", 7);
-        doc.text(String(pg), PW - MR, PH - FOOTER_H + 18, { align: "right" });
+        doc.text(copyrightLines, PW / 2, startY, { align: 'center' });
+        st(DGRAY); fn('normal', 7);
+        doc.text(String(pg), PW - MR, PH - FOOTER_H + 18, { align: 'right' });
       }
 
       function newPage() {
         drawFooter(); doc.addPage(); pg++; drawBg();
-        sf(NAVYD); doc.rect(0, 0, PW, 26, "F");
-        sf(TEAL);  doc.rect(0, 23, PW, 3, "F");
-        st(CYAN); fn("bold", 7.5); doc.text("CORVUS\u2019 VERDICT", ML, 17);
-        st(DGRAY); fn("normal", 7); doc.text(reportId, PW - MR, 17, { align: "right" });
+        sf(NAVYD); doc.rect(0, 0, PW, 26, 'F');
+        sf(TEAL);  doc.rect(0, 23, PW, 3, 'F');
+        st(CYAN); fn('bold', 7.5); doc.text('CORVUS\u2019 VERDICT', ML, 17);
+        st(DGRAY); fn('normal', 7); doc.text(report!.reportId, PW - MR, 17, { align: 'right' });
         y = 36;
       }
 
@@ -544,314 +538,238 @@ export default function CrowsEyeTab({
 
       function sectionBar(title: string) {
         ensure(26);
-        sf(TEAL); doc.rect(0, y, PW, 22, "F");
-        st(WHITE); fn("bold", 9); doc.text(title, ML, y + 15);
+        sf(TEAL); doc.rect(0, y, PW, 22, 'F');
+        st(WHITE); fn('bold', 9); doc.text(title, ML, y + 15);
         y += 22;
       }
 
-      // ── Page 1 ───────────────────────────────────────────────────────────
       drawBg();
 
-      // ── HEADER BAR ───────────────────────────────────────────────────────
+      // Header
       const HDR = 72;
-      sf(NAVYD); doc.rect(0, 0, PW, HDR, "F");
-      sf(GOLD);  doc.rect(0, HDR - 2, PW, 2, "F");
+      sf(NAVYD); doc.rect(0, 0, PW, HDR, 'F');
+      sf(GOLD);  doc.rect(0, HDR - 2, PW, 2, 'F');
 
       const LOGO_H = 44;
-      let ocwsW = 0;
       if (pdfLogos.ocws) {
-        ocwsW = Math.round(LOGO_H * pdfLogos.ocwsAspect);
-        doc.addImage(pdfLogos.ocws, "PNG", ML, (HDR - LOGO_H) / 2, ocwsW, LOGO_H);
+        const ocwsW = Math.round(LOGO_H * pdfLogos.ocwsAspect);
+        doc.addImage(pdfLogos.ocws, 'PNG', ML, (HDR - LOGO_H) / 2, ocwsW, LOGO_H);
       }
-      st(CYAN); fn("bold", 20);
-      doc.text("CORVUS\u2019 VERDICT", PW / 2, HDR / 2 + 7, { align: "center" });
-      st(GOLD); fn("bold", 7.5);
-      doc.text("CROW\u2019S EYE BY CORVUS", PW - MR, HDR / 2 - 6, { align: "right" });
-      st(DGRAY); fn("normal", 7.5);
-      doc.text(reportId, PW - MR, HDR / 2 + 5,  { align: "right" });
-      doc.text(dateStr,  PW - MR, HDR / 2 + 16, { align: "right" });
+      if (pdfLogos.crows) {
+        const crowsW = Math.round(LOGO_H * pdfLogos.crowsAspect);
+        doc.addImage(pdfLogos.crows, 'PNG', PW - MR - crowsW, (HDR - LOGO_H) / 2, crowsW, LOGO_H);
+      }
+
+      st(CYAN); fn('bold', 20);
+      doc.text('CORVUS\u2019 VERDICT', PW / 2, HDR / 2 + 7, { align: 'center' });
+      st(GOLD); fn('bold', 7.5);
+      doc.text('CROW\u2019S EYE BY CORVUS', PW - MR, HDR / 2 - 6, { align: 'right' });
+      st(DGRAY); fn('normal', 7.5);
+      doc.text(report.reportId, PW - MR, HDR / 2 + 5, { align: 'right' });
+      doc.text(dateStr, PW - MR, HDR / 2 + 16, { align: 'right' });
       y = HDR + 2;
 
-      // ── CLIENT INFO BLOCK ─────────────────────────────────────────────────
+      // Client info block
       const CPAD = 16, HALF = CW / 2 - 8;
-      const nameW = wrap(report.clientName || "\u2014", HALF);
-      const addrW = wrap(report.address || "Address not provided", HALF);
+      const nameW = wrap(report.clientName || '\u2014', HALF);
+      const addrW = report.address ? wrap(report.address, HALF) : [];
       const ssidW = report.ssid ? wrap(`SSID: ${report.ssid}`, HALF) : [];
       const rightRows: Array<[string, string]> = [
-        ["REPORT",  reportId],
-        ["DATE",    dateStr],
-        ["PRODUCT", report.product],
+        ['REPORT', report.reportId],
+        ['DATE', dateStr],
+        ['PRODUCT', report.product || 'Verdict'],
       ];
-      let leftColH = th(nameW.length, 13) + 4 + th(addrW.length, 9);
-      if (ssidW.length) leftColH += 4 + th(ssidW.length, 9);
-      const rightColH = rightRows.reduce((a, [,v]) => {
-        return a + th(1, 6.5) + 2 + th(wrap(v, HALF).length, 8.5) + 6;
-      }, 0);
+      let leftColH = th(nameW.length, 13) + 4;
+      if (addrW.length) leftColH += th(addrW.length, 9) + 4;
+      if (ssidW.length) leftColH += th(ssidW.length, 9) + 4;
+      const rightColH = rightRows.reduce((a, [,v]) => a + th(1, 6.5) + 2 + th(wrap(v, HALF).length, 8.5) + 6, 0);
       const clientH = Math.max(leftColH, rightColH) + CPAD * 2;
       ensure(clientH + 4);
-      sf(NAVY); doc.rect(0, y, PW, clientH, "F");
+      sf(NAVY); doc.rect(0, y, PW, clientH, 'F');
 
       let ly = y + CPAD;
-      st(WHITE); fn("bold",   13); ly += txt(nameW, ML, ly, 13) + 4;
-      st(MGRAY); fn("normal",  9); ly += txt(addrW, ML, ly, 9);
-      if (ssidW.length) {
-        ly += 4; st(CYAN); fn("normal", 9); txt(ssidW, ML, ly, 9);
-      }
+      st(WHITE); fn('bold', 13); ly += txt(nameW, ML, ly, 13) + 4;
+      if (addrW.length) { st(MGRAY); fn('normal', 9); ly += txt(addrW, ML, ly, 9) + 4; }
+      if (ssidW.length) { st(CYAN);  fn('normal', 9); txt(ssidW, ML, ly, 9); }
 
       let ry = y + CPAD;
       const rx = ML + CW / 2 + 8;
       for (const [label, val] of rightRows) {
         const valW = wrap(val, HALF);
-        st(GOLD); fn("bold", 6.5); ry += txt(label, rx, ry, 6.5) + 2;
-        st(DGRAY); fn("normal", 8.5); ry += txt(valW, rx, ry, 8.5) + 6;
+        st(GOLD); fn('bold', 6.5); ry += txt(label, rx, ry, 6.5) + 2;
+        st(DGRAY); fn('normal', 8.5); ry += txt(valW, rx, ry, 8.5) + 6;
       }
       y += clientH + 8;
 
-      // ── CORVUS ANALYSIS ───────────────────────────────────────────────────
-      sectionBar("CORVUS ANALYSIS");
+      // Corvus analysis
+      sectionBar('CORVUS ANALYSIS');
       y += 6;
-      const INNER_W = CW - 3 - 16;
-      fn("italic", 9);
-      const openW = wrap(`\u201C${report.corvus_opening ?? ""}\u201D`, INNER_W);
-      const aH = th(openW.length, 9) + 24;
-      ensure(aH + 4);
-      sf(NAVYL); doc.rect(ML, y, CW, aH, "F");
-      sf(CYAN);  doc.rect(ML, y, 3, aH, "F");
-      st(LGRAY); fn("italic", 9); txt(openW, ML + 3 + 12, y + 12, 9);
-      y += aH + 8;
+      if (report.corvus_opening) {
+        const INNER_W = CW - 3 - 16;
+        fn('italic', 9); const openW = wrap(`\u201C${report.corvus_opening}\u201D`, INNER_W);
+        const aH = th(openW.length, 9) + 24;
+        ensure(aH + 4);
+        sf(NAVYL); doc.rect(ML, y, CW, aH, 'F');
+        sf(CYAN);  doc.rect(ML, y, 3, aH, 'F');
+        st(LGRAY); fn('italic', 9); txt(openW, ML + 3 + 12, y + 12, 9);
+        y += aH + 8;
+      }
 
       // Stats row
       ensure(52);
       const SW = (CW - 9) / 4;
       [
-        { label: "ISSUES",   val: report.problems_found, clr: LGRAY },
-        { label: "CRITICAL", val: report.critical_count, clr: RED   },
-        { label: "WARNINGS", val: report.warning_count,  clr: GOLD  },
-        { label: "GOOD",     val: report.good_count,     clr: GREEN },
+        { label: 'ISSUES',   val: report.problems_found,  clr: LGRAY },
+        { label: 'CRITICAL', val: report.critical_count,  clr: RED   },
+        { label: 'WARNINGS', val: report.warning_count,   clr: GOLD  },
+        { label: 'GOOD',     val: report.good_count,      clr: GREEN },
       ].forEach((s, i) => {
         const sx = ML + i * (SW + 3);
-        sf(NAVYL); doc.roundedRect(sx, y, SW, 46, 3, 3, "F");
-        st(s.clr); fn("bold", 20);  doc.text(String(s.val), sx + SW / 2, y + 30, { align: "center" });
-        st(DGRAY); fn("normal", 6.5); doc.text(s.label, sx + SW / 2, y + 40, { align: "center" });
+        sf(NAVYL); doc.roundedRect(sx, y, SW, 46, 3, 3, 'F');
+        st(s.clr); fn('bold', 20); doc.text(String(s.val), sx + SW / 2, y + 30, { align: 'center' });
+        st(DGRAY); fn('normal', 6.5); doc.text(s.label, sx + SW / 2, y + 40, { align: 'center' });
       });
       y += 54;
 
-      // ── FINDINGS ─────────────────────────────────────────────────────────
-      sectionBar("FINDINGS");
+      // Findings
+      sectionBar('FINDINGS');
       y += 6;
 
       for (const f of report.findings) {
         const sc = SEV[f.severity?.toUpperCase()] ?? GOLD;
         const CP = 12, CARD_IW = CW - 3 - CP * 2;
 
-        fn("bold",   10); const titleW  = wrap(f.title, CARD_IW - 58);
-        fn("bold",    9); const fixSumW = wrap(f.fix_summary || f.fix || "", CARD_IW - 16);
-        fn("normal",  9); const descW   = wrap(f.description, CARD_IW);
-        fn("normal",  8);
+        fn('bold', 10); const titleW = wrap(f.title || '', CARD_IW - 58);
+        fn('bold', 9);  const fixSumW = wrap(f.fix_summary || f.fix || '', CARD_IW - 16);
+        fn('normal', 9); const descW = wrap(f.description || '', CARD_IW);
+        fn('normal', 8);
         const stepsW: string[][] = f.steps?.length
-          ? f.steps.map((s, si) => wrap(`${si + 1}.  ${s}`, CARD_IW - 10))
+          ? f.steps.map((s: string, si: number) => wrap(`${si + 1}.  ${s}`, CARD_IW - 10))
           : [];
-
-        let routerW: string[] = [], disclaimerW: string[] = [], rBoxH = 0;
-        if (f.router_info?.gateway_ip) {
-          const ri = f.router_info;
-          const rtxt = [
-            ri.vendor,
-            `Gateway: ${ri.gateway_ip}`,
-            ri.default_username ? `User: ${ri.default_username}` : "",
-            ri.default_password ? `Pass: ${ri.default_password}` : "",
-          ].filter(Boolean).join("   \u00B7   ");
-          fn("normal", 8.5); routerW = wrap(rtxt, CARD_IW - 16);
-          if (f.login_disclaimer) { fn("normal", 7.5); disclaimerW = wrap(f.login_disclaimer, CARD_IW - 16); }
-          rBoxH = th(routerW.length, 8.5)
-            + (disclaimerW.length ? 4 + th(disclaimerW.length, 7.5) : 0)
-            + 16;
-        }
 
         const FIX_BOX_PAD = 8;
         const fixSumBoxH = FIX_BOX_PAD + th(1, 7) + 3 + th(fixSumW.length, 9) + FIX_BOX_PAD;
-        const S = stepsW.length  ? stepsW.reduce((a, sl) => a + th(sl.length, 8) + 3, 0) + 5 : 0;
-        const R = routerW.length ? rBoxH + 8 : 0;
-        const cardH = CP * 2
-          + th(titleW.length, 10) + 6
-          + fixSumBoxH            + 8
-          + th(descW.length, 9)   + 6
-          + S + R;
+        const S = stepsW.length ? stepsW.reduce((a: number, sl: string[]) => a + th(sl.length, 8) + 3, 0) + 5 : 0;
+        const cardH = CP * 2 + th(titleW.length, 10) + 6 + fixSumBoxH + 8 + th(descW.length, 9) + 6 + S;
 
         ensure(cardH + 8);
 
-        sf(NAVYL); doc.rect(ML, y, CW, cardH, "F");
-        sf(sc);    doc.rect(ML, y, 3, cardH, "F");
+        sf(NAVYL); doc.rect(ML, y, CW, cardH, 'F');
+        sf(sc);    doc.rect(ML, y, 3, cardH, 'F');
 
         const bb: [number,number,number] = [
           Math.round(sc[0] * 0.12 + NAVYL[0] * 0.88),
           Math.round(sc[1] * 0.12 + NAVYL[1] * 0.88),
           Math.round(sc[2] * 0.12 + NAVYL[2] * 0.88),
         ];
-        sf(bb); doc.roundedRect(ML + CW - 58, y + CP - 4, 52, 14, 2, 2, "F");
-        st(sc); fn("bold", 7);
-        doc.text(f.severity?.toUpperCase() ?? "", ML + CW - 32, y + CP + 5.5, { align: "center" });
+        sf(bb); doc.roundedRect(ML + CW - 58, y + CP - 4, 52, 14, 2, 2, 'F');
+        st(sc); fn('bold', 7);
+        doc.text(f.severity?.toUpperCase() || '', ML + CW - 32, y + CP + 5.5, { align: 'center' });
 
         let cy = y + CP;
         const cx = ML + 3 + CP;
-        st(WHITE); fn("bold",   10); cy += txt(titleW, cx, cy, 10) + 6;
+        st(WHITE); fn('bold', 10); cy += txt(titleW, cx, cy, 10) + 6;
 
-        const fixBoxStart = cy;
-        sf(NAVYL); doc.rect(cx, fixBoxStart, CARD_IW, fixSumBoxH, "F");
-        sf(TEAL);  doc.rect(cx, fixBoxStart, 3, fixSumBoxH, "F");
-        st(CYAN);  fn("bold", 7);
-        txt("THE FIX", cx + 8, fixBoxStart + FIX_BOX_PAD, 7);
-        st(WHITE); fn("bold", 9);
-        txt(fixSumW, cx + 8, fixBoxStart + FIX_BOX_PAD + th(1, 7) + 3, 9);
-        cy = fixBoxStart + fixSumBoxH + 8;
+        // Fix box
+        sf(NAVYL); doc.rect(cx, cy, CARD_IW, fixSumBoxH, 'F');
+        sf(TEAL);  doc.rect(cx, cy, 3, fixSumBoxH, 'F');
+        st(CYAN);  fn('bold', 7); txt('THE FIX', cx + 8, cy + FIX_BOX_PAD, 7);
+        st(WHITE); fn('bold', 9); txt(fixSumW, cx + 8, cy + FIX_BOX_PAD + th(1, 7) + 3, 9);
+        cy = cy + fixSumBoxH + 8;
 
-        st(MGRAY); fn("normal",  9); cy += txt(descW,  cx, cy,  9) + 6;
+        st(MGRAY); fn('normal', 9); cy += txt(descW, cx, cy, 9) + 6;
 
         if (stepsW.length) {
           for (const sl of stepsW) {
-            st(MGRAY); fn("normal", 8); cy += txt(sl, cx + 10, cy, 8) + 3;
-          }
-          cy += 5;
-        }
-
-        if (routerW.length) {
-          sf(NAVYD); doc.rect(cx, cy, CARD_IW, rBoxH, "F");
-          st(GOLD); fn("normal", 8.5); txt(routerW, cx + 8, cy + 8, 8.5);
-          if (disclaimerW.length) {
-            const dty = cy + 8 + th(routerW.length, 8.5) + 4;
-            st(MGRAY); fn("normal", 7.5); txt(disclaimerW, cx + 8, dty, 7.5);
+            st(MGRAY); fn('normal', 8); cy += txt(sl, cx + 10, cy, 8) + 3;
           }
         }
 
         y += cardH + 8;
       }
 
-      // ── RECOMMENDATIONS ───────────────────────────────────────────────────
-      sectionBar("RECOMMENDATIONS");
-      y += 8;
-      report.recommendations.forEach((rec, i) => {
-        fn("normal", 9); const rW = wrap(rec, CW - 28);
-        const rH = th(rW.length, 9) + 8;
-        ensure(rH + 4);
-        sf(TEAL); doc.circle(ML + 9, y + rH / 2, 7, "F");
-        st(WHITE); fn("bold", 7); doc.text(String(i + 1), ML + 9, y + rH / 2 + 2.5, { align: "center" });
-        st(LGRAY); fn("normal", 9); txt(rW, ML + 22, y + 4, 9);
-        y += rH + 6;
-      });
+      // Recommendations
+      if (report.recommendations?.length) {
+        sectionBar('RECOMMENDATIONS');
+        y += 8;
+        report.recommendations.forEach((rec: string, i: number) => {
+          fn('normal', 9); const rW = wrap(rec, CW - 28);
+          const rH = th(rW.length, 9) + 8;
+          ensure(rH + 4);
+          sf(TEAL); doc.circle(ML + 9, y + rH / 2, 7, 'F');
+          st(WHITE); fn('bold', 7); doc.text(String(i + 1), ML + 9, y + rH / 2 + 2.5, { align: 'center' });
+          st(LGRAY); fn('normal', 9); txt(rW, ML + 22, y + 4, 9);
+          y += rH + 6;
+        });
+      }
 
       // Corvus final word
       if (report.corvus_summary) {
         y += 10;
-        fn("italic", 9); const fwW = wrap(`\u201C${report.corvus_summary}\u201D`, CW - 24);
+        fn('italic', 9); const fwW = wrap(`\u201C${report.corvus_summary}\u201D`, CW - 24);
         const fwH = th(fwW.length, 9) + 28;
         ensure(fwH + 8);
-        sf(NAVYL); doc.rect(ML, y, CW, fwH, "F");
-        sf(GOLD);  doc.rect(ML, y, 3, fwH, "F");
-        st(GOLD);  fn("bold", 7);   txt("CORVUS\u2019 FINAL WORD", ML + 10, y + 8, 7);
-        st(LGRAY); fn("italic", 9); txt(fwW, ML + 10, y + 18, 9);
+        sf(NAVYL); doc.rect(ML, y, CW, fwH, 'F');
+        sf(GOLD);  doc.rect(ML, y, 3, fwH, 'F');
+        st(GOLD);  fn('bold', 7);   txt('CORVUS\u2019 FINAL WORD', ML + 10, y + 8, 7);
+        st(LGRAY); fn('italic', 9); txt(fwW, ML + 10, y + 18, 9);
         y += fwH + 14;
       }
 
-      // ── DEVICE RESOURCES ─────────────────────────────────────────────────
-      const deviceInfo = report.device;
-      if (deviceInfo && deviceInfo.vendor && deviceInfo.vendor !== "Unknown") {
-        const VENDOR_URLS: Record<string, string> = {
-          "Netgear":        "https://www.netgear.com/support/",
-          "TP-Link":        "https://www.tp-link.com/us/support/",
-          "ASUS":           "https://www.asus.com/support/",
-          "Linksys":        "https://www.linksys.com/support/",
-          "Eero":           "https://support.eero.com/",
-          "Google/Nest":    "https://support.google.com/googlenest/",
-          "Ubiquiti":       "https://help.ui.com/",
-          "Arris":          "https://www.arris.com/support/",
-          "Motorola":       "https://motorola-support.com/",
-          "Cox/Vantiva":    "https://www.cox.com/residential/support/wifi.html",
-          "Xfinity/Comcast":"https://www.xfinity.com/support/",
-          "AT&T":           "https://www.att.com/support/",
-          "Vantiva":        "https://www.vantiva.com/support/",
-        };
-        const manualUrl = VENDOR_URLS[deviceInfo.vendor] ?? "https://www.routerpasswords.com";
-        const deviceLabel = [deviceInfo.vendor, deviceInfo.model].filter(Boolean).join(" ");
-        const deviceType = deviceInfo.type && deviceInfo.type !== "unknown" ? ` \u00B7 ${deviceInfo.type}` : "";
-
-        sectionBar("DEVICE RESOURCES");
-        y += 8;
-
-        const DR_H = 54;
-        ensure(DR_H + 4);
-        sf(NAVYL); doc.rect(ML, y, CW, DR_H, "F");
-        sf(TEAL);  doc.rect(ML, y, 3, DR_H, "F");
-        st(GOLD);  fn("bold", 7);    txt("IDENTIFIED DEVICE", ML + 10, y + 9, 7);
-        fn("bold", 10); const deviceLabelW = wrap(`${deviceLabel}${deviceType}`, CW - 28);
-        st(WHITE); txt(deviceLabelW, ML + 10, y + 21, 10);
-        st(CYAN);  fn("normal", 8.5);
-        doc.textWithLink("View Official Manual \u2192", ML + 10, y + 38, { url: manualUrl });
-        st(MGRAY); fn("normal", 7);  txt(manualUrl, ML + 10, y + 48, 7);
-        y += DR_H + 10;
-      }
-
-      // ── GOLD DIVIDER ──────────────────────────────────────────────────────
-      ensure(4); sf(GOLD); doc.rect(0, y, PW, 2, "F"); y += 10;
-
-      // ── CORVUS CHAT CALLOUT ───────────────────────────────────────────────
+      // Corvus chat callout
       const CALLOUT_H = 62;
       ensure(CALLOUT_H + 10);
-      sf(NAVY); doc.roundedRect(ML, y, CW, CALLOUT_H, 5, 5, "F");
-      sd(TEAL); doc.setLineWidth(0.5); doc.roundedRect(ML, y, CW, CALLOUT_H, 5, 5, "S");
+      sf(NAVY); doc.roundedRect(ML, y, CW, CALLOUT_H, 5, 5, 'F');
+      sd(TEAL); doc.setLineWidth(0.5); doc.roundedRect(ML, y, CW, CALLOUT_H, 5, 5, 'S');
       sd(TEAL); doc.setLineWidth(3); doc.line(ML, y + 5, ML, y + CALLOUT_H - 5);
-      st(CYAN); fn("bold", 7); txt("QUESTIONS ABOUT THIS VERDICT?", ML + 10, y + 14, 7);
-      st(WHITE); fn("normal", 7.5);
-      txt("Log into your dashboard and open the \u201CTalk to Corvus\u201D tab.", ML + 10, y + 26, 7.5);
-      txt("Corvus has full context on this report and can answer any follow-up", ML + 10, y + 37, 7.5);
-      txt("questions about your specific findings and exactly how to fix them.", ML + 10, y + 48, 7.5);
-      st(CYAN); fn("bold", 7.5); txt("oldcrowswireless.com/login", ML + 10, y + 60, 7.5);
+      st(CYAN); fn('bold', 7); txt('QUESTIONS ABOUT THIS VERDICT?', ML + 10, y + 14, 7);
+      st(WHITE); fn('normal', 7.5);
+      txt('Have questions? Open the Ask Corvus tab in your dashboard.', ML + 10, y + 26, 7.5);
+      txt('Corvus has full context on this report and can answer any follow-up', ML + 10, y + 37, 7.5);
+      txt('questions about your specific findings and exactly how to fix them.', ML + 10, y + 48, 7.5);
+      st(CYAN); fn('bold', 7.5); txt('oldcrowswireless.com', ML + 10, y + 60, 7.5);
       y += CALLOUT_H + 10;
 
-      // ── CERTIFICATION ─────────────────────────────────────────────────────
+      // Certification
       const CERT_H = 74;
       ensure(CERT_H + 10);
-      sf(NAVY); doc.rect(ML, y, CW, CERT_H, "F");
+      sf(NAVY); doc.rect(ML, y, CW, CERT_H, 'F');
       sd(TEAL); doc.setLineWidth(0.8); doc.roundedRect(ML, y, CW, CERT_H, 4, 4);
-      sf(TEAL); doc.rect(ML, y, 3, CERT_H, "F");
+      sf(TEAL); doc.rect(ML, y, 3, CERT_H, 'F');
       let sealW = 0;
       if (pdfLogos.ocws) {
         const SEAL_H = 42;
         sealW = Math.round(SEAL_H * pdfLogos.ocwsAspect);
-        doc.addImage(pdfLogos.ocws, "PNG", ML + 10, y + (CERT_H - SEAL_H) / 2, sealW, SEAL_H);
+        doc.addImage(pdfLogos.ocws, 'PNG', ML + 10, y + (CERT_H - SEAL_H) / 2, sealW, SEAL_H);
       }
       const certX = ML + 10 + sealW + 12;
-      st(CYAN);  fn("bold",   7);  txt("CERTIFICATION", certX, y + 10, 7);
-      st(WHITE); fn("bold",  11);  txt("Joshua Turner", certX, y + 22, 11);
-      st(MGRAY); fn("normal", 9);  txt("Managing Member  \u00B7  Old Crows Wireless Solutions LLC", certX, y + 37, 9);
-      st(CYAN);  fn("normal", 9);  txt("17 Years U.S. Navy Electronic Warfare Experience", certX, y + 50, 9);
-      st(GOLD);  fn("normal", 8);  txt(`Rendered by Crow\u2019s Eye  \u00B7  ${dateStr}`, certX, y + 63, 8);
+      st(CYAN);  fn('bold',   7);  txt('CERTIFICATION', certX, y + 10, 7);
+      st(WHITE); fn('bold',  11);  txt('Joshua Turner', certX, y + 22, 11);
+      st(MGRAY); fn('normal', 9);  txt('Managing Member  \u00B7  Old Crows Wireless Solutions LLC', certX, y + 37, 9);
+      st(CYAN);  fn('normal', 9);  txt('17 Years U.S. Navy Electronic Warfare Experience', certX, y + 50, 9);
+      st(GOLD);  fn('normal', 8);  txt(`Rendered by Crow\u2019s Eye  \u00B7  ${dateStr}`, certX, y + 63, 8);
       y += CERT_H + 10;
 
-      // ── FOOTER (final page) ───────────────────────────────────────────────
-      drawFooter();
-
-      // ── GOOGLE REVIEW CALLOUT ─────────────────────────────────────────────
+      // Google review callout
       const REVIEW_H = 48;
       ensure(REVIEW_H + 10);
-      sf(NAVY); doc.roundedRect(ML, y, CW, REVIEW_H, 5, 5, "F");
-      sd(GOLD); doc.setLineWidth(0.5); doc.roundedRect(ML, y, CW, REVIEW_H, 5, 5, "S");
+      sf(NAVY); doc.roundedRect(ML, y, CW, REVIEW_H, 5, 5, 'F');
+      sd(GOLD); doc.setLineWidth(0.5); doc.roundedRect(ML, y, CW, REVIEW_H, 5, 5, 'S');
       sd(GOLD); doc.setLineWidth(3); doc.line(ML, y + 5, ML, y + REVIEW_H - 5);
-      st(GOLD); fn("bold", 7); txt("ENJOYING CROW\u2019S EYE?", ML + 10, y + 14, 7);
-      st(WHITE); fn("normal", 7.5);
-      txt("Leave us a Google review \u2014 it helps other small businesses find Corvus.", ML + 10, y + 26, 7.5);
-      txt("It takes 30 seconds and means everything to a small business.", ML + 10, y + 37, 7.5);
-      st(CYAN); fn("bold", 7.5);
-      const reviewUrl = "https://g.page/r/CZBz3UO1fcs0EBM/review";
-      txt(reviewUrl, ML + 10, y + 48, 7.5);
+      st(GOLD); fn('bold', 7); txt('ENJOYING CROW\u2019S EYE?', ML + 10, y + 14, 7);
+      st(WHITE); fn('normal', 7.5);
+      txt('Leave us a Google review \u2014 it helps other small businesses find Corvus.', ML + 10, y + 26, 7.5);
+      txt('It takes 30 seconds and means everything to a small business.', ML + 10, y + 37, 7.5);
+      const reviewUrl = 'https://g.page/r/CZBz3UO1fcs0EBM/review';
+      st(CYAN); fn('bold', 7.5); txt(reviewUrl, ML + 10, y + 48, 7.5);
       doc.link(ML + 10, y + 42, CW - 20, 10, { url: reviewUrl });
       y += REVIEW_H + 10;
 
-      // ── SAVE ──────────────────────────────────────────────────────────────
-      const safeName = (report.clientName || "Client").replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, " ");
-      const fileDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+      drawFooter();
+
+      const safeName = (report.clientName || 'Client').replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, ' ');
+      const fileDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
       doc.save(`Corvus\u2019 Verdict - ${safeName} - ${fileDate}.pdf`);
-    } catch (err) {
-      console.error("PDF generation error:", err);
     } finally {
       setPdfGenerating(false);
     }
