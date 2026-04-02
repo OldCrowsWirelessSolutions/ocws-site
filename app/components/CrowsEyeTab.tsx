@@ -1929,7 +1929,7 @@ export default function CrowsEyeTab({
                 opacity: pdfGenerating ? 0.6 : 1,
               }}
             >
-              {pdfGenerating ? 'Generating PDF\u2026' : '\u2193 Download PDF Report'}
+              {pdfGenerating ? 'Generating PDF...' : '⬇ Download PDF Report'}
             </button>
             {navigateToChat && (
               <button
