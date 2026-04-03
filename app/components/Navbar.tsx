@@ -269,7 +269,7 @@ export default function Navbar() {
                 className="rounded-lg px-3 py-2 text-sm font-semibold transition"
                 style={{ color: "#00C2C7", background: "rgba(0,194,199,0.07)", border: "1px solid rgba(0,194,199,0.18)" }}
               >
-                My Dashboard
+                Log In
               </Link>
             )}
           </nav>
@@ -416,9 +416,9 @@ export default function Navbar() {
                     href="/login"
                     onClick={() => setOpen(false)}
                     className="rounded-xl px-3 py-3 text-sm font-semibold hover:bg-white/10 transition"
-                    style={{ color: "#00C2C7" }}
+                    style={{ color: "#00C2C7", border: "1px solid rgba(0,194,199,0.25)" }}
                   >
-                    My Dashboard
+                    Log In
                   </Link>
                 )}
               </div>
