@@ -11,7 +11,7 @@ import AudioToggle from "@/app/components/AudioToggle";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/crows-eye", label: "Crow's Eye" },
-  { href: "/#why-corvus", label: "Why Corvus?" },
+  { href: "/features", label: "Features" },
   { href: "/pricing", label: "Pricing" },
   { href: "/services", label: "Services" },
   { href: "/case-studies", label: "Case Studies" },
