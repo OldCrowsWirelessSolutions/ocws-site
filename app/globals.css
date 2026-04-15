@@ -7,16 +7,17 @@
    ========================================= */
 :root {
   /* Core */
-  --ocws-bg: #05070b;
-  --ocws-text: rgba(255, 255, 255, 0.92);
+  --ocws-bg: #0D1520;
+  --ocws-surface: #1A2332;
+  --ocws-text: #F4F6F8;
   --ocws-muted: rgba(255, 255, 255, 0.70);
   --ocws-muted2: rgba(255, 255, 255, 0.55);
 
   /* Brand */
-  --ocws-cyan: #00d4ff;
-  --ocws-cyan2: #00a3c9;
-  --ocws-gold: #d6b25e;
-  --ocws-gold2: #b8943e;
+  --ocws-cyan: #00C2C7;
+  --ocws-cyan2: #0D6E7A;
+  --ocws-gold: #B8922A;
+  --ocws-gold2: #9a7820;
 
   /* Panels / tiles */
   --ocws-panel: rgba(255, 255, 255, 0.05);      /* opaque look */
@@ -34,8 +35,8 @@ body {
 }
 
 body {
-  background: var(--ocws-bg);
-  color: var(--ocws-text);
+  background: #0D1520;
+  color: #F4F6F8;
 }
 
 /* =========================================
@@ -45,9 +46,8 @@ body {
   .ocws-bg {
     min-height: 100vh;
     background:
-      radial-gradient(900px circle at 10% 0%, rgba(0, 212, 255, 0.10), transparent 55%),
-      radial-gradient(800px circle at 90% 20%, rgba(214, 178, 94, 0.09), transparent 60%),
-      linear-gradient(180deg, rgba(255,255,255,0.02), transparent 35%),
+      radial-gradient(900px circle at 10% 0%, rgba(0, 194, 199, 0.06), transparent 55%),
+      radial-gradient(800px circle at 90% 20%, rgba(184, 146, 42, 0.06), transparent 60%),
       var(--ocws-bg);
   }
 

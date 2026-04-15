@@ -14,6 +14,7 @@ const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.oldcro
 const navLinks = [
   { href: "/how-it-works", label: "How It Works" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/get-credits", label: "Buy Credits" },
   { href: "/contact?type=enterprise", label: "Enterprise" },
   { href: "/case-studies", label: "Case Studies" },
 ];
