@@ -9,11 +9,11 @@ const sections = [
     content: [
       {
         heading: 'What is Crow\'s Eye?',
-        text: "Crow's Eye is an AI-powered wireless diagnostic platform. You upload scan data from your phone, and Corvus — our RF intelligence engine — analyzes your wireless environment and renders a Verdict.",
+        text: "Crow's Eye is an AI-powered wireless diagnostics app. Download it on Android, tap Scan, and Corvus — our RF intelligence engine — analyzes your wireless environment and renders a Verdict.",
       },
       {
         heading: 'What do I need?',
-        text: 'A phone. That\'s it. iOS users use AirPort Utility (free, by Apple). Android users use WiFiman (free, by Ubiquiti). Both apps let you scan every nearby wireless network without any special hardware.',
+        text: 'An Android phone running Android 10 or higher. Download Crow\'s Eye from Google Play — the scanning is built in. No third-party apps required. iOS is coming soon.',
       },
       {
         heading: 'How long does it take?',
@@ -27,16 +27,16 @@ const sections = [
     title: 'How to Scan Your Network',
     content: [
       {
-        heading: 'iOS — AirPort Utility by Apple',
-        text: '1. Download AirPort Utility from the App Store (free, App Store ID 427276530).\n2. Open the iOS Settings app → AirPort Utility → enable "Wi-Fi Scanner".\n3. Open AirPort Utility → tap "Wi-Fi Scan" in the top right.\n4. Tap "Scan" — let it run for 15-30 seconds.\n5. Screenshot or export the results.\n6. Upload to Crow\'s Eye.',
+        heading: 'Android — Crow\'s Eye App',
+        text: '1. Download Crow\'s Eye from Google Play (search "Crow\'s Eye" or visit oldcrowswireless.com).\n2. Sign in or create your account.\n3. Tap Scan — Corvus reads your RF environment automatically.\n4. Review findings or unlock your Verdict.',
       },
       {
-        heading: 'Android — WiFiman by Ubiquiti',
-        text: '1. Download WiFiman from the Play Store (free).\n2. Open WiFiman → tap "Networks".\n3. Let the scan populate — wait 15-30 seconds for full results.\n4. Screenshot the Networks tab.\n5. Use the export function if available.\n6. Upload to Crow\'s Eye.',
+        heading: 'How long does it take?',
+        text: 'Scanning takes about 30 seconds. Corvus analyzes in under 2 minutes. You\'ll have a branded PDF Verdict ready to download in under 3 minutes total.',
       },
       {
-        heading: 'What am I uploading?',
-        text: 'Three scan types: your full network list (all visible SSIDs), your 2.4 GHz networks, and your 5 GHz networks. Each goes into its own upload slot. The more complete your uploads, the sharper Corvus\'s analysis.',
+        heading: 'iOS',
+        text: 'Crow\'s Eye for iOS is in development. Android is available now on Google Play.',
       },
     ],
   },

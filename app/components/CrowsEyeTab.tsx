@@ -211,8 +211,6 @@ export default function CrowsEyeTab({
 
   // Instructions collapsible
   const [showInstructions, setShowInstructions] = useState<boolean>(false);
-  const [deviceType, setDeviceType] = useState<'android' | 'ios'>('android');
-
   // Form fields
   const [clientName, setClientName] = useState('');
   const [street, setStreet] = useState('');
@@ -1121,7 +1119,7 @@ export default function CrowsEyeTab({
         </div>
       )}
 
-      {/* Collapsible instructions */}
+      {/* App download prompt */}
       <div style={{ marginBottom: 20 }}>
         <button
           onClick={toggleInstructions}
@@ -1144,64 +1142,33 @@ export default function CrowsEyeTab({
             transform: showInstructions ? 'rotate(90deg)' : 'none',
             transition: 'transform 0.15s ease',
           }}>▶</span>
-          How to prepare your screenshots
+          How to get Crow&apos;s Eye
         </button>
 
         {showInstructions && (
           <div style={{ marginTop: 10, background: 'rgba(13,21,32,0.7)', border: '1px solid rgba(0,194,199,0.15)', borderRadius: 8, padding: '14px 16px' }}>
-
-            {/* Device toggle */}
-            <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-              {(['android', 'ios'] as const).map(d => (
-                <button key={d} onClick={() => setDeviceType(d)}
-                  style={{
-                    flex: 1, padding: '7px 12px', borderRadius: 7, cursor: 'pointer',
-                    border: deviceType === d ? '1px solid rgba(0,194,199,0.5)' : '1px solid rgba(255,255,255,0.1)',
-                    background: deviceType === d ? 'rgba(0,194,199,0.15)' : 'rgba(13,21,32,0.6)',
-                    color: deviceType === d ? '#00C2C7' : 'rgba(244,246,248,0.5)',
-                    fontFamily: 'monospace', fontSize: '0.72rem', letterSpacing: '0.08em',
-                  }}>
-                  {d === 'android' ? '📱 Android' : '🍎 iPhone'}
-                </button>
-              ))}
-            </div>
-
-            {deviceType === 'android' && (
-              <div style={{ color: 'rgba(244,246,248,0.7)', fontFamily: 'monospace', fontSize: '0.72rem', lineHeight: 1.7 }}>
-                <p style={{ margin: '0 0 8px' }}>
-                  <strong style={{ color: '#00C2C7' }}>Download WiFi Analyzer (open source)</strong> on Google Play — free, green icon, no ads.
-                </p>
-                <p style={{ margin: '0 0 8px' }}>
-                  <strong style={{ color: '#F4F6F8' }}>Screenshot 1 — Signal List:</strong> Tap the AP List tab. Screenshot the full list showing SSIDs, dBm values, and channels.
-                </p>
-                <p style={{ margin: '0 0 8px' }}>
-                  <strong style={{ color: '#F4F6F8' }}>Screenshot 2 — 2.4 GHz Graph:</strong> Tap Channel Graph tab, select 2.4 GHz. Screenshot the channel distribution.
-                </p>
-                <p style={{ margin: 0 }}>
-                  <strong style={{ color: '#F4F6F8' }}>Screenshot 3 — 5 GHz Graph:</strong> Same tab, switch to 5 GHz. Screenshot that view.
-                </p>
-              </div>
-            )}
-
-            {deviceType === 'ios' && (
-              <div style={{ color: 'rgba(244,246,248,0.7)', fontFamily: 'monospace', fontSize: '0.72rem', lineHeight: 1.7 }}>
-                <p style={{ margin: '0 0 8px' }}>
-                  <strong style={{ color: '#00C2C7' }}>Download AirPort Utility</strong> — free, made by Apple, US App Store. Then go to Settings → AirPort Utility → turn on WiFi Scanner.
-                </p>
-                <p style={{ margin: '0 0 8px' }}>
-                  <strong style={{ color: '#F4F6F8' }}>Screenshot 1 — All Networks:</strong> Open AirPort Utility → tap <strong>WiFi Scan</strong> → tap <strong>Scan</strong>. Screenshot the full list showing all nearby networks with SSID, channel, and signal strength.
-                </p>
-                <p style={{ margin: '0 0 8px' }}>
-                  <strong style={{ color: '#F4F6F8' }}>Screenshot 2 — 2.4 GHz Networks:</strong> After scanning, look at the channel column — mentally note or filter networks on channels 1-11. Screenshot this view showing 2.4 GHz networks.
-                </p>
-                <p style={{ margin: 0 }}>
-                  <strong style={{ color: '#F4F6F8' }}>Screenshot 3 — 5 GHz Networks:</strong> Same scan results — note networks on channels 36 and above. Screenshot this view showing 5 GHz networks.
-                </p>
-                <p style={{ margin: '8px 0 0', color: 'rgba(244,246,248,0.4)', fontStyle: 'italic' }}>
-                  AirPort Utility shows all nearby networks — same data Corvus gets from Android. Full Verdict quality on iPhone.
-                </p>
-              </div>
-            )}
+            <p style={{ color: 'rgba(244,246,248,0.7)', fontFamily: 'monospace', fontSize: '0.72rem', lineHeight: 1.7, margin: '0 0 12px' }}>
+              Download Crow&apos;s Eye on Android to scan your network. The app handles everything automatically.
+            </p>
+            <a
+              href="https://play.google.com/store/apps/details?id=com.oldcrowswireless.corvus"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                background: '#000', border: '1px solid rgba(255,255,255,0.15)',
+                borderRadius: 8, padding: '8px 14px', textDecoration: 'none', color: '#fff',
+                fontSize: '0.75rem', fontWeight: 600,
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M2 3.27L12.73 12L2 20.73V3.27Z" fill="#4285F4" />
+                <path d="M2 3.27L16.5 7.5L12.73 12L2 3.27Z" fill="#EA4335" />
+                <path d="M2 20.73L12.73 12L16.5 16.5L2 20.73Z" fill="#FBBC04" />
+                <path d="M16.5 7.5L22 12L16.5 16.5L12.73 12L16.5 7.5Z" fill="#34A853" />
+              </svg>
+              Download on Google Play
+            </a>
           </div>
         )}
       </div>
@@ -1435,33 +1402,28 @@ export default function CrowsEyeTab({
               }}>
                 Screenshots
               </div>
-              <CorvusTooltip tip="Required. iOS: AirPort Utility → WiFi Scan → Scan, then screenshot. Android: WiFiman → Networks, then screenshot." position="right">
+              <CorvusTooltip tip="Required. Use Crow's Eye on Android to scan, then upload the scan data here." position="right">
                 <FileUploadSlot
-                  label={deviceType === 'ios' ? 'AirPort Utility — WiFi Scan Results (required)' : 'Signal List / AP List'}
+                  label="RF Scan Data (required)"
                   required
                   file={signalListFile}
                   onChange={setSignalListFile}
                 />
               </CorvusTooltip>
-              <CorvusTooltip tip="Optional but recommended. iOS: tap the 2.4 GHz filter in WiFi Scan. Android: WiFiman → Channel Graph → 2.4 GHz." position="right">
+              <CorvusTooltip tip="Optional but recommended. 2.4 GHz channel scan from Crow's Eye." position="right">
                 <FileUploadSlot
-                  label={deviceType === 'ios' ? '2.4 GHz Networks Screenshot (optional)' : '2.4 GHz Channel Graph (optional)'}
+                  label="2.4 GHz Scan (optional)"
                   file={ghz24File}
                   onChange={setGhz24File}
                 />
               </CorvusTooltip>
-              <CorvusTooltip tip="Optional but recommended. iOS: tap the 5 GHz filter in WiFi Scan. Android: WiFiman → Channel Graph → 5 GHz." position="right">
+              <CorvusTooltip tip="Optional but recommended. 5 GHz channel scan from Crow's Eye." position="right">
                 <FileUploadSlot
-                  label={deviceType === 'ios' ? '5 GHz Networks Screenshot (optional)' : '5 GHz Channel Graph (optional)'}
+                  label="5 GHz Scan (optional)"
                   file={ghz5File}
                   onChange={setGhz5File}
                 />
               </CorvusTooltip>
-              {deviceType === 'ios' && (
-                <p style={{ margin: '6px 0 0', fontFamily: 'monospace', fontSize: '0.65rem', color: 'rgba(244,246,248,0.35)', fontStyle: 'italic' }}>
-                  iPhone restricts some Wi-Fi data. Upload what you can — Corvus will work with whatever he sees.
-                </p>
-              )}
             </div>
           )}
 
@@ -1520,18 +1482,18 @@ export default function CrowsEyeTab({
                     autoComplete="off"
                   />
                   <FileUploadSlot
-                    label={deviceType === 'ios' ? 'WLAN Screen' : 'Signal List / AP List'}
+                    label="RF Scan Data (required)"
                     required
                     file={loc.signalListFile}
                     onChange={f => updateLocation(loc.id, 'signalListFile', f)}
                   />
                   <FileUploadSlot
-                    label={deviceType === 'ios' ? '2.4 GHz Filtered View (optional)' : '2.4 GHz Channel Graph (optional)'}
+                    label="2.4 GHz Scan (optional)"
                     file={loc.ghz24File}
                     onChange={f => updateLocation(loc.id, 'ghz24File', f)}
                   />
                   <FileUploadSlot
-                    label={deviceType === 'ios' ? '5 GHz Filtered View (optional)' : '5 GHz Channel Graph (optional)'}
+                    label="5 GHz Scan (optional)"
                     file={loc.ghz5File}
                     onChange={f => updateLocation(loc.id, 'ghz5File', f)}
                   />

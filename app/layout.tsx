@@ -1,6 +1,7 @@
 // app/layout.tsx
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import StickyQuoteCTA from "./components/StickyQuoteCTA";
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Activity tracker — inactivity timeout, domain exit logout, multi-tab sync */}
         <ActivityTracker />
         <AudioInit />
+        <Analytics />
       </body>
     </html>
   );

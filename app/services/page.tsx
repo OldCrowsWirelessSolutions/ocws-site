@@ -22,8 +22,8 @@ export default function ServicesPage() {
             What Corvus Can Do For You
           </h1>
           <p className="text-base max-w-2xl" style={{ color: "#aaa" }}>
-            Every service starts the same way: screenshots from your phone, read by Corvus.
-            He already knows what&rsquo;s wrong. You just need to give him the data.
+            Every service starts the same way: open Crow&rsquo;s Eye, tap Scan, and Corvus reads your
+            wireless environment automatically. He already knows what&rsquo;s wrong.
           </p>
         </div>
 
@@ -43,8 +43,8 @@ export default function ServicesPage() {
                 </Link>
               </div>
               <p className="text-sm leading-relaxed mb-5" style={{ color: "#aaa" }}>
-                Upload three screenshots from WiFi Analyzer &mdash; the Signal List, the 2.4&nbsp;GHz Channel Graph, and the 5&nbsp;GHz Channel Graph.
-                Corvus reads your entire RF environment and tells you exactly what&rsquo;s wrong, why it&rsquo;s wrong, and exactly how to fix it on
+                Open Crow&rsquo;s Eye and tap Scan. Corvus reads your entire RF environment automatically &mdash;
+                every channel, every network, every signal — and tells you exactly what&rsquo;s wrong, why it&rsquo;s wrong, and exactly how to fix it on
                 your specific router. Every finding. Every step. Delivered as a branded PDF you keep forever.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -70,8 +70,8 @@ export default function ServicesPage() {
                 </Link>
               </div>
               <p className="text-sm leading-relaxed mb-5" style={{ color: "#aaa" }}>
-                Corvus moving through your entire facility &mdash; room by room, floor by floor, building to building. You take three screenshots
-                at each location. Corvus synthesizes everything into one unified report covering every dead zone, every interference source, every
+                Corvus moving through your entire facility &mdash; room by room, floor by floor, building to building. Scan each location in the app.
+                Corvus synthesizes everything into one unified report covering every dead zone, every interference source, every
                 structural gap. Properties with detached structures get full cross-structure signal analysis.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
@@ -147,8 +147,8 @@ export default function ServicesPage() {
 
         {/* CTA */}
         <div className="text-center py-12 rounded-2xl" style={{ background: "#0D6E7A" }}>
-          <h2 className="text-3xl font-bold text-white mb-3">Start with a free scan.</h2>
-          <p className="text-sm mb-8" style={{ color: "rgba(255,255,255,0.7)" }}>Upload your screenshots. Corvus reads the environment in under 3 minutes.</p>
+          <h2 className="text-3xl font-bold text-white mb-3">Download the app and get your Verdict.</h2>
+          <p className="text-sm mb-8" style={{ color: "rgba(255,255,255,0.7)" }}>Tap Scan. Corvus reads your environment in under 3 minutes.</p>
           <Link href="/crows-eye" className="inline-flex items-center justify-center rounded-2xl px-8 py-4 text-base font-bold ocws-glow-hover" style={{ background: "#0D1520", color: "white" }}>
             Get Corvus&rsquo; Verdict
           </Link>

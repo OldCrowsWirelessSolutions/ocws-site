@@ -17,8 +17,8 @@ const STEPS = [
   {
     icon: '📱',
     title: "Step one: scan your network.",
-    body: "Open AirPort Utility on iOS or WiFiman on Android. Run a scan. Export or screenshot the results. That file is my raw material.",
-    hint: "iOS: AirPort Utility → WiFi Scan → Scan  ·  Android: WiFiman → Networks",
+    body: "Download Crow's Eye on Android. Open the app and tap Scan. The RF scanning is built in — no third-party apps needed.",
+    hint: "Available on Google Play · iOS coming soon",
   },
   {
     icon: '📤',

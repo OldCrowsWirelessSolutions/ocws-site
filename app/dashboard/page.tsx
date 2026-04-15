@@ -1376,6 +1376,22 @@ export default function DashboardPage() {
             Military or First Responder? Enter <code style={{ fontFamily: "monospace", background: "rgba(184,146,42,0.1)", padding: "2px 6px", borderRadius: "4px" }}>CORVUS-HONOR</code> at checkout for your discount.
           </p>
         </div>
+
+        {/* Mobile app purchase gateway link */}
+        <div style={{ ...card, background: "rgba(0,194,199,0.04)", border: "1px solid rgba(0,194,199,0.15)" }}>
+          <p style={{ color: "#888888", fontSize: "12px", marginBottom: "8px" }}>
+            Purchasing from the mobile app?
+          </p>
+          <Link
+            href={`/get-credits?product=verdict&userId=${storedCode}`}
+            style={{ color: "#00C2C7", fontSize: "13px", fontWeight: 600, textDecoration: "none" }}
+          >
+            Open web purchase gateway &rarr;
+          </Link>
+          <p style={{ color: "#555", fontSize: "11px", marginTop: "6px" }}>
+            Use this if your in-app browser didn&rsquo;t open automatically.
+          </p>
+        </div>
       </div>
     );
   }
@@ -2191,10 +2207,9 @@ export default function DashboardPage() {
           <div style={{ background: "rgba(0,194,199,0.06)", border: "1px solid rgba(0,194,199,0.15)", borderRadius: "10px", padding: "16px 18px", marginBottom: "20px" }}>
             <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>How to use it</p>
             <ol style={{ color: "#aaaaaa", fontSize: "13px", margin: 0, paddingLeft: "18px", lineHeight: 1.8 }}>
-              <li>Download WiFi Analyzer (free — Google Play or App Store)</li>
-              <li>Take three screenshots: Access Points, 2.4 GHz graph, 5 GHz graph</li>
-              <li>Go to Crow&apos;s Eye and upload your screenshots</li>
-              <li>Enter your subscriber code to unlock your free full Verdict</li>
+              <li>Download Crow&apos;s Eye on Android (Google Play)</li>
+              <li>Open the app and tap Scan — Corvus handles the rest automatically</li>
+              <li>Enter your subscriber code in the app to unlock your free full Verdict</li>
             </ol>
           </div>
           <a href="/crows-eye" onClick={handleGoToCrowsEye} style={{ display: "inline-block", background: "#B8922A", color: "#0D1520", borderRadius: "10px", padding: "12px 24px", fontSize: "14px", fontWeight: 700, textDecoration: "none" }}>

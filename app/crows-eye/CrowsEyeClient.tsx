@@ -476,7 +476,6 @@ export default function CrowsEyeClient() {
   const [ssid, setSsid] = useState("");
   const [multiSsid, setMultiSsid] = useState(false);
   const [ssidDescription, setSsidDescription] = useState("");
-  const [scanDevice, setScanDevice] = useState<'android' | 'ios'>('android');
   const [errorMsg, setErrorMsg] = useState("");
 
   const [honeypot, setHoneypot] = useState("");
@@ -523,6 +522,12 @@ export default function CrowsEyeClient() {
   } | null>(null);
   const [appliedSubscriptionId, setAppliedSubscriptionId] = useState<string | null>(null);
   const [subscriptionEntitlement, setSubscriptionEntitlement] = useState<SubscriptionEntitlement | null>(null);
+
+  // Event credit (Hack the Coast 2026)
+  const [eventEmailInput, setEventEmailInput] = useState("");
+  const [eventCreditVerified, setEventCreditVerified] = useState(false);
+  const [eventCreditChecking, setEventCreditChecking] = useState(false);
+  const [eventCreditError, setEventCreditError] = useState("");
 
   // Pre-auth from dashboard session
   const [preAuthed, setPreAuthed] = useState(false);
@@ -976,6 +981,25 @@ export default function CrowsEyeClient() {
       }
       return;
     }
+    // Event credit (Hack the Coast 2026) — consume server-side and unlock
+    if (eventCreditVerified && product === "verdict") {
+      try {
+        const creditRes = await fetch("/api/use-event-credit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: eventEmailInput.trim().toLowerCase() }),
+        });
+        const creditData = await creditRes.json().catch(() => ({})) as { success?: boolean; error?: string };
+        if (creditData.success) {
+          unlockVerdict();
+          return;
+        }
+        setEventCreditVerified(false);
+        setEventCreditError(creditData.error ?? "Credit could not be applied. Proceeding to payment.");
+      } catch {
+        setEventCreditError("Could not apply credit. Proceeding to payment.");
+      }
+    }
     // Subscription credit coverage — consume server-side and unlock
     if (appliedCode?.type === "subscriber" && appliedSubscriptionId && isProductCovered()) {
       try {
@@ -1302,6 +1326,30 @@ export default function CrowsEyeClient() {
       setPromoCodeStatus("invalid");
     } finally {
       setPromoCodeValidating(false);
+    }
+  }
+
+  async function handleCheckEventCredit() {
+    const email = eventEmailInput.trim().toLowerCase();
+    if (!email) return;
+    setEventCreditChecking(true);
+    setEventCreditError("");
+    try {
+      const res = await fetch("/api/check-event-access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json() as { verdictCredits?: number };
+      if (data.verdictCredits && data.verdictCredits > 0) {
+        setEventCreditVerified(true);
+      } else {
+        setEventCreditError("No event credits found for that email. Check the address you used when redeeming your code.");
+      }
+    } catch {
+      setEventCreditError("Could not verify. Try again.");
+    } finally {
+      setEventCreditChecking(false);
     }
   }
 
@@ -2092,6 +2140,73 @@ export default function CrowsEyeClient() {
         )}
       </div>
 
+      {/* ── EVENT CREDIT (Hack the Coast 2026) ──────────────────────────── */}
+      {mode === "single" && (
+        <div className="mb-6">
+          {eventCreditVerified ? (
+            <div
+              className="px-4 py-3 rounded-2xl text-sm"
+              style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.3)" }}
+            >
+              <div className="flex items-center justify-between">
+                <span style={{ color: "#00C2C7" }}>
+                  ✓ Event credit verified — your Verdict is on us
+                </span>
+                <button
+                  type="button"
+                  onClick={() => { setEventCreditVerified(false); setEventEmailInput(""); setEventCreditError(""); }}
+                  className="text-white/40 hover:text-white/70 transition text-xs ml-4"
+                >
+                  Remove
+                </button>
+              </div>
+              <p className="mt-1 text-xs" style={{ color: "rgba(0,194,199,0.6)" }}>
+                Click the button below to unlock your full Verdict at no charge.
+              </p>
+            </div>
+          ) : (
+            <div>
+              <label className="block text-sm font-semibold text-white mb-1">
+                Hack the Coast attendee?
+              </label>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <input
+                    type="email"
+                    value={eventEmailInput}
+                    onChange={(e) => { setEventEmailInput(e.target.value); setEventCreditError(""); }}
+                    onKeyDown={(e) => e.key === "Enter" && handleCheckEventCredit()}
+                    placeholder="Email used when redeeming your code"
+                    autoComplete="email"
+                    className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
+                    style={{ background: "rgba(0,0,0,0.3)", border: `1px solid ${eventCreditError ? "rgba(239,68,68,0.5)" : "rgba(255,255,255,0.1)"}` }}
+                  />
+                  {eventCreditError ? (
+                    <p className="mt-1 text-xs text-red-400">{eventCreditError}</p>
+                  ) : (
+                    <p className="mt-1 text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                      Enter the email you used at{" "}
+                      <a href="/hack-the-coast" style={{ color: "rgba(0,194,199,0.7)" }} target="_blank" rel="noreferrer">
+                        /hack-the-coast
+                      </a>{" "}to apply your free Verdict credit.
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCheckEventCredit}
+                  disabled={eventCreditChecking || !eventEmailInput.trim()}
+                  className="shrink-0 self-start rounded-xl px-4 py-3 text-sm font-semibold transition disabled:opacity-50"
+                  style={{ background: "rgba(0,194,199,0.15)", color: "#00C2C7", border: "1px solid rgba(0,194,199,0.3)" }}
+                >
+                  {eventCreditChecking ? "Checking…" : "Apply Credit"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── PRICING INFO COLLAPSIBLE ─────────────────────────────────────── */}
       <div className="mb-10">
         <button
@@ -2152,192 +2267,40 @@ export default function CrowsEyeClient() {
       <section className="mb-14">
         <h2 className="ocws-h2 text-white mb-2">How to get your scans</h2>
         <p className="ocws-muted text-sm mb-5">
-          You&rsquo;ll need a free Wi-Fi scanner app on your phone. Pick yours below.
+          Download Crow&rsquo;s Eye on Android to scan your network. The app handles everything automatically.
         </p>
 
-        {/* App badges */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-3">
-          {/* Google Play badge */}
-          <a
-            href="https://play.google.com/store/apps/details?id=com.vrem.wifianalyzer"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 px-4 py-3 rounded-xl transition"
-            style={{
-              background: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              textDecoration: "none",
-            }}
-          >
-            {/* Play triangle */}
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path d="M5 3.5L19 12L5 20.5V3.5Z" fill="#00d4ff" />
-            </svg>
-            <div>
-              <p className="text-white/55 text-xs leading-none mb-0.5">GET IT ON</p>
-              <p className="text-white font-semibold text-sm leading-none">Google Play</p>
-            </div>
-          </a>
-
-          {/* Apple App Store badge */}
-          <a
-            href="https://apps.apple.com/us/app/airport-utility/id427276530"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 px-4 py-3 rounded-xl transition"
-            style={{
-              background: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              textDecoration: "none",
-            }}
-          >
-            {/* Apple logo */}
-            <svg width="20" height="22" viewBox="0 0 814 1000" fill="#00d4ff">
-              <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.5-155.5-127.4C46 790.8 0 663 0 541.3c0-194.3 126.4-297.5 250.8-297.5 66.1 0 121.2 43.4 162.7 43.4 39.5 0 101.1-46 176.3-46 28.5 0 130.9 2.6 198.3 99.2zm-234-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z" />
-            </svg>
-            <div>
-              <p className="text-white/55 text-xs leading-none mb-0.5">IPHONE USERS</p>
-              <p className="text-white font-semibold text-sm leading-none">AirPort Utility by Apple</p>
-            </div>
-          </a>
-        </div>
-
-        <p className="ocws-muted2 text-xs mb-8">
-          Android: look for the green icon that says <span className="text-white/70">WiFi Analyzer (open-source)</span> — free with no ads.
-        </p>
+        {/* Download CTA */}
+        <a
+          href="https://play.google.com/store/apps/details?id=com.oldcrowswireless.corvus"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-3 px-5 py-3 rounded-xl mb-8 transition"
+          style={{
+            background: "#000",
+            border: "1px solid rgba(255,255,255,0.15)",
+            textDecoration: "none",
+            color: "#fff",
+          }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M2 3.27L12.73 12L2 20.73V3.27Z" fill="#4285F4" />
+            <path d="M2 3.27L16.5 7.5L12.73 12L2 3.27Z" fill="#EA4335" />
+            <path d="M2 20.73L12.73 12L16.5 16.5L2 20.73Z" fill="#FBBC04" />
+            <path d="M16.5 7.5L22 12L16.5 16.5L12.73 12L16.5 7.5Z" fill="#34A853" />
+          </svg>
+          <div>
+            <p className="text-white/55 text-xs leading-none mb-0.5">GET IT ON</p>
+            <p className="text-white font-semibold text-sm leading-none">Google Play</p>
+          </div>
+        </a>
 
         {/* Device toggle */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-          {(['android', 'ios'] as const).map(d => (
-            <button key={d} onClick={() => setScanDevice(d)}
-              style={{
-                flex: 1, padding: '10px 12px', borderRadius: 8, cursor: 'pointer',
-                border: scanDevice === d ? '1px solid rgba(0,194,199,0.5)' : '1px solid rgba(255,255,255,0.1)',
-                background: scanDevice === d ? 'rgba(0,194,199,0.15)' : 'rgba(13,21,32,0.6)',
-                color: scanDevice === d ? '#00C2C7' : 'rgba(244,246,248,0.5)',
-                fontFamily: 'monospace', fontSize: '0.8rem', fontWeight: scanDevice === d ? 700 : 400,
-              }}>
-              {d === 'android' ? '📱 Android — WiFi Analyzer' : '🍎 iPhone — AirPort Utility'}
-            </button>
-          ))}
-        </div>
-
         {/* Corvus tip */}
         <div style={{ background: 'rgba(184,146,42,0.08)', border: '1px solid rgba(184,146,42,0.2)', borderRadius: 8, padding: '12px 16px', marginBottom: 16 }}>
           <p style={{ color: '#B8922A', fontFamily: 'monospace', fontSize: '0.75rem', margin: 0, lineHeight: 1.6 }}>
-            🐦‍⬛ <strong>Corvus:</strong> {scanDevice === 'android'
-              ? '"Three screenshots. That\'s all I need. Signal list, 2.4 GHz graph, 5 GHz graph. Give me those and I\'ll tell you everything that\'s wrong."'
-              : '"iPhone users — AirPort Utility gives me exactly what I need. Open it, tap WiFi Scan, tap Scan. Three screenshots: full list, 2.4 GHz networks, 5 GHz networks. Same quality as Android. I know what I\'m looking at."'}
+            🐦‍⬛ <strong>Corvus:</strong> &ldquo;Open the app, tap Scan. I&rsquo;ll handle everything from there. You just tell me what you want to know.&rdquo;
           </p>
-        </div>
-
-        {/* Steps */}
-        <ol className="space-y-6">
-
-          {/* Step 1 */}
-          <li className="flex gap-4 items-start">
-            <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold" style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.30)", color: "var(--ocws-cyan)" }}>1</div>
-            <div>
-              {scanDevice === 'android' ? (
-                <>
-                  <p className="text-white font-semibold text-sm">Download WiFi Analyzer (open source)</p>
-                  <p className="ocws-muted text-sm mt-0.5 leading-relaxed"><strong style={{ color: '#00C2C7' }}>Download WiFi Analyzer (open source)</strong> on Google Play — free, green icon, no ads.</p>
-                  <a href="https://play.google.com/store/apps/details?id=com.vrem.wifianalyzer" target="_blank" rel="noopener noreferrer" style={{ color: '#00C2C7', fontSize: '0.8rem' }}>→ Get it on Google Play</a>
-                </>
-              ) : (
-                <>
-                  <p className="text-white font-semibold text-sm">Download AirPort Utility by Apple</p>
-                  <p className="ocws-muted text-sm mt-0.5 leading-relaxed"><strong style={{ color: '#00C2C7' }}>Download AirPort Utility</strong> on the App Store — free, made by Apple. Then go to Settings → AirPort Utility → turn on WiFi Scanner.</p>
-                  <a href="https://apps.apple.com/us/app/airport-utility/id427276530" target="_blank" rel="noopener noreferrer" style={{ color: '#00C2C7', fontSize: '0.8rem' }}>→ Get it on the App Store</a>
-                </>
-              )}
-            </div>
-          </li>
-
-          {/* Step 2 */}
-          <li className="flex gap-4 items-start">
-            <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold" style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.30)", color: "var(--ocws-cyan)" }}>2</div>
-            <div>
-              <p className="text-white font-semibold text-sm">Open the app</p>
-              <p className="ocws-muted text-sm mt-0.5 leading-relaxed">Grant location permission if prompted — Android requires it for Wi-Fi scanning.</p>
-            </div>
-          </li>
-
-          {/* Step 3 */}
-          <li className="flex gap-4 items-start">
-            <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold" style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.30)", color: "var(--ocws-cyan)" }}>3</div>
-            <div>
-              {scanDevice === 'android' ? (
-                <>
-                  <p className="text-white font-semibold text-sm">Tap &ldquo;Access Points&rdquo; — screenshot this</p>
-                  <p className="ocws-muted text-sm mt-0.5 leading-relaxed">Tap the <strong>Access Points</strong> tab at the bottom. You&rsquo;ll see a list of every Wi-Fi network nearby with signal strength in dBm and channel numbers. Screenshot this screen.</p>
-                </>
-              ) : (
-                <>
-                  <p className="text-white font-semibold text-sm">Tap SCAN — screenshot the full list</p>
-                  <p className="ocws-muted text-sm mt-0.5 leading-relaxed">Open AirPort Utility and tap <strong>WiFi Scan</strong>, then tap <strong>Scan</strong>. You&rsquo;ll see every nearby network with signal strength and channel. Screenshot this full list — this is your Signal List.</p>
-                </>
-              )}
-            </div>
-          </li>
-
-          {/* Step 4 */}
-          <li className="flex gap-4 items-start">
-            <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold" style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.30)", color: "var(--ocws-cyan)" }}>4</div>
-            <div className="flex-1">
-              {scanDevice === 'android' ? (
-                <>
-                  <p className="text-white font-semibold text-sm">Switch to 2.4 GHz and screenshot the Channel Graph</p>
-                  <p className="ocws-muted text-sm mt-0.5 leading-relaxed">Tap <strong>Channel Graph</strong> then select <strong>2.4 GHz</strong> at the top. Screenshot the channel distribution graph showing which channels are congested.</p>
-                  <div className="mt-3 px-4 py-3 rounded-xl text-sm ocws-muted leading-relaxed" style={{ borderLeft: "3px solid rgba(0,212,255,0.5)", background: "rgba(0,212,255,0.05)" }}>
-                    <span className="text-white/70 font-semibold">Tip:</span> The 2.4 GHz view shows channels 1 through 13. If you see lots of overlapping bars, your network is congested.
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p className="text-white font-semibold text-sm">Tap the 2.4GHz filter — screenshot the filtered list</p>
-                  <p className="ocws-muted text-sm mt-0.5 leading-relaxed">In the SCAN tab, tap the <strong>2.4GHz</strong> filter button at the top. The list now shows only 2.4 GHz networks. Screenshot this filtered view.</p>
-                </>
-              )}
-            </div>
-          </li>
-
-          {/* Step 5 */}
-          <li className="flex gap-4 items-start">
-            <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold" style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.30)", color: "var(--ocws-cyan)" }}>5</div>
-            <div className="flex-1">
-              {scanDevice === 'android' ? (
-                <>
-                  <p className="text-white font-semibold text-sm">Switch to 5 GHz and screenshot the Channel Graph</p>
-                  <p className="ocws-muted text-sm mt-0.5 leading-relaxed">Tap the <strong>2.4 GHz</strong> label at the top right to switch to <strong>5 GHz</strong>. Screenshot the 5 GHz channel graph.</p>
-                  <div className="mt-3 px-4 py-3 rounded-xl text-sm ocws-muted leading-relaxed" style={{ borderLeft: "3px solid rgba(0,212,255,0.5)", background: "rgba(0,212,255,0.05)" }}>
-                    <span className="text-white/70 font-semibold">Tip:</span> If the 5 GHz screen looks empty, that is normal — 5 GHz has shorter range and you may not see many networks.
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p className="text-white font-semibold text-sm">Tap the 5GHz filter — screenshot the filtered list</p>
-                  <p className="ocws-muted text-sm mt-0.5 leading-relaxed">Tap the <strong>5GHz</strong> filter button at the top. Screenshot this filtered view showing only 5 GHz networks.</p>
-                </>
-              )}
-            </div>
-          </li>
-
-          {/* Step 6 */}
-          <li className="flex gap-4 items-start">
-            <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold" style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.30)", color: "var(--ocws-cyan)" }}>6</div>
-            <div>
-              <p className="text-white font-semibold text-sm">You now have three screenshots. Upload them below.</p>
-              <p className="ocws-muted text-sm mt-0.5 leading-relaxed">That&rsquo;s everything Corvus needs to render his Verdict.</p>
-            </div>
-          </li>
-
-        </ol>
-
-        {/* Corvus reassurance box */}
-        <div className="mt-8 px-5 py-4 rounded-2xl text-sm leading-relaxed" style={{ border: "1px solid rgba(0,212,255,0.25)", background: "rgba(0,212,255,0.04)" }}>
-          <span className="text-white font-semibold">Not sure if you did it right?</span>
-          <span className="ocws-muted"> That&rsquo;s okay. Upload what you have and Corvus will work with whatever he can see. He has seen worse.</span>
         </div>
       </section>
 
@@ -2495,14 +2458,8 @@ export default function CrowsEyeClient() {
                 <p className="ocws-muted">
                   The Full Reckoning is Corvus moving through your entire facility — room by room, location by location, building a complete picture of everything wrong across the whole site.
                 </p>
-                <p className="ocws-muted">For each location you will need the same three screenshots:</p>
-                <ul className="ocws-muted space-y-1">
-                  <li>&middot; <span className="text-white/70">Signal List</span> — Access Points screen showing all networks</li>
-                  <li>&middot; <span className="text-white/70">2.4 GHz Scan</span> — Channel Graph filtered to 2.4 GHz</li>
-                  <li>&middot; <span className="text-white/70">5 GHz Scan</span> — Channel Graph filtered to 5 GHz</li>
-                </ul>
                 <p className="ocws-muted">
-                  Walk to each location — a different room, floor, or area — and take all three screenshots before moving to the next location. Label each location clearly so Corvus knows where each scan was taken.
+                  Use the Crow&apos;s Eye app to scan each location. Walk to each area — a different room, floor, or area — and tap Scan before moving to the next location. Label each location clearly so Corvus knows where each scan was taken.
                 </p>
                 <p className="ocws-muted">
                   Corvus will synthesize findings across all locations, identify site-wide patterns, find dead zones, and deliver one unified Verdict covering your entire facility.
@@ -2519,11 +2476,9 @@ export default function CrowsEyeClient() {
             <p className="text-white font-semibold mb-3">How to add locations</p>
             {[
               "Name your first location clearly. Example: Front Office, Lobby, Kitchen, Room 101.",
-              "Stand in that location and open WiFi Analyzer.",
-              "Take your Signal List screenshot (Access Points tab).",
-              "Take your 2.4 GHz Channel Graph screenshot.",
-              "Take your 5 GHz Channel Graph screenshot.",
-              "Upload all three to this location slot.",
+              "Stand in that location and open Crow's Eye on Android.",
+              "Tap Scan — Corvus reads your RF environment automatically.",
+              "Upload the scan data to this location slot.",
               "Click Add Location and repeat for each area.",
               "When all locations are added hit Render The Full Reckoning.",
             ].map((step, i) => (
@@ -2542,7 +2497,7 @@ export default function CrowsEyeClient() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="ocws-h2 text-white mb-1">Upload location scans</h2>
-              <p className="ocws-muted text-sm">One set of screenshots per location. Up to 30.</p>
+              <p className="ocws-muted text-sm">One scan per location. Up to 30.</p>
             </div>
             {locations.length < 30 && (
               <button
@@ -3150,20 +3105,22 @@ export default function CrowsEyeClient() {
                       }}
                       className="w-full sm:w-auto rounded-2xl px-8 py-4 text-base font-bold tracking-tight transition min-h-[56px]"
                       style={{
-                        background: isProductCovered()
+                        background: isProductCovered() || (eventCreditVerified && mode === "single")
                           ? "linear-gradient(135deg, #22c55e, #16a34a)"
                           : "linear-gradient(135deg, #d6b25e, #b8943e)",
                         color: "#05070b",
-                        boxShadow: isProductCovered()
+                        boxShadow: isProductCovered() || (eventCreditVerified && mode === "single")
                           ? "0 8px 28px rgba(34,197,94,0.28)"
                           : "0 8px 28px rgba(214,178,94,0.28)",
                       }}
                     >
                       {isProductCovered()
-                        ? (mode === "single" ? "Unlock with Subscription — Free" : "Unlock with Subscription — Free")
-                        : mode === "single"
-                          ? "Get the Full Verdict \u2014 $50"
-                          : `Get the Full Reckoning \u2014 $${reckoningPrice}`}
+                        ? "Unlock with Subscription — Free"
+                        : eventCreditVerified && mode === "single"
+                          ? "Unlock with Event Credit — Free"
+                          : mode === "single"
+                            ? "Get the Full Verdict \u2014 $50"
+                            : `Get the Full Reckoning \u2014 $${reckoningPrice}`}
                     </button>
                   </div>
 

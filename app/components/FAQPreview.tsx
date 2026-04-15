@@ -7,23 +7,23 @@ import Link from "next/link";
 const PREVIEW_FAQS = [
   {
     q: "What is Crow's Eye?",
-    a: "Crow's Eye is an AI-powered wireless diagnostic tool built by Old Crows Wireless Solutions. You upload screenshots from a free Wi-Fi scanner app and Corvus — our RF intelligence engine — analyzes every network visible in your environment and tells you exactly what's wrong and how to fix it.",
+    a: "Crow's Eye is an AI-powered wireless diagnostics app built on 17 years of U.S. Navy Electronic Warfare experience. Download it on Android, let Corvus scan your network automatically, and get a full Verdict — findings and fix steps — in minutes.",
   },
   {
-    q: "What scanner app do I need?",
-    a: "WiFi Analyzer open source — free, green icon, available on Google Play. iPhone users can use WiFi Analyzer by Zoltán Palághy from the App Store.",
+    q: "What is a Corvus Verdict?",
+    a: "A Verdict is Corvus's AI-generated analysis of your wireless environment. It identifies channel conflicts, security gaps, coverage issues, and interference patterns — then delivers prioritized fix steps with manufacturer-specific instructions.",
   },
   {
     q: "How much does it cost?",
-    a: "The initial analysis is free. Corvus will tell you how many problems he found and give you a preview. The full Verdict — all findings, all fixes, step-by-step router instructions specific to your equipment, and a branded PDF — is $50.",
+    a: "Fledgling tier is $10/month and includes 3 Verdicts. A single Verdict is $50 with no subscription required. Nest ($20/mo) includes 3 Verdicts per month. See all plans on the Pricing page.",
+  },
+  {
+    q: "What devices does it work on?",
+    a: "Android phones and tablets running Android 10 or higher. iOS is coming soon.",
   },
   {
     q: "Will this work for my business?",
     a: "Yes. Crow's Eye works for any environment — homes, restaurants, churches, offices, RV parks, marinas, schools, medical facilities. Corvus adjusts his analysis based on your environment type.",
-  },
-  {
-    q: "What if I need more than a report?",
-    a: "OCWS offers on-site RF assessments starting at $250 in the Pensacola metro area (Escambia and Santa Rosa Counties). $375 for locations in Northwest Florida through Mobile AL. Joshua Turner personally conducts and certifies every assessment.",
   },
 ];
 

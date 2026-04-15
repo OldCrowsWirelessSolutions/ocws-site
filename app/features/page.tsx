@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 const capabilities = [
-  { icon: "📡", label: "RF Analysis", desc: "Reads scanner screenshots, identifies every network, cross-references MAC vendors against a global OUI database." },
+  { icon: "📡", label: "RF Analysis", desc: "Scans your live wireless environment, identifies every network, cross-references MAC vendors against a global OUI database." },
   { icon: "💬", label: "Ask Corvus", desc: "Chat with Corvus about RF, Wi-Fi, interference — he answers like he was there for the scan." },
   { icon: "🎙️", label: "Voice Assistant", desc: "Corvus speaks. Briefings, analysis narration, dashboard greetings — all in his voice." },
   { icon: "🎓", label: "Guided Tours", desc: "Interactive walkthroughs of every dashboard feature with live glowing indicators." },
@@ -64,7 +64,7 @@ export default function FeaturesPage() {
             about your router. He will share them.
           </p>
           <p className="text-base leading-relaxed mb-8" style={{ color: "#B8CCD8" }}>
-            Corvus reads your scanner screenshots, identifies every network in your environment,
+            Corvus scans your live wireless environment, identifies every network in range,
             cross-references MAC addresses against known vendors, and delivers a complete diagnosis
             with step-by-step fix instructions specific to your exact equipment.
           </p>
@@ -132,9 +132,9 @@ export default function FeaturesPage() {
                   </Link>
                 </div>
                 <p className="text-sm leading-relaxed mb-5" style={{ color: "#aaa" }}>
-                  Upload screenshots from your phone — Signal List, 2.4&nbsp;GHz, and 5&nbsp;GHz channels.
-                  Corvus reads your entire RF environment and tells you exactly what&rsquo;s wrong, why
-                  it&rsquo;s wrong, and exactly how to fix it on your specific router. Every finding.
+                  Open Crow&rsquo;s Eye and tap Scan. Corvus reads your entire RF environment —
+                  every channel, every network, every signal — and tells you exactly what&rsquo;s wrong,
+                  why it&rsquo;s wrong, and exactly how to fix it on your specific router. Every finding.
                   Every step. Branded PDF you keep forever.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -175,7 +175,7 @@ export default function FeaturesPage() {
                 </div>
                 <p className="text-sm leading-relaxed mb-5" style={{ color: "#aaa" }}>
                   Corvus moving through your entire facility — room by room, floor by floor, building to
-                  building. You take screenshots at each location. Corvus synthesizes everything into one
+                  building. Corvus scans each location in the app. He synthesizes everything into one
                   unified report covering every dead zone, every interference source, every structural gap.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
