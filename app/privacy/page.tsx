@@ -214,7 +214,12 @@ export default function PrivacyPage() {
                 <a href="mailto:joshua@oldcrowswireless.com" style={{ color: "#00C2C7" }}>
                   joshua@oldcrowswireless.com
                 </a>
-                . We will respond within 7 business days.
+                . We will respond within 7 business days. To delete your account,
+                see our{" "}
+                <Link href="/account-deletion" style={{ color: "#00C2C7" }}>
+                  Account Deletion page
+                </Link>
+                .
               </p>
             </PolicySection>
 

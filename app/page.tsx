@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import HeroAnimation from './components/HeroAnimation'
 import { PlayStoreBadge, IOSBadge } from './components/PlayStoreBadge'
+import CircuitBackground from './components/CircuitBackground'
 
 // TODO: Update to your actual Play Store listing URL once published
 const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.oldcrowswireless.corvus'
@@ -14,17 +15,6 @@ export const metadata: Metadata = {
 }
 
 
-// ── Circuit trace background SVG ──────────────────────────────────────────
-
-const circuitBg: React.CSSProperties = {
-  backgroundImage: `
-    linear-gradient(rgba(0,194,199,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,194,199,0.03) 1px, transparent 1px)
-  `,
-  backgroundSize: '48px 48px',
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
   return (
@@ -33,18 +23,21 @@ export default function HomePage() {
       {/* ── SECTION 1: HERO ───────────────────────────────────────────────── */}
       <section
         className="relative overflow-hidden"
-        style={{ ...circuitBg, background: '#0D1520', paddingTop: '80px', paddingBottom: '96px' }}
+        style={{ background: '#0D1520', paddingTop: '80px', paddingBottom: '96px' }}
       >
-        {/* Radial glow */}
+        {/* Animated PCB circuit trace background */}
+        <CircuitBackground />
+
+        {/* Radial glow above circuit */}
         <div
           aria-hidden
           style={{
-            position: 'absolute', inset: 0, pointerEvents: 'none',
-            background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0,194,199,0.08), transparent)',
+            position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1,
+            background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0,194,199,0.07), transparent)',
           }}
         />
 
-        <div className="ocws-container relative text-center">
+        <div className="ocws-container relative text-center" style={{ zIndex: 2 }}>
           <HeroAnimation />
 
           <p
@@ -591,7 +584,7 @@ export default function HomePage() {
 
       {/* ── SECTION 9: FINAL CTA ──────────────────────────────────────────── */}
       <section
-        style={{ ...circuitBg, background: '#111928', padding: '96px 0' }}
+        style={{ background: '#111928', padding: '96px 0' }}
         className="relative overflow-hidden"
       >
         <div

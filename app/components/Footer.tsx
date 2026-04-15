@@ -109,6 +109,7 @@ export default function Footer() {
             <h4 className="text-sm font-semibold mb-3" style={{ color: "#00C2C7" }}>Legal</h4>
             <ul className="space-y-2 text-sm">
               <li><Link href="/privacy" className="text-white/50 hover:text-white transition">Privacy Policy</Link></li>
+              <li><Link href="/account-deletion" className="text-white/50 hover:text-white transition">Account Deletion</Link></li>
               <li><Link href="/legal/terms" className="text-white/50 hover:text-white transition">Terms of Service</Link></li>
               <li><Link href="/legal/guarantee" className="text-white/50 hover:text-white transition">Guarantee Policy</Link></li>
               <li><Link href="/legal/refunds" className="text-white/50 hover:text-white transition">Refund Policy</Link></li>
