@@ -3,7 +3,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import HeroAnimation from './components/HeroAnimation'
 import { PlayStoreBadge } from './components/PlayStoreBadge'
-import CircuitBackground from './components/CircuitBackground'
 
 // TODO: Update to your actual Play Store listing URL once published
 const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.oldcrowswireless.corvus'
@@ -23,9 +22,6 @@ export default function HomePage() {
         className="relative overflow-hidden"
         style={{ background: '#0D1520', paddingTop: '80px', paddingBottom: '96px' }}
       >
-        {/* Animated PCB circuit trace background */}
-        <CircuitBackground />
-
         {/* Radial glow above circuit */}
         <div
           aria-hidden

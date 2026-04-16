@@ -9,6 +9,7 @@ import CorvusChatWrapper from "./components/CorvusChatWrapper";
 import ActivityTracker from "./components/ActivityTracker";
 import AudioInit from "./components/AudioInit";
 import CorvusSprite from "@/components/CorvusSprite";
+import CircuitBackground from "@/app/components/CircuitBackground";
 
 export const metadata: Metadata = {
   title: "Old Crows Wireless Solutions (OCWS)",
@@ -24,6 +25,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
+        {/* Sitewide animated PCB circuit trace background — fixed behind all content */}
+        <div
+          aria-hidden
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            zIndex: 0,
+            pointerEvents: 'none',
+          }}
+        >
+          <CircuitBackground />
+        </div>
         {/* Set default audio preference on first visit */}
         <script dangerouslySetInnerHTML={{ __html: `
           (function() {
