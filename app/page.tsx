@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import HeroAnimation from './components/HeroAnimation'
-import { PlayStoreBadge, IOSBadge } from './components/PlayStoreBadge'
+import { PlayStoreBadge } from './components/PlayStoreBadge'
 import CircuitBackground from './components/CircuitBackground'
 
 // TODO: Update to your actual Play Store listing URL once published
@@ -13,8 +13,6 @@ export const metadata: Metadata = {
   description:
     'AI-powered wireless diagnostics built on 17 years of U.S. Navy Electronic Warfare experience. Download Crow\'s Eye and let Corvus render your Verdict.',
 }
-
-
 
 export default function HomePage() {
   return (
@@ -47,202 +45,152 @@ export default function HomePage() {
             Crow&rsquo;s Eye &middot; Powered by Corvus AI
           </p>
 
-          <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight mb-3">
-            Your Wireless Network<br />Has Problems.
+          <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight mb-6">
+            Your Wi-Fi Is Lying To You.
           </h1>
-          <p className="text-3xl md:text-5xl font-bold mb-7" style={{ color: '#00C2C7' }}>
-            Corvus Already Found Them.
-          </p>
 
           <p className="text-base md:text-lg max-w-2xl mx-auto mb-10 leading-relaxed" style={{ color: '#8AAABB' }}>
-            AI-powered wireless diagnostics built on 17 years of U.S. Navy Electronic Warfare
-            experience. Download the app and get your first Verdict in minutes.
+            Corvus finds what your ISP won&rsquo;t tell you &mdash; channel conflicts, security gaps,
+            dead zones &mdash; and tells you exactly how to fix them. Built on 17 years of
+            U.S. Navy Electronic Warfare expertise.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+          <div className="flex flex-col items-center gap-3 mb-5">
             <PlayStoreBadge href={PLAY_STORE_URL} size="lg" />
-            <IOSBadge size="lg" />
-          </div>
-
-          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
-            Or{' '}
-            <Link href="/dashboard" style={{ color: 'rgba(0,194,199,0.6)' }}>
-              access your account at oldcrowswireless.com/dashboard
+            <Link
+              href="/crows-eye"
+              className="text-sm"
+              style={{ color: 'rgba(0,194,199,0.65)', textDecoration: 'none' }}
+            >
+              Use on web instead &rarr;
             </Link>
-          </p>
+          </div>
         </div>
       </section>
 
-      {/* ── SECTION 2: SOCIAL PROOF BAR ────────────────────────────────────── */}
+      {/* ── SECTION 2: TESTIMONIAL TILES ──────────────────────────────────── */}
       <section
         style={{
           background: '#0A111C',
-          borderTop: '1px solid #B8922A',
-          borderBottom: '1px solid #B8922A',
-          padding: '28px 0',
+          borderTop: '1px solid rgba(0,194,199,0.15)',
+          borderBottom: '1px solid rgba(0,194,199,0.15)',
+          padding: '48px 0',
         }}
       >
         <div className="ocws-container">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-0 text-center">
-            {[
-              { stat: '17 Years', label: 'Navy EW Expertise' },
-              { stat: 'Minutes', label: 'Not Weeks' },
-              { stat: 'Enterprise', label: 'Ready' },
-            ].map(({ stat, label }, i) => (
-              <div
-                key={stat}
-                className="flex-1"
-                style={{
-                  borderLeft: i > 0 ? '1px solid rgba(184,146,42,0.25)' : 'none',
-                  paddingLeft: i > 0 ? '0' : '0',
-                }}
-              >
-                <div
-                  className="text-2xl font-bold mb-1"
-                  style={{ color: '#F4F6F8', fontFamily: "'Share Tech Mono', monospace" }}
-                >
-                  {stat}
-                </div>
-                <div className="text-sm" style={{ color: '#888' }}>{label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
-      {/* ── SECTION 3: HOW IT WORKS ────────────────────────────────────────── */}
-      <section style={{ background: '#0D1520', padding: '96px 0' }}>
-        <div className="ocws-container">
-          <div className="text-center mb-14">
-            <p
-              className="text-xs font-semibold uppercase tracking-widest mb-3"
-              style={{ color: '#00C2C7', fontFamily: "'Share Tech Mono', monospace", letterSpacing: '0.2em' }}
+            {/* Tile 1 — Mike Arbouret */}
+            <div
+              className="rounded-xl p-6"
+              style={{
+                background: '#1A2332',
+                borderLeft: '3px solid #00C2C7',
+              }}
             >
-              How It Works
-            </p>
-            <h2 className="text-3xl md:text-4xl font-bold text-white">
-              Three steps to your Verdict.
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                n: '01',
-                title: 'Scan',
-                body: 'Open the app. Corvus detects your network and scans the RF environment automatically.',
-                icon: '📡',
-              },
-              {
-                n: '02',
-                title: 'Analyze',
-                body: 'AI analysis identifies channel conflicts, security gaps, coverage issues, and interference patterns.',
-                icon: '🧠',
-              },
-              {
-                n: '03',
-                title: 'Verdict',
-                body: 'Receive a branded PDF report with prioritized findings and step-by-step fix instructions.',
-                icon: '📋',
-              },
-            ].map(({ n, title, body, icon }) => (
-              <div
-                key={n}
-                className="rounded-2xl p-8"
-                style={{
-                  background: '#1A2332',
-                  borderTop: '3px solid #00C2C7',
-                }}
-              >
-                <div
-                  className="text-5xl font-bold mb-4"
-                  style={{ color: '#00C2C7', fontFamily: "'Share Tech Mono', monospace", opacity: 0.4 }}
-                >
-                  {n}
-                </div>
-                <div className="text-2xl mb-3">{icon}</div>
-                <h3 className="text-xl font-bold text-white mb-3">{title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: '#7A9AAB' }}>{body}</p>
+              <p className="text-sm leading-relaxed text-white mb-4 italic">
+                &ldquo;As an IBM Field CTO I&rsquo;ve evaluated a lot of enterprise tools.
+                Corvus does in 60 seconds what takes my team hours. This is the real deal.&rdquo;
+              </p>
+              <div>
+                <p className="text-sm font-semibold text-white">Mike Arbouret</p>
+                <p className="text-xs mt-0.5" style={{ color: '#6A8A9A' }}>IBM Field CTO</p>
               </div>
-            ))}
+            </div>
+
+            {/* Tile 2 — Kyle Pitts */}
+            <div
+              className="rounded-xl p-6"
+              style={{
+                background: '#1A2332',
+                borderLeft: '3px solid #00C2C7',
+              }}
+            >
+              <p className="text-sm leading-relaxed text-white mb-4 italic">
+                &ldquo;I&rsquo;m not an IT guy but Corvus told me exactly what was wrong with my
+                network and exactly how to fix it. First time I&rsquo;ve ever actually understood
+                my Wi-Fi.&rdquo;
+              </p>
+              <div>
+                <p className="text-sm font-semibold text-white">Kyle Pitts</p>
+                <p className="text-xs mt-0.5" style={{ color: '#6A8A9A' }}>U.S. Navy Veteran</p>
+              </div>
+            </div>
+
+            {/* Tile 3 — Eric Mims */}
+            <div
+              className="rounded-xl p-6"
+              style={{
+                background: '#1A2332',
+                borderLeft: '3px solid #00C2C7',
+              }}
+            >
+              <p className="text-sm leading-relaxed text-white mb-4 italic">
+                &ldquo;As an IT leader with over 30 years of experience in enterprise networking,
+                I&rsquo;ve found that Crow&rsquo;s Eye by Corvus effectively condenses a
+                week&rsquo;s worth of manual engineering into a single afternoon.&rdquo;
+              </p>
+              <div>
+                <p className="text-sm font-semibold text-white">Eric Mims</p>
+                <p className="text-xs mt-0.5" style={{ color: '#6A8A9A' }}>
+                  30-Year IT Network Architect &amp; Cyber Veteran &middot; Houston, TX
+                </p>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
 
-      {/* ── SECTION 4: CORVUS INTRODUCTION ────────────────────────────────── */}
-      <section style={{ background: '#0A111C', padding: '96px 0' }}>
+      {/* ── SECTION 3: HACK THE COAST URGENCY ────────────────────────────── */}
+      <section
+        style={{
+          background: '#0D6E7A',
+          borderTop: '2px solid #B8922A',
+          borderBottom: '2px solid #B8922A',
+          padding: '40px 0',
+        }}
+      >
         <div className="ocws-container">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center max-w-5xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
 
-            {/* Text */}
+            {/* Left: event info */}
             <div>
               <p
-                className="text-xs font-semibold uppercase tracking-widest mb-4"
-                style={{ color: '#00C2C7', fontFamily: "'Share Tech Mono', monospace", letterSpacing: '0.2em' }}
+                className="text-2xl md:text-3xl font-bold mb-2"
+                style={{ color: '#B8922A', fontFamily: "'Share Tech Mono', monospace" }}
               >
-                Meet the Engine
+                Meet Corvus Live
               </p>
-              <h2 className="text-4xl font-bold text-white mb-6 leading-tight">
-                Meet Corvus.
-              </h2>
-              <p className="text-base leading-relaxed mb-8" style={{ color: '#8AAABB' }}>
-                RF intelligence engine. Wireless diagnostician. The only AI built on 17 years
-                of U.S. Navy Electronic Warfare experience. He doesn&rsquo;t generate reports.
-                He renders Verdicts.
+              <p className="text-sm md:text-base" style={{ color: 'rgba(255,255,255,0.75)' }}>
+                Hack the Coast Cybersecurity Conference &middot; May 9, 2026 &middot; Cowork Annex, Pensacola FL
               </p>
-
-              {/* Gold quote card */}
-              <div
-                className="rounded-xl px-6 py-5 mb-8"
-                style={{ border: '1px solid #B8922A', background: 'rgba(184,146,42,0.06)' }}
-              >
-                <p className="text-sm italic leading-relaxed" style={{ color: '#B8922A' }}>
-                  &ldquo;I found 4 problems. Three of them are embarrassing.&rdquo;
-                </p>
-                <p className="mt-2 text-xs" style={{ color: 'rgba(184,146,42,0.5)' }}>— Corvus</p>
-              </div>
-
-              <PlayStoreBadge href={PLAY_STORE_URL} size="sm" />
             </div>
 
-            {/* Corvus visual */}
-            <div className="flex items-center justify-center">
-              <div
-                className="rounded-2xl overflow-hidden flex items-center justify-center"
+            {/* Right: offer + CTA */}
+            <div className="flex flex-col items-center md:items-end gap-4 w-full md:w-auto">
+              <p className="text-sm font-semibold text-white text-center md:text-right">
+                First 20 signups get 3 free Verdicts.
+              </p>
+              <Link
+                href="/hack-the-coast"
+                className="w-full md:w-auto text-center rounded-xl px-6 py-3 text-sm font-bold transition"
                 style={{
-                  background: '#0D1520',
-                  border: '1px solid rgba(0,194,199,0.2)',
-                  width: '100%',
-                  maxWidth: 320,
-                  aspectRatio: '1',
-                  position: 'relative',
+                  background: '#00C2C7',
+                  color: '#0D1520',
+                  textDecoration: 'none',
+                  display: 'inline-block',
                 }}
               >
-                {/* Circuit trace radial */}
-                <div
-                  aria-hidden
-                  style={{
-                    position: 'absolute', inset: 0,
-                    background: 'radial-gradient(circle at 50% 50%, rgba(0,194,199,0.06), transparent 70%)',
-                  }}
-                />
-                <div style={{ position: 'relative', width: 180, height: 180 }}>
-                  <Image
-                    src="/corvus_still.png"
-                    alt="Corvus AI"
-                    fill
-                    sizes="180px"
-                    className="object-contain"
-                  />
-                </div>
-              </div>
+                Claim Your Free Verdicts &rarr;
+              </Link>
             </div>
 
           </div>
         </div>
       </section>
 
-      {/* ── SECTION 5: PRICING TIERS ────────────────────────────────────────── */}
+      {/* ── SECTION 4: PRICING TIERS ────────────────────────────────────────── */}
       <section style={{ background: '#0D1520', padding: '96px 0' }}>
         <div className="ocws-container">
           <div className="text-center mb-14">
@@ -423,8 +371,140 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── SECTION 6: USE CASES ──────────────────────────────────────────── */}
-      <section style={{ background: '#0A111C', padding: '96px 0' }}>
+      {/* ── SECTION 5: HOW IT WORKS ────────────────────────────────────────── */}
+      <section style={{ background: '#1A2332', padding: '96px 0' }}>
+        <div className="ocws-container">
+          <div className="text-center mb-14">
+            <p
+              className="text-xs font-semibold uppercase tracking-widest mb-3"
+              style={{ color: '#00C2C7', fontFamily: "'Share Tech Mono', monospace", letterSpacing: '0.2em' }}
+            >
+              How It Works
+            </p>
+            <h2 className="text-3xl md:text-4xl font-bold text-white">
+              Three steps to your Verdict.
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                n: '01',
+                title: 'Scan',
+                body: 'Open the app. Corvus detects your network and scans the RF environment automatically.',
+                icon: '📡',
+              },
+              {
+                n: '02',
+                title: 'Analyze',
+                body: 'AI analysis identifies channel conflicts, security gaps, coverage issues, and interference patterns.',
+                icon: '🧠',
+              },
+              {
+                n: '03',
+                title: 'Verdict',
+                body: 'Receive a branded PDF report with prioritized findings and step-by-step fix instructions.',
+                icon: '📋',
+              },
+            ].map(({ n, title, body, icon }) => (
+              <div
+                key={n}
+                className="rounded-2xl p-8"
+                style={{
+                  background: '#0D1520',
+                  borderTop: '3px solid #00C2C7',
+                }}
+              >
+                <div
+                  className="text-5xl font-bold mb-4"
+                  style={{ color: '#00C2C7', fontFamily: "'Share Tech Mono', monospace", opacity: 0.4 }}
+                >
+                  {n}
+                </div>
+                <div className="text-2xl mb-3">{icon}</div>
+                <h3 className="text-xl font-bold text-white mb-3">{title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: '#7A9AAB' }}>{body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── SECTION 6: CORVUS INTRODUCTION ────────────────────────────────── */}
+      <section style={{ background: '#0D1520', padding: '96px 0' }}>
+        <div className="ocws-container">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center max-w-5xl mx-auto">
+
+            {/* Text */}
+            <div>
+              <p
+                className="text-xs font-semibold uppercase tracking-widest mb-4"
+                style={{ color: '#00C2C7', fontFamily: "'Share Tech Mono', monospace", letterSpacing: '0.2em' }}
+              >
+                Meet the Engine
+              </p>
+              <h2 className="text-4xl font-bold text-white mb-6 leading-tight">
+                Meet Corvus.
+              </h2>
+              <p className="text-base leading-relaxed mb-8" style={{ color: '#8AAABB' }}>
+                RF intelligence engine. Wireless diagnostician. The only AI built on 17 years
+                of U.S. Navy Electronic Warfare experience. He doesn&rsquo;t generate reports.
+                He renders Verdicts.
+              </p>
+
+              {/* Gold quote card */}
+              <div
+                className="rounded-xl px-6 py-5 mb-8"
+                style={{ border: '1px solid #B8922A', background: 'rgba(184,146,42,0.06)' }}
+              >
+                <p className="text-sm italic leading-relaxed" style={{ color: '#B8922A' }}>
+                  &ldquo;I found 4 problems. Three of them are embarrassing.&rdquo;
+                </p>
+                <p className="mt-2 text-xs" style={{ color: 'rgba(184,146,42,0.5)' }}>— Corvus</p>
+              </div>
+
+              <PlayStoreBadge href={PLAY_STORE_URL} size="sm" />
+            </div>
+
+            {/* Corvus visual */}
+            <div className="flex items-center justify-center">
+              <div
+                className="rounded-2xl overflow-hidden flex items-center justify-center"
+                style={{
+                  background: '#0D1520',
+                  border: '1px solid rgba(0,194,199,0.2)',
+                  width: '100%',
+                  maxWidth: 320,
+                  aspectRatio: '1',
+                  position: 'relative',
+                }}
+              >
+                {/* Circuit trace radial */}
+                <div
+                  aria-hidden
+                  style={{
+                    position: 'absolute', inset: 0,
+                    background: 'radial-gradient(circle at 50% 50%, rgba(0,194,199,0.06), transparent 70%)',
+                  }}
+                />
+                <div style={{ position: 'relative', width: 180, height: 180 }}>
+                  <Image
+                    src="/corvus_still.png"
+                    alt="Corvus AI"
+                    fill
+                    sizes="180px"
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ── SECTION 7: USE CASES ──────────────────────────────────────────── */}
+      <section style={{ background: '#1A2332', padding: '96px 0' }}>
         <div className="ocws-container">
           <div className="text-center mb-14">
             <p
@@ -467,40 +547,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── SECTION 7: ERIC MIMS TESTIMONIAL ─────────────────────────────── */}
-      <section
-        style={{
-          background: '#0D1520',
-          padding: '80px 0',
-          borderTop: '1px solid rgba(184,146,42,0.3)',
-          borderBottom: '1px solid rgba(184,146,42,0.3)',
-        }}
-      >
-        <div className="ocws-container max-w-3xl mx-auto text-center">
-          <div className="text-3xl mb-6" style={{ color: '#B8922A', fontFamily: 'Georgia, serif' }}>
-            &ldquo;
-          </div>
-          <p className="text-lg md:text-xl leading-relaxed text-white mb-8 italic">
-            As an IT leader with over 30 years of experience in enterprise networking, I&rsquo;ve
-            found that Crow&rsquo;s Eye by Corvus effectively condenses a week&rsquo;s worth of manual
-            engineering into a single afternoon. It provides the granular visibility necessary to
-            eliminate channel overlap and optimize signal strength across complex, multi-story
-            environments.
-          </p>
-          <div className="flex flex-col items-center gap-1">
-            <p className="font-bold text-white">Eric Mims</p>
-            <p className="text-sm" style={{ color: '#00C2C7' }}>
-              30-Year IT Network Architect &amp; Cyber Veteran
-            </p>
-            <p className="text-sm" style={{ color: '#888' }}>
-              Senior IT Infrastructure and Security Professional &middot; Houston, TX
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* ── SECTION 8: CASE STUDIES PREVIEW ──────────────────────────────── */}
-      <section style={{ background: '#0A111C', padding: '96px 0' }}>
+      <section style={{ background: '#0D1520', padding: '96px 0' }}>
         <div className="ocws-container">
           <div className="text-center mb-14">
             <p
@@ -532,7 +580,7 @@ export default function HomePage() {
                 summary: "Completely open network, severe Channel 6 congestion, zero network segmentation between staff and guests.",
                 slug: "olive-baptist-church",
               },
-            ].map(({ name, context, findings, critical, summary, slug }) => (
+            ].map(({ name, context, findings, critical, summary }) => (
               <div
                 key={name}
                 className="rounded-2xl p-6"
@@ -559,11 +607,11 @@ export default function HomePage() {
                 <div className="flex items-center justify-between">
                   <span className="text-xs" style={{ color: '#888' }}>{findings} findings total</span>
                   <Link
-                    href={`/case-studies`}
+                    href="/case-studies"
                     className="text-sm font-semibold"
                     style={{ color: '#00C2C7', textDecoration: 'none' }}
                   >
-                    View Full Verdict →
+                    View Full Verdict &rarr;
                   </Link>
                 </div>
               </div>
@@ -610,7 +658,6 @@ export default function HomePage() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <PlayStoreBadge href={PLAY_STORE_URL} size="lg" />
-            <IOSBadge size="lg" />
           </div>
 
           <p className="mt-8 text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
