@@ -577,7 +577,7 @@ export default function HomePage() {
                 context: "Large Venue · Pensacola, FL",
                 findings: 5,
                 critical: 3,
-                summary: "Completely open network, severe Channel 6 congestion, zero network segmentation between staff and guests.",
+                summary: "Guest Wi-Fi active for congregation, Channel 6 congestion detected, staff and guest traffic sharing the same network segment.",
                 slug: "olive-baptist-church",
               },
             ].map(({ name, context, findings, critical, summary }) => (
