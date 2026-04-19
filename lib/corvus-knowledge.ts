@@ -3,6 +3,9 @@
 
 import redis from '@/lib/redis'
 
+export { assembleBusinessIntelBlock } from './corvus-business-intel'
+export type { BusinessIntelScope } from './corvus-business-intel'
+
 // ─── Static Knowledge Base ─────────────────────────────────────────────────────
 
 export const CORVUS_RF_KNOWLEDGE_BASE = `

@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { buildCorvusSystemPrompt } from "@/lib/corvus-chat";
+import { buildCorvusSystemPrompt, resolveBusinessIntelScope } from "@/lib/corvus-chat";
 import { getTodayHoliday, getHolidayGreeting } from "@/lib/corvus-calendar";
 import {
   getChatHistory,
@@ -124,7 +124,17 @@ export async function POST(req: NextRequest) {
 
     const todayNote = `\n\nTODAY'S DATE: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
 
-    const systemPromptBase = await buildCorvusSystemPrompt();
+    // Resolve V2 business intel scope. V1 subscription codes never produce
+    // 'owner' or 'teamLead' tiers, so scope is always 'none' for V1 users and
+    // the business intel block is empty.
+    const subForScope = await validateSubscriptionId(code).catch(() => null);
+    const businessIntelScope = resolveBusinessIntelScope({
+      tier: subForScope?.v2_tier ?? subForScope?.tier,
+      team_management_enabled: subForScope?.team_management_enabled,
+    });
+    console.log(`[Corvus] business_intel_scope=${businessIntelScope} code=${code.slice(0, 8)}`);
+
+    const systemPromptBase = await buildCorvusSystemPrompt(businessIntelScope);
     let systemPrompt = systemPromptBase + reportContextInjection + contextInjection + comfortNote + holidayNote + todayNote;
 
     // Tier-based attachment capabilities

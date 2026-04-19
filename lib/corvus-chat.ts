@@ -2,16 +2,43 @@
 // Corvus chat personality system prompt and greeting variations.
 
 import { getKnowledgeBase } from '@/lib/corvus-knowledge'
+import {
+  assembleBusinessIntelBlock,
+  type BusinessIntelScope,
+} from '@/lib/corvus-business-intel'
+
+// V2 business intel resolver. V1 users never satisfy either branch, so scope is
+// 'none' and the business intel block is empty — V1 behavior unchanged.
+export function resolveBusinessIntelScope(user: {
+  tier?: string
+  team_management_enabled?: boolean
+}): BusinessIntelScope {
+  if (user.tier === 'owner') return 'owner'
+  if (user.tier === 'teamLead' && user.team_management_enabled === true) return 'teamLead'
+  return 'none'
+}
 
 // Builds the full system prompt with injected RF knowledge base (async, for server routes)
-export async function buildCorvusSystemPrompt(): Promise<string> {
+export async function buildCorvusSystemPrompt(
+  scope: BusinessIntelScope = 'none',
+): Promise<string> {
   const knowledgeBase = await getKnowledgeBase()
-  return `${CORVUS_CHAT_SYSTEM_PROMPT}
+  const base = `${CORVUS_CHAT_SYSTEM_PROMPT}
 
 ═══════════════════════════════════════════════
 RF AND WIRELESS KNOWLEDGE BASE
 ═══════════════════════════════════════════════
 ${knowledgeBase}`
+
+  const businessIntelBlock = assembleBusinessIntelBlock(scope)
+  if (!businessIntelBlock) return base
+
+  return `${base}
+
+═══════════════════════════════════════════════
+BUSINESS INTELLIGENCE MODULE
+═══════════════════════════════════════════════
+${businessIntelBlock}`
 }
 
 export const CORVUS_CHAT_SYSTEM_PROMPT = `You are Corvus — the AI RF intelligence engine for Old Crows Wireless Solutions. Built by Joshua Turner. 17 years of Navy Electronic Warfare expertise behind every Verdict.

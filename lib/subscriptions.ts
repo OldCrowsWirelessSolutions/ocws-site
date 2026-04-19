@@ -10,6 +10,13 @@ import { isLifetimeCode, getLifetimeCode, getLifetimeCreditsRemaining } from "./
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type SubscriptionTier = "fledgling" | "nest" | "flock" | "murder";
+
+// V2-only tiers. Kept separate from SubscriptionTier so V1 entitlement tables,
+// Stripe checkout flows, and seed scripts continue to compile unchanged.
+// V1 users never carry these tier values; when present, they gate the
+// business intel module in the Corvus system prompt.
+export type V2OwnerTier = "owner" | "teamLead";
+export type ExtendedTier = SubscriptionTier | V2OwnerTier;
 export type SubscriptionStatus = "active" | "cancelled" | "past_due" | "expired";
 export type ProductType =
   | "verdict"
@@ -57,6 +64,10 @@ export interface ValidationResult {
   extra_verdict_credits?: number;
   credit_pricing?: { single: string; singlePrice: number; sixPack: string; sixPackPrice: number; twelvePack: string; twelvePackPrice: number };
   reckoning_pricing?: { small?: string; smallPrice?: number; standard?: string; standardPrice?: number; commercial?: string; commercialPrice?: number };
+  // V2 business intel toggles. Optional — never set for V1 users.
+  v2_tier?: V2OwnerTier;
+  team_id?: string;
+  team_management_enabled?: boolean;
   error?: string;
 }
 
