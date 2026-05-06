@@ -40,6 +40,8 @@ export type ExpiryType =
   | "14d"
   | "30d";
 
+export type DemoTier = "nest" | "flock" | "murder";
+
 export interface PromoCodeRecord {
   code: string;
   type: PromoType;           // kept for backwards compat — maps to product
@@ -53,6 +55,20 @@ export interface PromoCodeRecord {
   usedBy: string | null;
   expiresAt: string | null;
   deactivated?: boolean;
+  // For demo codes only: the tier granted on redemption.
+  // Lets the admin pick Nest / Flock / Murder per code at generate time.
+  tier?: DemoTier;
+}
+
+// Sanitize a user-supplied custom suffix to safe code characters.
+// Uppercase, A-Z / 0-9 / hyphen only, max 30 chars after stripping.
+function sanitizeCustomSuffix(s: string): string {
+  return s
+    .toUpperCase()
+    .replace(/[^A-Z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 30);
 }
 
 const CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -107,6 +123,10 @@ export async function generatePromoCode(
   expiresAt?: string,
   products?: PromoProduct,
   expiryType?: ExpiryType,
+  // For demo codes only: a custom suffix (e.g. "SMITH" → CORVUS-SMITH)
+  // and the tier granted on redemption.
+  customSuffix?: string,
+  tier?: DemoTier,
 ): Promise<string> {
   const resolvedProducts = products ?? legacyTypeToProducts(type);
   const resolvedExpiryType = expiryType ?? "single_use";
@@ -120,7 +140,27 @@ export async function generatePromoCode(
     }
   }
 
-  const code = `${codePrefix(resolvedProducts)}-${randomSuffix(8)}`;
+  // Code shape:
+  //   demo + customSuffix → CORVUS-{SUFFIX}      e.g. CORVUS-SMITH
+  //   demo without suffix → CORVUS-DEMO-{8rand}  e.g. CORVUS-DEMO-A2B4Z9X3
+  //   any other product   → {prefix}-{8rand}     e.g. OCWS-NEST-PROMO-...
+  let code: string;
+  if (resolvedProducts === "demo" && customSuffix) {
+    const sanitized = sanitizeCustomSuffix(customSuffix);
+    if (!sanitized) {
+      throw new Error("Custom suffix is empty after sanitizing — use letters, numbers, or dashes only.");
+    }
+    code = `CORVUS-${sanitized}`;
+    // Uniqueness check: if a code with this exact name already exists,
+    // refuse — admin should pick a different name (e.g. SMITH-2).
+    const existing = await redis.get<PromoCodeRecord>(`promo:${code}`);
+    if (existing) {
+      throw new Error(`Code ${code} already exists. Choose a different name (e.g. ${sanitized}-2).`);
+    }
+  } else {
+    code = `${codePrefix(resolvedProducts)}-${randomSuffix(8)}`;
+  }
+
   const record: PromoCodeRecord = {
     code,
     type,
@@ -133,6 +173,7 @@ export async function generatePromoCode(
     usedAt: null,
     usedBy: null,
     expiresAt: resolvedExpiresAt,
+    ...(resolvedProducts === "demo" && tier ? { tier } : {}),
   };
   await redis.set(`promo:${code}`, record);
   await redis.sadd("promo:index", code);
@@ -141,7 +182,7 @@ export async function generatePromoCode(
 
 export async function validatePromoCode(
   code: string
-): Promise<{ type: PromoType; products: PromoProduct } | null> {
+): Promise<{ type: PromoType; products: PromoProduct; tier?: DemoTier } | null> {
   const record = await redis.get<PromoCodeRecord>(`promo:${code}`);
   if (!record) return null;
   if (record.deactivated) return null;
@@ -151,7 +192,11 @@ export async function validatePromoCode(
   if (record.expiresAt && new Date() >= new Date(record.expiresAt)) return null;
   // Legacy: if neither single_use nor time-based expiry, fall back to old used flag
   if (!record.expiryType && record.used) return null;
-  return { type: record.type, products: record.products ?? (record.type as PromoProduct) };
+  return {
+    type: record.type,
+    products: record.products ?? (record.type as PromoProduct),
+    tier: record.tier,
+  };
 }
 
 export async function redeemPromoCode(

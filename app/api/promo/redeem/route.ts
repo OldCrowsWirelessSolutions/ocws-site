@@ -51,6 +51,10 @@ export async function POST(req: Request) {
       valid: true,
       type: validation.type,
       products: validation.products,
+      // For demo codes, the admin-chosen tier (nest / flock / murder).
+      // Mobile redeem flow uses this to grant the right access level
+      // instead of a hardcoded default.
+      tier: validation.tier,
     });
   } catch (err) {
     console.error("[promo/redeem]", err);

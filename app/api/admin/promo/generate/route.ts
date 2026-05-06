@@ -39,6 +39,10 @@ export async function POST(req: Request) {
       expiryType?: string;
       note?: string;
       expiresAt?: string;
+      // For demo codes: custom suffix (e.g. "SMITH" → CORVUS-SMITH) and
+      // the tier granted on redemption (nest / flock / murder).
+      customSuffix?: string;
+      tier?: string;
     };
 
     const type = (body.type as PromoType) ?? "verdict";
@@ -51,8 +55,28 @@ export async function POST(req: Request) {
       ? (body.expiryType as ExpiryType)
       : "single_use";
 
-    const code = await generatePromoCode(type, body.note ?? "", body.expiresAt, products, expiryType);
-    return Response.json({ code });
+    const VALID_TIERS = ["nest", "flock", "murder"] as const;
+    const tier = VALID_TIERS.includes(body.tier as typeof VALID_TIERS[number])
+      ? (body.tier as "nest" | "flock" | "murder")
+      : undefined;
+
+    try {
+      const code = await generatePromoCode(
+        type,
+        body.note ?? "",
+        body.expiresAt,
+        products,
+        expiryType,
+        body.customSuffix,
+        tier,
+      );
+      return Response.json({ code });
+    } catch (genErr) {
+      // generatePromoCode throws on duplicate custom suffixes and invalid input.
+      // Surface those messages to the admin UI so they can adjust.
+      const msg = genErr instanceof Error ? genErr.message : "Failed to generate code";
+      return Response.json({ error: msg }, { status: 400 });
+    }
   } catch (err) {
     console.error("[admin/promo/generate]", err);
     return Response.json({ error: "Failed to generate code" }, { status: 500 });
