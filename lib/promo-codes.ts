@@ -13,7 +13,8 @@ export type PromoType =
   | "sub_nest"
   | "sub_flock"
   | "sub_murder"
-  | "sub_any";
+  | "sub_any"
+  | "demo";
 
 export type PromoProduct =
   | "verdict"
@@ -27,7 +28,8 @@ export type PromoProduct =
   | "sub_nest"
   | "sub_flock"
   | "sub_murder"
-  | "sub_any";
+  | "sub_any"
+  | "demo";
 
 export type ExpiryType =
   | "single_use"
@@ -63,6 +65,14 @@ function randomSuffix(len: number): string {
 }
 
 function codePrefix(products: PromoProduct): string {
+  // Demo codes are intentionally CORVUS-* prefixed to match the visual style
+  // of the existing CORVUS-NATE / CORVUS-MIKE / CORVUS-ERIC VIP codes —
+  // these are handed out as time-windowed multi-use access for investor
+  // demos, partner conversations, and event giveaways. Default expiry is
+  // 48h (multi-use within window). Single-use is rejected at the admin
+  // generate route for the demo product since "single use demo" is a
+  // contradiction in this context.
+  if (products === "demo") return "CORVUS-DEMO";
   if (products === "verdict") return "OCWS-VERDICT";
   if (products === "both" || products === "all_reckonings") return "OCWS-MULTI";
   if (products === "sub_fledgling") return "OCWS-FLEDGLING";

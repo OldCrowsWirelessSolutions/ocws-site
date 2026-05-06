@@ -14,6 +14,7 @@ const VALID_TYPES: PromoType[] = [
   "sub_flock",
   "sub_murder",
   "sub_any",
+  "demo",
 ];
 
 const VALID_EXPIRY_TYPES: ExpiryType[] = [
