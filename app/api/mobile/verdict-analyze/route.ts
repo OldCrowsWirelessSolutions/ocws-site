@@ -85,21 +85,19 @@ export async function POST(req: Request) {
     content.push({ type: "text", text: body.prompt });
 
     const isReckoning = body.isReckoning === true;
-    // 2026-05-08: bumped verdict from 2000 → 8000 and reckoning from
-    // 4000 → 16000 after Nate's tablet kept hitting [ETRUNC] (the
-    // mobile-side error tag for stop_reason: 'max_tokens'). Real-user
-    // failure pattern: v22 mandated explicit router make/model
-    // identification in every finding, plus IT Pro language emits
-    // verbose vendor-specific config detail. Combined with Sonnet 4.6's
-    // generally longer prose, verdict outputs were routinely 2.5-3K
-    // tokens — blowing past the 2000 cap and triggering truncation
-    // mid-JSON. The new caps give 4× headroom on verdicts and 4×
-    // on reckonings; well within Sonnet 4.6's 64K output ceiling.
-    // max_tokens is a ceiling not a target — only actual emitted
-    // tokens are billed, so this cost zero for typical 2-3K responses.
-    // Server-side fix means existing v22+ installs pick it up
-    // instantly on next analysis attempt — no new app build required.
-    const maxTokens = isReckoning ? 16000 : 8000;
+    // 2026-05-08: pinned to Sonnet 4.6's full 64K output ceiling per
+    // user request — "bump the cap to something ridiculous, that there
+    // is no way any scan or reckoning is going to hit." Real-user
+    // [ETRUNC] failures from Nate's tablet were caused by the original
+    // 2000/4000 caps being too tight for Sonnet's prose + the v22
+    // router-vendor mandate + IT Pro language verbosity. Typical
+    // responses are 2-4K tokens; even the most pathological reckoning
+    // (16 locations + IT Pro language + many findings each location)
+    // tops out around 30-40K. Pinning at 64K removes truncation as a
+    // failure mode entirely. max_tokens is a ceiling not a target so
+    // typical responses cost the same as before; only the rare
+    // pathological case actually consumes the new headroom.
+    const maxTokens = 64000;
 
     // ── Call Anthropic ─────────────────────────────────────────────────────
     const controller = new AbortController();
