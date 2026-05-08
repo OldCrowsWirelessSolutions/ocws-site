@@ -85,10 +85,21 @@ export async function POST(req: Request) {
     content.push({ type: "text", text: body.prompt });
 
     const isReckoning = body.isReckoning === true;
-    // Match mobile's existing token caps — verdict 2000, reckoning 4000.
-    // Bumping here is a server-side knob if a future Sonnet version emits
-    // longer responses.
-    const maxTokens = isReckoning ? 4000 : 2000;
+    // 2026-05-08: bumped verdict from 2000 → 8000 and reckoning from
+    // 4000 → 16000 after Nate's tablet kept hitting [ETRUNC] (the
+    // mobile-side error tag for stop_reason: 'max_tokens'). Real-user
+    // failure pattern: v22 mandated explicit router make/model
+    // identification in every finding, plus IT Pro language emits
+    // verbose vendor-specific config detail. Combined with Sonnet 4.6's
+    // generally longer prose, verdict outputs were routinely 2.5-3K
+    // tokens — blowing past the 2000 cap and triggering truncation
+    // mid-JSON. The new caps give 4× headroom on verdicts and 4×
+    // on reckonings; well within Sonnet 4.6's 64K output ceiling.
+    // max_tokens is a ceiling not a target — only actual emitted
+    // tokens are billed, so this cost zero for typical 2-3K responses.
+    // Server-side fix means existing v22+ installs pick it up
+    // instantly on next analysis attempt — no new app build required.
+    const maxTokens = isReckoning ? 16000 : 8000;
 
     // ── Call Anthropic ─────────────────────────────────────────────────────
     const controller = new AbortController();
