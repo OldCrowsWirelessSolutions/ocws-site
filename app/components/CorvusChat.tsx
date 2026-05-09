@@ -116,9 +116,15 @@ export default function CorvusChat({
   const [attachmentError, setAttachmentError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll
+  // Auto-scroll — scroll only the inner messages container, never the page.
+  // Previous implementation used bottomRef.scrollIntoView() which walks up to
+  // the nearest scrollable ancestor; on pages where the chat is embedded
+  // mid-viewport that bubbles to the document and yanks the page (input box
+  // and surrounding context get pushed off screen on send).
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const container = bottomRef.current?.parentElement;
+    if (!container) return;
+    container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
   }, [messages, loading]);
 
   // Load active report from sessionStorage on mount
