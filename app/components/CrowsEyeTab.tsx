@@ -16,7 +16,7 @@ interface CrowsEyeTabProps {
 }
 
 const PROCESSING_LINES = [
-  'Rolling Perception on your RF environment...',
+  'Rolling Perception on your WiFi environment...',
   'Identifying all networks in range... I see you, channel 11 squatters...',
   'Cross-referencing MAC addresses... someone in this environment needs to be removed...',
   'Analyzing channel congestion... as Proverbs 14:4 says, where there are no oxen the manger is clean... your manger is not clean...',
@@ -24,10 +24,10 @@ const PROCESSING_LINES = [
   'Calculating signal strength deltas... Blastoise uses Surf... it\'s super effective...',
   'Reviewing vendor configurations... whoever set this up was rolling disadvantage...',
   'Compiling findings... I want to be the very best at diagnosing your network...',
-  'Rendering Verdict... natural 20 on the analysis roll...',
+  'Rendering WiFi Health Report... natural 20 on the analysis roll...',
   'Doing a full Marauder\'s Map on your network... I see everything...',
   'Mapping every room before we engage... dungeon crawl protocol active...',
-  'In the end it doesn\'t even matter... analyzing your RF environment...',
+  'In the end it doesn\'t even matter... analyzing your WiFi environment...',
   'Crawling through your network configuration...',
   'Crikey. Look at the size of that channel congestion...',
   'Approaching the interference carefully... from behind... don\'t startle it...',
@@ -478,7 +478,7 @@ export default function CrowsEyeTab({
       const NAVYD: [number,number,number] = [13,  21,  32];
       const TEAL:  [number,number,number] = [13,  110, 122];
       const CYAN:  [number,number,number] = [0,   194, 199];
-      const GOLD:  [number,number,number] = [184, 146, 42];
+      const GOLD:  [number,number,number] = [216, 172, 50];
       const WHITE: [number,number,number] = [255, 255, 255];
       const LGRAY: [number,number,number] = [244, 246, 248];
       const MGRAY: [number,number,number] = [170, 170, 170];
@@ -527,7 +527,7 @@ export default function CrowsEyeTab({
         drawFooter(); doc.addPage(); pg++; drawBg();
         sf(NAVYD); doc.rect(0, 0, PW, 26, 'F');
         sf(TEAL);  doc.rect(0, 23, PW, 3, 'F');
-        st(CYAN); fn('bold', 7.5); doc.text('CORVUS\u2019 VERDICT', ML, 17);
+        st(CYAN); fn('bold', 7.5); doc.text('WIFI HEALTH REPORT', ML, 17);
         st(DGRAY); fn('normal', 7); doc.text(report!.reportId, PW - MR, 17, { align: 'right' });
         y = 36;
       }
@@ -559,7 +559,7 @@ export default function CrowsEyeTab({
       }
 
       st(CYAN); fn('bold', 20);
-      doc.text('CORVUS\u2019 VERDICT', PW / 2, HDR / 2 + 7, { align: 'center' });
+      doc.text('WIFI HEALTH REPORT', PW / 2, HDR / 2 + 7, { align: 'center' });
       st(GOLD); fn('bold', 7.5);
       doc.text('CROW\u2019S EYE BY CORVUS', PW - MR, HDR / 2 - 6, { align: 'right' });
       st(DGRAY); fn('normal', 7.5);
@@ -571,11 +571,11 @@ export default function CrowsEyeTab({
       const CPAD = 16, HALF = CW / 2 - 8;
       const nameW = wrap(report.clientName || '\u2014', HALF);
       const addrW = report.address ? wrap(report.address, HALF) : [];
-      const ssidW = report.ssid ? wrap(`SSID: ${report.ssid}`, HALF) : [];
+      const ssidW = report.ssid ? wrap(`WiFi Network: ${report.ssid}`, HALF) : [];
       const rightRows: Array<[string, string]> = [
         ['REPORT', report.reportId],
         ['DATE', dateStr],
-        ['PRODUCT', report.product || 'Verdict'],
+        ['PRODUCT', report.product || 'WiFi Health Report'],
       ];
       let leftColH = th(nameW.length, 13) + 4;
       if (addrW.length) leftColH += th(addrW.length, 9) + 4;
@@ -720,7 +720,7 @@ export default function CrowsEyeTab({
       sf(NAVY); doc.roundedRect(ML, y, CW, CALLOUT_H, 5, 5, 'F');
       sd(TEAL); doc.setLineWidth(0.5); doc.roundedRect(ML, y, CW, CALLOUT_H, 5, 5, 'S');
       sd(TEAL); doc.setLineWidth(3); doc.line(ML, y + 5, ML, y + CALLOUT_H - 5);
-      st(CYAN); fn('bold', 7); txt('QUESTIONS ABOUT THIS VERDICT?', ML + 10, y + 14, 7);
+      st(CYAN); fn('bold', 7); txt('QUESTIONS ABOUT THIS REPORT?', ML + 10, y + 14, 7);
       st(WHITE); fn('normal', 7.5);
       txt('Have questions? Open the Ask Corvus tab in your dashboard.', ML + 10, y + 26, 7.5);
       txt('Corvus has full context on this report and can answer any follow-up', ML + 10, y + 37, 7.5);
@@ -767,7 +767,7 @@ export default function CrowsEyeTab({
 
       const safeName = (report.clientName || 'Client').replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, ' ');
       const fileDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-      doc.save(`Corvus\u2019 Verdict - ${safeName} - ${fileDate}.pdf`);
+      doc.save(`WiFi Health Report - ${safeName} - ${fileDate}.pdf`);
     } finally {
       setPdfGenerating(false);
     }
@@ -803,17 +803,17 @@ export default function CrowsEyeTab({
         alignItems: 'center',
         gap: 10,
         background: '#0D1520',
-        border: `1px solid ${file ? 'rgba(0,194,199,0.4)' : 'rgba(255,255,255,0.12)'}`,
+        border: `1px solid ${file ? 'rgba(34,214,220,0.4)' : 'rgba(255,255,255,0.12)'}`,
         borderRadius: 8,
         padding: '8px 12px',
       }}>
         <label style={{
           display: 'inline-block',
-          background: 'rgba(0,194,199,0.12)',
-          border: '1px solid rgba(0,194,199,0.3)',
+          background: 'rgba(34,214,220,0.12)',
+          border: '1px solid rgba(34,214,220,0.3)',
           borderRadius: 6,
           padding: '5px 12px',
-          color: '#00C2C7',
+          color: '#22D6DC',
           fontFamily: 'monospace',
           fontSize: '0.7rem',
           cursor: 'pointer',
@@ -829,7 +829,7 @@ export default function CrowsEyeTab({
           />
         </label>
         <span style={{
-          color: file ? '#00C2C7' : 'rgba(244,246,248,0.35)',
+          color: file ? '#22D6DC' : 'rgba(244,246,248,0.35)',
           fontFamily: 'monospace',
           fontSize: '0.75rem',
           overflow: 'hidden',
@@ -875,8 +875,8 @@ export default function CrowsEyeTab({
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
               padding: '8px 16px', fontSize: '13px', fontFamily: 'Share Tech Mono, monospace',
-              letterSpacing: '0.05em', color: activeTab === tab.id ? '#00C2C7' : '#888',
-              borderBottom: activeTab === tab.id ? '2px solid #00C2C7' : '2px solid transparent',
+              letterSpacing: '0.05em', color: activeTab === tab.id ? '#22D6DC' : '#888',
+              borderBottom: activeTab === tab.id ? '2px solid #22D6DC' : '2px solid transparent',
               marginBottom: '-1px', transition: 'all 0.15s',
             }}
           >
@@ -894,8 +894,8 @@ export default function CrowsEyeTab({
 
       {/* Credits display */}
       <div style={{
-        background: isVIP ? 'rgba(184,146,42,0.06)' : 'rgba(0,194,199,0.04)',
-        border: isVIP ? '1px solid rgba(184,146,42,0.2)' : '1px solid rgba(0,194,199,0.15)',
+        background: isVIP ? 'rgba(216,172,50,0.06)' : 'rgba(34,214,220,0.04)',
+        border: isVIP ? '1px solid rgba(216,172,50,0.2)' : '1px solid rgba(34,214,220,0.15)',
         borderRadius: 10,
         padding: '16px 20px',
         marginBottom: 24,
@@ -909,7 +909,7 @@ export default function CrowsEyeTab({
           <div style={{
             fontFamily: "'Share Tech Mono', monospace",
             fontSize: '3rem',
-            color: isVIP ? '#B8922A' : '#00C2C7',
+            color: isVIP ? '#D8AC32' : '#22D6DC',
             lineHeight: 1,
             fontWeight: 700,
           }}>
@@ -923,7 +923,7 @@ export default function CrowsEyeTab({
             textTransform: 'uppercase',
             marginTop: 4,
           }}>
-            {mode === 'verdict' ? 'Verdict Credits' : `Reckoning Credits (${size})`}
+            {mode === 'verdict' ? 'WiFi Health Report Credits' : `Whole-Home Survey Credits (${size})`}
           </div>
         </div>
 
@@ -934,7 +934,7 @@ export default function CrowsEyeTab({
                 <div style={{
                   fontFamily: "'Share Tech Mono', monospace",
                   fontSize: '1.4rem',
-                  color: reckoningCredits[sz] > 0 ? '#00C2C7' : 'rgba(244,246,248,0.3)',
+                  color: reckoningCredits[sz] > 0 ? '#22D6DC' : 'rgba(244,246,248,0.3)',
                   fontWeight: 700,
                   lineHeight: 1,
                 }}>
@@ -959,7 +959,7 @@ export default function CrowsEyeTab({
           <div style={{
             fontFamily: 'monospace',
             fontSize: '0.6rem',
-            color: '#B8922A',
+            color: '#D8AC32',
             letterSpacing: '0.12em',
             textTransform: 'uppercase',
           }}>
@@ -974,7 +974,7 @@ export default function CrowsEyeTab({
         gap: 8,
         marginBottom: 20,
         background: 'rgba(13,21,32,0.6)',
-        border: '1px solid rgba(0,194,199,0.15)',
+        border: '1px solid rgba(34,214,220,0.15)',
         borderRadius: 10,
         padding: 6,
       }}>
@@ -986,9 +986,9 @@ export default function CrowsEyeTab({
               flex: 1,
               padding: 10,
               borderRadius: 7,
-              border: mode === m ? '1px solid rgba(0,194,199,0.3)' : 'none',
-              background: mode === m ? 'rgba(0,194,199,0.15)' : 'transparent',
-              color: mode === m ? '#00C2C7' : 'rgba(244,246,248,0.5)',
+              border: mode === m ? '1px solid rgba(34,214,220,0.3)' : 'none',
+              background: mode === m ? 'rgba(34,214,220,0.15)' : 'transparent',
+              color: mode === m ? '#22D6DC' : 'rgba(244,246,248,0.5)',
               fontFamily: 'monospace',
               fontSize: '0.75rem',
               cursor: 'pointer',
@@ -997,7 +997,7 @@ export default function CrowsEyeTab({
               transition: 'all 0.15s ease',
             }}
           >
-            {m === 'verdict' ? 'Verdict' : 'Reckoning'}
+            {m === 'verdict' ? 'WiFi Health Report' : 'Whole-Home Survey'}
           </button>
         ))}
       </div>
@@ -1005,7 +1005,7 @@ export default function CrowsEyeTab({
       {/* Reckoning size selector */}
       {mode === 'reckoning' && (
         <div style={{ marginBottom: 20 }}>
-          <div style={labelStyle}>Reckoning Size</div>
+          <div style={labelStyle}>Whole-Home Survey Size</div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {([
               { key: 'small', label: 'Small', desc: '1–5 locations', always: true },
@@ -1025,15 +1025,15 @@ export default function CrowsEyeTab({
                     padding: '10px 8px',
                     borderRadius: 8,
                     border: isSelected
-                      ? '1px solid rgba(0,194,199,0.5)'
+                      ? '1px solid rgba(34,214,220,0.5)'
                       : '1px solid rgba(255,255,255,0.1)',
                     background: isSelected
-                      ? 'rgba(0,194,199,0.12)'
+                      ? 'rgba(34,214,220,0.12)'
                       : isAvailable
                         ? 'rgba(13,21,32,0.6)'
                         : 'rgba(13,21,32,0.3)',
                     color: isSelected
-                      ? '#00C2C7'
+                      ? '#22D6DC'
                       : isAvailable
                         ? 'rgba(244,246,248,0.7)'
                         : 'rgba(244,246,248,0.2)',
@@ -1056,8 +1056,8 @@ export default function CrowsEyeTab({
           {size === 'pro' && (
             <div style={{
               marginTop: 10,
-              background: 'rgba(184,146,42,0.06)',
-              border: '1px solid rgba(184,146,42,0.2)',
+              background: 'rgba(216,172,50,0.06)',
+              border: '1px solid rgba(216,172,50,0.2)',
               borderRadius: 8,
               padding: '10px 14px',
               color: 'rgba(244,246,248,0.6)',
@@ -1065,7 +1065,7 @@ export default function CrowsEyeTab({
               fontSize: '0.7rem',
               lineHeight: 1.5,
             }}>
-              Pro Certified Reckoning includes professional review and certification by an OCWS-certified technician.
+              Pro Certified Whole-Home Survey includes professional review and certification by an OCWS-certified technician.
               An OCWS team member will contact you to schedule your Pro-level assessment.
             </div>
           )}
@@ -1074,8 +1074,8 @@ export default function CrowsEyeTab({
           {(isVIP || ['flock', 'murder', 'vip', 'full'].includes(tier)) && size !== 'pro' && (
             <div style={{
               marginTop: 12,
-              background: isHybrid ? 'rgba(0,194,199,0.08)' : 'rgba(13,21,32,0.4)',
-              border: isHybrid ? '1px solid rgba(0,194,199,0.3)' : '1px solid rgba(255,255,255,0.08)',
+              background: isHybrid ? 'rgba(34,214,220,0.08)' : 'rgba(13,21,32,0.4)',
+              border: isHybrid ? '1px solid rgba(34,214,220,0.3)' : '1px solid rgba(255,255,255,0.08)',
               borderRadius: 8,
               padding: '10px 14px',
               display: 'flex',
@@ -1087,8 +1087,8 @@ export default function CrowsEyeTab({
             onClick={() => setIsHybrid(h => !h)}
             >
               <div>
-                <div style={{ fontFamily: 'monospace', fontSize: '0.7rem', color: isHybrid ? '#00C2C7' : 'rgba(244,246,248,0.7)', fontWeight: 700, letterSpacing: '0.06em' }}>
-                  Hybrid Reckoning
+                <div style={{ fontFamily: 'monospace', fontSize: '0.7rem', color: isHybrid ? '#22D6DC' : 'rgba(244,246,248,0.7)', fontWeight: 700, letterSpacing: '0.06em' }}>
+                  Hybrid Whole-Home Survey
                 </div>
                 <div style={{ fontFamily: 'monospace', fontSize: '0.6rem', color: '#888', marginTop: 2 }}>
                   Cross-structure analysis — multiple buildings, mixed environments
@@ -1098,7 +1098,7 @@ export default function CrowsEyeTab({
                 width: 36,
                 height: 20,
                 borderRadius: 10,
-                background: isHybrid ? '#00C2C7' : 'rgba(255,255,255,0.12)',
+                background: isHybrid ? '#22D6DC' : 'rgba(255,255,255,0.12)',
                 position: 'relative',
                 transition: 'background 0.2s',
                 flexShrink: 0,
@@ -1129,7 +1129,7 @@ export default function CrowsEyeTab({
             gap: 8,
             background: 'none',
             border: 'none',
-            color: 'rgba(0,194,199,0.7)',
+            color: 'rgba(34,214,220,0.7)',
             fontFamily: 'monospace',
             fontSize: '0.7rem',
             cursor: 'pointer',
@@ -1146,7 +1146,7 @@ export default function CrowsEyeTab({
         </button>
 
         {showInstructions && (
-          <div style={{ marginTop: 10, background: 'rgba(13,21,32,0.7)', border: '1px solid rgba(0,194,199,0.15)', borderRadius: 8, padding: '14px 16px' }}>
+          <div style={{ marginTop: 10, background: 'rgba(13,21,32,0.7)', border: '1px solid rgba(34,214,220,0.15)', borderRadius: 8, padding: '14px 16px' }}>
             <p style={{ color: 'rgba(244,246,248,0.7)', fontFamily: 'monospace', fontSize: '0.72rem', lineHeight: 1.7, margin: '0 0 12px' }}>
               Download Crow&apos;s Eye on Android to scan your network. The app handles everything automatically.
             </p>
@@ -1254,15 +1254,15 @@ export default function CrowsEyeTab({
             </div>
 
             <CorvusTooltip tip="Enter the exact network name your client connects to. Corvus uses this to identify your router's make and model." position="right">
-              <label style={labelStyle}>Client's Wi-Fi Network Name (SSID)</label>
+              <label style={labelStyle}>Client's WiFi Network Name</label>
             </CorvusTooltip>
             {lockedSSID && (
-              <div style={{ fontSize: '11px', color: '#00C2C7', marginBottom: '4px', fontFamily: 'Share Tech Mono, monospace' }}>
+              <div style={{ fontSize: '11px', color: '#22D6DC', marginBottom: '4px', fontFamily: 'Share Tech Mono, monospace' }}>
                 🔒 Network locked by team lead: {lockedSSID}
               </div>
             )}
             <input
-              style={{ ...inputStyle, ...(lockedSSID ? { opacity: 0.7, cursor: 'not-allowed', borderColor: 'rgba(0,194,199,0.4)' } : {}) }}
+              style={{ ...inputStyle, ...(lockedSSID ? { opacity: 0.7, cursor: 'not-allowed', borderColor: 'rgba(34,214,220,0.4)' } : {}) }}
               type="text"
               placeholder="e.g. Smith_Home_WiFi or NETGEAR_5G"
               value={ssid}
@@ -1296,7 +1296,7 @@ export default function CrowsEyeTab({
                 style={{
                   width: '100%',
                   background: 'rgba(13,21,32,0.8)',
-                  border: '1px solid rgba(0,194,199,0.15)',
+                  border: '1px solid rgba(34,214,220,0.15)',
                   borderRadius: 8,
                   padding: '12px 14px',
                   color: '#F4F6F8',
@@ -1309,8 +1309,8 @@ export default function CrowsEyeTab({
                   outline: 'none',
                   transition: 'border-color 0.2s',
                 }}
-                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(0,194,199,0.4)'; }}
-                onBlur={e => { e.currentTarget.style.borderColor = 'rgba(0,194,199,0.15)'; }}
+                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(34,214,220,0.4)'; }}
+                onBlur={e => { e.currentTarget.style.borderColor = 'rgba(34,214,220,0.15)'; }}
               />
               <div style={{ fontSize: '0.65rem', color: '#888888', marginTop: 4, fontStyle: 'italic' }}>
                 The more detail you provide, the more targeted Corvus&rsquo; analysis will be.
@@ -1364,12 +1364,12 @@ export default function CrowsEyeTab({
                     padding: '7px 4px',
                     borderRadius: 7,
                     border: comfortLevel === lv.n
-                      ? '1px solid rgba(0,194,199,0.5)'
+                      ? '1px solid rgba(34,214,220,0.5)'
                       : '1px solid rgba(255,255,255,0.1)',
                     background: comfortLevel === lv.n
-                      ? 'rgba(0,194,199,0.15)'
+                      ? 'rgba(34,214,220,0.15)'
                       : 'rgba(13,21,32,0.6)',
-                    color: comfortLevel === lv.n ? '#00C2C7' : 'rgba(244,246,248,0.5)',
+                    color: comfortLevel === lv.n ? '#22D6DC' : 'rgba(244,246,248,0.5)',
                     fontFamily: 'monospace',
                     fontSize: '0.65rem',
                     cursor: 'pointer',
@@ -1404,7 +1404,7 @@ export default function CrowsEyeTab({
               </div>
               <CorvusTooltip tip="Required. Use Crow's Eye on Android to scan, then upload the scan data here." position="right">
                 <FileUploadSlot
-                  label="RF Scan Data (required)"
+                  label="WiFi Scan Data (required)"
                   required
                   file={signalListFile}
                   onChange={setSignalListFile}
@@ -1431,7 +1431,7 @@ export default function CrowsEyeTab({
           {isMultiLocation && (
             <div style={{ marginBottom: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <div style={{ fontFamily: 'monospace', fontSize: '0.6rem', color: '#B8922A', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+                <div style={{ fontFamily: 'monospace', fontSize: '0.6rem', color: '#D8AC32', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
                   Scan Locations ({reckoningLocations.length} of {getMaxLocations()})
                 </div>
                 <button
@@ -1439,10 +1439,10 @@ export default function CrowsEyeTab({
                   disabled={reckoningLocations.length >= getMaxLocations()}
                   style={{
                     padding: '5px 14px',
-                    background: 'rgba(0,194,199,0.08)',
-                    border: '1px solid rgba(0,194,199,0.2)',
+                    background: 'rgba(34,214,220,0.08)',
+                    border: '1px solid rgba(34,214,220,0.2)',
                     borderRadius: 6,
-                    color: reckoningLocations.length >= getMaxLocations() ? 'rgba(0,194,199,0.3)' : '#00C2C7',
+                    color: reckoningLocations.length >= getMaxLocations() ? 'rgba(34,214,220,0.3)' : '#22D6DC',
                     fontFamily: 'monospace',
                     fontSize: '0.7rem',
                     cursor: reckoningLocations.length >= getMaxLocations() ? 'not-allowed' : 'pointer',
@@ -1455,13 +1455,13 @@ export default function CrowsEyeTab({
               {reckoningLocations.map((loc, index) => (
                 <div key={loc.id} style={{
                   background: 'rgba(13,21,32,0.5)',
-                  border: '1px solid rgba(0,194,199,0.15)',
+                  border: '1px solid rgba(34,214,220,0.15)',
                   borderRadius: 10,
                   padding: '14px 16px',
                   marginBottom: 12,
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                    <div style={{ fontFamily: 'monospace', fontSize: '0.6rem', color: '#00C2C7', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                    <div style={{ fontFamily: 'monospace', fontSize: '0.6rem', color: '#22D6DC', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
                       Location {index + 1}
                     </div>
                     {reckoningLocations.length > 1 && (
@@ -1482,7 +1482,7 @@ export default function CrowsEyeTab({
                     autoComplete="off"
                   />
                   <FileUploadSlot
-                    label="RF Scan Data (required)"
+                    label="WiFi Scan Data (required)"
                     required
                     file={loc.signalListFile}
                     onChange={f => updateLocation(loc.id, 'signalListFile', f)}
@@ -1507,7 +1507,7 @@ export default function CrowsEyeTab({
                 {reckoningLocations.length < getMaxLocations() && (
                   <button
                     onClick={addLocation}
-                    style={{ background: 'transparent', border: '1px solid rgba(0,194,199,0.15)', borderRadius: 6, color: '#888', fontFamily: 'monospace', fontSize: '0.6rem', padding: '4px 12px', cursor: 'pointer' }}
+                    style={{ background: 'transparent', border: '1px solid rgba(34,214,220,0.15)', borderRadius: 6, color: '#888', fontFamily: 'monospace', fontSize: '0.6rem', padding: '4px 12px', cursor: 'pointer' }}
                   >
                     + Add another location
                   </button>
@@ -1541,11 +1541,11 @@ export default function CrowsEyeTab({
                 width: '100%',
                 padding: '14px 0',
                 background: (!clientName.trim() || (isMultiLocation ? reckoningLocations.filter(l => l.signalListFile).length === 0 : !signalListFile))
-                  ? 'rgba(0,194,199,0.15)'
-                  : 'linear-gradient(135deg, #00C2C7 0%, #00A8B0 100%)',
+                  ? 'rgba(34,214,220,0.15)'
+                  : 'linear-gradient(135deg, #22D6DC 0%, #00A8B0 100%)',
                 border: 'none',
                 borderRadius: 10,
-                color: (!clientName.trim() || (isMultiLocation ? reckoningLocations.filter(l => l.signalListFile).length === 0 : !signalListFile)) ? 'rgba(0,194,199,0.4)' : '#0D1520',
+                color: (!clientName.trim() || (isMultiLocation ? reckoningLocations.filter(l => l.signalListFile).length === 0 : !signalListFile)) ? 'rgba(34,214,220,0.4)' : '#0D1520',
                 fontFamily: 'monospace',
                 fontSize: '0.85rem',
                 fontWeight: 700,
@@ -1554,17 +1554,17 @@ export default function CrowsEyeTab({
                 textTransform: 'uppercase',
               }}
             >
-              {mode === 'verdict' ? '▶ Run Verdict Scan' : `▶ Run Reckoning (${size.charAt(0).toUpperCase() + size.slice(1)})`}
+              {mode === 'verdict' ? '▶ Run WiFi Health Report' : `▶ Run Whole-Home Survey (${size.charAt(0).toUpperCase() + size.slice(1)})`}
             </button>
           )}
 
           {size === 'pro' && (
             <button
-              onClick={() => window.location.href = 'mailto:info@oldcrowswireless.com?subject=Pro Certified Reckoning Request'}
+              onClick={() => window.location.href = 'mailto:info@oldcrowswireless.com?subject=Pro Certified Whole-Home Survey Request'}
               style={{
                 width: '100%',
                 padding: '14px 0',
-                background: 'linear-gradient(135deg, #B8922A 0%, #9A7520 100%)',
+                background: 'linear-gradient(135deg, #D8AC32 0%, #9A7520 100%)',
                 border: 'none',
                 borderRadius: 10,
                 color: '#fff',
@@ -1584,10 +1584,10 @@ export default function CrowsEyeTab({
 
       {/* Processing panel */}
       {isProcessing && (
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'rgba(13,21,32,0.8)', border: '1px solid rgba(0,194,199,0.25)', borderRadius: '12px', padding: '20px', margin: '20px 0' }}>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'rgba(13,21,32,0.8)', border: '1px solid rgba(34,214,220,0.25)', borderRadius: '12px', padding: '20px', margin: '20px 0' }}>
           <img src="/corvus_still.png" style={{ width: '60px', height: '60px', borderRadius: '50%', flexShrink: 0 }} alt="Corvus" />
           <div>
-            <div style={{ color: '#00C2C7', fontFamily: 'monospace', fontSize: '0.6rem', letterSpacing: '0.2em', marginBottom: '4px' }}>CORVUS · ANALYZING</div>
+            <div style={{ color: '#22D6DC', fontFamily: 'monospace', fontSize: '0.6rem', letterSpacing: '0.2em', marginBottom: '4px' }}>CORVUS · ANALYZING</div>
             <div style={{ color: '#F4F6F8', fontSize: '0.85rem', lineHeight: 1.5 }}>{processingLine}</div>
           </div>
         </div>
@@ -1598,8 +1598,8 @@ export default function CrowsEyeTab({
         <div>
           {/* Report header */}
           <div style={{
-            background: 'rgba(0,194,199,0.06)',
-            border: '1px solid rgba(0,194,199,0.2)',
+            background: 'rgba(34,214,220,0.06)',
+            border: '1px solid rgba(34,214,220,0.2)',
             borderRadius: 12,
             padding: '20px',
             marginBottom: 20,
@@ -1617,14 +1617,14 @@ export default function CrowsEyeTab({
             <div style={{
               fontFamily: "'Share Tech Mono', monospace",
               fontSize: '0.7rem',
-              color: 'rgba(0,194,199,0.5)',
+              color: 'rgba(34,214,220,0.5)',
               marginBottom: 12,
             }}>
               {report.reportId}
             </div>
             <div style={{ fontSize: '0.95rem', color: '#F4F6F8', marginBottom: 4 }}>
               <strong>{report.clientName}</strong>
-              {report.ssid && <span style={{ color: '#00C2C7', marginLeft: 8 }}>· {report.ssid}</span>}
+              {report.ssid && <span style={{ color: '#22D6DC', marginLeft: 8 }}>· {report.ssid}</span>}
             </div>
             {report.address && (
               <div style={{ fontSize: '0.75rem', color: 'rgba(244,246,248,0.5)', marginBottom: 12 }}>
@@ -1669,8 +1669,8 @@ export default function CrowsEyeTab({
               <div style={{
                 marginTop: 16,
                 padding: '12px 14px',
-                background: 'rgba(0,194,199,0.04)',
-                border: '1px solid rgba(0,194,199,0.1)',
+                background: 'rgba(34,214,220,0.04)',
+                border: '1px solid rgba(34,214,220,0.1)',
                 borderRadius: 8,
                 color: 'rgba(244,246,248,0.85)',
                 fontStyle: 'italic',
@@ -1737,12 +1737,12 @@ export default function CrowsEyeTab({
                   {finding.fix_summary && (
                     <div style={{
                       background: 'rgba(0,0,0,0.2)',
-                      border: '1px solid rgba(0,194,199,0.15)',
+                      border: '1px solid rgba(34,214,220,0.15)',
                       borderRadius: 6,
                       padding: '8px 10px',
                       marginBottom: 8,
                     }}>
-                      <span style={{ color: '#00C2C7', fontFamily: 'monospace', fontSize: '0.6rem', letterSpacing: '0.1em' }}>FIX: </span>
+                      <span style={{ color: '#22D6DC', fontFamily: 'monospace', fontSize: '0.6rem', letterSpacing: '0.1em' }}>FIX: </span>
                       <span style={{ color: 'rgba(244,246,248,0.85)', fontSize: '0.78rem' }}>{finding.fix_summary}</span>
                     </div>
                   )}
@@ -1751,7 +1751,7 @@ export default function CrowsEyeTab({
                     <details style={{ marginTop: 6 }}>
                       <summary style={{
                         cursor: 'pointer',
-                        color: 'rgba(0,194,199,0.7)',
+                        color: 'rgba(34,214,220,0.7)',
                         fontFamily: 'monospace',
                         fontSize: '0.65rem',
                         letterSpacing: '0.08em',
@@ -1834,7 +1834,7 @@ export default function CrowsEyeTab({
             gap: '16px',
             alignItems: 'flex-start',
             background: 'rgba(13,21,32,0.8)',
-            border: '1px solid rgba(0,194,199,0.25)',
+            border: '1px solid rgba(34,214,220,0.25)',
             borderRadius: '12px',
             padding: '18px 20px',
             marginBottom: 20,
@@ -1845,7 +1845,7 @@ export default function CrowsEyeTab({
               alt="Corvus"
             />
             <div>
-              <div style={{ color: '#00C2C7', fontFamily: 'monospace', fontSize: '0.6rem', letterSpacing: '0.2em', marginBottom: 4 }}>
+              <div style={{ color: '#22D6DC', fontFamily: 'monospace', fontSize: '0.6rem', letterSpacing: '0.2em', marginBottom: 4 }}>
                 CORVUS · AVAILABLE
               </div>
               <div style={{ color: '#F4F6F8', fontSize: '0.82rem', lineHeight: 1.5, marginBottom: 10 }}>
@@ -1855,11 +1855,11 @@ export default function CrowsEyeTab({
                 <button
                   onClick={handleAskCorvus}
                   style={{
-                    background: 'rgba(0,194,199,0.15)',
-                    border: '1px solid rgba(0,194,199,0.3)',
+                    background: 'rgba(34,214,220,0.15)',
+                    border: '1px solid rgba(34,214,220,0.3)',
                     borderRadius: 7,
                     padding: '8px 14px',
-                    color: '#00C2C7',
+                    color: '#22D6DC',
                     fontFamily: 'monospace',
                     fontSize: '0.7rem',
                     cursor: 'pointer',
@@ -1880,10 +1880,10 @@ export default function CrowsEyeTab({
               style={{
                 flex: '1 1 160px',
                 padding: '11px 16px',
-                background: 'rgba(0,194,199,0.12)',
-                border: '1px solid rgba(0,194,199,0.3)',
+                background: 'rgba(34,214,220,0.12)',
+                border: '1px solid rgba(34,214,220,0.3)',
                 borderRadius: 9,
-                color: '#00C2C7',
+                color: '#22D6DC',
                 fontFamily: 'monospace',
                 fontSize: '0.75rem',
                 cursor: pdfGenerating ? 'default' : 'pointer',
@@ -1935,7 +1935,7 @@ export default function CrowsEyeTab({
           {isOneTimePurchaser && (
             <div style={{
               background: 'rgba(13,21,32,0.9)',
-              border: '1px solid rgba(0,194,199,0.25)',
+              border: '1px solid rgba(34,214,220,0.25)',
               borderRadius: 12,
               padding: 24,
               marginTop: 24,
@@ -1944,8 +1944,8 @@ export default function CrowsEyeTab({
                 display: 'flex',
                 gap: 12,
                 alignItems: 'flex-start',
-                background: 'rgba(0,194,199,0.05)',
-                border: '1px solid rgba(0,194,199,0.15)',
+                background: 'rgba(34,214,220,0.05)',
+                border: '1px solid rgba(34,214,220,0.15)',
                 borderRadius: 8,
                 padding: 16,
                 marginBottom: 20,
@@ -1956,11 +1956,11 @@ export default function CrowsEyeTab({
                   alt="Corvus"
                 />
                 <div>
-                  <div style={{ color: '#00C2C7', fontFamily: 'monospace', fontSize: '0.6rem', letterSpacing: '0.15em', marginBottom: 4 }}>
+                  <div style={{ color: '#22D6DC', fontFamily: 'monospace', fontSize: '0.6rem', letterSpacing: '0.15em', marginBottom: 4 }}>
                     CORVUS
                   </div>
                   <div style={{ color: 'rgba(244,246,248,0.85)', fontSize: '0.8rem', lineHeight: 1.6 }}>
-                    You just ran your first scan. Subscribe and get regular access — monthly Verdicts, Reckonings, and direct access to me whenever you need it.
+                    You just ran your first scan. Subscribe and get regular access — monthly WiFi Health Reports, Whole-Home Surveys, and direct access to me whenever you need it.
                   </div>
                 </div>
               </div>
@@ -1971,15 +1971,15 @@ export default function CrowsEyeTab({
                 gap: 12,
               }}>
                 {[
-                  { tier: 'nest', name: 'Nest', price: '$29/mo', features: ['3 Verdicts/mo', '1 Small Reckoning', '1 seat'] },
-                  { tier: 'flock', name: 'Flock', price: '$79/mo', features: ['15 Verdicts/mo', 'Standard + Commercial', '5 seats'], featured: true },
-                  { tier: 'murder', name: 'Murder', price: '$199/mo', features: ['Unlimited Verdicts', 'All Reckonings', '15 seats'] },
+                  { tier: 'nest', name: 'Nest', price: '$29/mo', features: ['3 WiFi Health Reports/mo', '1 Small Whole-Home Survey', '1 seat'] },
+                  { tier: 'flock', name: 'Flock', price: '$79/mo', features: ['15 WiFi Health Reports/mo', 'Standard + Commercial', '5 seats'], featured: true },
+                  { tier: 'murder', name: 'Murder', price: '$199/mo', features: ['Unlimited WiFi Health Reports', 'All Whole-Home Surveys', '15 seats'] },
                 ].map(plan => (
                   <div
                     key={plan.tier}
                     style={{
-                      background: plan.featured ? 'rgba(0,194,199,0.05)' : '#1A2332',
-                      border: plan.featured ? '1px solid rgba(0,194,199,0.35)' : '1px solid rgba(255,255,255,0.08)',
+                      background: plan.featured ? 'rgba(34,214,220,0.05)' : '#1A2332',
+                      border: plan.featured ? '1px solid rgba(34,214,220,0.35)' : '1px solid rgba(255,255,255,0.08)',
                       borderRadius: 10,
                       padding: 16,
                       display: 'flex',
@@ -1991,7 +1991,7 @@ export default function CrowsEyeTab({
                       <div style={{
                         fontFamily: 'monospace',
                         fontSize: '0.5rem',
-                        color: '#00C2C7',
+                        color: '#22D6DC',
                         letterSpacing: '0.15em',
                         textTransform: 'uppercase',
                       }}>
@@ -2001,7 +2001,7 @@ export default function CrowsEyeTab({
                     <div style={{ color: '#F4F6F8', fontFamily: 'monospace', fontWeight: 700, fontSize: '0.9rem' }}>
                       {plan.name}
                     </div>
-                    <div style={{ color: plan.featured ? '#00C2C7' : 'rgba(244,246,248,0.6)', fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                    <div style={{ color: plan.featured ? '#22D6DC' : 'rgba(244,246,248,0.6)', fontFamily: 'monospace', fontSize: '0.8rem' }}>
                       {plan.price}
                     </div>
                     <ul style={{ margin: 0, paddingLeft: 14, color: 'rgba(244,246,248,0.6)', fontSize: '0.7rem', lineHeight: 1.8 }}>
@@ -2017,7 +2017,7 @@ export default function CrowsEyeTab({
                       style={{
                         width: '100%',
                         padding: '10px',
-                        background: '#00C2C7',
+                        background: '#22D6DC',
                         color: '#0D1520',
                         border: 'none',
                         borderRadius: 8,
@@ -2040,7 +2040,7 @@ export default function CrowsEyeTab({
           {isMonthlySubscriber && (
             <div style={{
               background: 'rgba(13,21,32,0.9)',
-              border: '1px solid rgba(184,146,42,0.2)',
+              border: '1px solid rgba(216,172,50,0.2)',
               borderRadius: 12,
               padding: 24,
               marginTop: 24,
@@ -2048,7 +2048,7 @@ export default function CrowsEyeTab({
               <div style={{
                 fontFamily: 'monospace',
                 fontSize: '0.6rem',
-                color: '#B8922A',
+                color: '#D8AC32',
                 letterSpacing: '0.2em',
                 textTransform: 'uppercase',
                 marginBottom: 12,
@@ -2067,10 +2067,10 @@ export default function CrowsEyeTab({
                 onClick={() => window.location.href = `/#pricing?annual=true&tier=${tier}`}
                 style={{
                   padding: '10px 20px',
-                  background: 'rgba(184,146,42,0.15)',
-                  border: '1px solid rgba(184,146,42,0.3)',
+                  background: 'rgba(216,172,50,0.15)',
+                  border: '1px solid rgba(216,172,50,0.3)',
                   borderRadius: 8,
-                  color: '#B8922A',
+                  color: '#D8AC32',
                   fontFamily: 'monospace',
                   fontSize: '0.75rem',
                   fontWeight: 700,

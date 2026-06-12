@@ -167,7 +167,7 @@ export default function CircuitBackground({ className }: { className?: string })
         const localT = (t + seg.phase) % 1
         const pulse = 0.5 + 0.5 * Math.sin(localT * Math.PI * 2)
         const alpha = seg.baseAlpha + pulse * 0.06
-        ctx.strokeStyle = `rgba(0,194,199,${alpha.toFixed(3)})`
+        ctx.strokeStyle = `rgba(34,214,220,${alpha.toFixed(3)})`
         ctx.beginPath()
         ctx.moveTo(seg.x1, seg.y1)
         ctx.lineTo(seg.x2, seg.y2)
@@ -180,7 +180,7 @@ export default function CircuitBackground({ className }: { className?: string })
         const pulse = 0.5 + 0.5 * Math.sin(localT * Math.PI * 2)
         const alpha = 0.08 + pulse * 0.10
         const radius = 1.8 + pulse * 0.8
-        ctx.fillStyle = `rgba(0,194,199,${alpha.toFixed(3)})`
+        ctx.fillStyle = `rgba(34,214,220,${alpha.toFixed(3)})`
         ctx.beginPath()
         ctx.arc(node.x, node.y, radius, 0, Math.PI * 2)
         ctx.fill()

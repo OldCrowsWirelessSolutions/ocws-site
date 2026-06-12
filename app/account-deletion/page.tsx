@@ -26,7 +26,7 @@ export default function AccountDeletionPage() {
         <div className="ocws-container max-w-2xl mx-auto">
           <p
             className="text-xs font-semibold uppercase tracking-widest mb-4"
-            style={{ color: "#00C2C7", letterSpacing: "0.18em", fontFamily: "'Share Tech Mono', monospace" }}
+            style={{ color: "#22D6DC", letterSpacing: "0.18em", fontFamily: "'Share Tech Mono', monospace" }}
           >
             Crow&rsquo;s Eye &middot; Account Management
           </p>
@@ -45,7 +45,7 @@ export default function AccountDeletionPage() {
           <div>
             <h2
               className="text-xl font-bold text-white mb-4 pb-3"
-              style={{ borderBottom: "1px solid rgba(0,194,199,0.2)" }}
+              style={{ borderBottom: "1px solid rgba(34,214,220,0.2)" }}
             >
               How to Request Account Deletion
             </h2>
@@ -54,12 +54,12 @@ export default function AccountDeletionPage() {
             </p>
             <div
               className="rounded-xl p-5 mb-4"
-              style={{ background: "#1A2332", border: "1px solid rgba(0,194,199,0.2)" }}
+              style={{ background: "#1A2332", border: "1px solid rgba(34,214,220,0.2)" }}
             >
               <p className="font-semibold text-white mb-1">Email</p>
               <a
                 href="mailto:joshua@oldcrowswireless.com?subject=Account%20Deletion%20Request"
-                style={{ color: "#00C2C7", fontSize: "1rem" }}
+                style={{ color: "#22D6DC", fontSize: "1rem" }}
               >
                 joshua@oldcrowswireless.com
               </a>
@@ -80,7 +80,7 @@ export default function AccountDeletionPage() {
           <div>
             <h2
               className="text-xl font-bold text-white mb-4 pb-3"
-              style={{ borderBottom: "1px solid rgba(0,194,199,0.2)" }}
+              style={{ borderBottom: "1px solid rgba(34,214,220,0.2)" }}
             >
               What Will Be Deleted
             </h2>
@@ -91,13 +91,13 @@ export default function AccountDeletionPage() {
             <ul className="space-y-2">
               {[
                 "Your account credentials and profile information",
-                "All scan history and Verdict reports",
+                "All scan history and WiFi Health Reports",
                 "Uploaded scan files and associated data",
                 "Talk to Corvus conversation history",
                 "Subscription and payment records (excluding records required for tax and legal compliance)",
               ].map((item) => (
                 <li key={item} className="flex gap-3 items-start">
-                  <span style={{ color: "#00C2C7", marginTop: "2px", flexShrink: 0 }}>✓</span>
+                  <span style={{ color: "#22D6DC", marginTop: "2px", flexShrink: 0 }}>✓</span>
                   <span>{item}</span>
                 </li>
               ))}
@@ -108,7 +108,7 @@ export default function AccountDeletionPage() {
           <div>
             <h2
               className="text-xl font-bold text-white mb-4 pb-3"
-              style={{ borderBottom: "1px solid rgba(0,194,199,0.2)" }}
+              style={{ borderBottom: "1px solid rgba(34,214,220,0.2)" }}
             >
               Data Retained After Deletion
             </h2>
@@ -124,7 +124,7 @@ export default function AccountDeletionPage() {
           <div>
             <h2
               className="text-xl font-bold text-white mb-4 pb-3"
-              style={{ borderBottom: "1px solid rgba(0,194,199,0.2)" }}
+              style={{ borderBottom: "1px solid rgba(34,214,220,0.2)" }}
             >
               Timeline
             </h2>
@@ -140,7 +140,7 @@ export default function AccountDeletionPage() {
                   className="flex gap-4 items-start rounded-lg px-4 py-3"
                   style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
                 >
-                  <span style={{ color: "#00C2C7", fontWeight: 700, flexShrink: 0, minWidth: "160px" }}>{step}</span>
+                  <span style={{ color: "#22D6DC", fontWeight: 700, flexShrink: 0, minWidth: "160px" }}>{step}</span>
                   <span style={{ color: "#8AAABB" }}>{desc}</span>
                 </div>
               ))}
@@ -150,7 +150,7 @@ export default function AccountDeletionPage() {
           {/* Contact */}
           <div
             className="rounded-xl p-6"
-            style={{ background: "#1A2332", border: "1px solid rgba(0,194,199,0.15)" }}
+            style={{ background: "#1A2332", border: "1px solid rgba(34,214,220,0.15)" }}
           >
             <p className="font-semibold text-white mb-1">Questions?</p>
             <p className="text-sm mb-3" style={{ color: "#7A9AAB" }}>
@@ -158,7 +158,7 @@ export default function AccountDeletionPage() {
             </p>
             <a
               href="mailto:joshua@oldcrowswireless.com"
-              style={{ color: "#00C2C7" }}
+              style={{ color: "#22D6DC" }}
             >
               joshua@oldcrowswireless.com
             </a>
@@ -166,7 +166,7 @@ export default function AccountDeletionPage() {
 
           {/* Back link */}
           <div>
-            <Link href="/privacy" style={{ color: "#00C2C7", fontSize: "0.875rem" }}>
+            <Link href="/privacy" style={{ color: "#22D6DC", fontSize: "0.875rem" }}>
               ← View Privacy Policy
             </Link>
           </div>

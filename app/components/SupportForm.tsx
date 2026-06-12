@@ -10,8 +10,8 @@ type Props = {
 }
 
 const PRODUCTS = [
-  { value: 'corvus_verdict', label: "Corvus' Verdict" },
-  { value: 'full_reckoning', label: 'Full Reckoning' },
+  { value: 'corvus_verdict', label: 'WiFi Health Report' },
+  { value: 'full_reckoning', label: 'Whole-Home Survey' },
   { value: 'dashboard', label: 'Dashboard' },
   { value: 'subscription', label: 'Subscription / Billing' },
   { value: 'pdf', label: 'PDF Report' },
@@ -61,7 +61,7 @@ export default function SupportForm({ authKey, tier, submitterEmail = '', submit
       <h3 style={s.successTitle}>Ticket Submitted</h3>
       <p style={s.successId}>{ticketId}</p>
       <p style={s.successSub}>
-        Priority: <span style={{ color: priority === 'critical' ? '#e05555' : priority === 'high' ? '#B8922A' : '#00C2C7' }}>{priority?.toUpperCase()}</span>
+        Priority: <span style={{ color: priority === 'critical' ? '#e05555' : priority === 'high' ? '#D8AC32' : '#22D6DC' }}>{priority?.toUpperCase()}</span>
       </p>
       <p style={s.successNote}>You'll receive a response at <strong>{email}</strong>. Critical tickets are addressed within 4 hours.</p>
       <button style={s.resetBtn} onClick={() => { setSubmitted(false); setDescription(''); setPriority('') }}>Submit Another</button>
@@ -114,17 +114,17 @@ const s: Record<string, React.CSSProperties> = {
   form: { display: 'flex', flexDirection: 'column', gap: '1rem' },
   field: { display: 'flex', flexDirection: 'column', gap: '0.4rem' },
   label: { color: '#888', fontSize: '0.78rem', fontFamily: 'Share Tech Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.08em' },
-  input: { background: '#0D1520', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '8px', padding: '10px 12px', color: '#F4F6F8', fontSize: '0.9rem', outline: 'none' },
-  select: { background: '#0D1520', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '8px', padding: '10px 12px', color: '#F4F6F8', fontSize: '0.9rem', outline: 'none' },
-  textarea: { background: '#0D1520', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '8px', padding: '10px 12px', color: '#F4F6F8', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit' },
+  input: { background: '#0D1520', border: '1px solid rgba(34,214,220,0.2)', borderRadius: '8px', padding: '10px 12px', color: '#F4F6F8', fontSize: '0.9rem', outline: 'none' },
+  select: { background: '#0D1520', border: '1px solid rgba(34,214,220,0.2)', borderRadius: '8px', padding: '10px 12px', color: '#F4F6F8', fontSize: '0.9rem', outline: 'none' },
+  textarea: { background: '#0D1520', border: '1px solid rgba(34,214,220,0.2)', borderRadius: '8px', padding: '10px 12px', color: '#F4F6F8', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit' },
   hint: { color: '#555', fontSize: '0.72rem', lineHeight: 1.4 },
   error: { color: '#e05555', fontSize: '0.82rem' },
-  submitBtn: { background: 'linear-gradient(135deg, #0D6E7A, #00C2C7)', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer' },
+  submitBtn: { background: 'linear-gradient(135deg, #0D6E7A, #22D6DC)', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer' },
   successBox: { textAlign: 'center', padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' },
-  successIcon: { width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(0,194,199,0.12)', border: '2px solid #00C2C7', color: '#00C2C7', fontSize: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  successIcon: { width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(34,214,220,0.12)', border: '2px solid #22D6DC', color: '#22D6DC', fontSize: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   successTitle: { color: '#F4F6F8', fontSize: '1.1rem', fontWeight: 700, margin: 0 },
-  successId: { color: '#00C2C7', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.85rem', margin: 0 },
+  successId: { color: '#22D6DC', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.85rem', margin: 0 },
   successSub: { color: '#888', fontSize: '0.82rem', margin: 0 },
   successNote: { color: '#aaa', fontSize: '0.85rem', lineHeight: 1.5, margin: 0, maxWidth: '340px' },
-  resetBtn: { background: 'transparent', border: '1px solid rgba(0,194,199,0.2)', color: '#00C2C7', borderRadius: '6px', padding: '8px 18px', fontSize: '0.82rem', cursor: 'pointer', marginTop: '0.5rem' },
+  resetBtn: { background: 'transparent', border: '1px solid rgba(34,214,220,0.2)', color: '#22D6DC', borderRadius: '6px', padding: '8px 18px', fontSize: '0.82rem', cursor: 'pointer', marginTop: '0.5rem' },
 }

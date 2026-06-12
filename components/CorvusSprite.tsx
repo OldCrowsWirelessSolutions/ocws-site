@@ -30,7 +30,7 @@ type VisitMode  = 'normal' | 'laugh' | 'silent' | 'upside' | 'cheshire'
 
 // ── Speech lines ─────────────────────────────────────────────────────────────
 const LINES = [
-  "I've already rendered my Verdict.",
+  "Your WiFi Health Report? Already written.",
   "I found problems. Some are embarrassing.",
   "I've seen worse. Not much worse.",
   "Your signal thinks it's fine. It isn't.",
@@ -401,7 +401,7 @@ export default function CorvusSprite({ frequency = 'normal', className }: Corvus
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0,194,199,0.15)',
+            background: 'rgba(34,214,220,0.15)',
             opacity: flashVis ? 1 : 0,
             transition: `opacity ${flashVis ? 150 : 200}ms ease`,
             pointerEvents: 'none',
@@ -433,12 +433,12 @@ export default function CorvusSprite({ frequency = 'normal', className }: Corvus
               position: 'relative',
               marginBottom: 8,
               background: '#1A2332',
-              border: '1px solid #00C2C7',
+              border: '1px solid #22D6DC',
               borderRadius: 8,
               padding: '8px 12px',
               fontSize: 11,
               fontFamily: "'Share Tech Mono', 'Courier New', monospace",
-              color: '#00C2C7',
+              color: '#22D6DC',
               lineHeight: 1.5,
               whiteSpace: 'nowrap',
               opacity: bubbleVis ? 1 : 0,
@@ -457,7 +457,7 @@ export default function CorvusSprite({ frequency = 'normal', className }: Corvus
                 height: 0,
                 borderLeft: '6px solid transparent',
                 borderRight: '6px solid transparent',
-                borderTop: '6px solid #00C2C7',
+                borderTop: '6px solid #22D6DC',
               }}
             />
             <span
@@ -520,9 +520,9 @@ export default function CorvusSprite({ frequency = 'normal', className }: Corvus
                     {/* Beak */}
                     <rect x="70" y="18" width="16" height="10" fill="#8B6914" />
                     {/* Circuit traces across body */}
-                    <rect x="14" y="35" width="22" height="1" fill="#00C2C7" opacity={0.6} />
-                    <rect x="20" y="39" width="16" height="1" fill="#00C2C7" opacity={0.6} />
-                    <rect x="26" y="43" width="10" height="1" fill="#00C2C7" opacity={0.6} />
+                    <rect x="14" y="35" width="22" height="1" fill="#22D6DC" opacity={0.6} />
+                    <rect x="20" y="39" width="16" height="1" fill="#22D6DC" opacity={0.6} />
+                    <rect x="26" y="43" width="10" height="1" fill="#22D6DC" opacity={0.6} />
                   </svg>
                 </div>
 
@@ -541,10 +541,10 @@ export default function CorvusSprite({ frequency = 'normal', className }: Corvus
                     <g transform={wingsUp ? 'translate(0,37) scale(1,-1) translate(0,-37)' : undefined}>
                       {/* Upper wing band */}
                       <rect x="6" y="20" width="50" height="10"
-                        fill="#0D1520" stroke="rgba(0,194,199,0.55)" strokeWidth="1" />
+                        fill="#0D1520" stroke="rgba(34,214,220,0.55)" strokeWidth="1" />
                       {/* Lower wing band */}
                       <rect x="4" y="44" width="44" height="10"
-                        fill="#0D1520" stroke="rgba(0,194,199,0.55)" strokeWidth="1" />
+                        fill="#0D1520" stroke="rgba(34,214,220,0.55)" strokeWidth="1" />
                     </g>
                   </svg>
                 </div>
@@ -565,7 +565,7 @@ export default function CorvusSprite({ frequency = 'normal', className }: Corvus
                     <rect x="42" y="8" width="28" height="26"
                       fill="#0D1520" stroke="#1A2332" strokeWidth="1" />
                     {/* Eye */}
-                    <rect x="50" y="15" width="6" height="6" fill="#00C2C7" />
+                    <rect x="50" y="15" width="6" height="6" fill="#22D6DC" />
                   </svg>
                   {/* Eye glow — two overlapping divs for bloom spread */}
                   <div
@@ -576,8 +576,8 @@ export default function CorvusSprite({ frequency = 'normal', className }: Corvus
                       top: 8,
                       width: 4,
                       height: 4,
-                      background: '#00C2C7',
-                      boxShadow: '0 0 8px #00C2C7, 0 0 10px #00C2C7',
+                      background: '#22D6DC',
+                      boxShadow: '0 0 8px #22D6DC, 0 0 10px #22D6DC',
                     }}
                   />
                   <div
@@ -588,8 +588,8 @@ export default function CorvusSprite({ frequency = 'normal', className }: Corvus
                       top: 8,
                       width: 4,
                       height: 4,
-                      background: '#00C2C7',
-                      boxShadow: '0 0 8px #00C2C7, 0 0 10px #00C2C7',
+                      background: '#22D6DC',
+                      boxShadow: '0 0 8px #22D6DC, 0 0 10px #22D6DC',
                       opacity: 0.6,
                     }}
                   />

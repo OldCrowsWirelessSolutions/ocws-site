@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
 
         if (productTyped === 'verdict') {
           if (!validation.verdicts_unlimited && (validation.verdicts_remaining ?? 0) <= 0) {
-            return NextResponse.json({ error: 'No Verdict credits remaining this billing period.' }, { status: 402 });
+            return NextResponse.json({ error: 'No WiFi Health Report credits remaining this billing period.' }, { status: 402 });
           }
         } else {
           const recType = productTyped.replace('reckoning_', '') as 'small' | 'standard' | 'commercial';
@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
           const unlim   = validation.reckonings_unlimited?.[recType] ?? false;
           if (!unlim && rem <= 0) {
             return NextResponse.json(
-              { error: `No ${recType} Reckoning credits remaining this billing period.` },
+              { error: `No ${recType} Whole-Home Survey credits remaining this billing period.` },
               { status: 402 }
             );
           }

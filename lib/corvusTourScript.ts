@@ -53,10 +53,10 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
           id: 'solution',
           title: 'The Solution',
           corvusLine: `"Upload a screenshot. I'll tell you exactly what's wrong. In under five minutes. For fifty dollars."`,
-          bodyText: `Crow's Eye accepts your WiFi scan screenshot. Corvus analyzes every signal in your environment, identifies the problem, and delivers a Verdict — not a report. Fix instructions specific to your exact router.`,
+          bodyText: `Crow's Eye accepts your WiFi scan screenshot. Corvus analyzes every signal in your environment, identifies the problem, and delivers a WiFi Health Report. Fix instructions specific to your exact router.`,
           visualType: 'scan',
           visualData: {
-            steps: ['Upload scan', 'Corvus analyzes', 'Verdict rendered', 'Fix it today'],
+            steps: ['Upload scan', 'Corvus analyzes', 'WiFi Health Report delivered', 'Fix it today'],
           },
           duration: 9,
         },
@@ -74,7 +74,7 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
         },
         {
           id: 'verdict-sample',
-          title: 'A Real Verdict',
+          title: 'A Real WiFi Health Report',
           corvusLine: `"This is what I found at a barbershop in Pensacola. CoxWiFi co-channel on CH 11. Three findings. Two of them were costing them money every business day."`,
           bodyText: `Pilcher's Barbershop. POS terminals and card readers were throttled by a public Cox hotspot on the same channel. Fixed in 10 minutes. No technician required.`,
           visualType: 'verdict',
@@ -89,8 +89,8 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
         {
           id: 'cta',
           title: 'Your Turn',
-          corvusLine: `"I've rendered thousands of Verdicts. I haven't seen yours yet. That's the only one that matters right now."`,
-          bodyText: `Start with a free teaser analysis — see how many problems Corvus finds before you pay a cent. Full Verdict unlocks for $50.`,
+          corvusLine: `"I've delivered thousands of WiFi Health Reports. I haven't seen yours yet. That's the only one that matters right now."`,
+          bodyText: `Start with a free teaser analysis — see how many problems Corvus finds before you pay a cent. Get the full WiFi Health Report for $50.`,
           visualType: 'cta',
           ctaText: 'Run Corvus on Your Network — $50',
           ctaUrl: '/dashboard',
@@ -100,7 +100,7 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
       closingLine: name
         ? `"${name}. Go fix your WiFi. I'll be here when it breaks again."`
         : `"Go fix your WiFi. I'll be here when it breaks again."`,
-      ctaText: 'Start Your Verdict — $50',
+      ctaText: 'Start Your WiFi Health Report — $50',
       ctaUrl: '/dashboard',
     },
 
@@ -132,13 +132,13 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
         {
           id: 'flock-features',
           title: 'What Flock Does',
-          corvusLine: `"Fifteen Verdicts a month. White-label PDF. Full Reckoning for multi-location properties. Up to five tech seats. Your brand on the deliverable."`,
+          corvusLine: `"Fifteen WiFi Health Reports a month. White-label PDF. Whole-Home Surveys for multi-location properties. Up to five tech seats. Your brand on the deliverable."`,
           bodyText: `Run multi-location surveys across campuses, retail chains, medical facilities. Deliver branded client reports. Let your team run scans. All from one dashboard.`,
           visualType: 'dashboard',
           visualData: {
             features: [
-              '15 Verdicts/month',
-              'Full Reckoning — up to 15 locations',
+              '15 WiFi Health Reports/month',
+              'Whole-Home Survey — up to 15 locations',
               'White-label PDF reports',
               'Up to 5 tech seats',
               'Historical report storage — 6 months',
@@ -149,7 +149,7 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
         },
         {
           id: 'reckoning-demo',
-          title: 'The Full Reckoning',
+          title: 'The Whole-Home Survey',
           corvusLine: `"Multi-building. Multi-location. Multi-problem. I synthesize all of it into one executive-grade analysis. Your client sees one clean deliverable."`,
           bodyText: `Atlantic Beach Assembly of God. 4 locations. 5 findings. Channel 8 interference killing Sunday streaming across the entire campus. Delivered in under 10 minutes.`,
           visualType: 'verdict',
@@ -184,18 +184,18 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
     murder: {
       level: 'murder',
       openingLine: name
-        ? `${name}. You know what co-channel interference looks like. So do I. The difference is I render the Verdict while you're still opening Ekahau.`
-        : `You know what co-channel interference looks like. So do I. The difference is I render the Verdict while you're still opening Ekahau.`,
+        ? `${name}. You know what co-channel interference looks like. So do I. The difference is I render the WiFi Health Report while you're still opening Ekahau.`
+        : `You know what co-channel interference looks like. So do I. The difference is I render the WiFi Health Report while you're still opening Ekahau.`,
       stages: [
         {
           id: 'murder-positioning',
           title: 'Built for Engineers',
-          corvusLine: `"Unlimited Verdicts. Full design suite. AP placement blueprints. Channel coordination diagrams. Bill of materials generation. API access. This is Murder tier."`,
+          corvusLine: `"Unlimited WiFi Health Reports. Full design suite. AP placement blueprints. Channel coordination diagrams. Bill of materials generation. API access. This is Murder tier."`,
           bodyText: `Murder is the full engineering platform. Not a consumer tool. Not an MSP shortcut. A complete RF design and analysis suite that handles the cognitive load so you focus on the work only you can do.`,
           visualType: 'dashboard',
           visualData: {
             features: [
-              'Unlimited Verdicts — no caps',
+              'Unlimited WiFi Health Reports — no caps',
               'AP placement blueprint with coverage radii',
               'Channel frequency coordination diagram',
               'Bill of materials with AP models, PoE, cable runs',
@@ -228,7 +228,7 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
           visualType: 'stats',
           visualData: {
             stats: [
-              { num: '∞', label: 'Verdicts/month' },
+              { num: '∞', label: 'WiFi Health Reports/month' },
               { num: '15', label: 'Tech seats' },
               { num: 'API', label: 'Full access' },
               { num: '$950', label: 'per month' },
@@ -258,14 +258,14 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
     full: {
       level: 'full',
       openingLine: name
-        ? `${name}. I'm Corvus. I am an AI wireless diagnostic engine built on 17 years of U.S. Navy Electronic Warfare experience. I render Verdicts. Not reports. Let me show you what that means.`
-        : `I'm Corvus. I am an AI wireless diagnostic engine built on 17 years of U.S. Navy Electronic Warfare experience. I render Verdicts. Not reports. This is what that means.`,
+        ? `${name}. I'm Corvus. I am an AI wireless diagnostic engine built on 17 years of U.S. Navy Electronic Warfare experience. I deliver WiFi Health Reports. Not paperwork. Let me show you what that means.`
+        : `I'm Corvus. I am an AI wireless diagnostic engine built on 17 years of U.S. Navy Electronic Warfare experience. I deliver WiFi Health Reports. Not paperwork. This is what that means.`,
       stages: [
         {
           id: 'full-intro',
           title: 'Who Corvus Is',
-          corvusLine: `"I've already rendered my Verdict. You're just here for the sentencing."`,
-          bodyText: `Corvus is the AI intelligence engine powering Crow's Eye — Old Crows Wireless Solutions' wireless diagnostic platform. Built by a 17-year Navy Electronic Warfare specialist. Deployed to enterprise IT teams. Publishing real Verdicts on real networks today.`,
+          corvusLine: `"I've already finished my analysis. You're just here for the sentencing."`,
+          bodyText: `Corvus is the AI intelligence engine powering Crow's Eye — Old Crows Wireless Solutions' wireless diagnostic platform. Built by a 17-year Navy Electronic Warfare specialist. Deployed to enterprise IT teams. Publishing real WiFi Health Reports on real networks today.`,
           visualType: 'character',
           visualData: { showCorvus: true },
           duration: 9,
@@ -290,13 +290,13 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
           id: 'full-products',
           title: 'The Platform',
           corvusLine: `"Five tiers. Every market. One platform. I speak to a grandmother and a network engineer. Both get the right answer."`,
-          bodyText: `Fledgling → Nest → Flock → Murder → OCWS Pro. One-time Verdicts, subscriptions, full platform, certified reports. Every user type covered.`,
+          bodyText: `Fledgling → Nest → Flock → Murder → OCWS Pro. One-time WiFi Health Reports, subscriptions, full platform, certified reports. Every user type covered.`,
           visualType: 'dashboard',
           visualData: {
             tiers: [
               { name: 'Fledgling', desc: 'Demo teaser — problem count only', price: 'Free' },
-              { name: 'Nest', desc: 'Homeowner — 3 Verdicts/mo', price: '$20/mo' },
-              { name: 'Flock', desc: 'MSP / IT — 15 Verdicts + white-label', price: '$100/mo' },
+              { name: 'Nest', desc: 'Homeowner — 3 WiFi Health Reports/mo', price: '$20/mo' },
+              { name: 'Flock', desc: 'MSP / IT — 15 WiFi Health Reports + white-label', price: '$100/mo' },
               { name: 'Murder', desc: 'RF Engineer — unlimited + API', price: '$950/mo' },
               { name: 'OCWS Pro', desc: 'Certified — Joshua signs every one', price: '$750/report' },
             ],
@@ -348,9 +348,9 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
           id: 'full-cta',
           title: 'Start Here',
           corvusLine: `"I've shown you everything. The only question left is which door you walk through."`,
-          bodyText: `Try a free teaser scan. Run a full Verdict for $50. Or start a subscription today. Corvus is ready.`,
+          bodyText: `Try a free teaser scan. Get a full WiFi Health Report for $50. Or start a subscription today. Corvus is ready.`,
           visualType: 'cta',
-          ctaText: 'Start Your First Verdict',
+          ctaText: 'Start Your First WiFi Health Report',
           ctaUrl: '/dashboard',
           duration: 0,
         },
@@ -358,7 +358,7 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
       closingLine: name
         ? `"${name}. You've seen what I do. Now let me do it for you."`
         : `"You've seen what I do. Now let me do it for you."`,
-      ctaText: 'Start Your First Verdict',
+      ctaText: 'Start Your First WiFi Health Report',
       ctaUrl: '/dashboard',
     },
 
@@ -373,7 +373,7 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
           id: 'verdict-upload',
           title: 'Step 1: Upload',
           corvusLine: `"Screenshot your WiFi environment on your phone. That's it. Upload it. I do the rest."`,
-          bodyText: `Use any WiFi analyzer app. Take a screenshot. Upload it to Crow's Eye. One screenshot for a quick Verdict. Multiple for a full Reckoning.`,
+          bodyText: `Use any WiFi analyzer app. Take a screenshot. Upload it to Crow's Eye. One screenshot for a quick WiFi Health Report. Multiple for a full Whole-Home Survey.`,
           visualType: 'scan',
           visualData: { steps: ["Open WiFi Analyzer app", "Screenshot your network list", "Upload to Crow's Eye", "Set your comfort level"] },
           duration: 8,
@@ -396,8 +396,8 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
         },
         {
           id: 'verdict-render',
-          title: 'Step 3: The Verdict',
-          corvusLine: `"I don't write reports. I render Verdicts. There's a difference. You'll understand in a moment."`,
+          title: 'Step 3: The WiFi Health Report',
+          corvusLine: `"I don't write paperwork. I deliver WiFi Health Reports. There's a difference. You'll understand in a moment."`,
           bodyText: `Real finding from Pilcher's Barbershop: CoxWiFi co-channel interference on CH 11 identified as the root cause of POS throttling. Fix: disable Cox public hotspot. Cost: $0. Time: 10 minutes.`,
           visualType: 'verdict',
           visualData: {
@@ -411,17 +411,17 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
         },
         {
           id: 'verdict-cta',
-          title: 'Your Verdict',
+          title: 'Your WiFi Health Report',
           corvusLine: `"That was someone else's network. You have your own. I'm ready when you are."`,
           bodyText: `$50. Under 5 minutes. Router-specific fix instructions. PDF download. No technician. No appointment. No $75 visit fee.`,
           visualType: 'cta',
-          ctaText: 'Get Your Verdict — $50',
+          ctaText: 'Get Your WiFi Health Report — $50',
           ctaUrl: '/dashboard',
           duration: 0,
         },
       ],
       closingLine: `"Go upload your scan. I'll do the rest."`,
-      ctaText: 'Get Your Verdict — $50',
+      ctaText: 'Get Your WiFi Health Report — $50',
       ctaUrl: '/dashboard',
     },
 
@@ -434,13 +434,13 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
       stages: [
         {
           id: 'reckoning-what',
-          title: 'The Full Reckoning',
-          corvusLine: `"Multiple locations. Multiple buildings. One analysis. One deliverable. That's what The Full Reckoning does."`,
+          title: 'The Whole-Home Survey',
+          corvusLine: `"Multiple locations. Multiple buildings. One analysis. One deliverable. That's what the Whole-Home Survey does."`,
           bodyText: `Upload scans from up to 15 locations — offices, classrooms, sanctuaries, fellowship halls, parking lots, sheds. Corvus synthesizes everything into a single executive-grade analysis.`,
           visualType: 'dashboard',
           visualData: {
             features: [
-              'Up to 15 locations per Reckoning',
+              'Up to 15 locations per Whole-Home Survey',
               'Indoor, outdoor, and detached structures',
               'Per-location findings + campus-wide synthesis',
               'Executive summary across all locations',
@@ -469,7 +469,7 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
           id: 'reckoning-pricing',
           title: 'Pricing',
           corvusLine: `"One to five locations — $150. Six to fifteen — $350. Complex hybrid property? $350 plus $50 per detached structure. I've seen worse."`,
-          bodyText: `One-time or subscription. Flock tier includes Full Reckoning in the monthly price. OCWS Pro adds Joshua Turner certification — suitable for insurance, compliance, or vendor documentation.`,
+          bodyText: `One-time or subscription. Flock tier includes the Whole-Home Survey in the monthly price. OCWS Pro adds Joshua Turner certification — suitable for insurance, compliance, or vendor documentation.`,
           visualType: 'stats',
           visualData: {
             stats: [
@@ -485,15 +485,15 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
           id: 'reckoning-cta',
           title: 'Your Property',
           corvusLine: `"You have multiple buildings. I have a process. Let's begin."`,
-          bodyText: `Upload your scans. Set your locations. Corvus renders The Full Reckoning.`,
+          bodyText: `Upload your scans. Set your locations. Corvus renders the Whole-Home Survey.`,
           visualType: 'cta',
-          ctaText: 'Start Your Reckoning',
+          ctaText: 'Start Your Whole-Home Survey',
           ctaUrl: '/dashboard',
           duration: 0,
         },
       ],
-      closingLine: `"Multiple buildings. One Verdict. That's The Full Reckoning."`,
-      ctaText: 'Start Your Full Reckoning',
+      closingLine: `"Multiple buildings. One report. That's the Whole-Home Survey."`,
+      ctaText: 'Start Your Whole-Home Survey',
       ctaUrl: '/dashboard',
     },
 
@@ -575,8 +575,8 @@ export const TOUR_LEVEL_LABELS: Record<TourLevel, string> = {
   flock: '🐦‍⬛ Flock — MSP / IT Tour',
   murder: '💀 Murder — RF Engineer Tour',
   full: '🦅 Full Platform Tour',
-  verdict: "📄 Corvus' Verdict — Product Deep Dive",
-  reckoning: '🗺️ The Full Reckoning — Product Deep Dive',
+  verdict: '📄 WiFi Health Report — Product Deep Dive',
+  reckoning: '🗺️ Whole-Home Survey — Product Deep Dive',
   compare: '⚔️ Competitive Comparison Tour',
 };
 

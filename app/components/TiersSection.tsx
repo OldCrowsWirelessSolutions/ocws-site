@@ -17,16 +17,16 @@ const tiers = [
     annualProduct: "fledgling-annual",
     monthlyLabel: "Monthly — $10/mo",
     annualLabel: "Annual — $96/yr",
-    tagline: "Try Corvus with one free Verdict",
+    tagline: "Try Corvus with one free WiFi Health Report",
     features: [
-      "1 free Verdict included (one-time)",
+      "1 free WiFi Health Report included (one-time)",
       "Unlimited Ask Corvus chat",
       "Corvus voice assistant",
       "Help & Training tours",
       "Dashboard access",
       "Upgrade to Nest anytime",
     ],
-    note: "Chat and voice available immediately. Verdict credit is one-time and does not renew.",
+    note: "Chat and voice available immediately. WiFi Health Report credit is one-time and does not renew.",
     featured: false,
     goldStyle: true,
     seatOptions: null as null,
@@ -43,10 +43,10 @@ const tiers = [
     annualLabel: "Annual — $160/yr",
     tagline: "For homeowners and small businesses",
     features: [
-      "3 Verdicts per month included",
-      "Extra Verdicts available at $15 each",
-      "1 Small Reckoning included per month (up to 5 locations)",
-      "Additional Small Reckonings: $50 each",
+      "3 WiFi Health Reports per month included",
+      "Extra WiFi Health Reports available at $15 each",
+      "1 Small Whole-Home Survey included per month (up to 5 locations)",
+      "Additional Small Whole-Home Surveys: $50 each",
       "Signal List analysis",
       "Channel congestion detection",
       "Router-specific fix instructions",
@@ -75,13 +75,13 @@ const tiers = [
     annualLabel: "Annual — $900/yr",
     tagline: "For MSPs, IT consultants, and growing teams",
     features: [
-      "15 Verdicts per month included",
-      "Extra Verdicts at $10 each",
-      "3 Small Reckonings included per month",
-      "1 Standard Reckoning included per month (up to 15 locations)",
-      "Additional Small Reckonings: $35 each",
-      "Additional Standard Reckonings: $75 each",
-      "Commercial Reckoning: $200 additional",
+      "15 WiFi Health Reports per month included",
+      "Extra WiFi Health Reports at $10 each",
+      "3 Small Whole-Home Surveys included per month",
+      "1 Standard Whole-Home Survey included per month (up to 15 locations)",
+      "Additional Small Whole-Home Surveys: $35 each",
+      "Additional Standard Whole-Home Surveys: $75 each",
+      "Commercial Whole-Home Survey: $200 additional",
       "Everything in Nest",
       "Unlimited Ask Corvus chat",
       "Corvus voice assistant",
@@ -116,12 +116,12 @@ const tiers = [
     annualLabel: "Annual — $9,500/yr",
     tagline: "For enterprise networks, multi-site operators, and mission-critical environments",
     features: [
-      "Unlimited Verdicts",
-      "Unlimited Small Reckonings",
-      "10 Standard Reckonings per month",
-      "3 Commercial Reckonings per month",
-      "Additional Standard Reckonings: $90 each",
-      "Additional Commercial Reckonings: $250 each",
+      "Unlimited WiFi Health Reports",
+      "Unlimited Small Whole-Home Surveys",
+      "10 Standard Whole-Home Surveys per month",
+      "3 Commercial Whole-Home Surveys per month",
+      "Additional Standard Whole-Home Surveys: $90 each",
+      "Additional Commercial Whole-Home Surveys: $250 each",
       "5 seats included — add up to 10 more from $75/mo",
       "15 seat maximum",
       "Everything in Flock",
@@ -133,7 +133,7 @@ const tiers = [
       "Dedicated support",
       "Custom report branding 🥚",
       "OCWS certified training 🥚",
-      "Pro Certified Reckoning: custom quoted",
+      "Pro Certified Whole-Home Survey: custom quoted",
     ],
     note: "3-month minimum on monthly plan ($2,850 minimum charge)",
     featured: false,
@@ -155,10 +155,10 @@ const tiers = [
 
 const OcwsProSeal = () => (
   <svg width="52" height="52" viewBox="0 0 52 52" fill="none" aria-hidden="true">
-    <circle cx="26" cy="26" r="24" stroke="#B8922A" strokeWidth="2" />
-    <circle cx="26" cy="26" r="19" stroke="#B8922A" strokeWidth="1" strokeDasharray="3 2" />
-    <text x="26" y="23" textAnchor="middle" fill="#B8922A" fontSize="7" fontFamily="Arial" fontWeight="bold">OCWS</text>
-    <text x="26" y="32" textAnchor="middle" fill="#B8922A" fontSize="5.5" fontFamily="Arial">CERTIFIED</text>
+    <circle cx="26" cy="26" r="24" stroke="#D8AC32" strokeWidth="2" />
+    <circle cx="26" cy="26" r="19" stroke="#D8AC32" strokeWidth="1" strokeDasharray="3 2" />
+    <text x="26" y="23" textAnchor="middle" fill="#D8AC32" fontSize="7" fontFamily="Arial" fontWeight="bold">OCWS</text>
+    <text x="26" y="32" textAnchor="middle" fill="#D8AC32" fontSize="5.5" fontFamily="Arial">CERTIFIED</text>
   </svg>
 );
 
@@ -224,7 +224,7 @@ export default function TiersSection() {
             Crow&rsquo;s Eye for everyone.
           </h2>
           <p className="mt-3 text-base" style={{ color: "#888" }}>
-            From the frustrated homeowner to the RF engineer.
+            From the frustrated homeowner to the WiFi engineer.
           </p>
           <p className="mt-3 text-xs" style={{ color: "#555", fontFamily: "'Share Tech Mono', monospace" }}>
             🥚 = Coming soon
@@ -239,14 +239,14 @@ export default function TiersSection() {
               className="relative flex flex-col rounded-2xl p-6 ocws-card-glow"
               style={{
                 background: "#0D1520",
-                border: ("goldStyle" in tier && tier.goldStyle) ? "1px solid rgba(184,146,42,0.5)" : "1px solid #0D6E7A",
-                boxShadow: ("goldStyle" in tier && tier.goldStyle) ? "0 0 20px rgba(184,146,42,0.08)" : undefined,
+                border: ("goldStyle" in tier && tier.goldStyle) ? "1px solid rgba(216,172,50,0.5)" : "1px solid #0D6E7A",
+                boxShadow: ("goldStyle" in tier && tier.goldStyle) ? "0 0 20px rgba(216,172,50,0.08)" : undefined,
               }}
             >
               {tier.featured && "badge" in tier && tier.badge && (
                 <div
                   className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-bold"
-                  style={{ background: "#00C2C7", color: "#0D1520" }}
+                  style={{ background: "#22D6DC", color: "#0D1520" }}
                 >
                   {tier.badge}
                 </div>
@@ -255,7 +255,7 @@ export default function TiersSection() {
               <div className="text-center mb-4">
                 <span className="text-3xl">{tier.emoji}</span>
                 <h3 className="mt-2 text-base font-bold text-white tracking-widest">{tier.name}</h3>
-                <div className="mt-1 text-2xl font-bold" style={{ color: ("goldStyle" in tier && tier.goldStyle) ? "#B8922A" : "#00C2C7" }}>{tier.price}</div>
+                <div className="mt-1 text-2xl font-bold" style={{ color: ("goldStyle" in tier && tier.goldStyle) ? "#D8AC32" : "#22D6DC" }}>{tier.price}</div>
                 <div className="text-xs" style={{ color: "#888" }}>{tier.priceAlt}</div>
                 <p className="mt-2 text-xs" style={{ color: "#888" }}>{tier.tagline}</p>
               </div>
@@ -263,7 +263,7 @@ export default function TiersSection() {
               <ul className="flex-1 space-y-2 mb-4">
                 {tier.features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-xs" style={{ color: "#aaa" }}>
-                    <span style={{ color: ("goldStyle" in tier && tier.goldStyle) ? "#B8922A" : "#00C2C7", flexShrink: 0, marginTop: "2px" }}>✓</span>
+                    <span style={{ color: ("goldStyle" in tier && tier.goldStyle) ? "#D8AC32" : "#22D6DC", flexShrink: 0, marginTop: "2px" }}>✓</span>
                     {f}
                   </li>
                 ))}
@@ -278,9 +278,9 @@ export default function TiersSection() {
               {/* Checkout buttons */}
               {(() => {
                 const isGold = "goldStyle" in tier && tier.goldStyle;
-                const accentColor = isGold ? "#B8922A" : "#00C2C7";
-                const accentBg = isGold ? "rgba(184,146,42,0.12)" : "transparent";
-                const accentBorder = isGold ? "rgba(184,146,42,0.4)" : "rgba(0,194,199,0.35)";
+                const accentColor = isGold ? "#D8AC32" : "#22D6DC";
+                const accentBg = isGold ? "rgba(216,172,50,0.12)" : "transparent";
+                const accentBorder = isGold ? "rgba(216,172,50,0.4)" : "rgba(34,214,220,0.35)";
                 return (
                   <div className="flex flex-col gap-2">
                     <button
@@ -289,7 +289,7 @@ export default function TiersSection() {
                       disabled={checkingOut !== null}
                       className="w-full inline-flex items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition"
                       style={{
-                        background: isGold ? "#B8922A" : "#00C2C7",
+                        background: isGold ? "#D8AC32" : "#22D6DC",
                         color: "#0D1520",
                         border: "none",
                         opacity: checkingOut !== null && checkingOut !== tier.monthlyProduct ? 0.5 : 1,
@@ -327,9 +327,9 @@ export default function TiersSection() {
             <div className="text-center mb-4">
               <OcwsProSeal />
               <h3 className="mt-2 text-base font-bold text-white tracking-widest">OCWS PRO</h3>
-              <div className="mt-1 text-2xl font-bold" style={{ color: "#00C2C7" }}>$750</div>
+              <div className="mt-1 text-2xl font-bold" style={{ color: "#22D6DC" }}>$750</div>
               <div className="text-xs" style={{ color: "#888" }}>per report</div>
-              <p className="mt-2 text-xs" style={{ color: "#B8922A", fontStyle: "italic" }}>
+              <p className="mt-2 text-xs" style={{ color: "#D8AC32", fontStyle: "italic" }}>
                 Joshua Turner certifies every report
               </p>
             </div>
@@ -338,7 +338,7 @@ export default function TiersSection() {
               {[
                 "Full on-site walk survey",
                 "Personally certified by Joshua Turner",
-                "OCWS Pro Certified Reckoning available — $1,500",
+                "OCWS Pro Certified Whole-Home Survey available — $1,500",
                 "Any size facility, Joshua certifies every finding",
                 "Compliance and insurance grade",
                 "Board presentation ready",
@@ -346,7 +346,7 @@ export default function TiersSection() {
                 "Valid for vendor quotes and insurance",
               ].map((f) => (
                 <li key={f} className="flex items-start gap-2 text-xs" style={{ color: "#aaa" }}>
-                  <span style={{ color: "#B8922A", flexShrink: 0, marginTop: "2px" }}>✓</span>
+                  <span style={{ color: "#D8AC32", flexShrink: 0, marginTop: "2px" }}>✓</span>
                   {f}
                 </li>
               ))}
@@ -355,7 +355,7 @@ export default function TiersSection() {
             <a
               href="/contact"
               className="w-full inline-flex items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition ocws-glow-hover-gold"
-              style={{ background: "transparent", color: "#B8922A", border: "1px solid #B8922A" }}
+              style={{ background: "transparent", color: "#D8AC32", border: "1px solid #D8AC32" }}
             >
               Request Assessment
             </a>
@@ -368,18 +368,18 @@ export default function TiersSection() {
           className="mt-10 rounded-2xl p-6"
           style={{ background: "#0D1520", border: "1px solid #0D6E7A" }}
         >
-          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#00C2C7", letterSpacing: "0.15em" }}>
-            The Full Reckoning — No Subscription Required
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#22D6DC", letterSpacing: "0.15em" }}>
+            The Whole-Home Survey — No Subscription Required
           </p>
           <p className="text-sm mb-5" style={{ color: "#888" }}>
-            Need a site-wide assessment without a subscription? Purchase a Full Reckoning directly.
+            Need a site-wide assessment without a subscription? Purchase a Whole-Home Survey directly.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             {[
-              { name: "Small Reckoning", size: "Up to 5 locations", price: "$150", href: "/crows-eye?reckoning=small" },
-              { name: "Standard Reckoning", size: "6–15 locations", price: "$350", href: "/crows-eye?reckoning=standard" },
-              { name: "Commercial Reckoning", size: "16+ locations", price: "$750", href: "/crows-eye?reckoning=commercial" },
-              { name: "Pro Certified Reckoning", size: "Any size · Joshua certifies", price: "$1,500", gold: true, href: "/crows-eye?reckoning=pro" },
+              { name: "Small Whole-Home Survey", size: "Up to 5 locations", price: "$150", href: "/crows-eye?reckoning=small" },
+              { name: "Standard Whole-Home Survey", size: "6–15 locations", price: "$350", href: "/crows-eye?reckoning=standard" },
+              { name: "Commercial Whole-Home Survey", size: "16+ locations", price: "$750", href: "/crows-eye?reckoning=commercial" },
+              { name: "Pro Certified Whole-Home Survey", size: "Any size · Joshua certifies", price: "$1,500", gold: true, href: "/crows-eye?reckoning=pro" },
             ].map((r) => (
               <Link
                 key={r.name}
@@ -387,13 +387,13 @@ export default function TiersSection() {
                 className={`block rounded-xl p-4 cursor-pointer ${r.gold ? "ocws-glow-hover-gold" : "ocws-card-glow"}`}
                 style={{
                   background: "rgba(0,0,0,0.2)",
-                  border: `1px solid ${r.gold ? "#B8922A" : "rgba(255,255,255,0.08)"}`,
+                  border: `1px solid ${r.gold ? "#D8AC32" : "rgba(255,255,255,0.08)"}`,
                 }}
               >
                 <p className="text-sm font-bold text-white mb-0.5">{r.name}</p>
                 <p className="text-xs mb-2" style={{ color: "#888" }}>{r.size}</p>
-                <p className="text-xl font-bold" style={{ color: r.gold ? "#B8922A" : "#00C2C7" }}>{r.price}</p>
-                <p className="text-xs mt-2 font-semibold" style={{ color: r.gold ? "rgba(184,146,42,0.7)" : "rgba(0,194,199,0.6)" }}>
+                <p className="text-xl font-bold" style={{ color: r.gold ? "#D8AC32" : "#22D6DC" }}>{r.price}</p>
+                <p className="text-xs mt-2 font-semibold" style={{ color: r.gold ? "rgba(216,172,50,0.7)" : "rgba(34,214,220,0.6)" }}>
                   Start here →
                 </p>
               </Link>
@@ -401,11 +401,47 @@ export default function TiersSection() {
           </div>
         </div>
 
+        {/* Chat top-ups — when you burn your monthly Corvus questions */}
+        <div
+          className="mt-10 rounded-2xl p-6"
+          style={{ background: "#0D1520", border: "1px solid #0D6E7A" }}
+        >
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#22D6DC", letterSpacing: "0.15em" }}>
+            Out of questions? Keep Corvus talking.
+          </p>
+          <p className="text-sm mb-5" style={{ color: "#888" }}>
+            Every plan includes Corvus questions each month. Burn through them and don&rsquo;t need a full upgrade? Top up à la carte — no plan change, no commitment. You&rsquo;ll see these in chat the moment you run low.
+            {" "}<span style={{ color: "#D8AC32" }}>Murder includes unlimited Corvus, always.</span>
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
+            {[
+              { name: "25 Questions",   sub: "A few more answers",        price: "$4" },
+              { name: "100 Questions",  sub: "A full evening",            price: "$12" },
+              { name: "300 Questions",  sub: "Best value per question",   price: "$25" },
+              { name: "Day Pass",       sub: "Unlimited · 24 hours",      price: "$9",  gold: true },
+              { name: "Week Pass",      sub: "Unlimited · 7 days",        price: "$35", gold: true },
+            ].map((t) => (
+              <div
+                key={t.name}
+                className="rounded-xl p-4"
+                style={{
+                  background: "rgba(0,0,0,0.2)",
+                  border: `1px solid ${t.gold ? "rgba(216,172,50,0.4)" : "rgba(255,255,255,0.08)"}`,
+                }}
+              >
+                <p className="text-sm font-bold text-white mb-0.5">{t.name}</p>
+                <p className="text-xs mb-2" style={{ color: "#888" }}>{t.sub}</p>
+                <p className="text-xl font-bold" style={{ color: t.gold ? "#D8AC32" : "#22D6DC" }}>{t.price}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
       {/* Seat selection modal */}
       {seatModal && modalTier && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
-          <div style={{ background: "#0D1520", border: "1px solid rgba(0,194,199,0.25)", borderRadius: "20px", padding: "28px", width: "100%", maxWidth: "440px" }}>
-            <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "6px" }}>
+          <div style={{ background: "#0D1520", border: "1px solid rgba(34,214,220,0.25)", borderRadius: "20px", padding: "28px", width: "100%", maxWidth: "440px" }}>
+            <p style={{ color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "6px" }}>
               {modalTier.name} — {seatModal.isAnnual ? "Annual" : "Monthly"}
             </p>
             <h3 style={{ color: "#ffffff", fontSize: "18px", fontWeight: 700, marginBottom: "16px" }}>
@@ -426,15 +462,15 @@ export default function TiersSection() {
                   onClick={() => setSelectedSeats(opt.seats)}
                   style={{
                     padding: "10px 4px", borderRadius: "8px", cursor: "pointer", textAlign: "center",
-                    background: selectedSeats === opt.seats ? "rgba(0,194,199,0.15)" : "rgba(255,255,255,0.04)",
-                    border: `1px solid ${selectedSeats === opt.seats ? "rgba(0,194,199,0.4)" : "rgba(255,255,255,0.08)"}`,
-                    color: selectedSeats === opt.seats ? "#00C2C7" : "#888888",
+                    background: selectedSeats === opt.seats ? "rgba(34,214,220,0.15)" : "rgba(255,255,255,0.04)",
+                    border: `1px solid ${selectedSeats === opt.seats ? "rgba(34,214,220,0.4)" : "rgba(255,255,255,0.08)"}`,
+                    color: selectedSeats === opt.seats ? "#22D6DC" : "#888888",
                   }}
                 >
                   <div style={{ fontSize: "16px", fontWeight: 800, lineHeight: 1 }}>{opt.seats}</div>
                   <div style={{ fontSize: "10px", marginTop: "2px" }}>seat{opt.seats !== 1 ? "s" : ""}</div>
                   {opt.monthlyAdd > 0 && (
-                    <div style={{ fontSize: "9px", color: selectedSeats === opt.seats ? "rgba(0,194,199,0.7)" : "#555", marginTop: "2px" }}>
+                    <div style={{ fontSize: "9px", color: selectedSeats === opt.seats ? "rgba(34,214,220,0.7)" : "#555", marginTop: "2px" }}>
                       +${seatModal.isAnnual ? opt.annualAdd + "/yr" : opt.monthlyAdd + "/mo"}
                     </div>
                   )}
@@ -448,7 +484,7 @@ export default function TiersSection() {
                 <span style={{ color: "#888888", fontSize: "13px" }}>
                   {selectedSeats} seat{selectedSeats !== 1 ? "s" : ""} · {seatModal.isAnnual ? "Annual" : "Monthly"}
                 </span>
-                <span style={{ color: "#00C2C7", fontSize: "20px", fontWeight: 800 }}>
+                <span style={{ color: "#22D6DC", fontSize: "20px", fontWeight: 800 }}>
                   ${seatModal.isAnnual ? totalAnnual.toLocaleString() + "/yr" : totalMonthly + "/mo"}
                 </span>
               </div>
@@ -465,7 +501,7 @@ export default function TiersSection() {
                 onClick={() => handleCheckout(seatModal.product, additionalSeats)}
                 disabled={checkingOut !== null}
                 style={{
-                  flex: 1, background: "#00C2C7", color: "#0D1520", border: "none", borderRadius: "10px",
+                  flex: 1, background: "#22D6DC", color: "#0D1520", border: "none", borderRadius: "10px",
                   fontSize: "14px", fontWeight: 700, padding: "12px", cursor: checkingOut ? "not-allowed" : "pointer",
                 }}
               >

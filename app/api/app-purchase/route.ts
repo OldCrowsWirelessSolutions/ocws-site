@@ -28,10 +28,10 @@ const FALLBACK_AMOUNTS: Record<string, number> = {
 };
 
 const PRODUCT_NAMES: Record<string, string> = {
-  verdict:               "Corvus\u2019 Verdict",
-  "reckoning-small":    "Full Reckoning \u2014 Small",
-  "reckoning-standard": "Full Reckoning \u2014 Standard",
-  "reckoning-commercial": "Full Reckoning \u2014 Commercial",
+  verdict:               "WiFi Health Report",
+  "reckoning-small":    "Whole-Home Survey \u2014 Small",
+  "reckoning-standard": "Whole-Home Survey \u2014 Standard",
+  "reckoning-commercial": "Whole-Home Survey \u2014 Commercial",
 };
 
 export async function POST(req: NextRequest) {

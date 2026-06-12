@@ -12,7 +12,7 @@ const CREDIT_OPTIONS = [
     id: 'single',
     label: '1 Credit',
     price: '$50',
-    desc: 'One Corvus Verdict or Full Reckoning run.',
+    desc: 'One WiFi Health Report or Whole-Home Survey run.',
     priceId: process.env.NEXT_PUBLIC_STRIPE_CREDIT_1_PRICE_ID,
   },
   {
@@ -109,7 +109,7 @@ export default function NoCreditsModal({ onClose, authKey, tier }: Props) {
 
 const s: Record<string, React.CSSProperties> = {
   overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '1rem' },
-  modal: { background: '#1A2332', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '16px', padding: '2rem', maxWidth: '460px', width: '100%', position: 'relative' },
+  modal: { background: '#1A2332', border: '1px solid rgba(34,214,220,0.2)', borderRadius: '16px', padding: '2rem', maxWidth: '460px', width: '100%', position: 'relative' },
   closeBtn: { position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', color: '#555', fontSize: '1rem', cursor: 'pointer' },
   corvusIcon: { fontSize: '2.5rem', textAlign: 'center', marginBottom: '0.75rem' },
   title: { color: '#F4F6F8', fontSize: '1.3rem', fontWeight: 700, textAlign: 'center', margin: '0 0 0.5rem' },
@@ -120,10 +120,10 @@ const s: Record<string, React.CSSProperties> = {
   optionLabel: { color: '#F4F6F8', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.2rem' },
   optionDesc: { color: '#666', fontSize: '0.78rem', lineHeight: 1.4 },
   optionRight: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' },
-  badge: { background: 'rgba(184,146,42,0.15)', color: '#B8922A', border: '1px solid rgba(184,146,42,0.3)', borderRadius: '10px', padding: '1px 8px', fontSize: '0.65rem', fontFamily: 'Share Tech Mono, monospace' },
-  optionPrice: { color: '#00C2C7', fontWeight: 700, fontSize: '1rem', fontFamily: 'Share Tech Mono, monospace' },
-  buyBtn: { background: 'linear-gradient(135deg, #0D6E7A, #00C2C7)', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 16px', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' },
+  badge: { background: 'rgba(216,172,50,0.15)', color: '#D8AC32', border: '1px solid rgba(216,172,50,0.3)', borderRadius: '10px', padding: '1px 8px', fontSize: '0.65rem', fontFamily: 'Share Tech Mono, monospace' },
+  optionPrice: { color: '#22D6DC', fontWeight: 700, fontSize: '1rem', fontFamily: 'Share Tech Mono, monospace' },
+  buyBtn: { background: 'linear-gradient(135deg, #0D6E7A, #22D6DC)', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 16px', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' },
   error: { color: '#e05555', fontSize: '0.82rem', textAlign: 'center', marginBottom: '0.75rem' },
   footer: { textAlign: 'center', paddingTop: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.06)' },
-  footerLink: { color: '#00C2C7', fontSize: '0.82rem', textDecoration: 'none' },
+  footerLink: { color: '#22D6DC', fontSize: '0.82rem', textDecoration: 'none' },
 }

@@ -102,7 +102,7 @@ RESPONSE FORMAT — return ONLY valid JSON, no markdown fences, no prose outside
       "teaser": "1–2 sentences on what the problem IS. No fix."
     }
   ],
-  "corvus_closing": "His sentencing line. Theatrical, certain, warm. Fred and George energy — they're in on it with you. Something like: 'I've already rendered my Verdict. You're just here for the sentencing — and honestly, it's not as bad as it looks.'",
+  "corvus_closing": "His sentencing line. Theatrical, certain, warm. Fred and George energy — they're in on it with you. Something like: 'Your WiFi Health Report is already written. You're just here for the sentencing — and honestly, it's not as bad as it looks.'",
   "full_findings": [
     {
       "severity": "CRITICAL",
@@ -387,7 +387,7 @@ export async function POST(req: Request) {
         `Problem description: Not provided`,
       ]),
       "",
-      "Analyze the screenshots above and return your Verdict as JSON.",
+      "Analyze the screenshots above and return your WiFi Health Report as JSON.",
     ];
 
     content.push({ type: "text", text: contextLines.join("\n") });

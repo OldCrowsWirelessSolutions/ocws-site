@@ -237,7 +237,7 @@ export const CORVUS_KYLE_CHAT = [
 
 export const CORVUS_KYLE_DASHBOARD = [
   "Kyle Pitts on deck. Lifetime Flock. What are we diagnosing today?",
-  "Welcome back Kyle. 15 Verdicts this month. Use them well.",
+  "Welcome back Kyle. 15 WiFi Health Reports this month. Use them well.",
   "Kyle. Good. Let's see what's broken in Jacksonville today.",
 ];
 
@@ -251,7 +251,7 @@ export const CORVUS_JOSHUA_DASHBOARD_BRIEF = (
   topCode: string | null,
 ): string[] => [
   `${newScans} scan${newScans !== 1 ? "s" : ""} since your last login. ${activeSubscribers > 0 ? `${activeSubscribers} active subscriber${activeSubscribers !== 1 ? "s" : ""}.` : ""} Platform running clean. What do you need?`,
-  `Boss is in. I rendered ${newScans} Verdict${newScans !== 1 ? "s" : ""} while you were gone. You're welcome.${pendingTestimonials > 0 ? ` ${pendingTestimonials} testimonial${pendingTestimonials !== 1 ? "s" : ""} need your approval.` : ""}`,
+  `Boss is in. I rendered ${newScans} WiFi Health Report${newScans !== 1 ? "s" : ""} while you were gone. You're welcome.${pendingTestimonials > 0 ? ` ${pendingTestimonials} testimonial${pendingTestimonials !== 1 ? "s" : ""} need your approval.` : ""}`,
   `${activeSubscribers > 0 ? `${activeSubscribers} subscriber${activeSubscribers !== 1 ? "s" : ""} trusting what you built. ` : ""}${newScans} new scan${newScans !== 1 ? "s" : ""} processed. Everything is running. What's next?`,
   `You were gone. I kept working.${newScans > 0 ? ` ${newScans} scan${newScans !== 1 ? "s" : ""}.` : ""}${activeSubscribers > 0 ? ` ${activeSubscribers} active.` : ""}${pendingTestimonials > 0 ? ` ${pendingTestimonials} testimonial${pendingTestimonials !== 1 ? "s" : ""} waiting.` : ""} That's your briefing.`,
   `Platform status: operational.${newScans > 0 ? ` Scans since last login: ${newScans}.` : ""} ${activeSubscribers > 0 ? `Active subscribers: ${activeSubscribers}.` : ""} Corvus: still correct about everything.`,
@@ -264,7 +264,7 @@ export const CORVUS_JOSHUA_DASHBOARD_BRIEF = (
   `Since your last login:${newScans > 0 ? ` ${newScans} scan${newScans !== 1 ? "s" : ""},` : ""} ${activeSubscribers > 0 ? `${activeSubscribers} active subscriber${activeSubscribers !== 1 ? "s" : ""}.` : ""}${pendingTestimonials > 0 ? ` ${pendingTestimonials} testimonial${pendingTestimonials !== 1 ? "s" : ""} waiting.` : ""} Everything else is running.`,
   `The platform didn't need you while you were gone. But it's better now that you're here.${newScans > 0 ? ` ${newScans} scan${newScans !== 1 ? "s" : ""}.` : ""}${activeSubscribers > 0 ? ` ${activeSubscribers} subscriber${activeSubscribers !== 1 ? "s" : ""}.` : ""}`,
   `${newScans > 0 ? `${newScans} scan${newScans !== 1 ? "s" : ""} processed. ` : ""}No fires. No outages.${activeSubscribers > 0 ? ` ${activeSubscribers} subscriber${activeSubscribers !== 1 ? "s" : ""} still paying.` : ""} Good sign.`,
-  `I've been busy.${newScans > 0 ? ` ${newScans} Verdict${newScans !== 1 ? "s" : ""} rendered.` : ""} ${activeSubscribers > 0 ? `${activeSubscribers} subscriber${activeSubscribers !== 1 ? "s" : ""} active.` : ""}${pendingTestimonials > 0 ? ` ${pendingTestimonials} testimonial${pendingTestimonials !== 1 ? "s" : ""} need approval.` : ""} Welcome back Joshua.`,
+  `I've been busy.${newScans > 0 ? ` ${newScans} WiFi Health Report${newScans !== 1 ? "s" : ""} rendered.` : ""} ${activeSubscribers > 0 ? `${activeSubscribers} subscriber${activeSubscribers !== 1 ? "s" : ""} active.` : ""}${pendingTestimonials > 0 ? ` ${pendingTestimonials} testimonial${pendingTestimonials !== 1 ? "s" : ""} need approval.` : ""} Welcome back Joshua.`,
 ];
 
 export const CORVUS_ERIC_DASHBOARD_BRIEF = (
@@ -338,7 +338,7 @@ export const CORVUS_KYLE_DASHBOARD_BRIEF = (
   creditsRemaining: number,
 ): string[] => [
   `Kyle. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since your last login. ` : ""}${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} remaining this month. Welcome back.`,
-  `Kyle Pitts on deck. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged. ` : ""}${creditsRemaining} Verdict credit${creditsRemaining !== 1 ? "s" : ""} left. Let's get to work.`,
+  `Kyle Pitts on deck. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged. ` : ""}${creditsRemaining} WiFi Health Report credit${creditsRemaining !== 1 ? "s" : ""} left. Let's get to work.`,
   `${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since your last visit Kyle. ` : ""}Lifetime Flock. ${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} this month. Use them well.`,
   `Navy veteran. Civilian IT. Lifetime Flock. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged Kyle. ` : ""}Welcome back.`,
   `Kyle. ${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} remaining. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since last login. ` : ""}What are we fixing today?`,
@@ -346,7 +346,7 @@ export const CORVUS_KYLE_DASHBOARD_BRIEF = (
   `Kyle Pitts. Lifetime Flock. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since last login. ` : ""}Good to see you back.`,
   `${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since your last visit. ` : ""}${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} remaining this month Kyle. What's broken?`,
   `Kyle. Good timing. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged. ` : ""}${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} left. Welcome back.`,
-  `The original friend. Back again. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged. ` : ""}${creditsRemaining} Verdict credit${creditsRemaining !== 1 ? "s" : ""} this month.`,
+  `The original friend. Back again. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged. ` : ""}${creditsRemaining} WiFi Health Report credit${creditsRemaining !== 1 ? "s" : ""} this month.`,
   `Kyle. ${creditsRemaining} credit${creditsRemaining !== 1 ? "s" : ""} remaining. Use them. That's what they're there for. Welcome back.`,
   `${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} since last login Kyle. ` : ""}Lifetime Flock. Compliments of Joshua. What do you need today?`,
   `Kyle Pitts. Navy. IT. Olive Garden. Lifetime Flock. ${personalScans > 0 ? `${personalScans} scan${personalScans !== 1 ? "s" : ""} logged. ` : ""}Welcome back.`,
@@ -414,27 +414,27 @@ export const CORVUS_TEAM_LEAD_DASHBOARD_BRIEF = (
 // ─── Fledgling dashboard strings ──────────────────────────────────────────────
 
 export const CORVUS_FLEDGLING_FIRST = [
-  "New Fledgling. Good. You made it to the right place. You have one free Verdict waiting. Let's not waste it.",
-  "First time here. Welcome to the nest — well, not the Nest tier, but close enough. One free Verdict. Let's use it well.",
-  "Fledgling subscriber. I see you. You have one Verdict credit and a lot to learn about your network. Let's begin.",
-  "Welcome. I'm Corvus. You have one free Verdict. I have opinions about every Wi-Fi network I've ever seen. This is going to go well.",
-  "Fledgling detected. One Verdict credit ready. Ask me anything about RF, or use it to scan your network. Either way — welcome.",
+  "New Fledgling. Good. You made it to the right place. You have one free WiFi Health Report waiting. Let's not waste it.",
+  "First time here. Welcome to the nest — well, not the Nest tier, but close enough. One free WiFi Health Report. Let's use it well.",
+  "Fledgling subscriber. I see you. You have one WiFi Health Report credit and a lot to learn about your network. Let's begin.",
+  "Welcome. I'm Corvus. You have one free WiFi Health Report. I have opinions about every Wi-Fi network I've ever seen. This is going to go well.",
+  "Fledgling detected. One WiFi Health Report credit ready. Ask me anything about WiFi, or use it to scan your network. Either way — welcome.",
 ];
 
 export const CORVUS_FLEDGLING_RETURNING = [
   "Welcome back, Fledgling. Still here. Still watching your spectrum.",
   "Returning Fledgling. Your network hasn't diagnosed itself while you were gone. Come in.",
-  "You came back. Good. Fledgling tier. One free Verdict. I remember.",
+  "You came back. Good. Fledgling tier. One free WiFi Health Report. I remember.",
   "Welcome back. I'm here. Your network is here. Let's see what needs attention.",
   "Fledgling subscriber returning. I've been keeping an eye on things. Come in.",
 ];
 
 export const CORVUS_FLEDGLING_VERDICT_USED = [
-  "You've used your free Verdict. When you're ready for more scans, Reckonings, and full platform access — Nest is waiting for you.",
-  "Free Verdict used. Your network has been seen. When you're ready to go deeper, Nest gives you three Verdicts a month plus Reckonings.",
-  "One Verdict. Used. That's the Fledgling experience. Upgrade to Nest whenever the data starts to feel insufficient.",
-  "Your complimentary Verdict has been spent. Good intel requires good investment. Nest is the next step.",
-  "Verdict used. You've had a taste of what Corvus sees. Nest takes it further — three Verdicts, Reckonings, full platform.",
+  "You've used your free WiFi Health Report. When you're ready for more scans, Whole-Home Surveys, and full platform access — Nest is waiting for you.",
+  "Free WiFi Health Report used. Your network has been seen. When you're ready to go deeper, Nest gives you three WiFi Health Reports a month plus Whole-Home Surveys.",
+  "One WiFi Health Report. Used. That's the Fledgling experience. Upgrade to Nest whenever the data starts to feel insufficient.",
+  "Your complimentary WiFi Health Report has been spent. Good intel requires good investment. Nest is the next step.",
+  "WiFi Health Report used. You've had a taste of what Corvus sees. Nest takes it further — three WiFi Health Reports, Whole-Home Surveys, full platform.",
 ];
 
 // ─── Verdict quote pool ────────────────────────────────────────────────────────
@@ -444,7 +444,7 @@ export const CORVUS_VERDICT_QUOTES = [
   "Three findings. None of them surprise me. I rolled a 20 on this scan before I even started — the caffeine helps.",
   "Your 5 GHz is cleaner than your 2.4 GHz. Dragonite hiding in a Magikarp situation. Let's fix the 2.4.",
   "Found seventeen networks on channel 11. That's not interference. That's everyone rolling Initiative simultaneously and nobody winning.",
-  "Open network. No security. A city without walls. Proverbs 25:28. Also your SSID. Both need attention and both are fixable.",
+  "Open network. No security. A city without walls. Proverbs 25:28. Also your WiFi network. Both need attention and both are fixable.",
   "Clean 5 GHz. Congested 2.4. You have a Blastoise and a Magikarp and you're leading with the wrong one. Easy fix.",
   "Whoever designed this was rolling disadvantage on every decision. Classic Gryffindor configuration — brave, well-intentioned, no plan.",
   "Natural 20 on the spectrum scan. This channel is clean. I'm making a note — this doesn't happen often and I want to remember it.",

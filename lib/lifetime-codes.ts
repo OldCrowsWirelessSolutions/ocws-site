@@ -84,7 +84,7 @@ export async function decrementLifetimeCredit(code: string): Promise<{ success: 
 
   const remaining = await checkAndResetMonthlyCredits(code);
   if (remaining <= 0) {
-    return { success: false, error: "No Verdict credits remaining this billing period." };
+    return { success: false, error: "No WiFi Health Report credits remaining this billing period." };
   }
 
   try {

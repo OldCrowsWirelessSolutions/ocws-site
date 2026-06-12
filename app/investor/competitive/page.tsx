@@ -11,13 +11,13 @@ export default function CompetitiveLandscapePage() {
     <div style={{ maxWidth: "900px", margin: "0 auto", padding: "48px 24px 80px", fontFamily: "system-ui, sans-serif" }}>
 
       <div style={{ textAlign: "center", marginBottom: "48px" }}>
-        <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.6rem", color: "#00C2C7", letterSpacing: "0.25em", textTransform: "uppercase", marginBottom: "8px" }}>
+        <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.6rem", color: "#22D6DC", letterSpacing: "0.25em", textTransform: "uppercase", marginBottom: "8px" }}>
           Old Crows Wireless Solutions · Investor Deck
         </p>
         <h1 style={{ fontSize: "2.2rem", fontWeight: 800, color: "#F4F6F8", margin: "0 0 8px" }}>
           The Market Has Tools.
         </h1>
-        <h1 style={{ fontSize: "2.2rem", fontWeight: 800, color: "#00C2C7", margin: 0 }}>
+        <h1 style={{ fontSize: "2.2rem", fontWeight: 800, color: "#22D6DC", margin: 0 }}>
           Nobody Has Corvus.
         </h1>
       </div>
@@ -26,7 +26,7 @@ export default function CompetitiveLandscapePage() {
       <div style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "24px", marginBottom: "20px" }}>
         <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.65rem", color: "#888888", letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: "8px" }}>Category 1</p>
         <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#F4F6F8", marginBottom: "16px" }}>Show You Data, Leave You Alone</h2>
-        <p style={{ fontSize: "0.9rem", color: "#B8922A", fontWeight: 600, marginBottom: "12px" }}>NetSpot · MetaGeek · inSSIDer · WiFiman</p>
+        <p style={{ fontSize: "0.9rem", color: "#D8AC32", fontWeight: 600, marginBottom: "12px" }}>NetSpot · MetaGeek · inSSIDer · WiFiman</p>
         {[
           "Display channel graphs and signal strength",
           "Require technical literacy to interpret",
@@ -45,7 +45,7 @@ export default function CompetitiveLandscapePage() {
       <div style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "24px", marginBottom: "32px" }}>
         <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.65rem", color: "#888888", letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: "8px" }}>Category 2</p>
         <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#F4F6F8", marginBottom: "16px" }}>Expert Tools for Expert Users</h2>
-        <p style={{ fontSize: "0.9rem", color: "#B8922A", fontWeight: 600, marginBottom: "12px" }}>Ekahau · TamoGraph · SolarWinds · Acrylic</p>
+        <p style={{ fontSize: "0.9rem", color: "#D8AC32", fontWeight: 600, marginBottom: "12px" }}>Ekahau · TamoGraph · SolarWinds · Acrylic</p>
         {[
           "Require trained RF engineers to operate",
           "$2,400–$50,000+/year",
@@ -61,8 +61,8 @@ export default function CompetitiveLandscapePage() {
       </div>
 
       {/* The Gap */}
-      <div style={{ background: "rgba(0,194,199,0.06)", border: "2px solid #00C2C7", borderRadius: "12px", padding: "28px", marginBottom: "32px", textAlign: "center" }}>
-        <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: "#00C2C7", marginBottom: "12px" }}>
+      <div style={{ background: "rgba(34,214,220,0.06)", border: "2px solid #22D6DC", borderRadius: "12px", padding: "28px", marginBottom: "32px", textAlign: "center" }}>
+        <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: "#22D6DC", marginBottom: "12px" }}>
           The Gap Between These Two Categories Is the Entire Market.
         </h2>
         <p style={{ fontSize: "1rem", color: "#F4F6F8", lineHeight: 1.7, marginBottom: "8px" }}>
@@ -75,7 +75,7 @@ export default function CompetitiveLandscapePage() {
       </div>
 
       {/* Corvus Owns the Gap */}
-      <div style={{ background: "linear-gradient(135deg, rgba(184,146,42,0.12) 0%, rgba(0,194,199,0.08) 100%)", border: "1px solid rgba(184,146,42,0.4)", borderRadius: "12px", padding: "28px", marginBottom: "32px" }}>
+      <div style={{ background: "linear-gradient(135deg, rgba(216,172,50,0.12) 0%, rgba(34,214,220,0.08) 100%)", border: "1px solid rgba(216,172,50,0.4)", borderRadius: "12px", padding: "28px", marginBottom: "32px" }}>
         <h2 style={{ fontSize: "1.3rem", fontWeight: 800, color: "#F4F6F8", marginBottom: "20px" }}>
           🐦‍⬛ Corvus Owns That Gap.
         </h2>
@@ -89,18 +89,18 @@ export default function CompetitiveLandscapePage() {
           "$50 vs $2,400+ — same quality diagnosis",
         ].map((item, i) => (
           <div key={i} style={{ display: "flex", gap: "10px", marginBottom: "10px", fontSize: "0.9rem", color: "#F4F6F8" }}>
-            <span style={{ color: "#00C2C7", flexShrink: 0 }}>✓</span>
+            <span style={{ color: "#22D6DC", flexShrink: 0 }}>✓</span>
             {item}
           </div>
         ))}
       </div>
 
       {/* Final statement */}
-      <div style={{ textAlign: "center", padding: "24px", background: "#0D1520", borderRadius: "12px", border: "1px solid rgba(0,194,199,0.2)" }}>
+      <div style={{ textAlign: "center", padding: "24px", background: "#0D1520", borderRadius: "12px", border: "1px solid rgba(34,214,220,0.2)" }}>
         <p style={{ fontSize: "1.2rem", fontWeight: 800, color: "#F4F6F8", marginBottom: "8px" }}>
           This Is Not a Better Wi-Fi Tool.
         </p>
-        <p style={{ fontSize: "1.4rem", fontWeight: 900, color: "#00C2C7" }}>
+        <p style={{ fontSize: "1.4rem", fontWeight: 900, color: "#22D6DC" }}>
           This Is a New Category.
         </p>
         <p style={{ marginTop: "20px", fontFamily: "'Share Tech Mono', monospace", fontSize: "0.6rem", color: "#555", letterSpacing: "0.15em" }}>

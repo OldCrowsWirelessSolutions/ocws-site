@@ -9,7 +9,7 @@ const sections = [
     content: [
       {
         heading: 'What is Crow\'s Eye?',
-        text: "Crow's Eye is an AI-powered wireless diagnostics app. Download it on Android, tap Scan, and Corvus — our RF intelligence engine — analyzes your wireless environment and renders a Verdict.",
+        text: "Crow's Eye is an AI-powered wireless diagnostics app. Download it on Android, tap Scan, and Corvus — our WiFi intelligence engine — analyzes your wireless environment and delivers a WiFi Health Report.",
       },
       {
         heading: 'What do I need?',
@@ -17,7 +17,7 @@ const sections = [
       },
       {
         heading: 'How long does it take?',
-        text: 'Scanning takes about 30 seconds. Corvus analyzes in under 2 minutes. You\'ll have a branded PDF Verdict ready to download in under 3 minutes total.',
+        text: 'Scanning takes about 30 seconds. Corvus analyzes in under 2 minutes. You\'ll have a branded PDF WiFi Health Report ready to download in under 3 minutes total.',
       },
     ],
   },
@@ -28,11 +28,11 @@ const sections = [
     content: [
       {
         heading: 'Android — Crow\'s Eye App',
-        text: '1. Download Crow\'s Eye from Google Play (search "Crow\'s Eye" or visit oldcrowswireless.com).\n2. Sign in or create your account.\n3. Tap Scan — Corvus reads your RF environment automatically.\n4. Review findings or unlock your Verdict.',
+        text: '1. Download Crow\'s Eye from Google Play (search "Crow\'s Eye" or visit oldcrowswireless.com).\n2. Sign in or create your account.\n3. Tap Scan — Corvus reads your WiFi environment automatically.\n4. Review findings or get your WiFi Health Report.',
       },
       {
         heading: 'How long does it take?',
-        text: 'Scanning takes about 30 seconds. Corvus analyzes in under 2 minutes. You\'ll have a branded PDF Verdict ready to download in under 3 minutes total.',
+        text: 'Scanning takes about 30 seconds. Corvus analyzes in under 2 minutes. You\'ll have a branded PDF WiFi Health Report ready to download in under 3 minutes total.',
       },
       {
         heading: 'iOS',
@@ -43,11 +43,11 @@ const sections = [
   {
     id: 'understanding-verdict',
     icon: '📄',
-    title: 'Understanding Your Verdict',
+    title: 'Understanding Your WiFi Health Report',
     content: [
       {
-        heading: 'What is a Verdict?',
-        text: 'A Corvus Verdict is a full RF diagnostic report for a single location. It identifies interference sources, channel conflicts, co-channel and adjacent-channel problems, signal overlap, hidden network security issues, and AP placement gaps.',
+        heading: 'What is a WiFi Health Report?',
+        text: 'A WiFi Health Report is a full WiFi diagnostic report for a single location. It identifies interference sources, channel conflicts, co-channel and adjacent-channel problems, signal overlap, hidden network security issues, and AP placement gaps.',
       },
       {
         heading: 'Severity Levels',
@@ -55,25 +55,25 @@ const sections = [
       },
       {
         heading: 'The PDF',
-        text: 'Every Verdict generates a branded PDF you can download, print, or send to a client. It includes your findings, fix instructions, router-specific guidance, and Corvus\'s closing statement. Murder and OCWS Pro subscribers get the full design suite included.',
+        text: 'Every WiFi Health Report generates a branded PDF you can download, print, or send to a client. It includes your findings, fix instructions, router-specific guidance, and Corvus\'s closing statement. Murder and OCWS Pro subscribers get the full design suite included.',
       },
     ],
   },
   {
     id: 'full-reckoning',
     icon: '💀',
-    title: 'The Full Reckoning',
+    title: 'The Whole-Home Survey',
     content: [
       {
-        heading: 'What is a Reckoning?',
-        text: 'The Full Reckoning is a multi-location site survey. Upload scan data from up to 15 locations simultaneously, and Corvus produces a consolidated diagnostic report across your entire property or portfolio.',
+        heading: 'What is a Whole-Home Survey?',
+        text: 'The Whole-Home Survey is a multi-location site survey. Upload scan data from up to 15 locations simultaneously, and Corvus produces a consolidated diagnostic report across your entire property or portfolio.',
       },
       {
-        heading: 'Reckoning Sizes',
+        heading: 'Whole-Home Survey Sizes',
         text: 'Small: 1–5 locations ($150). Standard: 6–15 locations ($350). Commercial: 16+ locations ($750). Hybrid properties with detached structures start at $350 + $50 per additional detached structure. OCWS Pro Certified: $1,500 — Joshua certifies every one personally.',
       },
       {
-        heading: 'When do I need a Reckoning?',
+        heading: 'When do I need a Whole-Home Survey?',
         text: 'Multi-floor buildings, campuses, retail chains, healthcare facilities, hospitality properties, warehouses, and any environment where a single AP scan won\'t capture the full picture.',
       },
     ],
@@ -85,19 +85,19 @@ const sections = [
     content: [
       {
         heading: 'Fledgling — $10/mo or $100/yr',
-        text: '1 Verdict per month. Corvus chat access. 30-day report history. Perfect for homeowners who want to check in on their network periodically.',
+        text: '1 WiFi Health Report per month. Corvus chat access. 30-day report history. Perfect for homeowners who want to check in on their network periodically.',
       },
       {
         heading: '🪺 Nest — $19/mo or $149/yr',
-        text: '3 Verdicts per month. 90-day report history. Extra Verdict credits available. The everyday diagnostic tier for power users and small businesses.',
+        text: '3 WiFi Health Reports per month. 90-day report history. Extra WiFi Health Report credits available. The everyday diagnostic tier for power users and small businesses.',
       },
       {
         heading: '🐦‍⬛ Flock — $99/mo or $899/yr',
-        text: '15 Verdicts per month. White-label PDF branding. Full Reckoning included. Team features. 180-day history. Built for MSPs, IT consultants, and field teams.',
+        text: '15 WiFi Health Reports per month. White-label PDF branding. Whole-Home Survey included. Team features. 180-day history. Built for MSPs, IT consultants, and field teams.',
       },
       {
         heading: '💀 Murder — $249/mo or $1,999/yr',
-        text: 'Unlimited Verdicts. Full design suite. Wireless Design Brief (AP placement + coverage analysis). 365-day history. The enterprise-grade tier.',
+        text: 'Unlimited WiFi Health Reports. Full design suite. Wireless Design Brief (AP placement + coverage analysis). 365-day history. The enterprise-grade tier.',
       },
     ],
   },
@@ -145,14 +145,14 @@ export default function LearnPage() {
       <div style={{ maxWidth: '820px', margin: '0 auto', padding: '48px 24px' }}>
         {/* Hero */}
         <div style={{ textAlign: 'center', marginBottom: '56px' }}>
-          <div style={{ color: '#00C2C7', fontFamily: 'Share Tech Mono, monospace', fontSize: '12px', letterSpacing: '0.1em', marginBottom: '12px' }}>
+          <div style={{ color: '#22D6DC', fontFamily: 'Share Tech Mono, monospace', fontSize: '12px', letterSpacing: '0.1em', marginBottom: '12px' }}>
             CORVUS KNOWLEDGE BASE
           </div>
           <h1 style={{ fontSize: '36px', fontWeight: 800, color: '#F4F6F8', margin: '0 0 16px' }}>
             Learn How Crow&apos;s Eye Works
           </h1>
           <p style={{ color: '#888', fontSize: '16px', lineHeight: 1.7, maxWidth: '560px', margin: '0 auto' }}>
-            Everything you need to go from raw scan data to a client-ready Verdict. Corvus doesn&apos;t guess. Here&apos;s how he thinks.
+            Everything you need to go from raw scan data to a client-ready WiFi Health Report. Corvus doesn&apos;t guess. Here&apos;s how he thinks.
           </p>
         </div>
 
@@ -179,7 +179,7 @@ export default function LearnPage() {
 
             {section.content.map((item, ii) => (
               <div key={ii} style={{ marginBottom: '24px' }}>
-                <h3 style={{ color: '#00C2C7', fontSize: '14px', fontFamily: 'Share Tech Mono, monospace', marginBottom: '10px', letterSpacing: '0.03em' }}>
+                <h3 style={{ color: '#22D6DC', fontSize: '14px', fontFamily: 'Share Tech Mono, monospace', marginBottom: '10px', letterSpacing: '0.03em' }}>
                   {item.heading}
                 </h3>
                 <div style={{ color: '#888', fontSize: '14px', lineHeight: 1.8 }}>
@@ -195,10 +195,10 @@ export default function LearnPage() {
         {/* CTA */}
         <div style={{ background: '#1A2332', borderRadius: '16px', padding: '40px', textAlign: 'center', border: '1px solid #0D6E7A' }}>
           <div style={{ fontSize: '36px', marginBottom: '16px' }}>🐦‍⬛</div>
-          <h2 style={{ color: '#F4F6F8', fontSize: '20px', marginBottom: '10px' }}>Ready to run your first Verdict?</h2>
+          <h2 style={{ color: '#F4F6F8', fontSize: '20px', marginBottom: '10px' }}>Ready to get your first WiFi Health Report?</h2>
           <p style={{ color: '#888', fontSize: '14px', marginBottom: '24px' }}>Scan your network. Upload the files. Let Corvus do the rest.</p>
           <Link href="/crows-eye" style={{
-            display: 'inline-block', background: 'linear-gradient(135deg, #0D6E7A, #00C2C7)',
+            display: 'inline-block', background: 'linear-gradient(135deg, #0D6E7A, #22D6DC)',
             color: '#0D1520', padding: '14px 32px', borderRadius: '8px',
             textDecoration: 'none', fontWeight: 'bold', fontFamily: 'Share Tech Mono, monospace',
             letterSpacing: '0.05em', fontSize: '14px',

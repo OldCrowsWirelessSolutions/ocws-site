@@ -5,7 +5,7 @@ import Image from "next/image";
 export const metadata: Metadata = {
   title: "How It Works — Crow's Eye | OCWS",
   description:
-    "Download Crow's Eye on Android. Corvus scans your wireless environment automatically and delivers a full Verdict in minutes — no screenshots, no third-party apps required.",
+    "Download Crow's Eye on Android. Corvus scans your wireless environment automatically and delivers a full WiFi Health Report in minutes — no screenshots, no third-party apps required.",
 };
 
 const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.oldcrowswireless.corvus";
@@ -25,14 +25,14 @@ const STEPS = [
   },
   {
     number: "03",
-    title: "Get Your Verdict",
+    title: "Get Your WiFi Health Report",
     body: "Corvus analyzes the data and delivers prioritized findings — what's wrong, how bad it is, and exactly how to fix it. Step-by-step instructions specific to your router.",
     detail: "Results in minutes. Plain English. No engineer required.",
   },
   {
     number: "04",
     title: "Download the PDF",
-    body: "Every Verdict produces a signed, branded PDF report you can save, share with your IT team, or use for vendor quotes and insurance documentation.",
+    body: "Every WiFi Health Report comes as a signed, branded PDF you can save, share with your IT team, or use for vendor quotes and insurance documentation.",
     detail: "Reports are stored in your account history and accessible any time.",
   },
 ];
@@ -40,7 +40,7 @@ const STEPS = [
 const FEATURES = [
   {
     icon: "📡",
-    title: "Live RF Scanning",
+    title: "Live WiFi Scanning",
     body: "Corvus reads your wireless environment in real time — channels, signal strength, interference sources, and competing networks.",
   },
   {
@@ -50,13 +50,13 @@ const FEATURES = [
   },
   {
     icon: "📋",
-    title: "Signed PDF Verdicts",
+    title: "Signed PDF WiFi Health Reports",
     body: "Every analysis produces a branded PDF with prioritized findings and step-by-step fix instructions.",
   },
   {
     icon: "🔒",
     title: "Security Gap Detection",
-    body: "Open networks, weak encryption, exposed SSIDs, and missing VLAN segmentation — flagged automatically.",
+    body: "Open networks, weak encryption, exposed WiFi network names, and missing VLAN segmentation — flagged automatically.",
   },
   {
     icon: "📊",
@@ -81,8 +81,8 @@ export default function HowItWorksPage() {
           padding: "80px 0 72px",
           borderBottom: "1px solid rgba(255,255,255,0.06)",
           backgroundImage: `
-            linear-gradient(rgba(0,194,199,0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0,194,199,0.03) 1px, transparent 1px)
+            linear-gradient(rgba(34,214,220,0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(34,214,220,0.03) 1px, transparent 1px)
           `,
           backgroundSize: "48px 48px",
         }}
@@ -90,7 +90,7 @@ export default function HowItWorksPage() {
         <div className="ocws-container text-center">
           <p
             className="text-xs font-semibold uppercase tracking-widest mb-4"
-            style={{ color: "#00C2C7", letterSpacing: "0.18em", fontFamily: "'Share Tech Mono', monospace" }}
+            style={{ color: "#22D6DC", letterSpacing: "0.18em", fontFamily: "'Share Tech Mono', monospace" }}
           >
             Crow&rsquo;s Eye &middot; How It Works
           </p>
@@ -98,7 +98,7 @@ export default function HowItWorksPage() {
             Download the app.<br />Corvus does the rest.
           </h1>
           <p className="text-base md:text-lg max-w-xl mx-auto mb-10 leading-relaxed" style={{ color: "#8AAABB" }}>
-            No screenshots. No third-party scanner apps. Crow&rsquo;s Eye handles the RF scanning
+            No screenshots. No third-party scanner apps. Crow&rsquo;s Eye handles the WiFi scanning
             automatically — you get the findings in minutes.
           </p>
           <a
@@ -106,7 +106,7 @@ export default function HowItWorksPage() {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 rounded-xl px-7 py-4 text-base font-bold"
-            style={{ background: "linear-gradient(135deg, #0D6E7A, #00C2C7)", color: "#fff", textDecoration: "none" }}
+            style={{ background: "linear-gradient(135deg, #0D6E7A, #22D6DC)", color: "#fff", textDecoration: "none" }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <path d="M2 3.27L12.73 12L2 20.73V3.27Z" fill="#fff" opacity="0.9" />
@@ -123,7 +123,7 @@ export default function HowItWorksPage() {
       <section style={{ background: "#0D1520", padding: "80px 0" }}>
         <div className="ocws-container max-w-4xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-white mb-3">Four steps. One Verdict.</h2>
+            <h2 className="text-3xl font-bold text-white mb-3">Four steps. One WiFi Health Report.</h2>
             <p className="text-sm" style={{ color: "#888" }}>From download to findings in under ten minutes.</p>
           </div>
 
@@ -139,7 +139,7 @@ export default function HowItWorksPage() {
                   style={{
                     fontSize: "2.5rem",
                     lineHeight: 1,
-                    color: "rgba(0,194,199,0.25)",
+                    color: "rgba(34,214,220,0.25)",
                     fontFamily: "'Share Tech Mono', monospace",
                     minWidth: "3.5rem",
                   }}
@@ -176,7 +176,7 @@ export default function HowItWorksPage() {
               <div
                 key={title}
                 className="rounded-xl p-6"
-                style={{ background: "#1A2332", borderLeft: "3px solid #00C2C7" }}
+                style={{ background: "#1A2332", borderLeft: "3px solid #22D6DC" }}
               >
                 <div className="text-2xl mb-3">{icon}</div>
                 <h3 className="font-bold text-white mb-2">{title}</h3>
@@ -192,20 +192,20 @@ export default function HowItWorksPage() {
         <div className="ocws-container max-w-3xl mx-auto text-center">
           <p
             className="text-xs font-semibold uppercase tracking-widest mb-4"
-            style={{ color: "#B8922A", fontFamily: "'Share Tech Mono', monospace" }}
+            style={{ color: "#D8AC32", fontFamily: "'Share Tech Mono', monospace" }}
           >
             Multi-Location Survey
           </p>
           <h2 className="text-3xl font-bold text-white mb-4">Need to cover the whole building?</h2>
           <p className="text-base leading-relaxed mb-8 max-w-xl mx-auto" style={{ color: "#8AAABB" }}>
-            The Full Reckoning walks every room. Corvus analyzes each location and delivers a
+            The Whole-Home Survey walks every room. Corvus analyzes each location and delivers a
             unified report covering every space — dead zones, site-wide patterns, and facility-level fixes.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/pricing"
               className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold"
-              style={{ background: "#00C2C7", color: "#0D1520", textDecoration: "none" }}
+              style={{ background: "#22D6DC", color: "#0D1520", textDecoration: "none" }}
             >
               See Pricing
             </Link>
@@ -215,8 +215,8 @@ export default function HowItWorksPage() {
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold"
               style={{
-                border: "1px solid rgba(0,194,199,0.3)",
-                color: "#00C2C7",
+                border: "1px solid rgba(34,214,220,0.3)",
+                color: "#22D6DC",
                 background: "transparent",
                 textDecoration: "none",
               }}

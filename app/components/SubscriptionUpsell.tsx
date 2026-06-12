@@ -14,7 +14,7 @@ export default function SubscriptionUpsell({ reportId }: { reportId: string }) {
       name: 'Nest',
       price: '$29',
       period: '/mo',
-      features: ['3 Verdicts / month', '1 Small Reckoning / month', '1 seat'],
+      features: ['3 WiFi Health Reports / month', '1 Small Whole-Home Survey / month', '1 seat'],
       featured: false,
     },
     {
@@ -22,7 +22,7 @@ export default function SubscriptionUpsell({ reportId }: { reportId: string }) {
       name: 'Flock',
       price: '$79',
       period: '/mo',
-      features: ['15 Verdicts / month', 'Small + Standard Reckonings', '5 seats', 'Corvus chat included'],
+      features: ['15 WiFi Health Reports / month', 'Small + Standard Whole-Home Surveys', '5 seats', 'Corvus chat included'],
       featured: true,
     },
     {
@@ -30,7 +30,7 @@ export default function SubscriptionUpsell({ reportId }: { reportId: string }) {
       name: 'Murder',
       price: '$199',
       period: '/mo',
-      features: ['Unlimited Verdicts', 'All Reckoning sizes', '15 seats', 'Priority access'],
+      features: ['Unlimited WiFi Health Reports', 'All Whole-Home Survey sizes', '15 seats', 'Priority access'],
       featured: false,
     },
   ];
@@ -38,7 +38,7 @@ export default function SubscriptionUpsell({ reportId }: { reportId: string }) {
   return (
     <div style={{
       background: 'rgba(13,21,32,0.9)',
-      border: '1px solid rgba(0,194,199,0.25)',
+      border: '1px solid rgba(34,214,220,0.25)',
       borderRadius: 12,
       padding: 24,
       marginTop: 24,
@@ -48,8 +48,8 @@ export default function SubscriptionUpsell({ reportId }: { reportId: string }) {
         display: 'flex',
         gap: 12,
         alignItems: 'flex-start',
-        background: 'rgba(0,194,199,0.05)',
-        border: '1px solid rgba(0,194,199,0.15)',
+        background: 'rgba(34,214,220,0.05)',
+        border: '1px solid rgba(34,214,220,0.15)',
         borderRadius: 8,
         padding: 16,
         marginBottom: 20,
@@ -61,7 +61,7 @@ export default function SubscriptionUpsell({ reportId }: { reportId: string }) {
         />
         <div>
           <div style={{
-            color: '#00C2C7',
+            color: '#22D6DC',
             fontFamily: 'monospace',
             fontSize: '0.55rem',
             letterSpacing: '0.2em',
@@ -76,7 +76,7 @@ export default function SubscriptionUpsell({ reportId }: { reportId: string }) {
             lineHeight: 1.6,
             fontFamily: 'monospace',
           }}>
-            You just saw what I can do. Subscribe and get this every month — regular Verdicts, deeper Reckonings, and direct access to me when you have questions.
+            You just saw what I can do. Subscribe and get this every month — regular WiFi Health Reports, deeper Whole-Home Surveys, and direct access to me when you have questions.
           </div>
         </div>
       </div>
@@ -103,9 +103,9 @@ export default function SubscriptionUpsell({ reportId }: { reportId: string }) {
           <div
             key={plan.tier}
             style={{
-              background: plan.featured ? 'rgba(0,194,199,0.05)' : '#1A2332',
+              background: plan.featured ? 'rgba(34,214,220,0.05)' : '#1A2332',
               border: plan.featured
-                ? '1px solid rgba(0,194,199,0.35)'
+                ? '1px solid rgba(34,214,220,0.35)'
                 : '1px solid rgba(255,255,255,0.08)',
               borderRadius: 10,
               padding: 16,
@@ -118,7 +118,7 @@ export default function SubscriptionUpsell({ reportId }: { reportId: string }) {
               <div style={{
                 fontFamily: 'monospace',
                 fontSize: '0.5rem',
-                color: '#00C2C7',
+                color: '#22D6DC',
                 letterSpacing: '0.15em',
                 textTransform: 'uppercase',
               }}>
@@ -137,7 +137,7 @@ export default function SubscriptionUpsell({ reportId }: { reportId: string }) {
 
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
               <span style={{
-                color: plan.featured ? '#00C2C7' : 'rgba(244,246,248,0.8)',
+                color: plan.featured ? '#22D6DC' : 'rgba(244,246,248,0.8)',
                 fontFamily: "'Share Tech Mono', monospace",
                 fontSize: '1.4rem',
                 fontWeight: 700,
@@ -172,7 +172,7 @@ export default function SubscriptionUpsell({ reportId }: { reportId: string }) {
               style={{
                 width: '100%',
                 padding: '10px',
-                background: '#00C2C7',
+                background: '#22D6DC',
                 color: '#0D1520',
                 border: 'none',
                 borderRadius: 8,

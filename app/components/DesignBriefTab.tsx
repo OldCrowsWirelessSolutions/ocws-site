@@ -67,7 +67,7 @@ export default function DesignBriefTab({ subscriptionCode, tier }: Props) {
     return (
       <div style={{ padding: '40px 20px', textAlign: 'center' }}>
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>💀</div>
-        <div style={{ color: '#00C2C7', fontFamily: 'Share Tech Mono, monospace', fontSize: '16px', marginBottom: '8px' }}>
+        <div style={{ color: '#22D6DC', fontFamily: 'Share Tech Mono, monospace', fontSize: '16px', marginBottom: '8px' }}>
           Murder Tier Required
         </div>
         <div style={{ color: '#888', fontSize: '14px', maxWidth: '360px', margin: '0 auto' }}>
@@ -200,7 +200,7 @@ export default function DesignBriefTab({ subscriptionCode, tier }: Props) {
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
-            <div style={{ color: '#00C2C7', fontFamily: 'Share Tech Mono, monospace', fontSize: '12px', marginBottom: '4px' }}>WIRELESS DESIGN BRIEF</div>
+            <div style={{ color: '#22D6DC', fontFamily: 'Share Tech Mono, monospace', fontSize: '12px', marginBottom: '4px' }}>WIRELESS DESIGN BRIEF</div>
             <div style={{ color: '#F4F6F8', fontSize: '18px', fontWeight: 'bold' }}>{locationInfo.name}</div>
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
@@ -216,18 +216,18 @@ export default function DesignBriefTab({ subscriptionCode, tier }: Props) {
         </div>
 
         {/* Executive Summary */}
-        <div style={{ background: '#1A2332', borderRadius: '8px', padding: '16px', marginBottom: '16px', borderLeft: '4px solid #00C2C7' }}>
-          <div style={{ color: '#00C2C7', fontSize: '11px', fontFamily: 'Share Tech Mono, monospace', marginBottom: '8px' }}>EXECUTIVE SUMMARY</div>
+        <div style={{ background: '#1A2332', borderRadius: '8px', padding: '16px', marginBottom: '16px', borderLeft: '4px solid #22D6DC' }}>
+          <div style={{ color: '#22D6DC', fontSize: '11px', fontFamily: 'Share Tech Mono, monospace', marginBottom: '8px' }}>EXECUTIVE SUMMARY</div>
           <div style={{ color: '#F4F6F8', fontSize: '14px', fontStyle: 'italic', lineHeight: 1.6 }}>"{analysis.executiveSummary}"</div>
         </div>
 
         {/* Stats row */}
         <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
           {[
-            { label: 'APs Required', value: analysis.estimatedAPCount, color: '#00C2C7' },
+            { label: 'APs Required', value: analysis.estimatedAPCount, color: '#22D6DC' },
             { label: 'Critical Findings', value: analysis.criticalFindings?.length || 0, color: '#FF4444' },
             { label: 'Coverage Zones', value: analysis.coverageZones?.length || 0, color: '#0D6E7A' },
-            { label: 'Interference Risks', value: analysis.interferenceRisks?.length || 0, color: '#B8922A' },
+            { label: 'Interference Risks', value: analysis.interferenceRisks?.length || 0, color: '#D8AC32' },
           ].map(({ label, value, color }) => (
             <div key={label} style={{ flex: 1, minWidth: '100px', background: '#0D1520', border: `1px solid ${color}33`, borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
               <div style={{ color, fontSize: '24px', fontWeight: 'bold', fontFamily: 'Share Tech Mono, monospace' }}>{value}</div>
@@ -252,14 +252,14 @@ export default function DesignBriefTab({ subscriptionCode, tier }: Props) {
         <div style={{ marginBottom: '16px' }}>
           <div style={{ color: '#0D6E7A', fontSize: '11px', fontFamily: 'Share Tech Mono, monospace', marginBottom: '8px' }}>AP PLACEMENT RECOMMENDATIONS</div>
           {analysis.apRecommendations?.map((ap: any, i: number) => (
-            <div key={i} style={{ background: '#1A2332', borderRadius: '8px', padding: '14px', marginBottom: '8px', borderLeft: `4px solid ${ap.priority === 'Primary' ? '#00C2C7' : ap.priority === 'Secondary' ? '#0D6E7A' : '#888'}` }}>
+            <div key={i} style={{ background: '#1A2332', borderRadius: '8px', padding: '14px', marginBottom: '8px', borderLeft: `4px solid ${ap.priority === 'Primary' ? '#22D6DC' : ap.priority === 'Secondary' ? '#0D6E7A' : '#888'}` }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
                 <div>
-                  <span style={{ color: '#B8922A', fontFamily: 'Share Tech Mono, monospace', fontSize: '12px' }}>AP {i + 1}</span>
+                  <span style={{ color: '#D8AC32', fontFamily: 'Share Tech Mono, monospace', fontSize: '12px' }}>AP {i + 1}</span>
                   <span style={{ color: '#F4F6F8', fontWeight: 'bold', marginLeft: '8px', fontSize: '14px' }}>{ap.location}</span>
                 </div>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                  <span style={{ background: '#0D6E7A33', color: '#00C2C7', fontSize: '11px', padding: '2px 8px', borderRadius: '4px', fontFamily: 'Share Tech Mono, monospace' }}>{ap.band}</span>
+                  <span style={{ background: '#0D6E7A33', color: '#22D6DC', fontSize: '11px', padding: '2px 8px', borderRadius: '4px', fontFamily: 'Share Tech Mono, monospace' }}>{ap.band}</span>
                   <span style={{ background: '#1A2332', color: '#888', fontSize: '11px', padding: '2px 8px', borderRadius: '4px' }}>{ap.apType}</span>
                   <span style={{ background: '#1A2332', color: '#888', fontSize: '11px', padding: '2px 8px', borderRadius: '4px' }}>~{ap.coverageRadius}</span>
                 </div>
@@ -289,7 +289,7 @@ export default function DesignBriefTab({ subscriptionCode, tier }: Props) {
         <div style={{ marginBottom: '16px' }}>
           <div style={{ color: '#0D6E7A', fontSize: '11px', fontFamily: 'Share Tech Mono, monospace', marginBottom: '8px' }}>COVERAGE ZONES</div>
           {analysis.coverageZones?.map((zone: any, i: number) => {
-            const rc = zone.riskLevel === 'Critical' ? '#FF4444' : zone.riskLevel === 'High' ? '#FF8C00' : zone.riskLevel === 'Medium' ? '#B8922A' : '#0D6E7A';
+            const rc = zone.riskLevel === 'Critical' ? '#FF4444' : zone.riskLevel === 'High' ? '#FF8C00' : zone.riskLevel === 'Medium' ? '#D8AC32' : '#0D6E7A';
             return (
               <div key={i} style={{ background: '#1A2332', borderRadius: '6px', padding: '12px 14px', marginBottom: '6px', borderLeft: `4px solid ${rc}` }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
@@ -297,16 +297,16 @@ export default function DesignBriefTab({ subscriptionCode, tier }: Props) {
                   <span style={{ color: rc, fontSize: '11px', fontFamily: 'Share Tech Mono, monospace' }}>{zone.riskLevel.toUpperCase()}</span>
                 </div>
                 <div style={{ color: '#888', fontSize: '12px', marginBottom: '4px' }}>{zone.assessment}</div>
-                <div style={{ color: '#00C2C7', fontSize: '12px' }}>→ {zone.recommendation}</div>
+                <div style={{ color: '#22D6DC', fontSize: '12px' }}>→ {zone.recommendation}</div>
               </div>
             );
           })}
         </div>
 
         {/* Corvus Verdict */}
-        <div style={{ background: '#0D1520', border: '1px solid #B8922A', borderRadius: '8px', padding: '20px', marginTop: '8px' }}>
-          <div style={{ color: '#B8922A', fontSize: '11px', fontFamily: 'Share Tech Mono, monospace', marginBottom: '10px' }}>CORVUS' VERDICT</div>
-          <div style={{ color: '#00C2C7', fontSize: '14px', fontStyle: 'italic', lineHeight: 1.7 }}>"{analysis.corvusVerdict}"</div>
+        <div style={{ background: '#0D1520', border: '1px solid #D8AC32', borderRadius: '8px', padding: '20px', marginTop: '8px' }}>
+          <div style={{ color: '#D8AC32', fontSize: '11px', fontFamily: 'Share Tech Mono, monospace', marginBottom: '10px' }}>CORVUS' VERDICT</div>
+          <div style={{ color: '#22D6DC', fontSize: '14px', fontStyle: 'italic', lineHeight: 1.7 }}>"{analysis.corvusVerdict}"</div>
         </div>
       </div>
     );
@@ -315,7 +315,7 @@ export default function DesignBriefTab({ subscriptionCode, tier }: Props) {
   return (
     <div style={{ padding: '20px 0' }}>
       <div style={{ marginBottom: '24px' }}>
-        <div style={{ color: '#00C2C7', fontFamily: 'Share Tech Mono, monospace', fontSize: '12px', marginBottom: '4px' }}>WIRELESS DESIGN BRIEF</div>
+        <div style={{ color: '#22D6DC', fontFamily: 'Share Tech Mono, monospace', fontSize: '12px', marginBottom: '4px' }}>WIRELESS DESIGN BRIEF</div>
         <div style={{ color: '#F4F6F8', fontSize: '18px', fontWeight: 'bold', marginBottom: '6px' }}>AP Placement + Coverage Analysis</div>
         <div style={{ color: '#888', fontSize: '13px' }}>Upload a floor plan and wireless scan files. Corvus will analyze both and produce a full design brief with AP placement recommendations, channel strategy, and coverage zone analysis.</div>
       </div>

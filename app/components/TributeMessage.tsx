@@ -68,7 +68,7 @@ export default function TributeMessagePanel({ message, onDismiss }: TributeProps
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", flexShrink: 0 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/corvus_still.png" className="tribute-corvus-avatar" alt="Corvus" />
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.45rem", color: "#B8922A", letterSpacing: "0.1em", textTransform: "uppercase", textAlign: "center" }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.45rem", color: "#D8AC32", letterSpacing: "0.1em", textTransform: "uppercase", textAlign: "center" }}>
             CORVUS
           </div>
         </div>

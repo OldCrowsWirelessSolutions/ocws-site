@@ -566,7 +566,7 @@ export default function CrowsEyeClient() {
 
   // Dynamic dialogue lines referencing actual form data shown while Corvus analyzes
   const analysisDialogue = useMemo<string[]>(() => {
-    const lines: string[] = ["Reading your RF environment\u2026"];
+    const lines: string[] = ["Reading your WiFi environment\u2026"];
     if (ssid) lines.push(`Scanning for ${ssid} in the stack\u2026`);
     lines.push("Checking 2.4\u202FGHz channel saturation\u2026");
     if (ssid) lines.push(`Pulling BSSID data for ${ssid}\u2026`);
@@ -584,7 +584,7 @@ export default function CrowsEyeClient() {
     lines.push("Mapping channel conflicts and overlap\u2026");
     lines.push("Calculating signal attenuation patterns\u2026");
     lines.push("Building step-by-step remediation plan\u2026");
-    lines.push("Rendering the Verdict\u2026");
+    lines.push("Rendering the WiFi Health Report\u2026");
     return lines;
   }, [ssid, mode, locations.length, isHybrid]);
 
@@ -1293,11 +1293,11 @@ export default function CrowsEyeClient() {
 
   function promoTypeLabel(type: string): string {
     switch (type) {
-      case "verdict":               return "Verdict";
-      case "reckoning_small":       return "Small Reckoning";
-      case "reckoning_standard":    return "Standard Reckoning";
-      case "reckoning_commercial":  return "Commercial Reckoning";
-      case "reckoning_pro":         return "Pro Certified Reckoning";
+      case "verdict":               return "WiFi Health Report";
+      case "reckoning_small":       return "Small Whole-Home Survey";
+      case "reckoning_standard":    return "Standard Whole-Home Survey";
+      case "reckoning_commercial":  return "Commercial Whole-Home Survey";
+      case "reckoning_pro":         return "Pro Certified Whole-Home Survey";
       default:                      return "product";
     }
   }
@@ -1411,7 +1411,7 @@ export default function CrowsEyeClient() {
       const NAVYD: [number,number,number] = [13,  21,  32];
       const TEAL:  [number,number,number] = [13,  110, 122];
       const CYAN:  [number,number,number] = [0,   194, 199];
-      const GOLD:  [number,number,number] = [184, 146, 42];
+      const GOLD:  [number,number,number] = [216, 172, 50];
       const WHITE: [number,number,number] = [255, 255, 255];
       const LGRAY: [number,number,number] = [244, 246, 248];
       const MGRAY: [number,number,number] = [170, 170, 170];
@@ -1469,7 +1469,7 @@ export default function CrowsEyeClient() {
         // Slim continuation header
         sf(NAVYD); doc.rect(0, 0, PW, 26, "F");
         sf(TEAL);  doc.rect(0, 23, PW, 3, "F");
-        st(CYAN); fn("bold", 7.5); doc.text("CORVUS\u2019 VERDICT", ML, 17);
+        st(CYAN); fn("bold", 7.5); doc.text("WIFI HEALTH REPORT", ML, 17);
         st(DGRAY); fn("normal", 7); doc.text(reportId, PW - MR, 17, { align: "right" });
         y = 36;
       }
@@ -1498,9 +1498,9 @@ export default function CrowsEyeClient() {
         ocwsW = Math.round(LOGO_H * pdfLogos.ocwsAspect);
         doc.addImage(pdfLogos.ocws, "PNG", ML, (HDR - LOGO_H) / 2, ocwsW, LOGO_H);
       }
-      // "CORVUS' VERDICT" centered in cyan
+      // "WIFI HEALTH REPORT" centered in cyan
       st(CYAN); fn("bold", 20);
-      doc.text("CORVUS\u2019 VERDICT", PW / 2, HDR / 2 + 7, { align: "center" });
+      doc.text("WIFI HEALTH REPORT", PW / 2, HDR / 2 + 7, { align: "center" });
       // Report info right in gold/gray
       st(GOLD); fn("bold", 7.5);
       doc.text("CROW\u2019S EYE BY CORVUS", PW - MR, HDR / 2 - 6, { align: "right" });
@@ -1514,7 +1514,7 @@ export default function CrowsEyeClient() {
       const nameW   = wrap(name || "\u2014", HALF);
       const addrStr = [street, suite, city, state, zip].filter(Boolean).join(", ") || "Address not provided";
       const addrW   = wrap(addrStr, HALF);
-      const ssidW   = ssid ? wrap(`SSID: ${ssid}`, HALF) : [];
+      const ssidW   = ssid ? wrap(`WiFi Network: ${ssid}`, HALF) : [];
       const envVal  = [environment.charAt(0).toUpperCase() + environment.slice(1), locationType]
         .filter(Boolean).join("  \u00B7  ");
       const rightRows: Array<[string, string]> = [
@@ -1786,7 +1786,7 @@ export default function CrowsEyeClient() {
       sf(NAVY); doc.roundedRect(ML, y, CW, CALLOUT_H, 5, 5, "F");
       sd(TEAL); doc.setLineWidth(0.5); doc.roundedRect(ML, y, CW, CALLOUT_H, 5, 5, "S");
       sd(TEAL); doc.setLineWidth(3); doc.line(ML, y + 5, ML, y + CALLOUT_H - 5);
-      st(CYAN); fn("bold", 7); txt("QUESTIONS ABOUT THIS VERDICT?", ML + 10, y + 14, 7);
+      st(CYAN); fn("bold", 7); txt("QUESTIONS ABOUT THIS REPORT?", ML + 10, y + 14, 7);
       st(WHITE); fn("normal", 7.5);
       txt("Log into your dashboard and open the \u201CTalk to Corvus\u201D tab.", ML + 10, y + 26, 7.5);
       txt("Corvus has full context on this report and can answer any follow-up", ML + 10, y + 37, 7.5);
@@ -1837,7 +1837,7 @@ export default function CrowsEyeClient() {
       // ── SAVE ──────────────────────────────────────────────────────────────
       const safeName = (name || "Client").replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, " ");
       const fileDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
-      doc.save(`Corvus\u2019 Verdict - ${safeName} - ${fileDate}.pdf`);
+      doc.save(`WiFi Health Report - ${safeName} - ${fileDate}.pdf`);
     } finally {
       setPdfGenerating(false);
     }
@@ -1852,17 +1852,17 @@ export default function CrowsEyeClient() {
       {preAuthed && appliedCode && (
         <div
           className="mb-8 px-4 py-3 rounded-2xl text-sm flex items-center gap-3"
-          style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.25)" }}
+          style={{ background: "rgba(34,214,220,0.08)", border: "1px solid rgba(34,214,220,0.25)" }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00C2C7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22D6DC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
           </svg>
-          <span style={{ color: "#00C2C7", fontWeight: 600 }}>
+          <span style={{ color: "#22D6DC", fontWeight: 600 }}>
             Authenticated from your dashboard
             {subscriptionEntitlement?.tier && ` — ${subscriptionEntitlement.tier.charAt(0).toUpperCase() + subscriptionEntitlement.tier.slice(1)} tier`}
             {subscriptionEntitlement?.customer_name && ` (${subscriptionEntitlement.customer_name})`}
           </span>
-          <span style={{ color: "rgba(0,194,199,0.6)", fontSize: "12px", marginLeft: "auto" }}>
+          <span style={{ color: "rgba(34,214,220,0.6)", fontSize: "12px", marginLeft: "auto" }}>
             Reports will save to your dashboard automatically
           </span>
         </div>
@@ -1927,11 +1927,11 @@ export default function CrowsEyeClient() {
               <div className="mt-2 space-y-1.5">
                 <div className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
                   {subscriptionEntitlement.verdicts_unlimited
-                    ? "Verdicts: unlimited"
-                    : `Verdicts remaining: ${subscriptionEntitlement.verdicts_remaining ?? 0}`}
+                    ? "WiFi Health Reports: unlimited"
+                    : `WiFi Health Reports remaining: ${subscriptionEntitlement.verdicts_remaining ?? 0}`}
                   {subscriptionEntitlement.reckonings_remaining && (
                     <span className="ml-3">
-                      Reckonings: {subscriptionEntitlement.reckonings_unlimited?.small ? "∞" : subscriptionEntitlement.reckonings_remaining.small} small
+                      Whole-Home Surveys: {subscriptionEntitlement.reckonings_unlimited?.small ? "∞" : subscriptionEntitlement.reckonings_remaining.small} small
                       {" / "}{subscriptionEntitlement.reckonings_unlimited?.standard ? "∞" : subscriptionEntitlement.reckonings_remaining.standard} standard
                       {" / "}{subscriptionEntitlement.reckonings_unlimited?.commercial ? "∞" : subscriptionEntitlement.reckonings_remaining.commercial} commercial
                     </span>
@@ -2008,7 +2008,7 @@ export default function CrowsEyeClient() {
                 onClick={handleApplyCode}
                 disabled={accessCodeValidating}
                 className="shrink-0 self-start rounded-xl px-4 py-3 text-sm font-semibold ocws-glow-hover disabled:opacity-50"
-                style={{ background: "#00C2C7", color: "#0D1520" }}
+                style={{ background: "#22D6DC", color: "#0D1520" }}
               >
                 {accessCodeValidating ? "Checking…" : "Apply Subscription"}
               </button>
@@ -2020,7 +2020,7 @@ export default function CrowsEyeClient() {
                   type="button"
                   onClick={() => setShowRecovery(true)}
                   className="text-xs transition"
-                  style={{ color: "rgba(0,194,199,0.6)" }}
+                  style={{ color: "rgba(34,214,220,0.6)" }}
                 >
                   Forgot your Subscription ID?
                 </button>
@@ -2043,7 +2043,7 @@ export default function CrowsEyeClient() {
                     onClick={handleRecoverySubmit}
                     disabled={recoverySubmitting || !recoveryEmail}
                     className="shrink-0 rounded-xl px-3 py-2 text-xs font-semibold disabled:opacity-50 transition"
-                    style={{ background: "rgba(0,194,199,0.15)", color: "#00C2C7", border: "1px solid rgba(0,194,199,0.3)" }}
+                    style={{ background: "rgba(34,214,220,0.15)", color: "#22D6DC", border: "1px solid rgba(34,214,220,0.3)" }}
                   >
                     {recoverySubmitting ? "Sending…" : "Send Recovery Email"}
                   </button>
@@ -2059,10 +2059,10 @@ export default function CrowsEyeClient() {
         {appliedPromoCode ? (
           <div
             className="px-4 py-3 rounded-2xl text-sm"
-            style={{ background: "rgba(184,146,42,0.08)", border: "1px solid rgba(184,146,42,0.3)" }}
+            style={{ background: "rgba(216,172,50,0.08)", border: "1px solid rgba(216,172,50,0.3)" }}
           >
             <div className="flex items-center justify-between">
-              <span style={{ color: "#B8922A" }}>
+              <span style={{ color: "#D8AC32" }}>
                 {appliedPromoCode.type === "discount"
                   ? `✓ ${appliedPromoCode.code} applied — ${appliedPromoCode.discountPercent ?? 20}% discount at checkout`
                   : `✓ Promo code applied — your ${promoTypeLabel(appliedPromoCode.type)} is unlocked`}
@@ -2075,7 +2075,7 @@ export default function CrowsEyeClient() {
                 Remove
               </button>
             </div>
-            <p className="mt-1 text-xs" style={{ color: "rgba(184,146,42,0.6)" }}>
+            <p className="mt-1 text-xs" style={{ color: "rgba(216,172,50,0.6)" }}>
               {appliedPromoCode.type === "discount"
                 ? "Click the payment button below — your discount will be applied at checkout."
                 : "Click the payment button below to redeem your promo code — no charge applied."}
@@ -2113,7 +2113,7 @@ export default function CrowsEyeClient() {
                   <p className="mt-1 text-xs text-red-400">This code is invalid or has already been used.</p>
                 ) : (
                   <p className="mt-1 text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
-                    One-time promo codes unlock a Verdict or Reckoning at no charge.
+                    One-time promo codes unlock a WiFi Health Report or Whole-Home Survey at no charge.
                   </p>
                 )}
               </div>
@@ -2122,7 +2122,7 @@ export default function CrowsEyeClient() {
                 onClick={handleApplyPromoCode}
                 disabled={promoCodeValidating}
                 className="shrink-0 self-start rounded-xl px-4 py-3 text-sm font-semibold transition disabled:opacity-50"
-                style={{ background: "#B8922A", color: "#0D1520" }}
+                style={{ background: "#D8AC32", color: "#0D1520" }}
               >
                 {promoCodeValidating ? "Checking…" : "Apply Code"}
               </button>
@@ -2133,7 +2133,7 @@ export default function CrowsEyeClient() {
             type="button"
             onClick={() => setShowPromoField(true)}
             className="text-xs transition"
-            style={{ color: "rgba(184,146,42,0.6)" }}
+            style={{ color: "rgba(216,172,50,0.6)" }}
           >
             Have a promo code?
           </button>
@@ -2146,11 +2146,11 @@ export default function CrowsEyeClient() {
           {eventCreditVerified ? (
             <div
               className="px-4 py-3 rounded-2xl text-sm"
-              style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.3)" }}
+              style={{ background: "rgba(34,214,220,0.08)", border: "1px solid rgba(34,214,220,0.3)" }}
             >
               <div className="flex items-center justify-between">
-                <span style={{ color: "#00C2C7" }}>
-                  ✓ Event credit verified — your Verdict is on us
+                <span style={{ color: "#22D6DC" }}>
+                  ✓ Event credit verified — your WiFi Health Report is on us
                 </span>
                 <button
                   type="button"
@@ -2160,8 +2160,8 @@ export default function CrowsEyeClient() {
                   Remove
                 </button>
               </div>
-              <p className="mt-1 text-xs" style={{ color: "rgba(0,194,199,0.6)" }}>
-                Click the button below to unlock your full Verdict at no charge.
+              <p className="mt-1 text-xs" style={{ color: "rgba(34,214,220,0.6)" }}>
+                Click the button below to unlock your full WiFi Health Report at no charge.
               </p>
             </div>
           ) : (
@@ -2186,9 +2186,9 @@ export default function CrowsEyeClient() {
                   ) : (
                     <p className="mt-1 text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
                       Enter the email you used at{" "}
-                      <a href="/hack-the-coast" style={{ color: "rgba(0,194,199,0.7)" }} target="_blank" rel="noreferrer">
+                      <a href="/hack-the-coast" style={{ color: "rgba(34,214,220,0.7)" }} target="_blank" rel="noreferrer">
                         /hack-the-coast
-                      </a>{" "}to apply your free Verdict credit.
+                      </a>{" "}to apply your free WiFi Health Report credit.
                     </p>
                   )}
                 </div>
@@ -2197,7 +2197,7 @@ export default function CrowsEyeClient() {
                   onClick={handleCheckEventCredit}
                   disabled={eventCreditChecking || !eventEmailInput.trim()}
                   className="shrink-0 self-start rounded-xl px-4 py-3 text-sm font-semibold transition disabled:opacity-50"
-                  style={{ background: "rgba(0,194,199,0.15)", color: "#00C2C7", border: "1px solid rgba(0,194,199,0.3)" }}
+                  style={{ background: "rgba(34,214,220,0.15)", color: "#22D6DC", border: "1px solid rgba(34,214,220,0.3)" }}
                 >
                   {eventCreditChecking ? "Checking…" : "Apply Credit"}
                 </button>
@@ -2230,34 +2230,34 @@ export default function CrowsEyeClient() {
             style={{ border: "1px solid rgba(0,212,255,0.30)", borderTop: "none", background: "rgba(0,0,0,0.25)" }}
           >
             <div>
-              <p className="text-white font-semibold mb-1">Single Verdict &mdash; $50</p>
+              <p className="text-white font-semibold mb-1">Single WiFi Health Report &mdash; $50</p>
               <p className="ocws-muted">Get one full Corvus analysis immediately. No account required. Best for one-time fixes.</p>
             </div>
             <div>
               <p className="text-white font-semibold mb-1">Nest Membership &mdash; $20/mo</p>
-              <p className="ocws-muted">Get 3 Verdicts per month included. Monthly plan requires 3-month minimum commitment. Cancel anytime after 90 days. Annual plan ($160/yr) has no minimum &mdash; save $80 and cancel anytime.</p>
+              <p className="ocws-muted">Get 3 WiFi Health Reports per month included. Monthly plan requires 3-month minimum commitment. Cancel anytime after 90 days. Annual plan ($160/yr) has no minimum &mdash; save $80 and cancel anytime.</p>
             </div>
             <div>
               <p className="text-white font-semibold mb-1">Need more than 3 per month?</p>
-              <p className="ocws-muted mb-1">Buy extra Verdict credits anytime:</p>
+              <p className="ocws-muted mb-1">Buy extra WiFi Health Report credits anytime:</p>
               <ul className="ocws-muted space-y-0.5">
                 <li>&middot; Single credit: $15</li>
                 <li>&middot; 6-pack: $75 <span className="text-white/40">(save $15)</span></li>
                 <li>&middot; 12-pack: $120 <span className="text-white/40">(save $60)</span></li>
               </ul>
             </div>
-            <p className="ocws-muted">Flock members ($100/mo) get 15 Verdicts per month and extra credits at $10 each. Murder members ($950/mo) get unlimited Verdicts.</p>
+            <p className="ocws-muted">Flock members ($100/mo) get 15 WiFi Health Reports per month and extra credits at $10 each. Murder members ($950/mo) get unlimited WiFi Health Reports.</p>
             <div style={{ height: "1px", background: "rgba(0,212,255,0.15)" }} />
             <div>
-              <p className="text-white font-semibold mb-1">The Full Reckoning — Multi-Location Survey</p>
+              <p className="text-white font-semibold mb-1">The Whole-Home Survey — Multi-Location</p>
               <p className="ocws-muted mb-2">Map your entire facility room by room. One unified report across all locations.</p>
               <ul className="ocws-muted space-y-0.5">
-                <li>&middot; Small Reckoning (up to 5 locations): $150</li>
-                <li>&middot; Standard Reckoning (6&ndash;15 locations): $350</li>
-                <li>&middot; Commercial Reckoning (16+ locations): $750</li>
-                <li>&middot; Pro Certified Reckoning (any size, Joshua certifies): $1,500</li>
+                <li>&middot; Small Whole-Home Survey (up to 5 locations): $150</li>
+                <li>&middot; Standard Whole-Home Survey (6&ndash;15 locations): $350</li>
+                <li>&middot; Commercial Whole-Home Survey (16+ locations): $750</li>
+                <li>&middot; Pro Certified Whole-Home Survey (any size, Joshua certifies): $1,500</li>
               </ul>
-              <p className="ocws-muted mt-2">Nest members get 1 Small Reckoning per month included. Flock members get 3 Small + 1 Standard. Murder members get unlimited Small, 10 Standard, and 3 Commercial Reckonings per month.</p>
+              <p className="ocws-muted mt-2">Nest members get 1 Small Whole-Home Survey per month included. Flock members get 3 Small + 1 Standard. Murder members get unlimited Small, 10 Standard, and 3 Commercial Whole-Home Surveys per month.</p>
             </div>
           </div>
         )}
@@ -2297,8 +2297,8 @@ export default function CrowsEyeClient() {
 
         {/* Device toggle */}
         {/* Corvus tip */}
-        <div style={{ background: 'rgba(184,146,42,0.08)', border: '1px solid rgba(184,146,42,0.2)', borderRadius: 8, padding: '12px 16px', marginBottom: 16 }}>
-          <p style={{ color: '#B8922A', fontFamily: 'monospace', fontSize: '0.75rem', margin: 0, lineHeight: 1.6 }}>
+        <div style={{ background: 'rgba(216,172,50,0.08)', border: '1px solid rgba(216,172,50,0.2)', borderRadius: 8, padding: '12px 16px', marginBottom: 16 }}>
+          <p style={{ color: '#D8AC32', fontFamily: 'monospace', fontSize: '0.75rem', margin: 0, lineHeight: 1.6 }}>
             🐦‍⬛ <strong>Corvus:</strong> &ldquo;Open the app, tap Scan. I&rsquo;ll handle everything from there. You just tell me what you want to know.&rdquo;
           </p>
         </div>
@@ -2337,7 +2337,7 @@ export default function CrowsEyeClient() {
                   borderRight: m === "single" ? "1px solid rgba(255,255,255,0.10)" : undefined,
                 }}
               >
-                {m === "single" ? "Corvus\u2019 Verdict \u2014 Single Location" : "The Full Reckoning \u2014 Full Site"}
+                {m === "single" ? "WiFi Health Report \u2014 Single Location" : "Whole-Home Survey \u2014 Full Site"}
               </button>
             ))}
           </div>
@@ -2349,10 +2349,10 @@ export default function CrowsEyeClient() {
               </p>
               {isHybrid && (
                 <p className="text-xs" style={{ color: "rgba(239,68,68,0.7)" }}>
-                  Properties with detached structures require a minimum Standard Reckoning ($350) due to the additional complexity of cross-structure signal analysis.
+                  Properties with detached structures require a minimum Standard Whole-Home Survey ($350) due to the additional complexity of cross-structure signal analysis.
                 </p>
               )}
-              <p className="text-xs text-white/30">Nest members: first Small Reckoning per month included. Additional from $50.</p>
+              <p className="text-xs text-white/30">Nest members: first Small Whole-Home Survey per month included. Additional from $50.</p>
             </div>
           )}
         </div>
@@ -2362,7 +2362,7 @@ export default function CrowsEyeClient() {
         <div>
           <h2 className="ocws-h2 text-white mb-1">Upload your screenshots</h2>
           <p className="ocws-muted text-sm mb-5">
-            All three for the sharpest Verdict. JPEG or PNG.
+            All three for the sharpest WiFi Health Report. JPEG or PNG.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {UPLOAD_SLOTS.map((slot) => (
@@ -2441,7 +2441,7 @@ export default function CrowsEyeClient() {
               className="w-full flex items-center justify-between px-5 py-4 rounded-2xl text-left transition"
               style={{ border: "1px solid rgba(0,212,255,0.30)", background: "rgba(0,212,255,0.05)" }}
             >
-              <span className="text-sm font-semibold ocws-accent-cyan">How The Full Reckoning works</span>
+              <span className="text-sm font-semibold ocws-accent-cyan">How the Whole-Home Survey works</span>
               <svg
                 width="16" height="16" viewBox="0 0 16 16" fill="none"
                 className="transition-transform duration-200 shrink-0"
@@ -2456,13 +2456,13 @@ export default function CrowsEyeClient() {
                 style={{ border: "1px solid rgba(0,212,255,0.30)", borderTop: "none", background: "rgba(0,0,0,0.25)" }}
               >
                 <p className="ocws-muted">
-                  The Full Reckoning is Corvus moving through your entire facility — room by room, location by location, building a complete picture of everything wrong across the whole site.
+                  The Whole-Home Survey is Corvus moving through your entire facility — room by room, location by location, building a complete picture of everything wrong across the whole site.
                 </p>
                 <p className="ocws-muted">
                   Use the Crow&apos;s Eye app to scan each location. Walk to each area — a different room, floor, or area — and tap Scan before moving to the next location. Label each location clearly so Corvus knows where each scan was taken.
                 </p>
                 <p className="ocws-muted">
-                  Corvus will synthesize findings across all locations, identify site-wide patterns, find dead zones, and deliver one unified Verdict covering your entire facility.
+                  Corvus will synthesize findings across all locations, identify site-wide patterns, find dead zones, and deliver one unified WiFi Health Report covering your entire facility.
                 </p>
               </div>
             )}
@@ -2477,10 +2477,10 @@ export default function CrowsEyeClient() {
             {[
               "Name your first location clearly. Example: Front Office, Lobby, Kitchen, Room 101.",
               "Stand in that location and open Crow's Eye on Android.",
-              "Tap Scan — Corvus reads your RF environment automatically.",
+              "Tap Scan — Corvus reads your WiFi environment automatically.",
               "Upload the scan data to this location slot.",
               "Click Add Location and repeat for each area.",
-              "When all locations are added hit Render The Full Reckoning.",
+              "When all locations are added hit Render the Whole-Home Survey.",
             ].map((step, i) => (
               <div key={i} className="flex gap-3 items-start">
                 <span
@@ -2684,7 +2684,7 @@ export default function CrowsEyeClient() {
           {/* SSID field — placed after address */}
           <div>
             <label className="block text-sm font-medium text-white mb-1">
-              Your Network Name (SSID)
+              Your WiFi Network Name
             </label>
             <input
               value={ssid}
@@ -2842,15 +2842,15 @@ export default function CrowsEyeClient() {
                   onClick={() => setItComfortLevel(opt.level)}
                   className="flex flex-col items-center gap-1 rounded-xl px-3 py-3 text-center transition-all"
                   style={{
-                    background: selected ? "rgba(0,194,199,0.12)" : "rgba(0,0,0,0.3)",
-                    border: selected ? "1px solid rgba(0,194,199,0.45)" : "1px solid rgba(255,255,255,0.08)",
-                    boxShadow: selected ? "0 0 0 1px rgba(0,194,199,0.25)" : "none",
+                    background: selected ? "rgba(34,214,220,0.12)" : "rgba(0,0,0,0.3)",
+                    border: selected ? "1px solid rgba(34,214,220,0.45)" : "1px solid rgba(255,255,255,0.08)",
+                    boxShadow: selected ? "0 0 0 1px rgba(34,214,220,0.25)" : "none",
                   }}
                 >
                   <span className="text-xl leading-none">{opt.emoji}</span>
                   <span
                     className="text-xs font-semibold leading-tight"
-                    style={{ color: selected ? "#00C2C7" : "rgba(255,255,255,0.85)" }}
+                    style={{ color: selected ? "#22D6DC" : "rgba(255,255,255,0.85)" }}
                   >
                     {opt.label}
                   </span>
@@ -2884,11 +2884,11 @@ export default function CrowsEyeClient() {
             {phase === "analyzing"
               ? "Corvus is looking\u2026"
               : mode === "site"
-              ? "Render The Full Reckoning"
+              ? "Render the Whole-Home Survey"
               : "Let Corvus Look"}
           </button>
           <p className="mt-3 text-xs ocws-muted2">
-            Free instant analysis. No account. Upgrade to the full Verdict for $50.
+            Free instant analysis. No account. Upgrade to the full WiFi Health Report for $50.
           </p>
         </div>
       </form>
@@ -3029,7 +3029,7 @@ export default function CrowsEyeClient() {
                   )}
                 </p>
                 <p className="text-xs text-white/30 mt-3 italic">
-                  Fix withheld pending Verdict.
+                  Fix withheld pending WiFi Health Report.
                 </p>
               </div>
             )}
@@ -3058,7 +3058,7 @@ export default function CrowsEyeClient() {
                   )}
                 </p>
                 <p className="text-xs text-white/30 mt-3 italic">
-                  Fix withheld pending Verdict.
+                  Fix withheld pending WiFi Health Report.
                 </p>
               </div>
             )}
@@ -3086,7 +3086,7 @@ export default function CrowsEyeClient() {
             {freeStep >= 5 && phase === "free_result" && (
               <div className="ocws-tile p-8 text-center space-y-5">
                 <p className="text-xs font-semibold uppercase tracking-widest ocws-accent-gold">
-                  Full Verdict
+                  Full WiFi Health Report
                 </p>
                 <h2 className="text-2xl font-bold text-white">
                   All {result.problems_found} findings. Every fix. Delivered in his voice.
@@ -3115,12 +3115,12 @@ export default function CrowsEyeClient() {
                       }}
                     >
                       {isProductCovered()
-                        ? "Unlock with Subscription — Free"
+                        ? "Get with Subscription — Free"
                         : eventCreditVerified && mode === "single"
-                          ? "Unlock with Event Credit — Free"
+                          ? "Get with Event Credit — Free"
                           : mode === "single"
-                            ? "Get the Full Verdict \u2014 $50"
-                            : `Get the Full Reckoning \u2014 $${reckoningPrice}`}
+                            ? "Get the Full WiFi Health Report \u2014 $50"
+                            : `Get the Whole-Home Survey \u2014 $${reckoningPrice}`}
                     </button>
                   </div>
 
@@ -3149,7 +3149,7 @@ export default function CrowsEyeClient() {
                   style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
                 >
                   <p className="text-xs font-semibold uppercase tracking-widest ocws-accent-cyan mt-6 mb-2">
-                    Full Verdict
+                    Full WiFi Health Report
                   </p>
                   <h2 className="ocws-h2 text-white mb-1">
                     Corvus&rsquo; Complete Findings
@@ -3182,14 +3182,14 @@ export default function CrowsEyeClient() {
                       <div
                         className="rounded-xl px-4 py-3"
                         style={{
-                          background: "rgba(0,194,199,0.08)",
-                          border: "1px solid rgba(0,194,199,0.28)",
+                          background: "rgba(34,214,220,0.08)",
+                          border: "1px solid rgba(34,214,220,0.28)",
                         }}
                       >
-                        <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: "rgba(0,194,199,0.55)" }}>
+                        <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: "rgba(34,214,220,0.55)" }}>
                           ⚡ The Fix
                         </p>
-                        <p className="font-semibold text-base leading-snug" style={{ color: "#00C2C7" }}>
+                        <p className="font-semibold text-base leading-snug" style={{ color: "#22D6DC" }}>
                           {isTyping ? (
                             <Typewriter
                               text={fixText}
@@ -3366,7 +3366,7 @@ export default function CrowsEyeClient() {
                         boxShadow: "0 8px 28px rgba(0,212,255,0.25)",
                       }}
                     >
-                      {pdfGenerating ? "Generating PDF…" : "Download Corvus\u2019 Verdict PDF"}
+                      {pdfGenerating ? "Generating PDF…" : "Download WiFi Health Report PDF"}
                     </button>
                   </div>
                 )}

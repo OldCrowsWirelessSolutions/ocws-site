@@ -376,7 +376,7 @@ export default function ClientManagerTab({ subscriptionCode, tier, reports = [] 
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <div style={{ color: '#00C2C7', fontFamily: 'Share Tech Mono, monospace', fontSize: '12px', marginBottom: '4px' }}>CLIENT MANAGEMENT</div>
+          <div style={{ color: '#22D6DC', fontFamily: 'Share Tech Mono, monospace', fontSize: '12px', marginBottom: '4px' }}>CLIENT MANAGEMENT</div>
           <div style={{ color: '#F4F6F8', fontSize: '18px', fontWeight: 'bold' }}>{clients.length} Client{clients.length !== 1 ? 's' : ''}</div>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
@@ -406,7 +406,7 @@ export default function ClientManagerTab({ subscriptionCode, tier, reports = [] 
       ) : filtered.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 20px' }}>
           <div style={{ fontSize: '40px', marginBottom: '12px' }}>📋</div>
-          <div style={{ color: '#00C2C7', fontFamily: 'Share Tech Mono, monospace', fontSize: '14px', marginBottom: '8px' }}>
+          <div style={{ color: '#22D6DC', fontFamily: 'Share Tech Mono, monospace', fontSize: '14px', marginBottom: '8px' }}>
             {search || statusFilter !== 'all' ? 'No clients match your filter.' : 'No clients yet.'}
           </div>
           {!search && statusFilter === 'all' && (

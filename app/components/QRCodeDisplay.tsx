@@ -47,7 +47,7 @@ export default function QRCodeDisplay({ url, label, size = 200 }: QRCodeDisplayP
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
       {label && (
-        <div style={{ color: '#00C2C7', fontSize: '0.65rem', fontFamily: 'monospace', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+        <div style={{ color: '#22D6DC', fontSize: '0.65rem', fontFamily: 'monospace', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
           {label}
         </div>
       )}
@@ -55,7 +55,7 @@ export default function QRCodeDisplay({ url, label, size = 200 }: QRCodeDisplayP
         background: '#F4F6F8',
         borderRadius: 8,
         padding: 8,
-        border: '2px solid rgba(0,194,199,0.4)',
+        border: '2px solid rgba(34,214,220,0.4)',
         opacity: ready ? 1 : 0.3,
         transition: 'opacity 0.3s',
       }}>
@@ -68,7 +68,7 @@ export default function QRCodeDisplay({ url, label, size = 200 }: QRCodeDisplayP
             ↓ Download PNG
           </button>
           <button onClick={() => navigator.clipboard.writeText(url)}
-            style={{ background: 'rgba(0,194,199,0.1)', border: '1px solid rgba(0,194,199,0.3)', borderRadius: 6, color: '#00C2C7', padding: '6px 14px', fontSize: '0.72rem', fontFamily: 'monospace', cursor: 'pointer' }}>
+            style={{ background: 'rgba(34,214,220,0.1)', border: '1px solid rgba(34,214,220,0.3)', borderRadius: 6, color: '#22D6DC', padding: '6px 14px', fontSize: '0.72rem', fontFamily: 'monospace', cursor: 'pointer' }}>
             Copy URL
           </button>
         </div>

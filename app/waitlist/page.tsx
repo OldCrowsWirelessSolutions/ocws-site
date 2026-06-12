@@ -53,7 +53,7 @@ export default function WaitlistPage() {
           <Link
             href="/"
             className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold transition"
-            style={{ background: "#00C2C7", color: "#0D1520" }}
+            style={{ background: "#22D6DC", color: "#0D1520" }}
           >
             Back to Home
           </Link>
@@ -68,7 +68,7 @@ export default function WaitlistPage() {
         <div className="max-w-md mx-auto">
           <p
             className="text-xs font-semibold uppercase tracking-widest mb-4 text-center"
-            style={{ color: "#00C2C7", letterSpacing: "0.18em" }}
+            style={{ color: "#22D6DC", letterSpacing: "0.18em" }}
           >
             Crow&rsquo;s Eye &middot; Mobile App
           </p>
@@ -153,7 +153,7 @@ export default function WaitlistPage() {
               disabled={loading}
               className="w-full inline-flex items-center justify-center rounded-xl py-3 text-sm font-bold transition ocws-glow-hover"
               style={{
-                background: "#00C2C7",
+                background: "#22D6DC",
                 color: "#0D1520",
                 opacity: loading ? 0.7 : 1,
                 cursor: loading ? "not-allowed" : "pointer",

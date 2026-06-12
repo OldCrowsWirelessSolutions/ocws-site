@@ -114,8 +114,8 @@ function getLevelLabel(level: TourLevel) {
     flock: '🐦‍⬛ MSP / IT Tour',
     murder: '💀 RF Engineer Tour',
     full: '🦅 Full Platform Tour',
-    verdict: "📄 Corvus' Verdict Deep Dive",
-    reckoning: '🗺️ Full Reckoning Deep Dive',
+    verdict: "📄 WiFi Health Report Deep Dive",
+    reckoning: '🗺️ Whole-Home Survey Deep Dive',
     compare: '⚔️ Competitive Comparison',
   };
   return labels[level] || 'Corvus Tour';
@@ -124,15 +124,15 @@ function getLevelLabel(level: TourLevel) {
 const s: Record<string, React.CSSProperties> = {
   page: { minHeight: '100vh', background: '#0D1520', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' },
   center: { textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' },
-  card: { background: '#1A2332', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '16px', padding: '2rem 2rem 2.5rem', maxWidth: '520px', width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' },
-  badge: { color: '#00C2C7', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.72rem', letterSpacing: '0.15em' },
+  card: { background: '#1A2332', border: '1px solid rgba(34,214,220,0.2)', borderRadius: '16px', padding: '2rem 2rem 2.5rem', maxWidth: '520px', width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' },
+  badge: { color: '#22D6DC', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.72rem', letterSpacing: '0.15em' },
   title: { color: '#F4F6F8', fontSize: '1.35rem', fontWeight: 700, margin: 0, lineHeight: 1.3 },
   sub: { color: '#888', fontSize: '0.9rem', lineHeight: 1.6, margin: 0 },
-  levelBadge: { background: 'rgba(0,194,199,0.1)', border: '1px solid rgba(0,194,199,0.25)', borderRadius: '20px', padding: '5px 16px', color: '#00C2C7', fontSize: '0.88rem' },
-  startBtn: { background: 'linear-gradient(135deg, #0D6E7A, #00C2C7)', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px 36px', fontSize: '1.05rem', fontWeight: 700, cursor: 'pointer', width: '100%', marginTop: '0.5rem' },
+  levelBadge: { background: 'rgba(34,214,220,0.1)', border: '1px solid rgba(34,214,220,0.25)', borderRadius: '20px', padding: '5px 16px', color: '#22D6DC', fontSize: '0.88rem' },
+  startBtn: { background: 'linear-gradient(135deg, #0D6E7A, #22D6DC)', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px 36px', fontSize: '1.05rem', fontWeight: 700, cursor: 'pointer', width: '100%', marginTop: '0.5rem' },
   fine: { color: '#555', fontSize: '0.75rem', margin: 0 },
   loadingText: { color: '#888', fontSize: '0.9rem' },
   errorTitle: { color: '#e05555', fontSize: '1.3rem', fontWeight: 700, margin: 0 },
   errorSub: { color: '#888', fontSize: '0.9rem' },
-  homeLink: { color: '#00C2C7', fontSize: '0.9rem', textDecoration: 'none' },
+  homeLink: { color: '#22D6DC', fontSize: '0.9rem', textDecoration: 'none' },
 };

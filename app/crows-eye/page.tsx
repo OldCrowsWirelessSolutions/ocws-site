@@ -56,8 +56,8 @@ export default function CrowsEyePage() {
           padding: "80px 0 72px",
           borderBottom: "1px solid rgba(255,255,255,0.06)",
           backgroundImage: `
-            linear-gradient(rgba(0,194,199,0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0,194,199,0.03) 1px, transparent 1px)
+            linear-gradient(rgba(34,214,220,0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(34,214,220,0.03) 1px, transparent 1px)
           `,
           backgroundSize: "48px 48px",
         }}
@@ -70,8 +70,8 @@ export default function CrowsEyePage() {
               width: 120,
               height: 120,
               background: "#1A2332",
-              border: "2px solid rgba(0,194,199,0.4)",
-              boxShadow: "0 0 40px rgba(0,194,199,0.15)",
+              border: "2px solid rgba(34,214,220,0.4)",
+              boxShadow: "0 0 40px rgba(34,214,220,0.15)",
               position: "relative",
             }}
           >
@@ -89,7 +89,7 @@ export default function CrowsEyePage() {
 
           <p
             className="text-xs font-semibold uppercase tracking-widest mb-4"
-            style={{ color: "#00C2C7", fontFamily: "'Share Tech Mono', monospace", letterSpacing: "0.2em" }}
+            style={{ color: "#22D6DC", fontFamily: "'Share Tech Mono', monospace", letterSpacing: "0.2em" }}
           >
             Crow&rsquo;s Eye &middot; Now Available
           </p>
@@ -146,7 +146,7 @@ export default function CrowsEyePage() {
             {[
               {
                 icon: "📡",
-                title: "Live RF Scanning",
+                title: "Live WiFi Scanning",
                 body: "Corvus reads your wireless environment in real time — channels, signal strength, interference sources, and competing networks.",
               },
               {
@@ -156,13 +156,13 @@ export default function CrowsEyePage() {
               },
               {
                 icon: "📋",
-                title: "Signed PDF Verdicts",
+                title: "Signed WiFi Health Reports",
                 body: "Every analysis produces a branded PDF report with prioritized findings and step-by-step fix instructions.",
               },
               {
                 icon: "🔒",
                 title: "Security Gap Detection",
-                body: "Open networks, weak encryption, exposed SSIDs, and missing VLAN segmentation — Corvus flags them all.",
+                body: "Open networks, weak encryption, exposed WiFi network names, and missing VLAN segmentation — Corvus flags them all.",
               },
               {
                 icon: "📊",
@@ -180,7 +180,7 @@ export default function CrowsEyePage() {
                 className="rounded-xl p-6"
                 style={{
                   background: "#1A2332",
-                  borderLeft: "3px solid #00C2C7",
+                  borderLeft: "3px solid #22D6DC",
                 }}
               >
                 <div className="text-2xl mb-3">{icon}</div>
@@ -211,7 +211,7 @@ export default function CrowsEyePage() {
           <h2 className="text-2xl font-bold text-white mb-3">iPhone version coming soon.</h2>
           <p className="text-sm leading-relaxed mb-6" style={{ color: "#7A9AAB" }}>
             Crow&rsquo;s Eye for iOS is in development. Android is live now — download it today
-            and get your first Verdict.
+            and get your first WiFi Health Report.
           </p>
           <PlayStoreBadge href={PLAY_STORE_URL} />
         </div>
@@ -222,11 +222,11 @@ export default function CrowsEyePage() {
         <div className="ocws-container max-w-2xl mx-auto text-center">
           <div
             className="rounded-2xl p-8"
-            style={{ background: "#1A2332", border: "1px solid rgba(0,194,199,0.2)" }}
+            style={{ background: "#1A2332", border: "1px solid rgba(34,214,220,0.2)" }}
           >
             <p
               className="text-xs font-semibold uppercase tracking-widest mb-4"
-              style={{ color: "#00C2C7", fontFamily: "'Share Tech Mono', monospace" }}
+              style={{ color: "#22D6DC", fontFamily: "'Share Tech Mono', monospace" }}
             >
               Already Have an Account?
             </p>
@@ -234,14 +234,14 @@ export default function CrowsEyePage() {
               Log in to your dashboard.
             </h2>
             <p className="text-sm mb-6" style={{ color: "#7A9AAB" }}>
-              Access your saved Verdicts, Talk to Corvus, manage your subscription,
+              Access your saved WiFi Health Reports, Talk to Corvus, manage your subscription,
               and review past diagnostics.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
                 href="/dashboard"
                 className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold"
-                style={{ background: "#00C2C7", color: "#0D1520", textDecoration: "none" }}
+                style={{ background: "#22D6DC", color: "#0D1520", textDecoration: "none" }}
               >
                 Go to Dashboard
               </Link>
@@ -249,8 +249,8 @@ export default function CrowsEyePage() {
                 href="/login"
                 className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold"
                 style={{
-                  border: "1px solid rgba(0,194,199,0.3)",
-                  color: "#00C2C7",
+                  border: "1px solid rgba(34,214,220,0.3)",
+                  color: "#22D6DC",
                   background: "transparent",
                   textDecoration: "none",
                 }}

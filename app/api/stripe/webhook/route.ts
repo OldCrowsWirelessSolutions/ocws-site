@@ -20,6 +20,7 @@ import {
   TIER_ENTITLEMENTS,
 } from "@/lib/subscriptions";
 import { CREDITS_BY_PRICE } from "@/lib/price-map";
+import { creditChatPack, grantChatPass } from "@/lib/chat-quota";
 import redis from "@/lib/redis";
 import type { SubscriptionTier, SubscriptionStatus } from "@/lib/subscriptions";
 import {
@@ -349,6 +350,23 @@ export async function POST(req: NextRequest) {
               });
               console.log(`[webhook] credit_purchase: +${credits} credits → ${subId}`);
             }
+          }
+        } else if (metaType === "chat_pack") {
+          // accountId is the stable identity for the buyer: the subscription
+          // code on web, the user's email on mobile. Falls back to the legacy
+          // subscriptionId field for older web sessions.
+          const acct      = session.metadata?.accountId ?? session.metadata?.subscriptionId;
+          const questions = Number(session.metadata?.questions ?? 0);
+          if (acct && questions > 0) {
+            const balance = await creditChatPack(acct, questions);
+            console.log(`[webhook] chat_pack: +${questions} questions → ${acct} (balance ${balance})`);
+          }
+        } else if (metaType === "chat_pass") {
+          const acct  = session.metadata?.accountId ?? session.metadata?.subscriptionId;
+          const hours = Number(session.metadata?.hours ?? 0);
+          if (acct && hours > 0) {
+            const expiry = await grantChatPass(acct, hours);
+            console.log(`[webhook] chat_pass: +${hours}h → ${acct} (until ${new Date(expiry).toISOString()})`);
           }
         } else if (metaType === "seat_purchase") {
           const subId          = session.metadata?.subscriptionId;

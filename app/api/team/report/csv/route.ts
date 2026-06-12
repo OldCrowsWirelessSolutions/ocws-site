@@ -10,11 +10,11 @@ import { filterReportsByInterval, getIntervalLabel, type TimeInterval } from "@/
 import redis from "@/lib/redis";
 
 const REPORT_TYPE_LABELS: Record<string, string> = {
-  verdict: "Verdict",
-  reckoning_small: "Small Reckoning",
-  reckoning_standard: "Standard Reckoning",
-  reckoning_commercial: "Commercial Reckoning",
-  reckoning_pro: "Pro Reckoning",
+  verdict: "WiFi Health Report",
+  reckoning_small: "Small Whole-Home Survey",
+  reckoning_standard: "Standard Whole-Home Survey",
+  reckoning_commercial: "Commercial Whole-Home Survey",
+  reckoning_pro: "Pro Whole-Home Survey",
 };
 
 function escapeCSV(val: string | number | null | undefined): string {

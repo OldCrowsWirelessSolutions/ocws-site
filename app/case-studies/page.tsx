@@ -5,7 +5,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Case Studies | Old Crows Wireless Solutions",
   description:
-    "Real Crow's Eye Verdicts from real environments. Corvus in action at Pilchers Barbershop and Olive Baptist Church in Pensacola, FL.",
+    "Real Crow's Eye WiFi Health Reports from real environments. Corvus in action at Pilchers Barbershop and Olive Baptist Church in Pensacola, FL.",
 };
 
 const cases = [
@@ -13,7 +13,7 @@ const cases = [
     name: "Pilchers Barbershop",
     context: "Retail · Pensacola FL",
     summary:
-      "A dense ISP-congested 2.4 GHz environment with co-channel interference from CoxWiFi networks and three competing SSIDs degrading POS system throughput.",
+      "A dense ISP-congested 2.4 GHz environment with co-channel interference from CoxWiFi networks and three competing WiFi networks degrading POS system throughput.",
     findings: [
       { color: "#ef4444", text: "CoxWiFi co-channel interference on CH 11" },
       { color: "#ef4444", text: "Router on non-standard channel 9 — maximum overlap" },
@@ -33,12 +33,12 @@ const cases = [
     findings: [
       { color: "#ef4444", text: "Open network — zero encryption on both 2.4 and 5 GHz bands" },
       { color: "#ef4444", text: "Channel 6 carrying 7+ competing networks simultaneously" },
-      { color: "#ef4444", text: "SSID visible to the parking lot and adjacent businesses" },
+      { color: "#ef4444", text: "WiFi network name visible to the parking lot and adjacent businesses" },
       { color: "#f59e0b", text: "No guest network separation from internal systems" },
       { color: "#f59e0b", text: "Signal levels adequate but channel saturation preventing performance" },
     ],
     verdict:
-      "Corvus identified the router as an ASUS unit on an auto-assigned channel that coincided with the six highest-power neighboring networks. WPA3 enabled, channel moved to 11, guest SSID created with VLAN isolation. Security posture corrected in under 30 minutes.",
+      "Corvus identified the router as an ASUS unit on an auto-assigned channel that coincided with the six highest-power neighboring networks. WPA3 enabled, channel moved to 11, guest WiFi network created with VLAN isolation. Security posture corrected in under 30 minutes.",
     pdfHref: "/Corvus_Verdict__Olive_Baptist_Church.pdf",
   },
 ];
@@ -49,11 +49,11 @@ export default function CaseStudiesPage() {
       <section className="ocws-container py-16">
         {/* Header */}
         <div className="mb-12">
-          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#00C2C7", letterSpacing: "0.18em" }}>
-            Crow&rsquo;s Eye · Verdicts in the Wild
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#22D6DC", letterSpacing: "0.18em" }}>
+            Crow&rsquo;s Eye · Reports in the Wild
           </p>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Corvus&rsquo; Verdicts in the wild.
+            WiFi Health Reports in the wild.
           </h1>
           <p className="text-base" style={{ color: "#888" }}>
             Real scans. Real findings. Real fixes.
@@ -66,7 +66,7 @@ export default function CaseStudiesPage() {
             <div
               key={c.name}
               className="rounded-2xl overflow-hidden"
-              style={{ background: "#1A2332", borderTop: "3px solid #B8922A" }}
+              style={{ background: "#1A2332", borderTop: "3px solid #D8AC32" }}
             >
               <div className="p-8">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
@@ -78,9 +78,9 @@ export default function CaseStudiesPage() {
                     href={c.pdfHref}
                     download
                     className="shrink-0 inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold ocws-glow-hover"
-                    style={{ border: "1px solid #00C2C7", color: "#00C2C7", background: "transparent" }}
+                    style={{ border: "1px solid #22D6DC", color: "#22D6DC", background: "transparent" }}
                   >
-                    Download PDF Verdict
+                    Download PDF Report
                   </a>
                 </div>
 
@@ -106,8 +106,8 @@ export default function CaseStudiesPage() {
                   className="rounded-xl px-5 py-4"
                   style={{ border: "1px solid #0D6E7A", background: "rgba(13,110,122,0.08)" }}
                 >
-                  <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "#00C2C7" }}>
-                    Corvus&rsquo; Verdict
+                  <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "#22D6DC" }}>
+                    Corvus&rsquo; Summary
                   </p>
                   <p className="text-sm leading-relaxed italic" style={{ color: "#aaa" }}>
                     {c.verdict}
@@ -123,7 +123,7 @@ export default function CaseStudiesPage() {
           className="rounded-2xl p-8 text-center mb-12"
           style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.06)" }}
         >
-          <p className="text-lg font-semibold text-white mb-2">More Verdicts coming soon.</p>
+          <p className="text-lg font-semibold text-white mb-2">More WiFi Health Reports coming soon.</p>
           <p className="text-sm" style={{ color: "#888" }}>
             Every environment Corvus analyzes adds to the record. Check back.
           </p>
@@ -134,9 +134,9 @@ export default function CaseStudiesPage() {
           <Link
             href="/crows-eye"
             className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold ocws-glow-hover"
-            style={{ background: "#00C2C7", color: "#0D1520" }}
+            style={{ background: "#22D6DC", color: "#0D1520" }}
           >
-            Get Your Own Verdict
+            Get Your Own WiFi Health Report
           </Link>
           <Link
             href="/contact"

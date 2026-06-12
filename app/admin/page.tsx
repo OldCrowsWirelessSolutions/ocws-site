@@ -114,8 +114,8 @@ const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY || "SpectrumLife2026!!";
 
 const TIER_COLORS: Record<SubscriptionTier, { bg: string; text: string }> = {
   fledgling: { bg: "#7A5A1A", text: "#ffffff" },
-  nest:      { bg: "#00C2C7", text: "#0D1520" },
-  flock:     { bg: "#B8922A", text: "#0D1520" },
+  nest:      { bg: "#22D6DC", text: "#0D1520" },
+  flock:     { bg: "#D8AC32", text: "#0D1520" },
   murder:    { bg: "#9B1C1C", text: "#ffffff" },
 };
 
@@ -168,9 +168,9 @@ function TabBar({ tabs, active, onChange, badge }: {
               padding: "8px 16px",
               fontSize: "12px",
               fontWeight: isActive ? 700 : 500,
-              color: isActive ? "#00C2C7" : "rgba(255,255,255,0.45)",
-              background: isActive ? "rgba(0,194,199,0.13)" : "rgba(255,255,255,0.03)",
-              border: isActive ? "1px solid rgba(0,194,199,0.5)" : "1px solid rgba(255,255,255,0.09)",
+              color: isActive ? "#22D6DC" : "rgba(255,255,255,0.45)",
+              background: isActive ? "rgba(34,214,220,0.13)" : "rgba(255,255,255,0.03)",
+              border: isActive ? "1px solid rgba(34,214,220,0.5)" : "1px solid rgba(255,255,255,0.09)",
               borderRadius: "8px",
               cursor: "pointer",
               transition: "all 0.15s",
@@ -183,7 +183,7 @@ function TabBar({ tabs, active, onChange, badge }: {
           >
             {t.label}
             {count != null && count > 0 && (
-              <span style={{ background: "#B8922A", color: "#0D1520", fontSize: "9px", fontWeight: 800, padding: "1px 6px", borderRadius: "20px" }}>
+              <span style={{ background: "#D8AC32", color: "#0D1520", fontSize: "9px", fontWeight: 800, padding: "1px 6px", borderRadius: "20px" }}>
                 {count}
               </span>
             )}
@@ -627,7 +627,7 @@ export default function AdminPage() {
       if (dailyEl) {
         dailyEl._chartInstance = new ChartJS(dailyEl, {
           type: "line",
-          data: { labels: daily.map((d) => d.date.slice(5)), datasets: [{ label: "Scans", data: daily.map((d) => d.count), borderColor: "#00C2C7", backgroundColor: "rgba(0,194,199,0.08)", tension: 0.3, fill: true, pointRadius: 3 }] },
+          data: { labels: daily.map((d) => d.date.slice(5)), datasets: [{ label: "Scans", data: daily.map((d) => d.count), borderColor: "#22D6DC", backgroundColor: "rgba(34,214,220,0.08)", tension: 0.3, fill: true, pointRadius: 3 }] },
           options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: "#555" }, grid: { color: "rgba(255,255,255,0.04)" } }, y: { ticks: { color: "#555" }, grid: { color: "rgba(255,255,255,0.04)" }, beginAtZero: true } } },
         });
       }
@@ -638,7 +638,7 @@ export default function AdminPage() {
       if (prodEl && prodLabels.length) {
         prodEl._chartInstance = new ChartJS(prodEl, {
           type: "doughnut",
-          data: { labels: prodLabels, datasets: [{ data: prodLabels.map((k) => prod[k]), backgroundColor: ["#00C2C7","#B8922A","#9B1C1C","#4ADE80","#FBBF24"], borderWidth: 0 }] },
+          data: { labels: prodLabels, datasets: [{ data: prodLabels.map((k) => prod[k]), backgroundColor: ["#22D6DC","#D8AC32","#9B1C1C","#4ADE80","#FBBF24"], borderWidth: 0 }] },
           options: { responsive: true, plugins: { legend: { labels: { color: "#888", font: { size: 10 } } } } },
         });
       }
@@ -659,7 +659,7 @@ export default function AdminPage() {
       if (tierEl && tierLabels.length) {
         tierEl._chartInstance = new ChartJS(tierEl, {
           type: "doughnut",
-          data: { labels: tierLabels, datasets: [{ data: tierLabels.map((k) => tiers[k]), backgroundColor: ["#00C2C7","#B8922A","#9B1C1C","#aaaaaa"], borderWidth: 0 }] },
+          data: { labels: tierLabels, datasets: [{ data: tierLabels.map((k) => tiers[k]), backgroundColor: ["#22D6DC","#D8AC32","#9B1C1C","#aaaaaa"], borderWidth: 0 }] },
           options: { responsive: true, plugins: { legend: { labels: { color: "#888", font: { size: 10 } } } } },
         });
       }
@@ -1051,7 +1051,7 @@ export default function AdminPage() {
 
           <form onSubmit={handleLogin}
             style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "14px", padding: "28px" }}>
-            <label style={{ display: "block", color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
+            <label style={{ display: "block", color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
               Admin Password
             </label>
             <input
@@ -1065,7 +1065,7 @@ export default function AdminPage() {
             />
             {authError && <p style={{ color: "#F87171", fontSize: "12px", marginBottom: "12px" }}>{authError}</p>}
             <button type="submit"
-              style={{ width: "100%", background: "#00C2C7", color: "#0D1520", border: "none", borderRadius: "8px", padding: "10px", fontSize: "13px", fontWeight: 700, cursor: "pointer" }}>
+              style={{ width: "100%", background: "#22D6DC", color: "#0D1520", border: "none", borderRadius: "8px", padding: "10px", fontSize: "13px", fontWeight: 700, cursor: "pointer" }}>
               Enter
             </button>
           </form>
@@ -1083,11 +1083,11 @@ export default function AdminPage() {
         <div style={card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
             <div>
-              <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>Platform Intelligence</p>
+              <p style={{ color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>Platform Intelligence</p>
               <p style={{ color: "#555555", fontSize: "12px" }}>30-day usage analytics across all subscribers</p>
             </div>
             <button onClick={loadPlatformAnalytics} disabled={loadingPlatform}
-              style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "8px", color: "#00C2C7", fontSize: "12px", padding: "7px 14px", cursor: "pointer" }}>
+              style={{ background: "rgba(34,214,220,0.08)", border: "1px solid rgba(34,214,220,0.2)", borderRadius: "8px", color: "#22D6DC", fontSize: "12px", padding: "7px 14px", cursor: "pointer" }}>
               {loadingPlatform ? "Loading…" : "↻ Refresh"}
             </button>
           </div>
@@ -1095,9 +1095,9 @@ export default function AdminPage() {
           {platformAnalytics && (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: "12px", marginBottom: "24px" }}>
               {([
-                { label: "Total Scans",       value: platformAnalytics.totalScans,          color: "#00C2C7" },
+                { label: "Total Scans",       value: platformAnalytics.totalScans,          color: "#22D6DC" },
                 { label: "Scans Today",       value: platformAnalytics.scansToday,          color: "#4ADE80" },
-                { label: "Active Subs",       value: platformAnalytics.activeSubscriptions, color: "#B8922A" },
+                { label: "Active Subs",       value: platformAnalytics.activeSubscriptions, color: "#D8AC32" },
                 { label: "Active Codes",      value: platformAnalytics.activeCodes,         color: "#aaaaaa" },
                 { label: "Critical Findings", value: platformAnalytics.totalCritical,       color: "#F87171" },
               ] as { label: string; value: number; color: string }[]).map(({ label, value, color }) => (
@@ -1132,11 +1132,11 @@ export default function AdminPage() {
 
           <div style={{ background: "#0D1520", borderRadius: "10px", padding: "20px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: platformNarrative ? "16px" : "0" }}>
-              <p style={{ color: "#B8922A", fontSize: "10px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>Corvus Platform Briefing</p>
+              <p style={{ color: "#D8AC32", fontSize: "10px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>Corvus Platform Briefing</p>
               <button
                 onClick={handleGetPlatformNarrative}
                 disabled={loadingNarrative || !platformAnalytics}
-                style={{ background: loadingNarrative ? "rgba(184,146,42,0.08)" : "rgba(184,146,42,0.12)", border: "1px solid rgba(184,146,42,0.3)", borderRadius: "8px", color: "#B8922A", fontSize: "12px", padding: "7px 16px", cursor: loadingNarrative || !platformAnalytics ? "not-allowed" : "pointer", opacity: !platformAnalytics ? 0.4 : 1 }}>
+                style={{ background: loadingNarrative ? "rgba(216,172,50,0.08)" : "rgba(216,172,50,0.12)", border: "1px solid rgba(216,172,50,0.3)", borderRadius: "8px", color: "#D8AC32", fontSize: "12px", padding: "7px 16px", cursor: loadingNarrative || !platformAnalytics ? "not-allowed" : "pointer", opacity: !platformAnalytics ? 0.4 : 1 }}>
                 {loadingNarrative ? "Corvus is thinking…" : "Get Corvus' Briefing"}
               </button>
             </div>
@@ -1157,13 +1157,13 @@ export default function AdminPage() {
         <div style={card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
             <div>
-              <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>Corvus Knowledge Base</p>
+              <p style={{ color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>Corvus Knowledge Base</p>
               <p style={{ color: "#555555", fontSize: "12px" }}>RF/wireless technical knowledge injected into every Corvus conversation</p>
             </div>
             <button
               onClick={knowledgeLastUpdated === undefined ? loadKnowledgeStatus : handleManualKnowledgeUpdate}
               disabled={knowledgeUpdating}
-              style={{ background: knowledgeUpdating ? "rgba(0,194,199,0.04)" : "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "8px", color: "#00C2C7", fontSize: "12px", padding: "7px 14px", cursor: knowledgeUpdating ? "not-allowed" : "pointer", opacity: knowledgeUpdating ? 0.6 : 1 }}
+              style={{ background: knowledgeUpdating ? "rgba(34,214,220,0.04)" : "rgba(34,214,220,0.08)", border: "1px solid rgba(34,214,220,0.2)", borderRadius: "8px", color: "#22D6DC", fontSize: "12px", padding: "7px 14px", cursor: knowledgeUpdating ? "not-allowed" : "pointer", opacity: knowledgeUpdating ? 0.6 : 1 }}
             >
               {knowledgeUpdating ? "🐦‍⬛ Corvus is learning…" : knowledgeLastUpdated === undefined ? "↻ Check Status" : "⚡ Manual Update"}
             </button>
@@ -1178,7 +1178,7 @@ export default function AdminPage() {
             </div>
             <div style={{ background: "#0D1520", borderRadius: "10px", padding: "14px 16px" }}>
               <p style={{ color: "#444", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>Next Scheduled</p>
-              <p style={{ color: "#B8922A", fontSize: "13px", fontWeight: 600 }}>
+              <p style={{ color: "#D8AC32", fontSize: "13px", fontWeight: 600 }}>
                 {knowledgeNextScheduled || "—"}
               </p>
             </div>
@@ -1191,7 +1191,7 @@ export default function AdminPage() {
           </div>
 
           {!knowledgeLastUpdated && knowledgeLastUpdated !== undefined && (
-            <button onClick={loadKnowledgeStatus} style={{ background: "rgba(0,194,199,0.06)", border: "1px solid rgba(0,194,199,0.15)", borderRadius: "8px", color: "#00C2C7", fontSize: "12px", padding: "8px 16px", cursor: "pointer", marginBottom: "12px" }}>
+            <button onClick={loadKnowledgeStatus} style={{ background: "rgba(34,214,220,0.06)", border: "1px solid rgba(34,214,220,0.15)", borderRadius: "8px", color: "#22D6DC", fontSize: "12px", padding: "8px 16px", cursor: "pointer", marginBottom: "12px" }}>
               Load Status
             </button>
           )}
@@ -1208,11 +1208,11 @@ export default function AdminPage() {
         <div style={card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
             <div>
-              <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>Chat Intelligence</p>
+              <p style={{ color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>Chat Intelligence</p>
               <p style={{ color: "#555555", fontSize: "12px" }}>Corvus AI chat usage across all subscribers</p>
             </div>
             <button onClick={loadChatAnalytics} disabled={loadingChat}
-              style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "8px", color: "#00C2C7", fontSize: "12px", padding: "7px 14px", cursor: "pointer" }}>
+              style={{ background: "rgba(34,214,220,0.08)", border: "1px solid rgba(34,214,220,0.2)", borderRadius: "8px", color: "#22D6DC", fontSize: "12px", padding: "7px 14px", cursor: "pointer" }}>
               {loadingChat ? "Loading…" : "↻ Refresh"}
             </button>
           </div>
@@ -1220,9 +1220,9 @@ export default function AdminPage() {
             <>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: "12px", marginBottom: "20px" }}>
                 {([
-                  { label: "Total Messages", value: chatAnalytics.totalMessages,    color: "#00C2C7" },
+                  { label: "Total Messages", value: chatAnalytics.totalMessages,    color: "#22D6DC" },
                   { label: "Today",          value: chatAnalytics.messagesToday,    color: "#4ADE80" },
-                  { label: "This Week",      value: chatAnalytics.messagesThisWeek, color: "#B8922A" },
+                  { label: "This Week",      value: chatAnalytics.messagesThisWeek, color: "#D8AC32" },
                 ] as { label: string; value: number; color: string }[]).map(({ label, value, color }) => (
                   <div key={label} style={{ background: "#0D1520", borderRadius: "10px", padding: "14px 16px" }}>
                     <p style={{ color: "#444", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>{label}</p>
@@ -1237,7 +1237,7 @@ export default function AdminPage() {
                     {chatAnalytics.topChatters.slice(0, 5).map(({ code, count }) => (
                       <div key={code} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <span style={{ color: "#888888", fontFamily: "monospace", fontSize: "12px" }}>{code}</span>
-                        <span style={{ color: "#00C2C7", fontSize: "12px", fontWeight: 700 }}>{count} msg{count !== 1 ? "s" : ""}</span>
+                        <span style={{ color: "#22D6DC", fontSize: "12px", fontWeight: 700 }}>{count} msg{count !== 1 ? "s" : ""}</span>
                       </div>
                     ))}
                   </div>
@@ -1260,9 +1260,9 @@ export default function AdminPage() {
         {/* Summary stats */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: "14px", marginBottom: "24px" }}>
           {([
-            { label: "Active Subscribers", value: active.length,      color: "#00C2C7" },
+            { label: "Active Subscribers", value: active.length,      color: "#22D6DC" },
             { label: "Total Subscribers",  value: subscribers.length, color: "#aaaaaa" },
-            { label: "Credits Consumed",   value: totalConsumed,      color: "#B8922A" },
+            { label: "Credits Consumed",   value: totalConsumed,      color: "#D8AC32" },
             { label: "Revenue",            value: "$—",               color: "#444444" },
           ] as { label: string; value: string | number; color: string }[]).map(({ label, value, color }) => (
             <div key={label} style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "18px 20px" }}>
@@ -1275,11 +1275,11 @@ export default function AdminPage() {
         {/* Lifetime Members */}
         {lifetimeMembers.length > 0 && (
           <div style={card}>
-            <p style={{ color: "#B8922A", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
+            <p style={{ color: "#D8AC32", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
               Lifetime Members
             </p>
             {lifetimeMembers.map(m => (
-              <div key={m.code} style={{ background: "#0D1520", border: "1px solid rgba(184,146,42,0.2)", borderRadius: "10px", padding: "14px 16px" }}>
+              <div key={m.code} style={{ background: "#0D1520", border: "1px solid rgba(216,172,50,0.2)", borderRadius: "10px", padding: "14px 16px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
                   <div>
                     <p style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, marginBottom: "2px" }}>{m.name}</p>
@@ -1287,7 +1287,7 @@ export default function AdminPage() {
                     <p style={{ color: "#444444", fontSize: "10px", marginTop: "2px" }}>{m.title} · {m.company}</p>
                   </div>
                   <div style={{ textAlign: "right" }}>
-                    <p style={{ color: "#B8922A", fontSize: "11px", fontWeight: 700, marginBottom: "2px", textTransform: "capitalize" }}>
+                    <p style={{ color: "#D8AC32", fontSize: "11px", fontWeight: 700, marginBottom: "2px", textTransform: "capitalize" }}>
                       {m.tier} (Lifetime)
                     </p>
                     <p style={{ color: "#3DBA7A", fontSize: "11px" }}>Active — Lifetime</p>
@@ -1296,7 +1296,7 @@ export default function AdminPage() {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginBottom: "10px" }}>
                   <div>
                     <p style={{ color: "#444444", fontSize: "9px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "3px" }}>Credits Remaining</p>
-                    <p style={{ color: "#00C2C7", fontSize: "18px", fontWeight: 800, lineHeight: 1 }}>
+                    <p style={{ color: "#22D6DC", fontSize: "18px", fontWeight: 800, lineHeight: 1 }}>
                       {m.creditsRemaining} <span style={{ color: "#333333", fontSize: "11px" }}>/ {m.creditsMonthly}</span>
                     </p>
                   </div>
@@ -1318,7 +1318,7 @@ export default function AdminPage() {
         {/* Subscriber table */}
         <div style={card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-            <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>
+            <p style={{ color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase" }}>
               Subscribers ({subscribers.length})
             </p>
             <button onClick={loadSubscribers} disabled={loading}
@@ -1378,7 +1378,7 @@ export default function AdminPage() {
                               <span title={`${sub.additionalSeats ?? 0} purchased + ${seatRules.included} included`}>
                                 {totalSeats}/{seatRules.max}
                                 {(sub.seatMembers?.length ?? 0) > 0 && (
-                                  <span style={{ color: "#00C2C7", marginLeft: "4px" }}>
+                                  <span style={{ color: "#22D6DC", marginLeft: "4px" }}>
                                     ({sub.seatMembers?.length} member{sub.seatMembers?.length !== 1 ? "s" : ""})
                                   </span>
                                 )}
@@ -1411,7 +1411,7 @@ export default function AdminPage() {
                           <tr key={`${sub.subscription_id}-exp`}>
                             <td colSpan={9} style={{ padding: "0 10px 12px", background: "rgba(0,0,0,0.2)" }}>
                               <div style={{ padding: "12px", borderRadius: "8px", background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)" }}>
-                                <p style={{ color: "#00C2C7", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>
+                                <p style={{ color: "#22D6DC", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>
                                   Seat Detail — {sub.tier.toUpperCase()}
                                 </p>
                                 <p style={{ color: "#888888", fontSize: "11px", marginBottom: "8px" }}>
@@ -1423,7 +1423,7 @@ export default function AdminPage() {
                                       <div key={m.email} style={{ display: "flex", gap: "16px", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,0.04)", flexWrap: "wrap" }}>
                                         <span style={{ color: "#ffffff", fontSize: "12px", fontWeight: 600, minWidth: "120px" }}>{m.name}</span>
                                         <span style={{ color: "#888888", fontSize: "11px", minWidth: "160px" }}>{m.email}</span>
-                                        <span style={{ color: "#00C2C7", fontSize: "11px", fontFamily: "monospace" }}>{m.code}</span>
+                                        <span style={{ color: "#22D6DC", fontSize: "11px", fontFamily: "monospace" }}>{m.code}</span>
                                         <span style={{ color: "#444444", fontSize: "10px" }}>{m.addedAt ? new Date(m.addedAt).toLocaleDateString() : ""}</span>
                                       </div>
                                     ))}
@@ -1446,7 +1446,7 @@ export default function AdminPage() {
 
         {/* Recent activity */}
         <div style={card}>
-          <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
+          <p style={{ color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
             Recent Activity
           </p>
           {recentActivity.length === 0 ? (
@@ -1475,7 +1475,7 @@ export default function AdminPage() {
 
         {/* Remote Dashboard Access */}
         <div style={card}>
-          <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "12px" }}>
+          <p style={{ color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "12px" }}>
             Remote Dashboard Access
           </p>
           <p style={{ color: "#888888", fontSize: "13px", marginBottom: "20px" }}>
@@ -1512,7 +1512,7 @@ export default function AdminPage() {
               disabled={impersonating || !impersonateCode.trim()}
               style={{
                 padding: "10px 20px",
-                background: impersonating || !impersonateCode.trim() ? "#0D6E7A" : "#00C2C7",
+                background: impersonating || !impersonateCode.trim() ? "#0D6E7A" : "#22D6DC",
                 color: "#0D1520", border: "none", borderRadius: "8px",
                 fontSize: "13px", fontWeight: 700,
                 cursor: impersonating || !impersonateCode.trim() ? "not-allowed" : "pointer",
@@ -1538,7 +1538,7 @@ export default function AdminPage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: "16px", marginBottom: "20px" }}>
           {/* Generate subscription code */}
           <div style={card}>
-            <p style={{ color: "#B8922A", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
+            <p style={{ color: "#D8AC32", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
               Generate Subscription Code
             </p>
             <form onSubmit={handleGenerate}>
@@ -1562,28 +1562,28 @@ export default function AdminPage() {
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
                 <input type="checkbox" id="sendEmail" checked={sendEmail} onChange={e => setSendEmail(e.target.checked)}
-                  style={{ accentColor: "#00C2C7" }} />
+                  style={{ accentColor: "#22D6DC" }} />
                 <label htmlFor="sendEmail" style={{ color: "#888888", fontSize: "12px", cursor: "pointer" }}>
                   Send confirmation email
                 </label>
               </div>
               {genError && <p style={{ color: "#F87171", fontSize: "12px", marginBottom: "8px" }}>{genError}</p>}
               <button type="submit" disabled={generating || !genEmail.trim()}
-                style={{ width: "100%", background: generating || !genEmail.trim() ? "#0D6E7A" : "#B8922A", color: "#0D1520", border: "none", borderRadius: "8px", padding: "10px", fontSize: "13px", fontWeight: 700, cursor: generating || !genEmail.trim() ? "not-allowed" : "pointer" }}>
+                style={{ width: "100%", background: generating || !genEmail.trim() ? "#0D6E7A" : "#D8AC32", color: "#0D1520", border: "none", borderRadius: "8px", padding: "10px", fontSize: "13px", fontWeight: 700, cursor: generating || !genEmail.trim() ? "not-allowed" : "pointer" }}>
                 {generating ? "Generating…" : "Generate Code"}
               </button>
             </form>
             {generatedCode && (
               <div style={{ marginTop: "14px", background: "#0D1520", border: "1px solid #0D6E7A", borderRadius: "8px", padding: "14px", textAlign: "center" }}>
                 <p style={{ color: "#555555", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "6px" }}>Generated Code</p>
-                <p style={{ color: "#00C2C7", fontSize: "15px", fontFamily: "monospace", fontWeight: 700 }}>{generatedCode}</p>
+                <p style={{ color: "#22D6DC", fontSize: "15px", fontFamily: "monospace", fontWeight: 700 }}>{generatedCode}</p>
               </div>
             )}
           </div>
 
           {/* Add credits */}
           <div style={card}>
-            <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
+            <p style={{ color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
               Add Verdict Credits
             </p>
             <form onSubmit={handleAddCredits}>
@@ -1603,7 +1603,7 @@ export default function AdminPage() {
                 </p>
               )}
               <button type="submit" disabled={addingCredits || !credSubId.trim()}
-                style={{ width: "100%", background: addingCredits || !credSubId.trim() ? "#0D6E7A" : "#00C2C7", color: "#0D1520", border: "none", borderRadius: "8px", padding: "10px", fontSize: "13px", fontWeight: 700, cursor: addingCredits || !credSubId.trim() ? "not-allowed" : "pointer" }}>
+                style={{ width: "100%", background: addingCredits || !credSubId.trim() ? "#0D6E7A" : "#22D6DC", color: "#0D1520", border: "none", borderRadius: "8px", padding: "10px", fontSize: "13px", fontWeight: 700, cursor: addingCredits || !credSubId.trim() ? "not-allowed" : "pointer" }}>
                 {addingCredits ? "Adding…" : "Add Credits"}
               </button>
             </form>
@@ -1653,7 +1653,7 @@ export default function AdminPage() {
 
         {/* Promo code generator */}
         <div style={card}>
-          <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
+          <p style={{ color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>
             One-Time Promo Codes
           </p>
 
@@ -1709,7 +1709,7 @@ export default function AdminPage() {
                     { val: "30d",  label: "30 days" },
                   ] as { val: ExpiryType2; label: string }[]).map(({ val, label }) => (
                     <button key={val} type="button" onClick={() => setPromoExpiryType(val)}
-                      style={{ padding: "6px 4px", fontSize: "11px", fontWeight: 600, borderRadius: "6px", cursor: "pointer", background: promoExpiryType === val ? "rgba(0,194,199,0.15)" : "rgba(255,255,255,0.04)", border: `1px solid ${promoExpiryType === val ? "rgba(0,194,199,0.4)" : "rgba(255,255,255,0.08)"}`, color: promoExpiryType === val ? "#00C2C7" : "#888" }}>
+                      style={{ padding: "6px 4px", fontSize: "11px", fontWeight: 600, borderRadius: "6px", cursor: "pointer", background: promoExpiryType === val ? "rgba(34,214,220,0.15)" : "rgba(255,255,255,0.04)", border: `1px solid ${promoExpiryType === val ? "rgba(34,214,220,0.4)" : "rgba(255,255,255,0.08)"}`, color: promoExpiryType === val ? "#22D6DC" : "#888" }}>
                       {label}
                     </button>
                   ))}
@@ -1721,11 +1721,11 @@ export default function AdminPage() {
                   <label style={{ color: "#555555", fontSize: "11px" }}>Product</label>
                   <div style={{ display: "flex", gap: "6px" }}>
                     <button type="button" onClick={() => setPromoProducts("both")}
-                      style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "4px", cursor: "pointer", background: "rgba(184,146,42,0.1)", border: "1px solid rgba(184,146,42,0.3)", color: "#B8922A" }}>
+                      style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "4px", cursor: "pointer", background: "rgba(216,172,50,0.1)", border: "1px solid rgba(216,172,50,0.3)", color: "#D8AC32" }}>
                       All
                     </button>
                     <button type="button" onClick={() => setPromoProducts("all_reckonings")}
-                      style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "4px", cursor: "pointer", background: "rgba(184,146,42,0.06)", border: "1px solid rgba(184,146,42,0.2)", color: "#888" }}>
+                      style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "4px", cursor: "pointer", background: "rgba(216,172,50,0.06)", border: "1px solid rgba(216,172,50,0.2)", color: "#888" }}>
                       All Reckonings
                     </button>
                   </div>
@@ -1746,8 +1746,8 @@ export default function AdminPage() {
                     { val: "sub_any",              label: "Any Subscription (recipient chooses tier)" },
                   ] as { val: PromoProduct2; label: string }[]).map(({ val, label }) => (
                     <button key={val} type="button" onClick={() => setPromoProducts(val)}
-                      style={{ display: "flex", alignItems: "center", gap: "8px", padding: "7px 10px", fontSize: "12px", borderRadius: "7px", cursor: "pointer", textAlign: "left", background: promoProducts === val ? "rgba(0,194,199,0.12)" : "rgba(255,255,255,0.02)", border: `1px solid ${promoProducts === val ? "rgba(0,194,199,0.35)" : "rgba(255,255,255,0.07)"}`, color: promoProducts === val ? "#00C2C7" : "#888" }}>
-                      <span style={{ width: "14px", height: "14px", borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", background: promoProducts === val ? "#00C2C7" : "transparent", border: `2px solid ${promoProducts === val ? "#00C2C7" : "#444"}`, color: "#0D1520" }}>
+                      style={{ display: "flex", alignItems: "center", gap: "8px", padding: "7px 10px", fontSize: "12px", borderRadius: "7px", cursor: "pointer", textAlign: "left", background: promoProducts === val ? "rgba(34,214,220,0.12)" : "rgba(255,255,255,0.02)", border: `1px solid ${promoProducts === val ? "rgba(34,214,220,0.35)" : "rgba(255,255,255,0.07)"}`, color: promoProducts === val ? "#22D6DC" : "#888" }}>
+                      <span style={{ width: "14px", height: "14px", borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", background: promoProducts === val ? "#22D6DC" : "transparent", border: `2px solid ${promoProducts === val ? "#22D6DC" : "#444"}`, color: "#0D1520" }}>
                         {promoProducts === val ? "✓" : ""}
                       </span>
                       {label}
@@ -1765,14 +1765,14 @@ export default function AdminPage() {
               <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", padding: "10px 14px", marginBottom: "12px" }}>
                 <p style={{ color: "#555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>Preview</p>
                 <p style={{ color: "#aaa", fontSize: "12px" }}>
-                  Valid for: <span style={{ color: "#00C2C7" }}>{promoProducts.replace(/_/g, " ")}</span> ·{" "}
-                  Expiry: <span style={{ color: "#00C2C7" }}>{promoExpiryType === "single_use" ? "1 use (no time limit)" : promoExpiryType}</span>
+                  Valid for: <span style={{ color: "#22D6DC" }}>{promoProducts.replace(/_/g, " ")}</span> ·{" "}
+                  Expiry: <span style={{ color: "#22D6DC" }}>{promoExpiryType === "single_use" ? "1 use (no time limit)" : promoExpiryType}</span>
                 </p>
               </div>
 
               {promoGenError && <p style={{ color: "#F87171", fontSize: "12px", marginBottom: "8px" }}>{promoGenError}</p>}
               <button type="submit" disabled={generatingPromo}
-                style={{ width: "100%", background: generatingPromo ? "#0D6E7A" : "#00C2C7", color: "#0D1520", border: "none", borderRadius: "8px", padding: "10px", fontSize: "13px", fontWeight: 700, cursor: generatingPromo ? "not-allowed" : "pointer" }}>
+                style={{ width: "100%", background: generatingPromo ? "#0D6E7A" : "#22D6DC", color: "#0D1520", border: "none", borderRadius: "8px", padding: "10px", fontSize: "13px", fontWeight: 700, cursor: generatingPromo ? "not-allowed" : "pointer" }}>
                 {generatingPromo ? "Generating…" : "Generate Code"}
               </button>
             </form>
@@ -1781,12 +1781,12 @@ export default function AdminPage() {
               {generatedPromoCode ? (
                 <div style={{ background: "#0D1520", border: "1px solid #0D6E7A", borderRadius: "12px", padding: "20px 24px", textAlign: "center", width: "100%" }}>
                   <p style={{ color: "#444", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "10px" }}>Generated Code</p>
-                  <p style={{ color: "#00C2C7", fontSize: "17px", fontFamily: "monospace", fontWeight: 800, letterSpacing: "0.08em", marginBottom: "14px", wordBreak: "break-all" }}>
+                  <p style={{ color: "#22D6DC", fontSize: "17px", fontFamily: "monospace", fontWeight: 800, letterSpacing: "0.08em", marginBottom: "14px", wordBreak: "break-all" }}>
                     {generatedPromoCode}
                   </p>
                   <button
                     onClick={() => { navigator.clipboard.writeText(generatedPromoCode).then(() => { setPromoCopied(true); setTimeout(() => setPromoCopied(false), 2000); }); }}
-                    style={{ background: promoCopied ? "rgba(74,222,128,0.15)" : "rgba(0,194,199,0.1)", border: `1px solid ${promoCopied ? "rgba(74,222,128,0.4)" : "rgba(0,194,199,0.3)"}`, borderRadius: "7px", color: promoCopied ? "#4ADE80" : "#00C2C7", fontSize: "12px", fontWeight: 600, padding: "7px 18px", cursor: "pointer" }}>
+                    style={{ background: promoCopied ? "rgba(74,222,128,0.15)" : "rgba(34,214,220,0.1)", border: `1px solid ${promoCopied ? "rgba(74,222,128,0.4)" : "rgba(34,214,220,0.3)"}`, borderRadius: "7px", color: promoCopied ? "#4ADE80" : "#22D6DC", fontSize: "12px", fontWeight: 600, padding: "7px 18px", cursor: "pointer" }}>
                     {promoCopied ? "✓ Copied" : "Copy to Clipboard"}
                   </button>
                 </div>
@@ -1815,7 +1815,7 @@ export default function AdminPage() {
                     return (
                       <React.Fragment key={p.code}>
                       <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
-                        <td style={{ color: "#00C2C7", padding: "10px", fontFamily: "monospace", fontSize: "11px", whiteSpace: "nowrap" }}>{p.code}</td>
+                        <td style={{ color: "#22D6DC", padding: "10px", fontFamily: "monospace", fontSize: "11px", whiteSpace: "nowrap" }}>{p.code}</td>
                         <td style={{ color: "#aaa", padding: "10px", whiteSpace: "nowrap" }}>{PROMO_TYPE_LABELS[p.type]}</td>
                         <td style={{ color: "#666", padding: "10px", maxWidth: "160px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.note || "—"}</td>
                         <td style={{ color: "#444", padding: "10px", whiteSpace: "nowrap" }}>{fmtDate(p.createdAt, true)}</td>
@@ -1836,7 +1836,7 @@ export default function AdminPage() {
                             </button>
                             <button
                               onClick={() => setPromoQrCode(promoQrCode === p.code ? null : p.code)}
-                              style={{ background: promoQrCode === p.code ? "rgba(184,146,42,0.15)" : "rgba(0,194,199,0.08)", border: `1px solid ${promoQrCode === p.code ? "rgba(184,146,42,0.3)" : "rgba(0,194,199,0.15)"}`, color: promoQrCode === p.code ? "#B8922A" : "#00C2C7", borderRadius: "6px", fontSize: "11px", padding: "4px 10px", cursor: "pointer", fontFamily: "monospace" }}>
+                              style={{ background: promoQrCode === p.code ? "rgba(216,172,50,0.15)" : "rgba(34,214,220,0.08)", border: `1px solid ${promoQrCode === p.code ? "rgba(216,172,50,0.3)" : "rgba(34,214,220,0.15)"}`, color: promoQrCode === p.code ? "#D8AC32" : "#22D6DC", borderRadius: "6px", fontSize: "11px", padding: "4px 10px", cursor: "pointer", fontFamily: "monospace" }}>
                               {promoQrCode === p.code ? "✕ QR" : "⊞ QR"}
                             </button>
                           </div>
@@ -1844,7 +1844,7 @@ export default function AdminPage() {
                       </tr>
                       {promoQrCode === p.code && (
                         <tr>
-                          <td colSpan={8} style={{ padding: "12px 10px", background: "rgba(0,194,199,0.03)", borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
+                          <td colSpan={8} style={{ padding: "12px 10px", background: "rgba(34,214,220,0.03)", borderBottom: "1px solid rgba(255,255,255,0.03)" }}>
                             <QRCodeDisplay
                               url={promoUrl}
                               label={`Promo — ${p.code}`}
@@ -1873,11 +1873,11 @@ export default function AdminPage() {
       <div style={card}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", margin: 0 }}>
+            <p style={{ color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", margin: 0 }}>
               Pending Testimonials
             </p>
             {pendingTestimonials.length > 0 && (
-              <span style={{ background: "#B8922A", color: "#0D1520", fontSize: "10px", fontWeight: 800, padding: "2px 8px", borderRadius: "20px" }}>
+              <span style={{ background: "#D8AC32", color: "#0D1520", fontSize: "10px", fontWeight: 800, padding: "2px 8px", borderRadius: "20px" }}>
                 {pendingTestimonials.length}
               </span>
             )}
@@ -1904,7 +1904,7 @@ export default function AdminPage() {
                     {t.location && <span style={{ color: "#555555", fontSize: "11px", marginLeft: "8px" }}>{t.location}</span>}
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ color: "#B8922A", fontSize: "13px" }}>{"★".repeat(t.rating)}{"☆".repeat(5 - t.rating)}</span>
+                    <span style={{ color: "#D8AC32", fontSize: "13px" }}>{"★".repeat(t.rating)}{"☆".repeat(5 - t.rating)}</span>
                     <span style={{ color: "#444444", fontSize: "11px" }}>{new Date(t.submittedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                   </div>
                 </div>
@@ -2042,7 +2042,7 @@ export default function AdminPage() {
                               onClick={() => {
                                 setVipQrCode(vipQrCode === s.code ? null : s.code);
                               }}
-                              style={{ background: vipQrCode === s.code ? "rgba(184,146,42,0.15)" : "rgba(0,194,199,0.08)", border: `1px solid ${vipQrCode === s.code ? "rgba(184,146,42,0.3)" : "rgba(0,194,199,0.15)"}`, color: vipQrCode === s.code ? "#B8922A" : "#00C2C7", borderRadius: "5px", padding: "3px 8px", fontSize: "0.65rem", fontFamily: "monospace", cursor: "pointer" }}>
+                              style={{ background: vipQrCode === s.code ? "rgba(216,172,50,0.15)" : "rgba(34,214,220,0.08)", border: `1px solid ${vipQrCode === s.code ? "rgba(216,172,50,0.3)" : "rgba(34,214,220,0.15)"}`, color: vipQrCode === s.code ? "#D8AC32" : "#22D6DC", borderRadius: "5px", padding: "3px 8px", fontSize: "0.65rem", fontFamily: "monospace", cursor: "pointer" }}>
                               {vipQrCode === s.code ? "✕ QR" : "⊞ QR"}
                             </button>
                           </div>
@@ -2050,7 +2050,7 @@ export default function AdminPage() {
                       </tr>
                       {vipQrCode === s.code && (
                         <tr>
-                          <td colSpan={7} style={{ padding: "12px 8px", background: "rgba(0,194,199,0.04)" }}>
+                          <td colSpan={7} style={{ padding: "12px 8px", background: "rgba(34,214,220,0.04)" }}>
                             <QRCodeDisplay
                               url={`${typeof window !== "undefined" ? window.location.origin : "https://oldcrowswireless.com"}/dashboard?code=${s.code}`}
                               label={`Dashboard access — ${s.code}`}
@@ -2080,7 +2080,7 @@ export default function AdminPage() {
       <div style={card}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
           <div>
-            <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>All Reports</p>
+            <p style={{ color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>All Reports</p>
             <p style={{ color: "#555555", fontSize: "12px" }}>
               {allReports.length} total across all subscribers
             </p>
@@ -2119,7 +2119,7 @@ export default function AdminPage() {
                         {r.reportId}
                       </td>
                       <td style={{ padding: "10px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                        <span style={{ background: "rgba(0,194,199,0.1)", color: "#00C2C7", fontSize: "9px", fontWeight: 700, letterSpacing: "0.1em", padding: "2px 7px", borderRadius: "20px" }}>
+                        <span style={{ background: "rgba(34,214,220,0.1)", color: "#22D6DC", fontSize: "9px", fontWeight: 700, letterSpacing: "0.1em", padding: "2px 7px", borderRadius: "20px" }}>
                           {REPORT_TYPE_LABELS2[r.type] ?? r.type}
                         </span>
                       </td>
@@ -2183,7 +2183,7 @@ export default function AdminPage() {
           </p>
           <button
             onClick={() => { loadAll(); flash("All data refreshed."); }}
-            style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "8px", color: "#00C2C7", fontSize: "13px", fontWeight: 600, padding: "9px 20px", cursor: "pointer" }}>
+            style={{ background: "rgba(34,214,220,0.08)", border: "1px solid rgba(34,214,220,0.2)", borderRadius: "8px", color: "#22D6DC", fontSize: "13px", fontWeight: 600, padding: "9px 20px", cursor: "pointer" }}>
             ↻ Refresh All
           </button>
         </div>
@@ -2195,8 +2195,8 @@ export default function AdminPage() {
   }
 
   function renderProducts() {
-    const accentGold = "#B8922A";
-    const accentCyan = "#00C2C7";
+    const accentGold = "#D8AC32";
+    const accentCyan = "#22D6DC";
 
     interface ProductDef {
       id: string; name: string; tagline?: string; description?: string;
@@ -2325,7 +2325,7 @@ export default function AdminPage() {
     };
 
     const tierBadgeColor: Record<string, string> = {
-      fledgling: "#888888", nest: "#00C2C7", flock: "#B8922A", murder: "#9B1C1C", vip: "#D4AF37",
+      fledgling: "#888888", nest: "#22D6DC", flock: "#D8AC32", murder: "#9B1C1C", vip: "#D4AF37",
     };
 
     return (
@@ -2359,7 +2359,7 @@ export default function AdminPage() {
               </div>
 
               {p.price && (
-                <div style={{ color: '#00C2C7', fontSize: '0.78rem', fontFamily: 'monospace', marginBottom: 4 }}>
+                <div style={{ color: '#22D6DC', fontSize: '0.78rem', fontFamily: 'monospace', marginBottom: 4 }}>
                   {p.price}
                 </div>
               )}
@@ -2369,7 +2369,7 @@ export default function AdminPage() {
                 </div>
               )}
               {p.highlight && (
-                <div style={{ display: 'inline-block', background: 'rgba(184,146,42,0.1)', border: '1px solid rgba(184,146,42,0.25)', borderRadius: 4, color: '#B8922A', fontSize: '0.65rem', fontFamily: 'monospace', padding: '2px 8px', marginBottom: 8 }}>
+                <div style={{ display: 'inline-block', background: 'rgba(216,172,50,0.1)', border: '1px solid rgba(216,172,50,0.25)', borderRadius: 4, color: '#D8AC32', fontSize: '0.65rem', fontFamily: 'monospace', padding: '2px 8px', marginBottom: 8 }}>
                   {p.highlight}
                 </div>
               )}
@@ -2459,7 +2459,7 @@ export default function AdminPage() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px", flexWrap: "wrap", gap: "12px" }}>
         <div>
-          <p style={{ color: "#00C2C7", fontSize: "10px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "4px" }}>
+          <p style={{ color: "#22D6DC", fontSize: "10px", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "4px" }}>
             Old Crows Wireless Solutions
           </p>
           <h1 style={{ color: "#ffffff", fontSize: "22px", fontWeight: 800, margin: 0 }}>Admin Dashboard</h1>
@@ -2477,7 +2477,7 @@ export default function AdminPage() {
       </div>
 
       {actionMsg && (
-        <div style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.25)", borderRadius: "8px", padding: "10px 16px", marginBottom: "16px", color: "#00C2C7", fontSize: "13px" }}>
+        <div style={{ background: "rgba(34,214,220,0.08)", border: "1px solid rgba(34,214,220,0.25)", borderRadius: "8px", padding: "10px 16px", marginBottom: "16px", color: "#22D6DC", fontSize: "13px" }}>
           {actionMsg}
         </div>
       )}

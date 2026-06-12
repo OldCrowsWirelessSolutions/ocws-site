@@ -87,14 +87,14 @@ async function sendDemoRequestEmail(req: DemoRequest) {
       subject: `🎯 New Demo Request — ${req.name}${req.company ? ` (${req.company})` : ''}`,
       html: `
         <div style="font-family: monospace; background: #0D1520; color: #F4F6F8; padding: 24px; border-radius: 8px;">
-          <h2 style="color: #00C2C7;">New Demo Request</h2>
+          <h2 style="color: #22D6DC;">New Demo Request</h2>
           <p><strong>ID:</strong> ${req.id}</p>
           <p><strong>Name:</strong> ${req.name}</p>
-          <p><strong>Email:</strong> <a href="mailto:${req.email}" style="color: #00C2C7;">${req.email}</a></p>
+          <p><strong>Email:</strong> <a href="mailto:${req.email}" style="color: #22D6DC;">${req.email}</a></p>
           ${req.company ? `<p><strong>Company/Property:</strong> ${req.company}</p>` : ''}
           ${req.phone ? `<p><strong>Phone:</strong> ${req.phone}</p>` : ''}
           <p><strong>Preferred Contact:</strong> ${req.contactMethod}</p>
-          ${req.problem ? `<p><strong>What they're trying to solve:</strong></p><blockquote style="border-left: 3px solid #00C2C7; padding-left: 12px; color: #aaa;">${req.problem}</blockquote>` : ''}
+          ${req.problem ? `<p><strong>What they're trying to solve:</strong></p><blockquote style="border-left: 3px solid #22D6DC; padding-left: 12px; color: #aaa;">${req.problem}</blockquote>` : ''}
           <a href="https://oldcrowswireless.com/dashboard?tab=demo-requests" style="background: #0D6E7A; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; display: inline-block; margin-top: 12px;">View in Dashboard →</a>
         </div>
       `,

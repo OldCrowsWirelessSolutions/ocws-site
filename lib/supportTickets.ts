@@ -112,13 +112,13 @@ async function sendTicketEmail(ticket: SupportTicket) {
       subject: `${priorityEmoji} [${ticket.priority.toUpperCase()}] Support Ticket ${ticket.id}`,
       html: `
         <div style="font-family: monospace; background: #0D1520; color: #F4F6F8; padding: 24px; border-radius: 8px;">
-          <h2 style="color: #00C2C7;">OCWS Support Ticket</h2>
+          <h2 style="color: #22D6DC;">OCWS Support Ticket</h2>
           <p><strong>ID:</strong> ${ticket.id}</p>
-          <p><strong>Priority:</strong> <span style="color: ${ticket.priority === 'critical' ? '#e05555' : ticket.priority === 'high' ? '#B8922A' : '#00C2C7'}">${ticket.priority.toUpperCase()}</span></p>
+          <p><strong>Priority:</strong> <span style="color: ${ticket.priority === 'critical' ? '#e05555' : ticket.priority === 'high' ? '#D8AC32' : '#22D6DC'}">${ticket.priority.toUpperCase()}</span></p>
           <p><strong>Product:</strong> ${ticket.product}</p>
           <p><strong>From:</strong> ${ticket.submitterEmail}</p>
           <p><strong>Description:</strong></p>
-          <blockquote style="border-left: 3px solid #00C2C7; padding-left: 12px; color: #aaa;">${ticket.description}</blockquote>
+          <blockquote style="border-left: 3px solid #22D6DC; padding-left: 12px; color: #aaa;">${ticket.description}</blockquote>
           <a href="https://oldcrowswireless.com/dashboard?tab=tickets" style="background: #0D6E7A; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none;">View in Dashboard →</a>
         </div>
       `,

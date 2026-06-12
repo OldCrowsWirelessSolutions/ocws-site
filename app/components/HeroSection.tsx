@@ -10,7 +10,7 @@ export default function HeroSection() {
 
         {/* Eyebrow */}
         <p className="text-xs font-semibold uppercase tracking-widest mb-4"
-           style={{ color: "#00C2C7", letterSpacing: "0.2em" }}>
+           style={{ color: "#22D6DC", letterSpacing: "0.2em" }}>
           Crow&rsquo;s Eye by Corvus
         </p>
 
@@ -31,7 +31,7 @@ export default function HeroSection() {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 rounded-2xl px-8 py-4 text-base font-bold"
-            style={{ background: "linear-gradient(135deg, #0D6E7A, #00C2C7)", color: "#fff", textDecoration: "none" }}
+            style={{ background: "linear-gradient(135deg, #0D6E7A, #22D6DC)", color: "#fff", textDecoration: "none" }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path d="M2 3.27L12.73 12L2 20.73V3.27Z" fill="#fff" opacity="0.9" />
@@ -44,7 +44,7 @@ export default function HeroSection() {
           <Link
             href="/pricing"
             className="inline-flex items-center justify-center rounded-2xl px-8 py-4 text-base font-semibold"
-            style={{ border: "1px solid rgba(0,194,199,0.3)", color: "#00C2C7", background: "transparent" }}
+            style={{ border: "1px solid rgba(34,214,220,0.3)", color: "#22D6DC", background: "transparent" }}
           >
             See Pricing
           </Link>

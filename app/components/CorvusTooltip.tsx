@@ -62,7 +62,7 @@ export default function CorvusTooltip({ tip, position = 'top', children }: Props
             boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
             fontFamily: 'Share Tech Mono, monospace',
           }}>
-            <span style={{ color: '#00C2C7', marginRight: '4px' }}>▸</span>
+            <span style={{ color: '#22D6DC', marginRight: '4px' }}>▸</span>
             {tip}
           </div>
           <div style={{ position: 'absolute', width: 0, height: 0, ...arrowMap[position] }} />

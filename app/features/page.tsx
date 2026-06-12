@@ -4,20 +4,20 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Features — Old Crows Wireless Solutions",
   description:
-    "What Crow's Eye and Corvus can do: RF analysis, Verdicts, Full Reckonings, voice assistant, team intel, and OCWS Pro certification.",
+    "What Crow's Eye and Corvus can do: WiFi analysis, WiFi Health Reports, Whole-Home Surveys, voice assistant, team intel, and OCWS Pro certification.",
 };
 
 const capabilities = [
-  { icon: "📡", label: "RF Analysis", desc: "Scans your live wireless environment, identifies every network, cross-references MAC vendors against a global OUI database." },
-  { icon: "💬", label: "Ask Corvus", desc: "Chat with Corvus about RF, Wi-Fi, interference — he answers like he was there for the scan." },
+  { icon: "📡", label: "WiFi Analysis", desc: "Scans your live wireless environment, identifies every network, cross-references MAC vendors against a global OUI database." },
+  { icon: "💬", label: "Ask Corvus", desc: "Chat with Corvus about Wi-Fi, interference — he answers like he was there for the scan." },
   { icon: "🎙️", label: "Voice Assistant", desc: "Corvus speaks. Briefings, analysis narration, dashboard greetings — all in his voice." },
   { icon: "🎓", label: "Guided Tours", desc: "Interactive walkthroughs of every dashboard feature with live glowing indicators." },
-  { icon: "📊", label: "Reckoning Reports", desc: "Multi-location site assessments with remediation plans and compliance-ready PDFs." },
+  { icon: "📊", label: "Whole-Home Surveys", desc: "Multi-location site assessments with remediation plans and compliance-ready PDFs." },
   { icon: "🔔", label: "Team Intel", desc: "Team activity reporting, Corvus briefings, and scan history for every member." },
 ];
 
 const comparison = [
-  ["Show you channel graphs", "Renders a complete Verdict"],
+  ["Show you channel graphs", "Delivers a complete WiFi Health Report"],
   ["Require technical knowledge to interpret", "Adapts to your level — Level 1 to White Hat"],
   ["Leave you with raw data", "Gives you step-by-step fix instructions"],
   ["$2,400+/year for professional grade", "Starts at $50 · Subscriptions from $20/mo"],
@@ -40,9 +40,9 @@ export default function FeaturesPage() {
         <div className="ocws-container text-center">
           <p
             className="text-xs font-semibold uppercase tracking-widest mb-4"
-            style={{ color: "#00C2C7", letterSpacing: "0.18em", fontFamily: "'Share Tech Mono', monospace" }}
+            style={{ color: "#22D6DC", letterSpacing: "0.18em", fontFamily: "'Share Tech Mono', monospace" }}
           >
-            Crow&rsquo;s Eye &middot; RF Intelligence Engine
+            Crow&rsquo;s Eye &middot; WiFi Intelligence Engine
           </p>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
             What Corvus Can Do
@@ -50,7 +50,7 @@ export default function FeaturesPage() {
           <p className="text-base max-w-2xl mx-auto" style={{ color: "#8AAABB" }}>
             Corvus reads your wireless environment and tells you exactly what&rsquo;s wrong, why it&rsquo;s wrong,
             and exactly how to fix it on your specific equipment. He does not guess. He does not generalize.
-            He renders Verdicts.
+            He delivers WiFi Health Reports.
           </p>
         </div>
       </section>
@@ -84,7 +84,7 @@ export default function FeaturesPage() {
               <div
                 key={label}
                 className="rounded-xl p-5"
-                style={{ background: "rgba(0,194,199,0.04)", border: "1px solid rgba(0,194,199,0.1)" }}
+                style={{ background: "rgba(34,214,220,0.04)", border: "1px solid rgba(34,214,220,0.1)" }}
               >
                 <p className="text-base mb-2">
                   {icon} <span className="text-sm font-bold text-white">{label}</span>
@@ -102,7 +102,7 @@ export default function FeaturesPage() {
           <div className="text-center mb-12">
             <p
               className="text-xs font-semibold uppercase tracking-widest mb-3"
-              style={{ color: "#00C2C7", letterSpacing: "0.18em" }}
+              style={{ color: "#22D6DC", letterSpacing: "0.18em" }}
             >
               Products
             </p>
@@ -114,32 +114,32 @@ export default function FeaturesPage() {
           <div className="space-y-6">
 
             {/* Corvus' Verdict */}
-            <div className="rounded-2xl overflow-hidden" style={{ background: "#0D1520", borderTop: "3px solid #00C2C7" }}>
+            <div className="rounded-2xl overflow-hidden" style={{ background: "#0D1520", borderTop: "3px solid #22D6DC" }}>
               <div className="p-8">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
                   <div>
-                    <h3 className="text-2xl font-bold text-white mb-1">Corvus&rsquo; Verdict</h3>
-                    <p className="text-sm font-semibold" style={{ color: "#00C2C7" }}>
+                    <h3 className="text-2xl font-bold text-white mb-1">WiFi Health Report</h3>
+                    <p className="text-sm font-semibold" style={{ color: "#22D6DC" }}>
                       Single-location analysis &middot; $50 one-time or included with subscription
                     </p>
                   </div>
                   <Link
                     href="/crows-eye"
                     className="shrink-0 inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-bold ocws-glow-hover"
-                    style={{ background: "#00C2C7", color: "#0D1520" }}
+                    style={{ background: "#22D6DC", color: "#0D1520" }}
                   >
-                    Get Your Verdict
+                    Get Your WiFi Health Report
                   </Link>
                 </div>
                 <p className="text-sm leading-relaxed mb-5" style={{ color: "#aaa" }}>
-                  Open Crow&rsquo;s Eye and tap Scan. Corvus reads your entire RF environment —
+                  Open Crow&rsquo;s Eye and tap Scan. Corvus reads your entire WiFi environment —
                   every channel, every network, every signal — and tells you exactly what&rsquo;s wrong,
                   why it&rsquo;s wrong, and exactly how to fix it on your specific router. Every finding.
                   Every step. Branded PDF you keep forever.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {[
-                    "Full AI RF environment diagnosis",
+                    "Full AI WiFi environment diagnosis",
                     "Channel saturation and interference analysis",
                     "Router vendor identification from MAC OUI",
                     "Step-by-step fix instructions per router",
@@ -147,7 +147,7 @@ export default function FeaturesPage() {
                     "Branded PDF report — yours to keep",
                   ].map((f) => (
                     <div key={f} className="flex items-start gap-2 text-sm" style={{ color: "#ccc" }}>
-                      <span style={{ color: "#00C2C7", flexShrink: 0 }}>✓</span>
+                      <span style={{ color: "#22D6DC", flexShrink: 0 }}>✓</span>
                       <span>{f}</span>
                     </div>
                   ))}
@@ -156,21 +156,21 @@ export default function FeaturesPage() {
             </div>
 
             {/* The Full Reckoning */}
-            <div className="rounded-2xl overflow-hidden" style={{ background: "#0D1520", borderTop: "3px solid #B8922A" }}>
+            <div className="rounded-2xl overflow-hidden" style={{ background: "#0D1520", borderTop: "3px solid #D8AC32" }}>
               <div className="p-8">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
                   <div>
-                    <h3 className="text-2xl font-bold text-white mb-1">The Full Reckoning</h3>
-                    <p className="text-sm font-semibold" style={{ color: "#B8922A" }}>
+                    <h3 className="text-2xl font-bold text-white mb-1">The Whole-Home Survey</h3>
+                    <p className="text-sm font-semibold" style={{ color: "#D8AC32" }}>
                       Multi-location site survey &middot; From $150
                     </p>
                   </div>
                   <Link
                     href="/crows-eye"
                     className="shrink-0 inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-bold"
-                    style={{ border: "1px solid #B8922A", color: "#B8922A", background: "transparent" }}
+                    style={{ border: "1px solid #D8AC32", color: "#D8AC32", background: "transparent" }}
                   >
-                    Start a Reckoning
+                    Start a Whole-Home Survey
                   </Link>
                 </div>
                 <p className="text-sm leading-relaxed mb-5" style={{ color: "#aaa" }}>
@@ -184,10 +184,10 @@ export default function FeaturesPage() {
                     { tier: "Standard Site", locs: "6–15 locations", price: "$350" },
                     { tier: "Commercial Site", locs: "16+ locations", price: "$750" },
                   ].map(({ tier, locs, price }) => (
-                    <div key={tier} className="rounded-xl p-4 text-center" style={{ background: "#1A2332", border: "1px solid rgba(184,146,42,0.25)" }}>
-                      <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "#B8922A" }}>{tier}</p>
+                    <div key={tier} className="rounded-xl p-4 text-center" style={{ background: "#1A2332", border: "1px solid rgba(216,172,50,0.25)" }}>
+                      <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "#D8AC32" }}>{tier}</p>
                       <p className="text-xs mb-2" style={{ color: "#888" }}>{locs}</p>
-                      <p className="text-2xl font-bold" style={{ color: "#B8922A" }}>{price}</p>
+                      <p className="text-2xl font-bold" style={{ color: "#D8AC32" }}>{price}</p>
                     </div>
                   ))}
                 </div>
@@ -195,21 +195,21 @@ export default function FeaturesPage() {
             </div>
 
             {/* OCWS Pro */}
-            <div className="rounded-2xl overflow-hidden" style={{ background: "#0D1520", borderTop: "3px solid #B8922A" }}>
+            <div className="rounded-2xl overflow-hidden" style={{ background: "#0D1520", borderTop: "3px solid #D8AC32" }}>
               <div className="p-8">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
                   <div>
-                    <h3 className="text-2xl font-bold text-white mb-1">OCWS Pro Certified Reckoning</h3>
-                    <p className="text-sm font-semibold" style={{ color: "#B8922A" }}>
+                    <h3 className="text-2xl font-bold text-white mb-1">OCWS Pro Certified Whole-Home Survey</h3>
+                    <p className="text-sm font-semibold" style={{ color: "#D8AC32" }}>
                       Joshua certifies every finding &middot; $1,500 &middot; Any size facility
                     </p>
                   </div>
                   <Link
                     href="/contact"
                     className="shrink-0 inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-bold"
-                    style={{ border: "1px solid rgba(184,146,42,0.5)", color: "#B8922A", background: "transparent" }}
+                    style={{ border: "1px solid rgba(216,172,50,0.5)", color: "#D8AC32", background: "transparent" }}
                   >
-                    Request Pro Reckoning
+                    Request Pro Survey
                   </Link>
                 </div>
                 <p className="text-sm leading-relaxed mb-5" style={{ color: "#aaa" }}>
@@ -219,7 +219,7 @@ export default function FeaturesPage() {
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {[
-                    "Full site Reckoning — all locations included",
+                    "Full Whole-Home Survey — all locations included",
                     "Personal certification by Joshua Turner",
                     "Valid for compliance and legal documentation",
                     "Insurance claim and vendor quote support",
@@ -227,7 +227,7 @@ export default function FeaturesPage() {
                     "17 years Navy EW expertise behind every cert",
                   ].map((f) => (
                     <div key={f} className="flex items-start gap-2 text-sm" style={{ color: "#ccc" }}>
-                      <span style={{ color: "#B8922A", flexShrink: 0 }}>✓</span>
+                      <span style={{ color: "#D8AC32", flexShrink: 0 }}>✓</span>
                       <span>{f}</span>
                     </div>
                   ))}
@@ -243,7 +243,7 @@ export default function FeaturesPage() {
       <section className="py-16" style={{ background: "#0D1520" }}>
         <div className="ocws-container" style={{ maxWidth: "900px" }}>
           <div className="text-center mb-12">
-            <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#00C2C7", letterSpacing: "0.18em" }}>
+            <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#22D6DC", letterSpacing: "0.18em" }}>
               Why Choose Corvus
             </p>
             <h2 className="text-3xl md:text-4xl font-bold text-white">
@@ -251,15 +251,15 @@ export default function FeaturesPage() {
             </h2>
           </div>
 
-          <div style={{ border: "1px solid rgba(0,194,199,0.2)", borderRadius: "12px", overflow: "hidden", marginBottom: "40px" }}>
+          <div style={{ border: "1px solid rgba(34,214,220,0.2)", borderRadius: "12px", overflow: "hidden", marginBottom: "40px" }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", background: "#1A2332", padding: "16px 24px", alignItems: "center" }}>
               <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.65rem", color: "#8AAABB", letterSpacing: "0.15em", textTransform: "uppercase" }}>
                 Traditional Wi-Fi Tools
               </span>
-              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.7rem", color: "#B8922A", textAlign: "center", padding: "0 20px" }}>
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.7rem", color: "#D8AC32", textAlign: "center", padding: "0 20px" }}>
                 VS
               </span>
-              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.65rem", color: "#00C2C7", letterSpacing: "0.15em", textTransform: "uppercase", textAlign: "right" }}>
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.65rem", color: "#22D6DC", letterSpacing: "0.15em", textTransform: "uppercase", textAlign: "right" }}>
                 Corvus
               </span>
             </div>
@@ -269,16 +269,16 @@ export default function FeaturesPage() {
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
-                  borderBottom: i < comparison.length - 1 ? "1px solid rgba(0,194,199,0.06)" : "none",
+                  borderBottom: i < comparison.length - 1 ? "1px solid rgba(34,214,220,0.06)" : "none",
                   background: i % 2 === 0 ? "rgba(13,21,32,0.6)" : "rgba(26,35,50,0.4)",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "12px 20px", fontSize: "0.85rem", color: "rgba(244,246,248,0.5)", borderRight: "1px solid rgba(0,194,199,0.08)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "12px 20px", fontSize: "0.85rem", color: "rgba(244,246,248,0.5)", borderRight: "1px solid rgba(34,214,220,0.08)" }}>
                   <span style={{ color: "#E05555", fontSize: "1rem", flexShrink: 0 }}>✗</span>
                   {traditional}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "12px 20px", fontSize: "0.85rem", color: "#F4F6F8" }}>
-                  <span style={{ color: "#00C2C7", fontSize: "1rem", flexShrink: 0 }}>✓</span>
+                  <span style={{ color: "#22D6DC", fontSize: "1rem", flexShrink: 0 }}>✓</span>
                   {corvus}
                 </div>
               </div>
@@ -286,14 +286,14 @@ export default function FeaturesPage() {
           </div>
 
           {/* Joshua quote */}
-          <div style={{ background: "rgba(13,21,32,0.8)", border: "1px solid rgba(184,146,42,0.3)", borderLeft: "4px solid #B8922A", borderRadius: "0 12px 12px 0", padding: "24px 28px", marginBottom: "56px" }}>
+          <div style={{ background: "rgba(13,21,32,0.8)", border: "1px solid rgba(216,172,50,0.3)", borderLeft: "4px solid #D8AC32", borderRadius: "0 12px 12px 0", padding: "24px 28px", marginBottom: "56px" }}>
             <p className="text-sm italic mb-3 leading-relaxed" style={{ color: "#F4F6F8", lineHeight: 1.8 }}>
-              &ldquo;I&rsquo;ve seen what professional RF analysis costs at the enterprise level. I built Corvus so that a barbershop owner, a church administrator, and a hospital IT director could all get the same quality of diagnosis — without needing a $2,400 subscription or a trained engineer.&rdquo;
+              &ldquo;I&rsquo;ve seen what professional WiFi analysis costs at the enterprise level. I built Corvus so that a barbershop owner, a church administrator, and a hospital IT director could all get the same quality of diagnosis — without needing a $2,400 subscription or a trained engineer.&rdquo;
             </p>
             <p className="text-sm italic leading-relaxed" style={{ color: "#F4F6F8", lineHeight: 1.8 }}>
               &ldquo;The ISP will always say everything is fine on their end. Corvus will tell you the truth.&rdquo;
             </p>
-            <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.62rem", color: "#B8922A", letterSpacing: "0.12em", marginTop: "16px" }}>
+            <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.62rem", color: "#D8AC32", letterSpacing: "0.12em", marginTop: "16px" }}>
               — Joshua Turner · 17 Years U.S. Navy Electronic Warfare
             </p>
           </div>
@@ -303,14 +303,14 @@ export default function FeaturesPage() {
             <Link
               href="/crows-eye"
               className="inline-flex items-center justify-center rounded-xl px-8 py-3 text-sm font-bold ocws-glow-hover"
-              style={{ background: "#00C2C7", color: "#0D1520" }}
+              style={{ background: "#22D6DC", color: "#0D1520" }}
             >
-              Run Your First Verdict
+              Get Your First WiFi Health Report
             </Link>
             <Link
               href="/pricing"
               className="inline-flex items-center justify-center rounded-xl px-8 py-3 text-sm font-semibold"
-              style={{ color: "#00C2C7", border: "1px solid rgba(0,194,199,0.3)", background: "transparent" }}
+              style={{ color: "#22D6DC", border: "1px solid rgba(34,214,220,0.3)", background: "transparent" }}
             >
               See Pricing →
             </Link>

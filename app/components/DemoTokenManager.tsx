@@ -34,7 +34,7 @@ const EXPIRY_OPTIONS = [
 ]
 
 const LEVEL_COLORS: Record<string, string> = {
-  fledgling: '#888', nest: '#B8922A', flock: '#00C2C7', full: '#e05555',
+  fledgling: '#888', nest: '#D8AC32', flock: '#22D6DC', full: '#e05555',
 }
 
 export default function DemoTokenManager({ authKey, isAdmin = false }: Props) {
@@ -159,7 +159,7 @@ export default function DemoTokenManager({ authKey, isAdmin = false }: Props) {
           <div style={s.field}>
             <label style={s.label}>Issued To (required)</label>
             <input
-              style={{ ...s.input, borderColor: !clientName.trim() ? 'rgba(248,113,113,0.4)' : 'rgba(0,194,199,0.2)' }}
+              style={{ ...s.input, borderColor: !clientName.trim() ? 'rgba(248,113,113,0.4)' : 'rgba(34,214,220,0.2)' }}
               type="text"
               placeholder="Issued To — recipient full name (required)"
               value={clientName}
@@ -205,7 +205,7 @@ export default function DemoTokenManager({ authKey, isAdmin = false }: Props) {
             <div style={s.newTokenLabel}>TOKEN GENERATED</div>
             <div style={s.newTokenUrl}>{newTokenUrl}</div>
             <button style={s.copyBtn} onClick={() => copyUrl(newTokenUrl)}>{copied ? '✓ Copied!' : 'Copy URL'}</button>
-            <div style={{ marginTop: 16, borderTop: '1px solid rgba(0,194,199,0.15)', paddingTop: 16 }}>
+            <div style={{ marginTop: 16, borderTop: '1px solid rgba(34,214,220,0.15)', paddingTop: 16 }}>
               <QRCodeDisplay url={newTokenUrl} label="Scan to access demo" size={180} />
             </div>
           </div>
@@ -246,12 +246,12 @@ export default function DemoTokenManager({ authKey, isAdmin = false }: Props) {
                   {(t.locationLabel || t.lockedSSID) && (
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '6px' }}>
                       {t.locationLabel && (
-                        <span style={{ color: '#B8922A', fontSize: '11px', fontFamily: 'Share Tech Mono, monospace' }}>
+                        <span style={{ color: '#D8AC32', fontSize: '11px', fontFamily: 'Share Tech Mono, monospace' }}>
                           📍 {t.locationLabel}
                         </span>
                       )}
                       {t.lockedSSID && (
-                        <span style={{ color: '#00C2C7', fontSize: '11px', fontFamily: 'Share Tech Mono, monospace' }}>
+                        <span style={{ color: '#22D6DC', fontSize: '11px', fontFamily: 'Share Tech Mono, monospace' }}>
                           🔒 SSID: {t.lockedSSID}
                         </span>
                       )}
@@ -270,12 +270,12 @@ export default function DemoTokenManager({ authKey, isAdmin = false }: Props) {
                           body: JSON.stringify({ authKey, token: t.token, lockedSSID: newSSID?.trim() || undefined, locationLabel: newLabel?.trim() || undefined }),
                         }).then(() => fetchTokens());
                       }}
-                      style={{ background: 'transparent', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '6px', color: '#00C2C7', fontSize: '11px', padding: '3px 8px', cursor: 'pointer' }}
+                      style={{ background: 'transparent', border: '1px solid rgba(34,214,220,0.2)', borderRadius: '6px', color: '#22D6DC', fontSize: '11px', padding: '3px 8px', cursor: 'pointer' }}
                     >
                       ✏️ Edit Lock
                     </button>
                     <button
-                      style={{ background: qrToken === t.token ? 'rgba(184,146,42,0.2)' : 'rgba(0,194,199,0.08)', border: `1px solid ${qrToken === t.token ? 'rgba(184,146,42,0.4)' : 'rgba(0,194,199,0.2)'}`, borderRadius: 6, color: qrToken === t.token ? '#B8922A' : '#00C2C7', padding: '5px 10px', fontSize: '0.68rem', fontFamily: 'monospace', cursor: 'pointer' }}
+                      style={{ background: qrToken === t.token ? 'rgba(216,172,50,0.2)' : 'rgba(34,214,220,0.08)', border: `1px solid ${qrToken === t.token ? 'rgba(216,172,50,0.4)' : 'rgba(34,214,220,0.2)'}`, borderRadius: 6, color: qrToken === t.token ? '#D8AC32' : '#22D6DC', padding: '5px 10px', fontSize: '0.68rem', fontFamily: 'monospace', cursor: 'pointer' }}
                       onClick={() => setQrToken(qrToken === t.token ? null : t.token)}
                     >
                       {qrToken === t.token ? '✕ QR' : '⊞ QR'}
@@ -283,7 +283,7 @@ export default function DemoTokenManager({ authKey, isAdmin = false }: Props) {
                     {isAdmin && <button style={s.revokeBtn} onClick={() => revokeToken(t.token)}>Revoke</button>}
                   </div>
                   {qrToken === t.token && (
-                    <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(0,194,199,0.1)' }}>
+                    <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(34,214,220,0.1)' }}>
                       <QRCodeDisplay url={url} label={`Demo — ${t.label || t.token}`} size={160} />
                     </div>
                   )}
@@ -319,20 +319,20 @@ export default function DemoTokenManager({ authKey, isAdmin = false }: Props) {
 const s: Record<string, React.CSSProperties> = {
   container: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
   genSection: { background: '#1A2332', borderRadius: '12px', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' },
-  sectionTitle: { color: '#00C2C7', fontSize: '0.72rem', fontFamily: 'Share Tech Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.12em' },
+  sectionTitle: { color: '#22D6DC', fontSize: '0.72rem', fontFamily: 'Share Tech Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.12em' },
   genGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem' },
   field: { display: 'flex', flexDirection: 'column', gap: '0.3rem' },
   label: { color: '#555', fontSize: '0.68rem', fontFamily: 'Share Tech Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.08em' },
-  input: { background: '#0D1520', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '6px', padding: '8px 10px', color: '#F4F6F8', fontSize: '0.85rem', outline: 'none' },
-  select: { background: '#0D1520', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '6px', padding: '8px 10px', color: '#F4F6F8', fontSize: '0.85rem', outline: 'none' },
+  input: { background: '#0D1520', border: '1px solid rgba(34,214,220,0.2)', borderRadius: '6px', padding: '8px 10px', color: '#F4F6F8', fontSize: '0.85rem', outline: 'none' },
+  select: { background: '#0D1520', border: '1px solid rgba(34,214,220,0.2)', borderRadius: '6px', padding: '8px 10px', color: '#F4F6F8', fontSize: '0.85rem', outline: 'none' },
   checkRow: { display: 'flex', gap: '1rem', flexWrap: 'wrap' },
   checkLabel: { color: '#aaa', fontSize: '0.82rem', display: 'flex', alignItems: 'center', cursor: 'pointer' },
   error: { color: '#e05555', fontSize: '0.82rem', margin: 0 },
-  newTokenBox: { background: '#0D1520', borderRadius: '8px', padding: '0.75rem', border: '1px solid rgba(0,194,199,0.3)', display: 'flex', flexDirection: 'column', gap: '0.4rem' },
-  newTokenLabel: { color: '#00C2C7', fontSize: '0.65rem', fontFamily: 'Share Tech Mono, monospace', letterSpacing: '0.1em' },
+  newTokenBox: { background: '#0D1520', borderRadius: '8px', padding: '0.75rem', border: '1px solid rgba(34,214,220,0.3)', display: 'flex', flexDirection: 'column', gap: '0.4rem' },
+  newTokenLabel: { color: '#22D6DC', fontSize: '0.65rem', fontFamily: 'Share Tech Mono, monospace', letterSpacing: '0.1em' },
   newTokenUrl: { color: '#ccc', fontSize: '0.8rem', wordBreak: 'break-all', fontFamily: 'Share Tech Mono, monospace' },
-  copyBtn: { background: 'rgba(0,194,199,0.12)', border: '1px solid rgba(0,194,199,0.3)', color: '#00C2C7', borderRadius: '6px', padding: '5px 14px', fontSize: '0.78rem', cursor: 'pointer', alignSelf: 'flex-start' },
-  genBtn: { background: 'linear-gradient(135deg, #0D6E7A, #00C2C7)', color: '#fff', border: 'none', borderRadius: '8px', padding: '11px', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer' },
+  copyBtn: { background: 'rgba(34,214,220,0.12)', border: '1px solid rgba(34,214,220,0.3)', color: '#22D6DC', borderRadius: '6px', padding: '5px 14px', fontSize: '0.78rem', cursor: 'pointer', alignSelf: 'flex-start' },
+  genBtn: { background: 'linear-gradient(135deg, #0D6E7A, #22D6DC)', color: '#fff', border: 'none', borderRadius: '8px', padding: '11px', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer' },
   listSection: {},
   loading: { color: '#555', fontSize: '0.82rem', padding: '1rem', textAlign: 'center' },
   empty: { color: '#555', fontSize: '0.82rem', padding: '1rem', textAlign: 'center' },
@@ -341,10 +341,10 @@ const s: Record<string, React.CSSProperties> = {
   tokenTop: { display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.3rem', flexWrap: 'wrap' },
   levelBadge: { fontSize: '0.65rem', fontFamily: 'Share Tech Mono, monospace', letterSpacing: '0.1em' },
   tokenLabel: { color: '#888', fontSize: '0.75rem', flex: 1 },
-  tokenTime: { color: '#B8922A', fontSize: '0.72rem', fontFamily: 'Share Tech Mono, monospace' },
+  tokenTime: { color: '#D8AC32', fontSize: '0.72rem', fontFamily: 'Share Tech Mono, monospace' },
   tokenCode: { color: '#ccc', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.78rem', marginBottom: '0.25rem', wordBreak: 'break-all' },
   tokenMeta: { color: '#555', fontSize: '0.72rem', marginBottom: '0.5rem' },
   tokenActions: { display: 'flex', gap: '0.4rem' },
-  copySmall: { background: 'rgba(0,194,199,0.08)', border: '1px solid rgba(0,194,199,0.2)', color: '#00C2C7', borderRadius: '5px', padding: '4px 10px', fontSize: '0.72rem', cursor: 'pointer' },
+  copySmall: { background: 'rgba(34,214,220,0.08)', border: '1px solid rgba(34,214,220,0.2)', color: '#22D6DC', borderRadius: '5px', padding: '4px 10px', fontSize: '0.72rem', cursor: 'pointer' },
   revokeBtn: { background: 'rgba(224,85,85,0.08)', border: '1px solid rgba(224,85,85,0.2)', color: '#e05555', borderRadius: '5px', padding: '4px 10px', fontSize: '0.72rem', cursor: 'pointer' },
 }

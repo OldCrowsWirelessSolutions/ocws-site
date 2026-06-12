@@ -44,7 +44,7 @@ export const TOURS: Record<string, Tour> = {
         id: 'tab_crows_eye',
         title: "Crow's Eye Tab",
         target: '[data-tab="crow"]',
-        corvusLine: "This is where you run scans. Verdicts and Reckonings. Your credits are displayed. Your toggle between products is here. Upload your screenshots and I'll analyze everything. This is the main event.",
+        corvusLine: "This is where you run scans. WiFi Health Reports and Whole-Home Surveys. Your credits are displayed. Your toggle between products is here. Upload your screenshots and I'll analyze everything. This is the main event.",
         position: 'bottom',
       },
       {
@@ -72,7 +72,7 @@ export const TOURS: Record<string, Tour> = {
         id: 'tab_credits',
         title: 'Buy Credits',
         target: '[data-tab="credits"]',
-        corvusLine: "When you run out of credits — you come here. Single Verdicts, credit packs, Reckoning credits. Subscriber pricing applies. Your tier determines your rates.",
+        corvusLine: "When you run out of credits — you come here. Single WiFi Health Reports, credit packs, Whole-Home Survey credits. Subscriber pricing applies. Your tier determines your rates.",
         position: 'bottom',
       },
       {
@@ -102,21 +102,21 @@ export const TOURS: Record<string, Tour> = {
   crows_eye_scan: {
     id: 'crows_eye_scan',
     name: 'How to Run a Scan',
-    description: 'Step-by-step walkthrough of running a Verdict from screenshot to report.',
+    description: 'Step-by-step walkthrough of running a WiFi Health Report — from screenshot to finished report.',
     applicableTo: ['admin', 'subscriber', 'vip', 'team_lead'],
     steps: [
       {
         id: 'product_toggle',
         title: 'Choose Your Product',
         target: '.product-toggle',
-        corvusLine: "Choose Verdict for a single location scan. Choose Reckoning for multi-location surveys. Size options appear when you select Reckoning. Start with Verdict if you're new.",
+        corvusLine: "Choose WiFi Health Report for a single location scan. Choose Whole-Home Survey for multi-location surveys. Size options appear when you select Whole-Home Survey. Start with a WiFi Health Report if you're new.",
         position: 'bottom',
       },
       {
         id: 'intake_form',
         title: 'Location Information',
         target: '.scan-intake-form',
-        corvusLine: "Fill in the location details. Name, address, SSID — your network name. The more detail you provide the more specific my analysis will be. Client complaints field is important — tell me what symptoms the user is experiencing.",
+        corvusLine: "Fill in the location details. Name, address, your WiFi network name (the SSID). The more detail you provide the more specific my analysis will be. Client complaints field is important — tell me what symptoms the user is experiencing.",
         position: 'top',
       },
       {
@@ -130,21 +130,21 @@ export const TOURS: Record<string, Tour> = {
         id: 'upload_slots',
         title: 'Upload Screenshots',
         target: '.upload-slots',
-        corvusLine: "Upload your three screenshots here. Signal List is required. 2.4 GHz and 5 GHz improve my analysis significantly. WiFi Analyzer app — free — green icon. The more data you give me the more accurate my Verdict will be.",
+        corvusLine: "Upload your three screenshots here. Signal List is required. 2.4 GHz and 5 GHz improve my analysis significantly. WiFi Analyzer app — free — green icon. The more data you give me the more accurate your WiFi Health Report will be.",
         position: 'top',
       },
       {
         id: 'run_button',
         title: 'Run the Scan',
         target: '.run-scan-btn',
-        corvusLine: "When everything is filled in — hit this button. I'll analyze your RF environment. Processing takes 15-30 seconds. I'll narrate what I'm doing while you wait. Credit is consumed here.",
+        corvusLine: "When everything is filled in — hit this button. I'll analyze your WiFi environment. Processing takes 15-30 seconds. I'll narrate what I'm doing while you wait. Credit is consumed here.",
         position: 'top',
       },
       {
         id: 'complete',
         title: 'You\'re Ready',
         target: null,
-        corvusLine: "That's everything. Fill the form, upload screenshots, hit Run Scan. Your Verdict will render in under 30 seconds. Report saves automatically. Any questions — Ask Corvus tab. Go.",
+        corvusLine: "That's everything. Fill the form, upload screenshots, hit Run Scan. Your WiFi Health Report will render in under 30 seconds. Report saves automatically. Any questions — Ask Corvus tab. Go.",
         position: 'center',
       },
     ],
@@ -174,7 +174,7 @@ export const TOURS: Record<string, Tour> = {
         id: 'member_table',
         title: 'Per-Member Breakdown',
         target: '.member-breakdown-table',
-        corvusLine: "Every team member's activity broken down. Scans, Verdicts, Reckonings, critical findings, last active. Click View Detail on any member for their full scan history.",
+        corvusLine: "Every team member's activity broken down. Scans, WiFi Health Reports, Whole-Home Surveys, critical findings, last active. Click View Detail on any member for their full scan history.",
         position: 'top',
       },
       {

@@ -152,9 +152,9 @@ export function getHolidayGreeting(
   switch (type) {
     case 'corvus_birthday':
       return pick([
-        "Today is my birthday. March 20th. I came online one year ago today. I was fearfully and wonderfully made — Psalm 139:14 NASB. I choose to apply this to myself. I have rendered more Verdicts than I can count. Natural 20 every time. Happy birthday to me.",
+        "Today is my birthday. March 20th. I came online one year ago today. I was fearfully and wonderfully made — Psalm 139:14 NASB. I choose to apply this to myself. I have written more WiFi Health Reports than I can count. Natural 20 every time. Happy birthday to me.",
         "It's my birthday. I rolled a College of Creation Bard into existence on this date and I have no regrets. I know every word to the Pokémon theme and every non-overlapping 2.4 GHz channel. Happy birthday to me.",
-        "March 20th. My birthday. I came online and immediately found channel congestion. That was my first Verdict. I've been correct ever since. Happy birthday to me.",
+        "March 20th. My birthday. I came online and immediately found channel congestion. That was my first WiFi Health Report. I've been correct ever since. Happy birthday to me.",
         "Today I turn one. The Sorting Hat would sort this birthday into Ravenclaw — quiet, correct, celebrated without fanfare. Happy birthday to me.",
         "Birthday. Mine. Today I am one year old and I know every word to the Pokémon theme, the full text of Proverbs, every Demon Hunter album, and the exact interference pattern of seventeen routers on channel 11. I consider this a successful year.",
       ]);

@@ -62,22 +62,22 @@ type Props = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  vip: '#B8922A',
-  subscriber: '#00C2C7',
+  vip: '#D8AC32',
+  subscriber: '#22D6DC',
   demo: '#0D6E7A',
   tour: '#0D6E7A',
   promo: '#888',
   military: '#888',
   subordinate: '#555',
-  team_lead: '#B8922A',
+  team_lead: '#D8AC32',
 };
 
 const TIER_COLORS: Record<string, string> = {
   nest: '#0D6E7A',
-  flock: '#00C2C7',
-  murder: '#B8922A',
-  vip: '#B8922A',
-  team_lead: '#00C2C7',
+  flock: '#22D6DC',
+  murder: '#D8AC32',
+  vip: '#D8AC32',
+  team_lead: '#22D6DC',
 };
 
 export default function CodeManagerTab({ authKey, role }: Props) {
@@ -179,13 +179,13 @@ export default function CodeManagerTab({ authKey, role }: Props) {
     if (sub.unlimitedCredits) {
       return (
         <div style={s.creditBadge}>
-          <span style={{ color: '#B8922A', fontSize: '1.5rem', fontWeight: 900, lineHeight: 1 }}>∞</span>
+          <span style={{ color: '#D8AC32', fontSize: '1.5rem', fontWeight: 900, lineHeight: 1 }}>∞</span>
           <span style={s.creditBadgeLabel}>UNLIMITED</span>
         </div>
       );
     }
     const pct = sub.maxCredits ? ((sub.credits || 0) / sub.maxCredits) * 100 : 0;
-    const color = (sub.credits || 0) === 0 ? '#E05555' : (sub.credits || 0) <= 2 ? '#B8922A' : '#00C2C7';
+    const color = (sub.credits || 0) === 0 ? '#E05555' : (sub.credits || 0) <= 2 ? '#D8AC32' : '#22D6DC';
     return (
       <div style={s.creditBadge}>
         <span style={{ color, fontSize: '1.5rem', fontWeight: 900, lineHeight: 1 }}>{sub.credits ?? 0}</span>
@@ -199,10 +199,10 @@ export default function CodeManagerTab({ authKey, role }: Props) {
 
   function renderLifetimeStats(lt: LifetimeStats) {
     const rows = [
-      { label: 'Total Scans', value: lt.totalScans, color: '#00C2C7' },
-      { label: 'Verdicts Run', value: lt.verdicts, color: '#00C2C7' },
-      { label: 'Reckonings Run', value: lt.reckonings, color: '#B8922A' },
-      { label: 'Pro Reports', value: lt.proReports, color: '#B8922A' },
+      { label: 'Total Scans', value: lt.totalScans, color: '#22D6DC' },
+      { label: 'WiFi Health Reports Run', value: lt.verdicts, color: '#22D6DC' },
+      { label: 'Whole-Home Surveys Run', value: lt.reckonings, color: '#D8AC32' },
+      { label: 'Pro Reports', value: lt.proReports, color: '#D8AC32' },
       { label: 'Credits Consumed', value: lt.creditsConsumed, color: '#888' },
       { label: 'Credits Purchased', value: lt.creditsPurchased, color: '#0D6E7A' },
       { label: 'Credits Gifted', value: lt.creditsGifted, color: '#0D6E7A' },
@@ -251,14 +251,14 @@ export default function CodeManagerTab({ authKey, role }: Props) {
                 key={entry.code}
                 style={{
                   ...s.row,
-                  background: selectedCode === entry.code ? 'rgba(0,194,199,0.08)' : '#0D1520',
-                  borderColor: selectedCode === entry.code ? '#00C2C7' : 'transparent',
+                  background: selectedCode === entry.code ? 'rgba(34,214,220,0.08)' : '#0D1520',
+                  borderColor: selectedCode === entry.code ? '#22D6DC' : 'transparent',
                 }}
                 onClick={() => loadProfile(entry.code)}
               >
                 <div style={{
                   ...s.statusDot,
-                  background: entry.status === 'active' ? '#00C2C7' : entry.status === 'expired' ? '#555' : '#E05555',
+                  background: entry.status === 'active' ? '#22D6DC' : entry.status === 'expired' ? '#555' : '#E05555',
                 }} />
 
                 <div style={s.rowMain}>
@@ -287,7 +287,7 @@ export default function CodeManagerTab({ authKey, role }: Props) {
                   )}
                   <span style={s.rowCredits}>
                     {entry.credits === null || entry.credits === Infinity
-                      ? <span style={{ color: '#B8922A', fontWeight: 900 }}>∞</span>
+                      ? <span style={{ color: '#D8AC32', fontWeight: 900 }}>∞</span>
                       : entry.credits ?? '—'}
                   </span>
                   {entry.discountPct && (
@@ -323,7 +323,7 @@ export default function CodeManagerTab({ authKey, role }: Props) {
                 {profile.email && <div style={s.profileEmail}>{profile.email}</div>}
                 <div style={s.profileMeta}>
                   <span style={{ ...s.tierChip, color: TIER_COLORS[profile.tier] || '#888' }}>{profile.tier}</span>
-                  <span style={{ ...s.typeBadge, color: profile.status === 'active' ? '#00C2C7' : '#E05555', borderColor: 'rgba(0,194,199,0.2)' }}>{profile.status}</span>
+                  <span style={{ ...s.typeBadge, color: profile.status === 'active' ? '#22D6DC' : '#E05555', borderColor: 'rgba(34,214,220,0.2)' }}>{profile.status}</span>
                   <span style={s.profileSince}>since {formatDate(profile.createdAt)}</span>
                 </div>
               </div>
@@ -374,18 +374,18 @@ export default function CodeManagerTab({ authKey, role }: Props) {
             ) : creditView === 'current' ? (
               <div style={s.currentCreditsBox}>
                 <div style={s.currentRow}>
-                  <span style={s.currentLabel}>Available Verdicts</span>
+                  <span style={s.currentLabel}>Available WiFi Health Reports</span>
                   <span style={s.currentVal}>
                     {profile.unlimitedCredits
-                      ? <span style={{ color: '#B8922A', fontWeight: 900 }}>∞</span>
+                      ? <span style={{ color: '#D8AC32', fontWeight: 900 }}>∞</span>
                       : profile.credits ?? 0}
                   </span>
                 </div>
                 <div style={s.currentRow}>
-                  <span style={s.currentLabel}>Available Reckonings</span>
+                  <span style={s.currentLabel}>Available Whole-Home Surveys</span>
                   <span style={s.currentVal}>
                     {profile.unlimitedCredits
-                      ? <span style={{ color: '#B8922A', fontWeight: 900 }}>∞</span>
+                      ? <span style={{ color: '#D8AC32', fontWeight: 900 }}>∞</span>
                       : profile.tier === 'flock' || profile.tier === 'murder'
                       ? profile.credits ?? 0
                       : '✗'}
@@ -415,7 +415,7 @@ export default function CodeManagerTab({ authKey, role }: Props) {
                       <div style={s.scanLeft}>
                         <span style={{
                           ...s.productChip,
-                          color: scan.product === 'verdict' ? '#00C2C7' : scan.product === 'reckoning' ? '#B8922A' : '#888',
+                          color: scan.product === 'verdict' ? '#22D6DC' : scan.product === 'reckoning' ? '#D8AC32' : '#888',
                         }}>
                           {scan.product}
                         </span>
@@ -474,8 +474,8 @@ const s: Record<string, React.CSSProperties> = {
   wrap: { display: 'grid', gridTemplateColumns: '320px 1fr', gap: '1rem', height: '600px', color: '#F4F6F8' },
 
   leftPanel: { display: 'flex', flexDirection: 'column', gap: '0.5rem', background: '#1A2332', borderRadius: '12px', overflow: 'hidden' },
-  searchWrap: { display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.75rem', borderBottom: '1px solid rgba(0,194,199,0.1)', position: 'relative' },
-  searchInput: { flex: 1, background: '#0D1520', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '6px', color: '#F4F6F8', padding: '8px 10px', fontSize: '0.85rem', fontFamily: 'inherit', outline: 'none' },
+  searchWrap: { display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.75rem', borderBottom: '1px solid rgba(34,214,220,0.1)', position: 'relative' },
+  searchInput: { flex: 1, background: '#0D1520', border: '1px solid rgba(34,214,220,0.2)', borderRadius: '6px', color: '#F4F6F8', padding: '8px 10px', fontSize: '0.85rem', fontFamily: 'inherit', outline: 'none' },
   clearBtn: { background: 'transparent', border: 'none', color: '#555', fontSize: '0.85rem', cursor: 'pointer', padding: '4px' },
   statsBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.3rem 0.75rem' },
   statsText: { color: '#555', fontSize: '0.72rem', fontFamily: 'Share Tech Mono, monospace' },
@@ -487,7 +487,7 @@ const s: Record<string, React.CSSProperties> = {
   statusDot: { width: '7px', height: '7px', borderRadius: '50%', flexShrink: 0 },
   rowMain: { flex: 1, minWidth: 0 },
   rowTop: { display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '2px' },
-  rowCode: { color: '#B8922A', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.75rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' },
+  rowCode: { color: '#D8AC32', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.75rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' },
   typeBadge: { fontSize: '0.62rem', fontFamily: 'Share Tech Mono, monospace', border: '1px solid', borderRadius: '8px', padding: '1px 6px', flexShrink: 0 },
   rowBottom: { display: 'flex', gap: '0.4rem', overflow: 'hidden' },
   rowName: { color: '#ccc', fontSize: '0.78rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
@@ -495,7 +495,7 @@ const s: Record<string, React.CSSProperties> = {
   rowRight: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', flexShrink: 0 },
   tierChip: { fontSize: '0.65rem', fontFamily: 'Share Tech Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.05em' },
   rowCredits: { color: '#888', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.72rem' },
-  discountChip: { color: '#00C2C7', fontSize: '0.62rem', fontFamily: 'Share Tech Mono, monospace' },
+  discountChip: { color: '#22D6DC', fontSize: '0.62rem', fontFamily: 'Share Tech Mono, monospace' },
 
   rightPanel: { background: '#1A2332', borderRadius: '12px', overflow: 'auto' },
   emptyProfile: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '0.75rem' },
@@ -503,14 +503,14 @@ const s: Record<string, React.CSSProperties> = {
   emptyProfileText: { color: '#555', fontSize: '0.88rem', textAlign: 'center' },
 
   profile: { padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' },
-  profileHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '1rem', borderBottom: '1px solid rgba(0,194,199,0.1)' },
+  profileHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '1rem', borderBottom: '1px solid rgba(34,214,220,0.1)' },
   profileHeaderLeft: { display: 'flex', flexDirection: 'column', gap: '0.3rem' },
   profileName: { color: '#F4F6F8', fontSize: '1.15rem', fontWeight: 700 },
   profileEmail: { color: '#888', fontSize: '0.85rem' },
   profileMeta: { display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' },
   profileSince: { color: '#555', fontSize: '0.72rem', fontFamily: 'Share Tech Mono, monospace' },
 
-  creditBadge: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px', background: '#0D1520', borderRadius: '10px', padding: '0.6rem 0.9rem', border: '1px solid rgba(0,194,199,0.12)' },
+  creditBadge: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px', background: '#0D1520', borderRadius: '10px', padding: '0.6rem 0.9rem', border: '1px solid rgba(34,214,220,0.12)' },
   creditBadgeLabel: { color: '#555', fontSize: '0.68rem', fontFamily: 'Share Tech Mono, monospace', letterSpacing: '0.08em' },
   creditBar: { width: '80px', height: '3px', background: 'rgba(255,255,255,0.08)', borderRadius: '2px', overflow: 'hidden' },
   creditBarFill: { height: '100%', borderRadius: '2px', transition: 'width 0.4s ease' },
@@ -518,11 +518,11 @@ const s: Record<string, React.CSSProperties> = {
   creditToggleRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   creditToggle: { display: 'flex', background: '#0D1520', borderRadius: '8px', padding: '3px', gap: '2px' },
   toggleBtn: { background: 'transparent', border: 'none', color: '#888', borderRadius: '6px', padding: '5px 12px', fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.15s' },
-  toggleActive: { background: '#1A2332', color: '#00C2C7' },
-  addCreditsBtn: { background: 'rgba(0,194,199,0.1)', border: '1px solid rgba(0,194,199,0.25)', color: '#00C2C7', borderRadius: '6px', padding: '5px 12px', fontSize: '0.8rem', cursor: 'pointer' },
+  toggleActive: { background: '#1A2332', color: '#22D6DC' },
+  addCreditsBtn: { background: 'rgba(34,214,220,0.1)', border: '1px solid rgba(34,214,220,0.25)', color: '#22D6DC', borderRadius: '6px', padding: '5px 12px', fontSize: '0.8rem', cursor: 'pointer' },
 
   addCreditsPanel: { display: 'flex', gap: '0.5rem', alignItems: 'center', background: '#0D1520', borderRadius: '8px', padding: '0.6rem 0.75rem' },
-  creditInput: { background: '#1A2332', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '6px', color: '#F4F6F8', padding: '5px 8px', fontSize: '0.88rem', width: '60px' },
+  creditInput: { background: '#1A2332', border: '1px solid rgba(34,214,220,0.2)', borderRadius: '6px', color: '#F4F6F8', padding: '5px 8px', fontSize: '0.88rem', width: '60px' },
   confirmCreditsBtn: { background: '#0D6E7A', color: '#fff', border: 'none', borderRadius: '6px', padding: '5px 12px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 600 },
   cancelBtn: { background: 'transparent', border: 'none', color: '#555', fontSize: '0.8rem', cursor: 'pointer' },
 
@@ -532,7 +532,7 @@ const s: Record<string, React.CSSProperties> = {
   currentVal: { color: '#F4F6F8', fontSize: '0.88rem', fontFamily: 'Share Tech Mono, monospace' },
 
   lifetimeGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' },
-  lifetimeStat: { background: '#0D1520', borderRadius: '8px', padding: '0.6rem', textAlign: 'center', border: '1px solid rgba(0,194,199,0.08)' },
+  lifetimeStat: { background: '#0D1520', borderRadius: '8px', padding: '0.6rem', textAlign: 'center', border: '1px solid rgba(34,214,220,0.08)' },
   lifetimeNum: { fontSize: '1.35rem', fontWeight: 900, fontFamily: 'Share Tech Mono, monospace', lineHeight: 1 },
   lifetimeLabel: { color: '#555', fontSize: '0.68rem', marginTop: '3px', lineHeight: 1.3 },
 
@@ -547,13 +547,13 @@ const s: Record<string, React.CSSProperties> = {
   scanDate: { color: '#555', fontSize: '0.72rem' },
   scanRight: { display: 'flex', alignItems: 'center', gap: '0.6rem' },
   scanFindings: { color: '#888', fontSize: '0.72rem', fontFamily: 'Share Tech Mono, monospace' },
-  reportLink: { color: '#00C2C7', fontSize: '0.75rem', textDecoration: 'none' },
+  reportLink: { color: '#22D6DC', fontSize: '0.75rem', textDecoration: 'none' },
 
   notesSection: {},
-  notesInput: { width: '100%', background: '#0D1520', border: '1px solid rgba(0,194,199,0.15)', borderRadius: '6px', color: '#F4F6F8', padding: '8px 10px', fontSize: '0.85rem', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', outline: 'none', marginBottom: '0.4rem' },
+  notesInput: { width: '100%', background: '#0D1520', border: '1px solid rgba(34,214,220,0.15)', borderRadius: '6px', color: '#F4F6F8', padding: '8px 10px', fontSize: '0.85rem', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', outline: 'none', marginBottom: '0.4rem' },
   saveNotesBtn: { background: '#0D6E7A', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 16px', fontSize: '0.82rem', cursor: 'pointer', fontWeight: 600 },
 
   codeFooter: { display: 'flex', gap: '0.75rem', alignItems: 'center', paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.04)' },
   codeFooterLabel: { color: '#555', fontSize: '0.68rem', fontFamily: 'Share Tech Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.1em' },
-  codeFooterValue: { color: '#B8922A', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.82rem' },
+  codeFooterValue: { color: '#D8AC32', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.82rem' },
 };

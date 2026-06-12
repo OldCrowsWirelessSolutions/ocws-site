@@ -21,7 +21,7 @@ const PLAN_DATA: Record<string, {
     annualPrice: 24,
     annualTotal: 290,
     savings: 58,
-    features: ['3 Verdicts / month', '1 Small Reckoning / month', '1 seat'],
+    features: ['3 WiFi Health Reports / month', '1 Small Whole-Home Survey / month', '1 seat'],
   },
   flock: {
     name: 'Flock',
@@ -29,7 +29,7 @@ const PLAN_DATA: Record<string, {
     annualPrice: 66,
     annualTotal: 790,
     savings: 158,
-    features: ['15 Verdicts / month', 'Small + Standard Reckonings', '5 seats', 'Corvus chat'],
+    features: ['15 WiFi Health Reports / month', 'Small + Standard Whole-Home Surveys', '5 seats', 'Corvus chat'],
   },
   murder: {
     name: 'Murder',
@@ -37,7 +37,7 @@ const PLAN_DATA: Record<string, {
     annualPrice: 166,
     annualTotal: 1990,
     savings: 398,
-    features: ['Unlimited Verdicts', 'All Reckoning sizes', '15 seats', 'Priority access'],
+    features: ['Unlimited WiFi Health Reports', 'All Whole-Home Survey sizes', '15 seats', 'Priority access'],
   },
 };
 
@@ -81,7 +81,7 @@ export default function AnnualUpsell({ tier, code = '' }: AnnualUpsellProps) {
   return (
     <div style={{
       background: 'rgba(13,21,32,0.9)',
-      border: '1px solid rgba(184,146,42,0.25)',
+      border: '1px solid rgba(216,172,50,0.25)',
       borderRadius: 12,
       padding: 24,
       marginTop: 24,
@@ -94,11 +94,11 @@ export default function AnnualUpsell({ tier, code = '' }: AnnualUpsellProps) {
         marginBottom: 18,
       }}>
         <div style={{
-          background: 'rgba(184,146,42,0.12)',
-          border: '1px solid rgba(184,146,42,0.25)',
+          background: 'rgba(216,172,50,0.12)',
+          border: '1px solid rgba(216,172,50,0.25)',
           borderRadius: 8,
           padding: '6px 10px',
-          color: '#B8922A',
+          color: '#D8AC32',
           fontFamily: 'monospace',
           fontSize: '0.65rem',
           letterSpacing: '0.15em',
@@ -181,8 +181,8 @@ export default function AnnualUpsell({ tier, code = '' }: AnnualUpsellProps) {
 
         {/* Annual column */}
         <div style={{
-          background: 'rgba(184,146,42,0.06)',
-          border: '1px solid rgba(184,146,42,0.3)',
+          background: 'rgba(216,172,50,0.06)',
+          border: '1px solid rgba(216,172,50,0.3)',
           borderRadius: 10,
           padding: 16,
           position: 'relative',
@@ -190,7 +190,7 @@ export default function AnnualUpsell({ tier, code = '' }: AnnualUpsellProps) {
           <div style={{
             fontFamily: 'monospace',
             fontSize: '0.55rem',
-            color: '#B8922A',
+            color: '#D8AC32',
             letterSpacing: '0.15em',
             textTransform: 'uppercase',
             marginBottom: 10,
@@ -202,13 +202,13 @@ export default function AnnualUpsell({ tier, code = '' }: AnnualUpsellProps) {
             <span style={{
               fontFamily: "'Share Tech Mono', monospace",
               fontSize: '2rem',
-              color: '#B8922A',
+              color: '#D8AC32',
               fontWeight: 700,
               lineHeight: 1,
             }}>
               ${annualMonthlyCost}
             </span>
-            <span style={{ color: 'rgba(184,146,42,0.6)', fontFamily: 'monospace', fontSize: '0.7rem' }}>
+            <span style={{ color: 'rgba(216,172,50,0.6)', fontFamily: 'monospace', fontSize: '0.7rem' }}>
               /mo
             </span>
           </div>
@@ -270,11 +270,11 @@ export default function AnnualUpsell({ tier, code = '' }: AnnualUpsellProps) {
           width: '100%',
           padding: '13px 0',
           background: loading
-            ? 'rgba(184,146,42,0.2)'
-            : 'linear-gradient(135deg, #B8922A 0%, #9A7520 100%)',
+            ? 'rgba(216,172,50,0.2)'
+            : 'linear-gradient(135deg, #D8AC32 0%, #9A7520 100%)',
           border: 'none',
           borderRadius: 9,
-          color: loading ? 'rgba(184,146,42,0.4)' : '#ffffff',
+          color: loading ? 'rgba(216,172,50,0.4)' : '#ffffff',
           fontFamily: 'monospace',
           fontSize: '0.82rem',
           fontWeight: 700,

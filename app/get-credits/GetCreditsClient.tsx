@@ -13,10 +13,10 @@ type Step = 'validating' | 'auth' | 'purchase' | 'redirecting'
 type AuthMode = 'login' | 'create'
 
 const PRODUCT_LABELS: Record<string, string> = {
-  verdict:               "Corvus\u2019 Verdict",
-  'reckoning-small':    "Full Reckoning \u2014 Small",
-  'reckoning-standard': "Full Reckoning \u2014 Standard",
-  'reckoning-commercial': "Full Reckoning \u2014 Commercial",
+  verdict:               "WiFi Health Report",
+  'reckoning-small':    "Whole-Home Survey \u2014 Small",
+  'reckoning-standard': "Whole-Home Survey \u2014 Standard",
+  'reckoning-commercial': "Whole-Home Survey \u2014 Commercial",
 }
 
 const PRODUCT_PRICES: Record<string, string> = {
@@ -49,7 +49,7 @@ const inputStyle: React.CSSProperties = {
 
 const primaryBtn: React.CSSProperties = {
   width: '100%',
-  background: '#00C2C7',
+  background: '#22D6DC',
   color: '#0D1520',
   border: 'none',
   borderRadius: 12,
@@ -62,8 +62,8 @@ const primaryBtn: React.CSSProperties = {
 const outlineBtn: React.CSSProperties = {
   width: '100%',
   background: 'transparent',
-  color: '#00C2C7',
-  border: '1px solid rgba(0,194,199,0.4)',
+  color: '#22D6DC',
+  border: '1px solid rgba(34,214,220,0.4)',
   borderRadius: 12,
   padding: '14px 0',
   fontSize: 15,
@@ -73,7 +73,7 @@ const outlineBtn: React.CSSProperties = {
 
 const card: React.CSSProperties = {
   background: '#1A2332',
-  border: '1px solid rgba(0,194,199,0.2)',
+  border: '1px solid rgba(34,214,220,0.2)',
   borderRadius: 16,
   padding: '28px 24px',
   marginBottom: 16,
@@ -265,8 +265,8 @@ export default function GetCreditsClient() {
         alignItems: 'center',
         padding: '48px 20px 80px',
         backgroundImage: `
-          linear-gradient(rgba(0,194,199,0.03) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(0,194,199,0.03) 1px, transparent 1px)
+          linear-gradient(rgba(34,214,220,0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(34,214,220,0.03) 1px, transparent 1px)
         `,
         backgroundSize: '48px 48px',
       }}
@@ -278,7 +278,7 @@ export default function GetCreditsClient() {
         </div>
         <p
           style={{
-            color: '#00C2C7',
+            color: '#22D6DC',
             fontFamily: "'Share Tech Mono', monospace",
             fontSize: 11,
             letterSpacing: '0.2em',
@@ -325,8 +325,8 @@ export default function GetCreditsClient() {
                 width: 32,
                 height: 32,
                 borderRadius: '50%',
-                border: '3px solid rgba(0,194,199,0.2)',
-                borderTopColor: '#00C2C7',
+                border: '3px solid rgba(34,214,220,0.2)',
+                borderTopColor: '#22D6DC',
                 animation: 'spin 0.8s linear infinite',
                 margin: '0 auto 16px',
               }}
@@ -356,7 +356,7 @@ export default function GetCreditsClient() {
                   onClick={() => { setAuthMode(mode); setLoginError(''); setCreateError('') }}
                   style={{
                     flex: 1,
-                    background: authMode === mode ? '#00C2C7' : 'transparent',
+                    background: authMode === mode ? '#22D6DC' : 'transparent',
                     color: authMode === mode ? '#0D1520' : 'rgba(255,255,255,0.5)',
                     border: 'none',
                     borderRadius: 9,
@@ -416,7 +416,7 @@ export default function GetCreditsClient() {
                   {loginLoading ? 'Verifying…' : 'Log In'}
                 </button>
                 <p style={{ textAlign: 'center', marginTop: 14, fontSize: 12, color: '#555' }}>
-                  <Link href="/recover-code" style={{ color: 'rgba(0,194,199,0.6)' }}>
+                  <Link href="/recover-code" style={{ color: 'rgba(34,214,220,0.6)' }}>
                     Forgot your Subscription ID?
                   </Link>
                 </p>
@@ -471,13 +471,13 @@ export default function GetCreditsClient() {
             {subscriptionId && (
               <div
                 style={{
-                  background: 'rgba(0,194,199,0.06)',
-                  border: '1px solid rgba(0,194,199,0.2)',
+                  background: 'rgba(34,214,220,0.06)',
+                  border: '1px solid rgba(34,214,220,0.2)',
                   borderRadius: 10,
                   padding: '10px 14px',
                   marginBottom: 20,
                   fontSize: 12,
-                  color: '#00C2C7',
+                  color: '#22D6DC',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 8,
@@ -492,7 +492,7 @@ export default function GetCreditsClient() {
             {rawProduct === 'reckoning' ? (
               <div style={{ marginBottom: 20 }}>
                 <p style={{ fontSize: 12, color: '#888', marginBottom: 10, fontWeight: 600 }}>
-                  Select Reckoning Size
+                  Select Survey Size
                 </p>
                 {(['reckoning-small', 'reckoning-standard', 'reckoning-commercial'] as const).map((p) => (
                   <div
@@ -500,8 +500,8 @@ export default function GetCreditsClient() {
                     onClick={() => setSelectedProduct(p)}
                     style={{
                       ...card,
-                      borderColor: selectedProduct === p ? '#00C2C7' : 'rgba(255,255,255,0.08)',
-                      borderLeft: selectedProduct === p ? '3px solid #00C2C7' : '3px solid transparent',
+                      borderColor: selectedProduct === p ? '#22D6DC' : 'rgba(255,255,255,0.08)',
+                      borderLeft: selectedProduct === p ? '3px solid #22D6DC' : '3px solid transparent',
                       cursor: 'pointer',
                       marginBottom: 10,
                       padding: '16px 20px',
@@ -516,7 +516,7 @@ export default function GetCreditsClient() {
                           {PRODUCT_DESCRIPTIONS[p]}
                         </p>
                       </div>
-                      <span style={{ color: '#00C2C7', fontSize: 18, fontWeight: 700, marginLeft: 16, flexShrink: 0 }}>
+                      <span style={{ color: '#22D6DC', fontSize: 18, fontWeight: 700, marginLeft: 16, flexShrink: 0 }}>
                         {PRODUCT_PRICES[p]}
                       </span>
                     </div>
@@ -527,7 +527,7 @@ export default function GetCreditsClient() {
               <div
                 style={{
                   ...card,
-                  borderLeft: '3px solid #00C2C7',
+                  borderLeft: '3px solid #22D6DC',
                   marginBottom: 20,
                 }}
               >
@@ -536,7 +536,7 @@ export default function GetCreditsClient() {
                     <p
                       style={{
                         fontSize: 11,
-                        color: '#00C2C7',
+                        color: '#22D6DC',
                         fontFamily: "'Share Tech Mono', monospace",
                         letterSpacing: '0.15em',
                         textTransform: 'uppercase',
@@ -552,7 +552,7 @@ export default function GetCreditsClient() {
                       {PRODUCT_DESCRIPTIONS[selectedProduct]}
                     </p>
                   </div>
-                  <span style={{ color: '#00C2C7', fontSize: 24, fontWeight: 700, marginLeft: 20, flexShrink: 0 }}>
+                  <span style={{ color: '#22D6DC', fontSize: 24, fontWeight: 700, marginLeft: 20, flexShrink: 0 }}>
                     {PRODUCT_PRICES[selectedProduct]}
                   </span>
                 </div>
@@ -596,8 +596,8 @@ export default function GetCreditsClient() {
                 width: 32,
                 height: 32,
                 borderRadius: '50%',
-                border: '3px solid rgba(0,194,199,0.2)',
-                borderTopColor: '#00C2C7',
+                border: '3px solid rgba(34,214,220,0.2)',
+                borderTopColor: '#22D6DC',
                 animation: 'spin 0.8s linear infinite',
                 margin: '0 auto 16px',
               }}

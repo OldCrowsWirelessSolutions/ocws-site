@@ -14,10 +14,10 @@ export default function LiveDemoButton({ label = 'Request a Live Demo', variant 
 
   const btnStyle: React.CSSProperties =
     variant === 'outline'
-      ? { background: 'transparent', border: '1px solid rgba(0,194,199,0.4)', color: '#00C2C7', borderRadius: '8px', padding: '12px 24px', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer' }
+      ? { background: 'transparent', border: '1px solid rgba(34,214,220,0.4)', color: '#22D6DC', borderRadius: '8px', padding: '12px 24px', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer' }
       : variant === 'ghost'
-      ? { background: 'transparent', border: 'none', color: '#00C2C7', fontSize: '0.9rem', cursor: 'pointer', textDecoration: 'underline', padding: 0 }
-      : { background: 'linear-gradient(135deg, #0D6E7A, #00C2C7)', color: '#fff', border: 'none', borderRadius: '8px', padding: '13px 28px', fontSize: '1rem', fontWeight: 700, cursor: 'pointer' }
+      ? { background: 'transparent', border: 'none', color: '#22D6DC', fontSize: '0.9rem', cursor: 'pointer', textDecoration: 'underline', padding: 0 }
+      : { background: 'linear-gradient(135deg, #0D6E7A, #22D6DC)', color: '#fff', border: 'none', borderRadius: '8px', padding: '13px 28px', fontSize: '1rem', fontWeight: 700, cursor: 'pointer' }
 
   return (
     <>

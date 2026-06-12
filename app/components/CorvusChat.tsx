@@ -81,7 +81,7 @@ function ThinkingDots() {
     const id = setInterval(() => setDots((d) => (d % 3) + 1), 400);
     return () => clearInterval(id);
   }, []);
-  return <span style={{ color: "#00C2C7", fontFamily: "monospace" }}>{"•".repeat(dots)}</span>;
+  return <span style={{ color: "#22D6DC", fontFamily: "monospace" }}>{"•".repeat(dots)}</span>;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -105,6 +105,8 @@ export default function CorvusChat({
   const [messagesRemaining, setMessagesRemaining] = useState<number | null>(isFreeTier ? 3 : null);
   const [limited, setLimited]               = useState(false);
   const [upgradeMsg, setUpgradeMsg]         = useState("");
+  const [topups, setTopups]                 = useState<Array<{ product: string; label: string; price: number }>>([]);
+  const [buyingTopup, setBuyingTopup]       = useState<string | null>(null);
   const [activeReport, setActiveReport]     = useState<ActiveReport | null>(null);
   const [isListening, setIsListening]       = useState(false);
   const bottomRef                           = useRef<HTMLDivElement>(null);
@@ -156,7 +158,7 @@ export default function CorvusChat({
           `I just finished your scan for ${name}. ${critCount} critical finding${critCount !== 1 ? "s" : ""}. Ask me anything about what I found.`,
           `Your ${name} scan is done. I have opinions about what I found. What do you want to know?`,
           `${totalCount} finding${totalCount !== 1 ? "s" : ""}. ${critCount} critical. Ask me about any of them.`,
-          `I rendered your Verdict for ${name}. Now you want to talk about it. Good. What's your question?`,
+          `I rendered your WiFi Health Report for ${name}. Now you want to talk about it. Good. What's your question?`,
         ];
         greeting = greetings[Math.floor(Math.random() * greetings.length)];
       } else if (isFounder) {
@@ -227,14 +229,19 @@ export default function CorvusChat({
         limited?: boolean;
         message?: string;
         messagesRemaining?: number;
+        topups?: Array<{ product: string; label: string; price: number }>;
         error?: string;
       };
       setAttachments([]);
 
       if (data.limited) {
-        // Show limit message as Corvus message + upgrade prompt
+        // Show the limit message as a Corvus message + a buy/upgrade prompt.
+        // Metered subscribers get top-up buttons; promo/trial gets the subscribe CTA.
         const limitId = `msg-${Date.now()}-l`;
-        const limitMsg = "That's your third free question. I have more answers but they require a subscription. $20 a month. Worth it.";
+        const hasTopups = Array.isArray(data.topups) && data.topups.length > 0;
+        const limitMsg = data.message ?? (hasTopups
+          ? "That's the last of your Corvus questions for now. Grab a pack or a Day Pass and we keep going."
+          : "That's your third free question. I have more answers but they require a subscription. $10 a month. Worth it.");
         setMessages((prev) => [...prev, {
           id: limitId,
           role: "assistant",
@@ -245,6 +252,7 @@ export default function CorvusChat({
         setLimited(true);
         setMessagesRemaining(0);
         setUpgradeMsg(data.message ?? "");
+        setTopups(hasTopups ? data.topups! : []);
         return;
       }
 
@@ -321,10 +329,33 @@ export default function CorvusChat({
     }
   }
 
+  async function buyTopup(product: string) {
+    setBuyingTopup(product);
+    try {
+      const res = await fetch("/api/subscriptions/buy-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, product }),
+      });
+      const data = await res.json() as { url?: string; error?: string };
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setUpgradeMsg(data.error ?? "Checkout failed. Please try again.");
+        setBuyingTopup(null);
+      }
+    } catch {
+      setUpgradeMsg("Connection error. Please try again.");
+      setBuyingTopup(null);
+    }
+  }
+
   function clearConversation() {
     setMessages([]);
     setLimited(false);
     setUpgradeMsg("");
+    setTopups([]);
+    setBuyingTopup(null);
     setTypingId(null);
     greetedRef.current = false;
     // Re-trigger greeting
@@ -433,7 +464,7 @@ export default function CorvusChat({
     height: "100%",
     minHeight: "480px",
     background: "#0D1520",
-    border: "1.5px solid rgba(0,194,199,0.35)",
+    border: "1.5px solid rgba(34,214,220,0.35)",
     borderRadius: "16px",
     display: "flex",
     flexDirection: "column",
@@ -445,19 +476,19 @@ export default function CorvusChat({
     width: "min(380px, calc(100vw - 32px))",
     height: "min(520px, calc(100dvh - 100px))",
     background: "#0D1520",
-    border: "1.5px solid rgba(0,194,199,0.35)",
+    border: "1.5px solid rgba(34,214,220,0.35)",
     borderRadius: "16px",
     display: "flex",
     flexDirection: "column",
     zIndex: 9000,
-    boxShadow: "0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(0,194,199,0.08)",
+    boxShadow: "0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(34,214,220,0.08)",
     overflow: "hidden",
     animation: open ? "corvus-chat-slide-in 0.2s ease-out" : undefined,
   };
 
   const headerStyle: React.CSSProperties = {
-    background: "linear-gradient(135deg, rgba(184,146,42,0.15), rgba(184,146,42,0.08))",
-    borderBottom: "1px solid rgba(184,146,42,0.25)",
+    background: "linear-gradient(135deg, rgba(216,172,50,0.15), rgba(216,172,50,0.08))",
+    borderBottom: "1px solid rgba(216,172,50,0.25)",
     padding: "12px 16px",
     display: "flex",
     alignItems: "center",
@@ -473,7 +504,7 @@ export default function CorvusChat({
     flexDirection: "column",
     gap: "10px",
     scrollbarWidth: "thin",
-    scrollbarColor: "rgba(0,194,199,0.15) transparent",
+    scrollbarColor: "rgba(34,214,220,0.15) transparent",
   };
 
   const inputBarStyle: React.CSSProperties = {
@@ -492,7 +523,7 @@ export default function CorvusChat({
     width: "52px",
     height: "52px",
     borderRadius: "50%",
-    background: open ? "#0D6E7A" : "#00C2C7",
+    background: open ? "#0D6E7A" : "#22D6DC",
     border: "none",
     cursor: "pointer",
     display: "flex",
@@ -501,7 +532,7 @@ export default function CorvusChat({
     zIndex: 9001,
     boxShadow: open
       ? "0 4px 20px rgba(0,0,0,0.4)"
-      : "0 4px 20px rgba(0,194,199,0.45), 0 0 0 3px rgba(0,194,199,0.15)",
+      : "0 4px 20px rgba(34,214,220,0.45), 0 0 0 3px rgba(34,214,220,0.15)",
     transition: "all 0.2s ease",
     fontSize: "20px",
     color: "#0D1520",
@@ -529,14 +560,14 @@ export default function CorvusChat({
         </div>
 
         {messagesRemaining !== null && !limited && (
-          <div style={{ background: "rgba(184,146,42,0.06)", borderBottom: "1px solid rgba(184,146,42,0.12)", padding: "6px 14px", fontSize: "11px", color: "#B8922A", fontFamily: "monospace", flexShrink: 0 }}>
+          <div style={{ background: "rgba(216,172,50,0.06)", borderBottom: "1px solid rgba(216,172,50,0.12)", padding: "6px 14px", fontSize: "11px", color: "#D8AC32", fontFamily: "monospace", flexShrink: 0 }}>
             {messagesRemaining} of {3} free messages remaining
           </div>
         )}
 
         {/* Report context selector (expanded mode) */}
         {(accessibleReports.length > 0 || activeReport) && (
-          <div style={{ padding: "10px 12px", borderBottom: "1px solid rgba(0,194,199,0.08)", background: "rgba(13,21,32,0.6)", flexShrink: 0 }}>
+          <div style={{ padding: "10px 12px", borderBottom: "1px solid rgba(34,214,220,0.08)", background: "rgba(13,21,32,0.6)", flexShrink: 0 }}>
             <div style={{ fontFamily: "monospace", fontSize: "0.55rem", color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "6px" }}>Ask Corvus About a Specific Report</div>
             <select
               value={activeReport?.reportId ?? ""}
@@ -554,7 +585,7 @@ export default function CorvusChat({
               }}
               style={{ width: "100%", background: "#0D1520", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", color: "#ccc", fontSize: "12px", padding: "6px 8px", outline: "none" }}
             >
-              <option value="">General RF questions — no specific report</option>
+              <option value="">General WiFi questions — no specific report</option>
               {accessibleReports.map(r => (
                 <option key={r.reportId} value={r.reportId}>
                   {r.clientName || r.locationName || "Untitled"} · {new Date(r.createdAt).toLocaleDateString()} · {r.type}
@@ -562,8 +593,8 @@ export default function CorvusChat({
               ))}
             </select>
             {activeReport && (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "6px", background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "6px", padding: "5px 10px" }}>
-                <span style={{ fontSize: "11px", color: "#00C2C7" }}>🐦‍⬛ Briefed on: <strong>{activeReport.clientName || "report"}</strong></span>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "6px", background: "rgba(34,214,220,0.08)", border: "1px solid rgba(34,214,220,0.2)", borderRadius: "6px", padding: "5px 10px" }}>
+                <span style={{ fontSize: "11px", color: "#22D6DC" }}>🐦‍⬛ Briefed on: <strong>{activeReport.clientName || "report"}</strong></span>
                 <button onClick={() => { setActiveReport(null); try { sessionStorage.removeItem("corvus_active_report"); } catch { /* */ } }}
                   style={{ background: "none", border: "none", color: "#555", fontSize: "11px", cursor: "pointer", padding: "0 4px" }}>✕</button>
               </div>
@@ -578,11 +609,11 @@ export default function CorvusChat({
             return (
               <div key={msg.id} style={{ display: "flex", flexDirection: isUser ? "row-reverse" : "row", alignItems: "flex-start", gap: "8px" }}>
                 {!isUser && (
-                  <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "rgba(0,194,199,0.12)", border: "1px solid rgba(0,194,199,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", flexShrink: 0, marginTop: "2px" }}>
+                  <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "rgba(34,214,220,0.12)", border: "1px solid rgba(34,214,220,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", flexShrink: 0, marginTop: "2px" }}>
                     🐦‍⬛
                   </div>
                 )}
-                <div style={{ maxWidth: "80%", padding: "9px 13px", borderRadius: isUser ? "14px 14px 4px 14px" : "14px 14px 14px 4px", background: isUser ? "rgba(0,194,199,0.15)" : "#0a1018", border: isUser ? "1px solid rgba(0,194,199,0.25)" : "1px solid rgba(255,255,255,0.06)", borderLeft: !isUser ? "2.5px solid rgba(0,194,199,0.4)" : undefined, color: isUser ? "#e0f7f8" : "#cccccc", fontSize: "13.5px", lineHeight: 1.55, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                <div style={{ maxWidth: "80%", padding: "9px 13px", borderRadius: isUser ? "14px 14px 4px 14px" : "14px 14px 14px 4px", background: isUser ? "rgba(34,214,220,0.15)" : "#0a1018", border: isUser ? "1px solid rgba(34,214,220,0.25)" : "1px solid rgba(255,255,255,0.06)", borderLeft: !isUser ? "2.5px solid rgba(34,214,220,0.4)" : undefined, color: isUser ? "#e0f7f8" : "#cccccc", fontSize: "13.5px", lineHeight: 1.55, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
                   {isTyping ? <TypewriterText text={msg.content} speed={14} onDone={() => setTypingId(null)} /> : msg.content}
                 </div>
               </div>
@@ -590,18 +621,38 @@ export default function CorvusChat({
           })}
           {loading && (
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "rgba(0,194,199,0.12)", border: "1px solid rgba(0,194,199,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", flexShrink: 0 }}>🐦‍⬛</div>
-              <div style={{ padding: "9px 13px", background: "#0a1018", border: "1px solid rgba(255,255,255,0.06)", borderLeft: "2.5px solid rgba(0,194,199,0.4)", borderRadius: "14px 14px 14px 4px", fontSize: "13px" }}>
+              <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "rgba(34,214,220,0.12)", border: "1px solid rgba(34,214,220,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", flexShrink: 0 }}>🐦‍⬛</div>
+              <div style={{ padding: "9px 13px", background: "#0a1018", border: "1px solid rgba(255,255,255,0.06)", borderLeft: "2.5px solid rgba(34,214,220,0.4)", borderRadius: "14px 14px 14px 4px", fontSize: "13px" }}>
                 <ThinkingDots />
               </div>
             </div>
           )}
           {limited && (
-            <div style={{ background: "rgba(184,146,42,0.08)", border: "1px solid rgba(184,146,42,0.2)", borderRadius: "12px", padding: "14px 16px", marginTop: "4px" }}>
-              <p style={{ color: "#B8922A", fontSize: "12px", marginBottom: "10px" }}>{upgradeMsg || "Subscribe for unlimited access to Corvus."}</p>
-              <a href="/#pricing" style={{ display: "inline-block", background: "rgba(184,146,42,0.15)", border: "1px solid rgba(184,146,42,0.3)", color: "#D4AF37", fontSize: "12px", fontWeight: 700, padding: "7px 16px", borderRadius: "8px", textDecoration: "none" }}>
-                Subscribe to Nest — $20/mo →
-              </a>
+            <div style={{ background: "rgba(216,172,50,0.08)", border: "1px solid rgba(216,172,50,0.2)", borderRadius: "12px", padding: "14px 16px", marginTop: "4px" }}>
+              <p style={{ color: "#D8AC32", fontSize: "12px", marginBottom: "10px" }}>{upgradeMsg || "Top up to keep Corvus talking."}</p>
+              {topups.length > 0 ? (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                  {topups.map((t) => (
+                    <button
+                      key={t.product}
+                      onClick={() => buyTopup(t.product)}
+                      disabled={buyingTopup !== null}
+                      style={{
+                        background: "rgba(216,172,50,0.15)", border: "1px solid rgba(216,172,50,0.3)", color: "#D4AF37",
+                        fontSize: "12px", fontWeight: 700, padding: "7px 14px", borderRadius: "8px",
+                        cursor: buyingTopup !== null ? "not-allowed" : "pointer",
+                        opacity: buyingTopup !== null && buyingTopup !== t.product ? 0.5 : 1,
+                      }}
+                    >
+                      {buyingTopup === t.product ? "Redirecting…" : `${t.label} — $${t.price}`}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <a href="/#pricing" style={{ display: "inline-block", background: "rgba(216,172,50,0.15)", border: "1px solid rgba(216,172,50,0.3)", color: "#D4AF37", fontSize: "12px", fontWeight: 700, padding: "7px 16px", borderRadius: "8px", textDecoration: "none" }}>
+                  Subscribe to Fledgling — $10/mo →
+                </a>
+              )}
             </div>
           )}
           <div ref={bottomRef} />
@@ -609,10 +660,10 @@ export default function CorvusChat({
 
         {/* Attachment previews */}
         {attachments.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '8px 12px', borderTop: '1px solid rgba(0,194,199,0.1)' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '8px 12px', borderTop: '1px solid rgba(34,214,220,0.1)' }}>
             {attachments.map((a, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(0,194,199,0.08)', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '6px', padding: '4px 8px' }}>
-                <span style={{ fontSize: '11px', color: '#00C2C7', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(34,214,220,0.08)', border: '1px solid rgba(34,214,220,0.2)', borderRadius: '6px', padding: '4px 8px' }}>
+                <span style={{ fontSize: '11px', color: '#22D6DC', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {a.mediaType === 'application/pdf' ? '📄' : '🖼'} {a.name}
                 </span>
                 <button onClick={() => removeAttachment(i)} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '12px', padding: '0 2px' }}>✕</button>
@@ -624,10 +675,10 @@ export default function CorvusChat({
           <div style={{ padding: '4px 12px', color: '#F87171', fontSize: '11px' }}>{attachmentError}</div>
         )}
         <div style={inputBarStyle}>
-          <input ref={inputRef} type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} disabled={loading || limited} placeholder={limited ? "Subscribe to continue…" : isListening ? "Listening…" : "Ask Corvus…"}
-            style={{ flex: 1, background: "#0D1520", border: "1px solid rgba(0,194,199,0.2)", borderRadius: "8px", padding: "9px 12px", color: "#ffffff", fontSize: "13px", outline: "none", fontFamily: "inherit", opacity: limited ? 0.4 : 1 }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,194,199,0.5)"; }}
-            onBlur={(e)  => { e.currentTarget.style.borderColor = "rgba(0,194,199,0.2)"; }}
+          <input ref={inputRef} type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} disabled={loading || limited} placeholder={limited ? "Out of questions — see options above" : isListening ? "Listening…" : "Ask Corvus…"}
+            style={{ flex: 1, background: "#0D1520", border: "1px solid rgba(34,214,220,0.2)", borderRadius: "8px", padding: "9px 12px", color: "#ffffff", fontSize: "13px", outline: "none", fontFamily: "inherit", opacity: limited ? 0.4 : 1 }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(34,214,220,0.5)"; }}
+            onBlur={(e)  => { e.currentTarget.style.borderColor = "rgba(34,214,220,0.2)"; }}
           />
           {/* Hidden file input */}
           <input
@@ -644,12 +695,12 @@ export default function CorvusChat({
             disabled={loading || limited || attachments.length >= 5}
             title="Attach image or PDF"
             style={{
-              background: attachments.length > 0 ? 'rgba(0,194,199,0.15)' : 'transparent',
-              border: '1px solid rgba(0,194,199,0.2)',
+              background: attachments.length > 0 ? 'rgba(34,214,220,0.15)' : 'transparent',
+              border: '1px solid rgba(34,214,220,0.2)',
               borderRadius: '50%',
               width: '36px',
               height: '36px',
-              color: attachments.length > 0 ? '#00C2C7' : '#888',
+              color: attachments.length > 0 ? '#22D6DC' : '#888',
               cursor: 'pointer',
               fontSize: '16px',
               display: 'flex',
@@ -662,10 +713,10 @@ export default function CorvusChat({
             onClick={handleVoiceInput}
             disabled={loading || limited}
             title={isListening ? "Stop listening" : "Speak to Corvus"}
-            style={{ background: isListening ? "rgba(224,85,85,0.15)" : "transparent", border: `1px solid ${isListening ? "rgba(224,85,85,0.5)" : "rgba(0,194,199,0.2)"}`, borderRadius: "50%", width: "36px", height: "36px", display: "flex", alignItems: "center", justifyContent: "center", cursor: loading || limited ? "not-allowed" : "pointer", flexShrink: 0, transition: "all 0.2s", fontSize: "14px", animation: isListening ? "corvus-mic-pulse 1s ease-in-out infinite" : "none", opacity: limited ? 0.3 : 1 }}
+            style={{ background: isListening ? "rgba(224,85,85,0.15)" : "transparent", border: `1px solid ${isListening ? "rgba(224,85,85,0.5)" : "rgba(34,214,220,0.2)"}`, borderRadius: "50%", width: "36px", height: "36px", display: "flex", alignItems: "center", justifyContent: "center", cursor: loading || limited ? "not-allowed" : "pointer", flexShrink: 0, transition: "all 0.2s", fontSize: "14px", animation: isListening ? "corvus-mic-pulse 1s ease-in-out infinite" : "none", opacity: limited ? 0.3 : 1 }}
           >{isListening ? "⏹" : "🎤"}</button>
           <button onClick={sendMessage} disabled={loading || limited || (!input.trim() && !isListening)}
-            style={{ background: loading || limited || (!input.trim() && !isListening) ? "rgba(0,194,199,0.08)" : "#00C2C7", border: "none", borderRadius: "8px", width: "38px", height: "38px", display: "flex", alignItems: "center", justifyContent: "center", cursor: loading || limited || (!input.trim() && !isListening) ? "not-allowed" : "pointer", flexShrink: 0, transition: "background 0.15s", color: loading || limited || (!input.trim() && !isListening) ? "rgba(0,194,199,0.4)" : "#0D1520", fontSize: "16px", fontWeight: 700 }}
+            style={{ background: loading || limited || (!input.trim() && !isListening) ? "rgba(34,214,220,0.08)" : "#22D6DC", border: "none", borderRadius: "8px", width: "38px", height: "38px", display: "flex", alignItems: "center", justifyContent: "center", cursor: loading || limited || (!input.trim() && !isListening) ? "not-allowed" : "pointer", flexShrink: 0, transition: "background 0.15s", color: loading || limited || (!input.trim() && !isListening) ? "rgba(34,214,220,0.4)" : "#0D1520", fontSize: "16px", fontWeight: 700 }}
             aria-label="Send"
           >→</button>
         </div>
@@ -726,11 +777,11 @@ export default function CorvusChat({
           {/* Free tier counter */}
           {messagesRemaining !== null && !limited && (
             <div style={{
-              background: "rgba(184,146,42,0.06)",
-              borderBottom: "1px solid rgba(184,146,42,0.12)",
+              background: "rgba(216,172,50,0.06)",
+              borderBottom: "1px solid rgba(216,172,50,0.12)",
               padding: "6px 14px",
               fontSize: "11px",
-              color: "#B8922A",
+              color: "#D8AC32",
               fontFamily: "monospace",
               flexShrink: 0,
             }}>
@@ -756,8 +807,8 @@ export default function CorvusChat({
                   {!isUser && (
                     <div style={{
                       width: "26px", height: "26px", borderRadius: "50%",
-                      background: "rgba(0,194,199,0.12)",
-                      border: "1px solid rgba(0,194,199,0.2)",
+                      background: "rgba(34,214,220,0.12)",
+                      border: "1px solid rgba(34,214,220,0.2)",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       fontSize: "13px", flexShrink: 0, marginTop: "2px",
                     }}>
@@ -768,11 +819,11 @@ export default function CorvusChat({
                     maxWidth: "80%",
                     padding: "9px 13px",
                     borderRadius: isUser ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
-                    background: isUser ? "rgba(0,194,199,0.15)" : "#0a1018",
+                    background: isUser ? "rgba(34,214,220,0.15)" : "#0a1018",
                     border: isUser
-                      ? "1px solid rgba(0,194,199,0.25)"
+                      ? "1px solid rgba(34,214,220,0.25)"
                       : "1px solid rgba(255,255,255,0.06)",
-                    borderLeft: !isUser ? "2.5px solid rgba(0,194,199,0.4)" : undefined,
+                    borderLeft: !isUser ? "2.5px solid rgba(34,214,220,0.4)" : undefined,
                     color: isUser ? "#e0f7f8" : "#cccccc",
                     fontSize: "13.5px",
                     lineHeight: 1.55,
@@ -798,8 +849,8 @@ export default function CorvusChat({
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <div style={{
                   width: "26px", height: "26px", borderRadius: "50%",
-                  background: "rgba(0,194,199,0.12)",
-                  border: "1px solid rgba(0,194,199,0.2)",
+                  background: "rgba(34,214,220,0.12)",
+                  border: "1px solid rgba(34,214,220,0.2)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: "13px", flexShrink: 0,
                 }}>
@@ -809,7 +860,7 @@ export default function CorvusChat({
                   padding: "9px 13px",
                   background: "#0a1018",
                   border: "1px solid rgba(255,255,255,0.06)",
-                  borderLeft: "2.5px solid rgba(0,194,199,0.4)",
+                  borderLeft: "2.5px solid rgba(34,214,220,0.4)",
                   borderRadius: "14px 14px 14px 4px",
                   fontSize: "13px",
                 }}>
@@ -821,21 +872,21 @@ export default function CorvusChat({
             {/* Upgrade prompt after limit */}
             {limited && (
               <div style={{
-                background: "rgba(184,146,42,0.08)",
-                border: "1px solid rgba(184,146,42,0.2)",
+                background: "rgba(216,172,50,0.08)",
+                border: "1px solid rgba(216,172,50,0.2)",
                 borderRadius: "12px",
                 padding: "14px 16px",
                 marginTop: "4px",
               }}>
-                <p style={{ color: "#B8922A", fontSize: "12px", marginBottom: "10px" }}>
+                <p style={{ color: "#D8AC32", fontSize: "12px", marginBottom: "10px" }}>
                   {upgradeMsg || "Subscribe for unlimited access to Corvus."}
                 </p>
                 <a
                   href="/#pricing"
                   style={{
                     display: "inline-block",
-                    background: "rgba(184,146,42,0.15)",
-                    border: "1px solid rgba(184,146,42,0.3)",
+                    background: "rgba(216,172,50,0.15)",
+                    border: "1px solid rgba(216,172,50,0.3)",
                     color: "#D4AF37",
                     fontSize: "12px",
                     fontWeight: 700,
@@ -854,10 +905,10 @@ export default function CorvusChat({
 
           {/* Attachment previews */}
           {attachments.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '8px 12px', borderTop: '1px solid rgba(0,194,199,0.1)' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '8px 12px', borderTop: '1px solid rgba(34,214,220,0.1)' }}>
               {attachments.map((a, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(0,194,199,0.08)', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '6px', padding: '4px 8px' }}>
-                  <span style={{ fontSize: '11px', color: '#00C2C7', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(34,214,220,0.08)', border: '1px solid rgba(34,214,220,0.2)', borderRadius: '6px', padding: '4px 8px' }}>
+                  <span style={{ fontSize: '11px', color: '#22D6DC', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {a.mediaType === 'application/pdf' ? '📄' : '🖼'} {a.name}
                   </span>
                   <button onClick={() => removeAttachment(i)} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '12px', padding: '0 2px' }}>✕</button>
@@ -877,11 +928,11 @@ export default function CorvusChat({
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={loading || limited}
-              placeholder={limited ? "Subscribe to continue…" : isListening ? "Listening…" : "Ask Corvus…"}
+              placeholder={limited ? "Out of questions — see options above" : isListening ? "Listening…" : "Ask Corvus…"}
               style={{
                 flex: 1,
                 background: "#0D1520",
-                border: "1px solid rgba(0,194,199,0.2)",
+                border: "1px solid rgba(34,214,220,0.2)",
                 borderRadius: "8px",
                 padding: "9px 12px",
                 color: "#ffffff",
@@ -890,8 +941,8 @@ export default function CorvusChat({
                 fontFamily: "inherit",
                 opacity: limited ? 0.4 : 1,
               }}
-              onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,194,199,0.5)"; }}
-              onBlur={(e)  => { e.currentTarget.style.borderColor = "rgba(0,194,199,0.2)"; }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(34,214,220,0.5)"; }}
+              onBlur={(e)  => { e.currentTarget.style.borderColor = "rgba(34,214,220,0.2)"; }}
             />
             {/* Hidden file input */}
             <input
@@ -908,12 +959,12 @@ export default function CorvusChat({
               disabled={loading || limited || attachments.length >= 5}
               title="Attach image or PDF"
               style={{
-                background: attachments.length > 0 ? 'rgba(0,194,199,0.15)' : 'transparent',
-                border: '1px solid rgba(0,194,199,0.2)',
+                background: attachments.length > 0 ? 'rgba(34,214,220,0.15)' : 'transparent',
+                border: '1px solid rgba(34,214,220,0.2)',
                 borderRadius: '50%',
                 width: '36px',
                 height: '36px',
-                color: attachments.length > 0 ? '#00C2C7' : '#888',
+                color: attachments.length > 0 ? '#22D6DC' : '#888',
                 cursor: 'pointer',
                 fontSize: '16px',
                 display: 'flex',
@@ -926,15 +977,15 @@ export default function CorvusChat({
               onClick={handleVoiceInput}
               disabled={loading || limited}
               title={isListening ? "Stop listening" : "Speak to Corvus"}
-              style={{ background: isListening ? "rgba(224,85,85,0.15)" : "transparent", border: `1px solid ${isListening ? "rgba(224,85,85,0.5)" : "rgba(0,194,199,0.2)"}`, borderRadius: "50%", width: "36px", height: "36px", display: "flex", alignItems: "center", justifyContent: "center", cursor: loading || limited ? "not-allowed" : "pointer", flexShrink: 0, transition: "all 0.2s", fontSize: "14px", animation: isListening ? "corvus-mic-pulse 1s ease-in-out infinite" : "none", opacity: limited ? 0.3 : 1 }}
+              style={{ background: isListening ? "rgba(224,85,85,0.15)" : "transparent", border: `1px solid ${isListening ? "rgba(224,85,85,0.5)" : "rgba(34,214,220,0.2)"}`, borderRadius: "50%", width: "36px", height: "36px", display: "flex", alignItems: "center", justifyContent: "center", cursor: loading || limited ? "not-allowed" : "pointer", flexShrink: 0, transition: "all 0.2s", fontSize: "14px", animation: isListening ? "corvus-mic-pulse 1s ease-in-out infinite" : "none", opacity: limited ? 0.3 : 1 }}
             >{isListening ? "⏹" : "🎤"}</button>
             <button
               onClick={sendMessage}
               disabled={loading || limited || (!input.trim() && !isListening)}
               style={{
                 background: loading || limited || (!input.trim() && !isListening)
-                  ? "rgba(0,194,199,0.08)"
-                  : "#00C2C7",
+                  ? "rgba(34,214,220,0.08)"
+                  : "#22D6DC",
                 border: "none",
                 borderRadius: "8px",
                 width: "38px",
@@ -945,7 +996,7 @@ export default function CorvusChat({
                 cursor: loading || limited || (!input.trim() && !isListening) ? "not-allowed" : "pointer",
                 flexShrink: 0,
                 transition: "background 0.15s",
-                color: loading || limited || (!input.trim() && !isListening) ? "rgba(0,194,199,0.4)" : "#0D1520",
+                color: loading || limited || (!input.trim() && !isListening) ? "rgba(34,214,220,0.4)" : "#0D1520",
                 fontSize: "16px",
                 fontWeight: 700,
               }}

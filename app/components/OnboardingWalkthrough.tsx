@@ -11,37 +11,37 @@ const STEPS = [
   {
     icon: '📡',
     title: "I've been waiting.",
-    body: "You've landed in Crow's Eye — my domain. I'm Corvus. I analyze wireless environments. I render Verdicts. Let me show you how this works.",
+    body: "You've landed in Crow's Eye — my domain. I'm Corvus. I analyze wireless environments. I render WiFi Health Reports. Let me show you how this works.",
     hint: null,
   },
   {
     icon: '📱',
     title: "Step one: scan your network.",
-    body: "Download Crow's Eye on Android. Open the app and tap Scan. The RF scanning is built in — no third-party apps needed.",
+    body: "Download Crow's Eye on Android. Open the app and tap Scan. The WiFi scanning is built in — no third-party apps needed.",
     hint: "Available on Google Play · iOS coming soon",
   },
   {
     icon: '📤',
     title: "Upload what you found.",
-    body: "Drop your scan files into the upload slots. Signal list, 2.4 GHz, 5 GHz — give me everything. More data means a sharper Verdict.",
+    body: "Drop your scan files into the upload slots. Signal list, 2.4 GHz, 5 GHz — give me everything. More data means a sharper WiFi Health Report.",
     hint: "All three slots are optional — but I work better with all three.",
   },
   {
     icon: '🔍',
     title: "I analyze. You wait.",
-    body: "I'll examine your RF environment: interference sources, channel conflicts, signal overlap, security gaps, and everything your router manufacturer hoped you'd never notice.",
+    body: "I'll examine your WiFi environment: interference sources, channel conflicts, signal overlap, security gaps, and everything your router manufacturer hoped you'd never notice.",
     hint: null,
   },
   {
     icon: '📄',
-    title: "The Verdict drops.",
+    title: "The WiFi Health Report drops.",
     body: "You'll see my findings ranked by severity. Download the PDF — it's branded, client-ready, and signed by me. Your network's sins, documented.",
     hint: "Murder tier subscribers get full design suite on the PDF.",
   },
   {
     icon: '💬',
     title: "Ask me anything.",
-    body: "The chat panel is live after your Verdict. Ask me to explain a finding, compare your channels, or tell you what to do next. I don't guess. I know.",
+    body: "The chat panel is live after your WiFi Health Report. Ask me to explain a finding, compare your channels, or tell you what to do next. I don't guess. I know.",
     hint: null,
   },
 ];
@@ -85,7 +85,7 @@ export default function OnboardingWalkthrough({ subscriptionCode, onComplete }: 
         {/* Progress bar */}
         <div style={{ background: '#0D1520', height: '4px' }}>
           <div style={{
-            background: 'linear-gradient(90deg, #0D6E7A, #00C2C7)',
+            background: 'linear-gradient(90deg, #0D6E7A, #22D6DC)',
             height: '100%', width: `${((step + 1) / STEPS.length) * 100}%`,
             transition: 'width 0.3s ease',
           }} />
@@ -97,7 +97,7 @@ export default function OnboardingWalkthrough({ subscriptionCode, onComplete }: 
 
           {/* Title */}
           <div style={{
-            color: '#00C2C7', fontSize: '20px', fontFamily: 'Share Tech Mono, monospace',
+            color: '#22D6DC', fontSize: '20px', fontFamily: 'Share Tech Mono, monospace',
             marginBottom: '12px', textAlign: 'center', lineHeight: 1.3,
           }}>
             {current.title}
@@ -128,7 +128,7 @@ export default function OnboardingWalkthrough({ subscriptionCode, onComplete }: 
               <div key={i} style={{
                 width: i === step ? '20px' : '6px', height: '6px',
                 borderRadius: '3px', transition: 'all 0.3s',
-                background: i === step ? '#00C2C7' : i < step ? '#0D6E7A' : '#0D1520',
+                background: i === step ? '#22D6DC' : i < step ? '#0D6E7A' : '#0D1520',
               }} />
             ))}
           </div>
@@ -145,7 +145,7 @@ export default function OnboardingWalkthrough({ subscriptionCode, onComplete }: 
             <button
               onClick={isLast ? handleComplete : () => setStep(s => s + 1)}
               style={{
-                flex: 2, background: 'linear-gradient(135deg, #0D6E7A, #00C2C7)',
+                flex: 2, background: 'linear-gradient(135deg, #0D6E7A, #22D6DC)',
                 border: 'none', color: '#0D1520', borderRadius: '8px', padding: '12px',
                 cursor: 'pointer', fontSize: '13px', fontWeight: 'bold',
                 fontFamily: 'Share Tech Mono, monospace', letterSpacing: '0.05em',

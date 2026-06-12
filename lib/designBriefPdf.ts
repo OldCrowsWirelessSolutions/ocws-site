@@ -55,8 +55,8 @@ async function imgToBase64(url: string): Promise<string> {
 
 const NAVY_DARK = '#0D1520';
 const TEAL = '#0D6E7A';
-const CYAN = '#00C2C7';
-const GOLD = '#B8922A';
+const CYAN = '#22D6DC';
+const GOLD = '#D8AC32';
 const WHITE = '#F4F6F8';
 const GRAY = '#888888';
 
@@ -452,7 +452,7 @@ export async function generateDesignBriefPdf(
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   setTextColor(doc, GOLD);
-  doc.text("CORVUS' VERDICT", 18, y + 8);
+  doc.text("CORVUS' ASSESSMENT", 18, y + 8);
 
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(8.5);

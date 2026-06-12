@@ -31,7 +31,7 @@ const VOICE_TOGGLE_CONFIG: { key: VoiceKey; label: string; desc: string }[] = [
   { key: 'login',      label: 'LOGIN GREETING',       desc: 'Corvus speaks when you log in' },
   { key: 'dashboard',  label: 'DASHBOARD BRIEFING',   desc: 'Corvus speaks his dashboard briefing' },
   { key: 'processing', label: 'SCAN PROCESSING',      desc: 'Corvus narrates while analyzing' },
-  { key: 'report',     label: 'REPORT RENDER',        desc: 'Corvus speaks when your Verdict is ready' },
+  { key: 'report',     label: 'REPORT RENDER',        desc: 'Corvus speaks when your WiFi Health Report is ready' },
   { key: 'chat',       label: 'CORVUS CHAT',          desc: 'Corvus speaks his chat responses' },
   { key: 'holidays',   label: 'HOLIDAYS & SPECIAL DATES', desc: 'Corvus speaks holiday greetings' },
   { key: 'tributes',   label: 'TRIBUTE MESSAGES',     desc: 'Corvus speaks personal tribute messages' },
@@ -128,7 +128,7 @@ export default function SettingsTab({ code, isVIP = false, isAdmin = false }: Se
 
   const sectionStyle: React.CSSProperties = {
     background: 'rgba(13,21,32,0.8)',
-    border: '1px solid rgba(0,194,199,0.12)',
+    border: '1px solid rgba(34,214,220,0.12)',
     borderRadius: 12,
     padding: 24,
   };
@@ -136,7 +136,7 @@ export default function SettingsTab({ code, isVIP = false, isAdmin = false }: Se
   const sectionTitleStyle: React.CSSProperties = {
     fontFamily: "'Share Tech Mono', monospace",
     fontSize: '0.6rem',
-    color: '#B8922A',
+    color: '#D8AC32',
     letterSpacing: '0.18em',
     textTransform: 'uppercase',
     marginBottom: 6,
@@ -202,8 +202,8 @@ export default function SettingsTab({ code, isVIP = false, isAdmin = false }: Se
                   alignItems: 'center',
                   gap: 4,
                   padding: '14px 10px',
-                  background: active ? 'rgba(0,194,199,0.1)' : 'rgba(26,35,50,0.8)',
-                  border: `1px solid ${active ? 'rgba(0,194,199,0.4)' : 'rgba(0,194,199,0.12)'}`,
+                  background: active ? 'rgba(34,214,220,0.1)' : 'rgba(26,35,50,0.8)',
+                  border: `1px solid ${active ? 'rgba(34,214,220,0.4)' : 'rgba(34,214,220,0.12)'}`,
                   borderRadius: 8,
                   cursor: 'pointer',
                   transition: 'all 0.2s',
@@ -213,7 +213,7 @@ export default function SettingsTab({ code, isVIP = false, isAdmin = false }: Se
                 <span style={{
                   fontFamily: "'Share Tech Mono', monospace",
                   fontSize: '0.8rem',
-                  color: active ? '#00C2C7' : '#F4F6F8',
+                  color: active ? '#22D6DC' : '#F4F6F8',
                   fontWeight: 600,
                 }}>
                   {option.label}
@@ -230,9 +230,9 @@ export default function SettingsTab({ code, isVIP = false, isAdmin = false }: Se
           fontSize: '0.75rem',
           color: 'rgba(244,246,248,0.6)',
           padding: '10px 14px',
-          background: 'rgba(0,194,199,0.04)',
+          background: 'rgba(34,214,220,0.04)',
           borderRadius: 6,
-          border: '1px solid rgba(0,194,199,0.08)',
+          border: '1px solid rgba(34,214,220,0.08)',
           transition: 'opacity 0.3s',
         }}>
           {timeoutSaved ? (
@@ -250,8 +250,8 @@ export default function SettingsTab({ code, isVIP = false, isAdmin = false }: Se
           alignItems: 'flex-start',
           marginTop: 16,
           padding: '12px 14px',
-          background: 'rgba(184,146,42,0.05)',
-          border: '1px solid rgba(184,146,42,0.15)',
+          background: 'rgba(216,172,50,0.05)',
+          border: '1px solid rgba(216,172,50,0.15)',
           borderRadius: 8,
         }}>
           <span style={{ fontSize: 16, flexShrink: 0, marginTop: 2 }}>🔒</span>
@@ -259,7 +259,7 @@ export default function SettingsTab({ code, isVIP = false, isAdmin = false }: Se
             <p style={{
               fontFamily: "'Share Tech Mono', monospace",
               fontSize: '0.6rem',
-              color: '#B8922A',
+              color: '#D8AC32',
               letterSpacing: '0.1em',
               marginBottom: 4,
             }}>
@@ -311,10 +311,10 @@ export default function SettingsTab({ code, isVIP = false, isAdmin = false }: Se
               disabled={!currentPassword || !newPassword || newPassword !== confirmPassword || passwordLoading}
               style={{
                 padding: '10px 20px',
-                background: 'rgba(0,194,199,0.1)',
-                border: '1px solid rgba(0,194,199,0.3)',
+                background: 'rgba(34,214,220,0.1)',
+                border: '1px solid rgba(34,214,220,0.3)',
                 borderRadius: 8,
-                color: '#00C2C7',
+                color: '#22D6DC',
                 fontFamily: "'Share Tech Mono', monospace",
                 fontSize: '0.68rem',
                 letterSpacing: '0.08em',
@@ -350,14 +350,14 @@ export default function SettingsTab({ code, isVIP = false, isAdmin = false }: Se
         </p>
 
         {/* Master toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(0,194,199,0.06)', border: '1px solid rgba(0,194,199,0.2)', borderRadius: 8, marginBottom: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(34,214,220,0.06)', border: '1px solid rgba(34,214,220,0.2)', borderRadius: 8, marginBottom: 8 }}>
           <div style={{ flex: 1 }}>
             <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.62rem', color: '#F4F6F8', letterSpacing: '0.1em', marginBottom: 2 }}>MASTER AUDIO</p>
             <p style={{ fontSize: '0.68rem', color: '#888888' }}>Enable or disable all Corvus voice</p>
           </div>
           <button
             onClick={() => handleVoiceToggle('master', !masterAudio)}
-            style={{ padding: '6px 16px', borderRadius: 6, border: '1px solid', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.1em', cursor: 'pointer', transition: 'all 0.2s', minWidth: 70, background: masterAudio ? 'rgba(0,194,199,0.12)' : 'rgba(136,136,136,0.08)', borderColor: masterAudio ? 'rgba(0,194,199,0.4)' : 'rgba(136,136,136,0.2)', color: masterAudio ? '#00C2C7' : '#888888' }}
+            style={{ padding: '6px 16px', borderRadius: 6, border: '1px solid', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.1em', cursor: 'pointer', transition: 'all 0.2s', minWidth: 70, background: masterAudio ? 'rgba(34,214,220,0.12)' : 'rgba(136,136,136,0.08)', borderColor: masterAudio ? 'rgba(34,214,220,0.4)' : 'rgba(136,136,136,0.2)', color: masterAudio ? '#22D6DC' : '#888888' }}
           >
             {masterAudio ? '🔊 ON' : '🔇 OFF'}
           </button>
@@ -368,14 +368,14 @@ export default function SettingsTab({ code, isVIP = false, isAdmin = false }: Se
           {VOICE_TOGGLE_CONFIG.map(({ key, label, desc }) => {
             const on = voiceSettings[key];
             return (
-              <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(26,35,50,0.6)', border: '1px solid rgba(0,194,199,0.08)', borderRadius: 8 }}>
+              <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(26,35,50,0.6)', border: '1px solid rgba(34,214,220,0.08)', borderRadius: 8 }}>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.62rem', color: '#F4F6F8', letterSpacing: '0.1em', marginBottom: 2 }}>{label}</p>
                   <p style={{ fontSize: '0.68rem', color: '#888888' }}>{desc}</p>
                 </div>
                 <button
                   onClick={() => handleVoiceToggle(key, !on)}
-                  style={{ padding: '6px 16px', borderRadius: 6, border: '1px solid', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.1em', cursor: 'pointer', transition: 'all 0.2s', minWidth: 60, background: on ? 'rgba(0,194,199,0.12)' : 'rgba(136,136,136,0.08)', borderColor: on ? 'rgba(0,194,199,0.4)' : 'rgba(136,136,136,0.2)', color: on ? '#00C2C7' : '#888888' }}
+                  style={{ padding: '6px 16px', borderRadius: 6, border: '1px solid', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.1em', cursor: 'pointer', transition: 'all 0.2s', minWidth: 60, background: on ? 'rgba(34,214,220,0.12)' : 'rgba(136,136,136,0.08)', borderColor: on ? 'rgba(34,214,220,0.4)' : 'rgba(136,136,136,0.2)', color: on ? '#22D6DC' : '#888888' }}
                 >
                   {on ? 'ON' : 'OFF'}
                 </button>
@@ -384,7 +384,7 @@ export default function SettingsTab({ code, isVIP = false, isAdmin = false }: Se
           })}
         </div>
 
-        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.58rem', color: '#888888', padding: '8px 12px', background: 'rgba(184,146,42,0.05)', border: '1px solid rgba(184,146,42,0.15)', borderRadius: 6 }}>
+        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.58rem', color: '#888888', padding: '8px 12px', background: 'rgba(216,172,50,0.05)', border: '1px solid rgba(216,172,50,0.15)', borderRadius: 6 }}>
           🔒 Voice speed is locked at 1.5x — optimized for Corvus&apos; character delivery.
         </div>
       </div>

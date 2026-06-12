@@ -37,8 +37,8 @@ export function PlayStoreBadge({ href, size = 'lg' }: { href: string; size?: 'lg
       }}
       onMouseOver={e => {
         const el = e.currentTarget
-        el.style.borderColor = '#00C2C7'
-        el.style.boxShadow = '0 0 16px rgba(0,194,199,0.25)'
+        el.style.borderColor = '#22D6DC'
+        el.style.boxShadow = '0 0 16px rgba(34,214,220,0.25)'
       }}
       onMouseOut={e => {
         const el = e.currentTarget

@@ -21,10 +21,10 @@ type Props = {
 }
 
 const PRIORITY_COLORS: Record<string, string> = {
-  critical: '#e05555', high: '#B8922A', normal: '#00C2C7',
+  critical: '#e05555', high: '#D8AC32', normal: '#22D6DC',
 }
 const STATUS_COLORS: Record<string, string> = {
-  open: '#e05555', in_progress: '#B8922A', resolved: '#00C2C7', closed: '#555',
+  open: '#e05555', in_progress: '#D8AC32', resolved: '#22D6DC', closed: '#555',
 }
 
 export default function AdminTicketTab({ authKey }: Props) {
@@ -128,7 +128,7 @@ export default function AdminTicketTab({ authKey }: Props) {
             <textarea style={s.notesInput} value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder="Internal notes..." />
             <div style={s.actionRow}>
               {selected.status !== 'in_progress' && <button style={s.actionBtn} onClick={() => updateStatus(selected.id, 'in_progress')} disabled={saving}>Mark In Progress</button>}
-              {selected.status !== 'resolved' && <button style={{ ...s.actionBtn, background: 'rgba(0,194,199,0.15)', color: '#00C2C7' }} onClick={() => updateStatus(selected.id, 'resolved')} disabled={saving}>Mark Resolved</button>}
+              {selected.status !== 'resolved' && <button style={{ ...s.actionBtn, background: 'rgba(34,214,220,0.15)', color: '#22D6DC' }} onClick={() => updateStatus(selected.id, 'resolved')} disabled={saving}>Mark Resolved</button>}
               {selected.status !== 'closed' && <button style={{ ...s.actionBtn, background: 'rgba(85,85,85,0.15)', color: '#888' }} onClick={() => updateStatus(selected.id, 'closed')} disabled={saving}>Close</button>}
             </div>
           </div>
@@ -143,30 +143,30 @@ const s: Record<string, React.CSSProperties> = {
   header: { display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap' },
   title: { color: '#F4F6F8', fontWeight: 700, fontSize: '1rem', flex: 1 },
   criticalBadge: { background: 'rgba(224,85,85,0.12)', color: '#e05555', border: '1px solid rgba(224,85,85,0.3)', borderRadius: '12px', padding: '2px 10px', fontSize: '0.72rem', fontFamily: 'Share Tech Mono, monospace' },
-  refreshBtn: { background: 'transparent', border: '1px solid rgba(0,194,199,0.2)', color: '#00C2C7', borderRadius: '6px', padding: '4px 12px', fontSize: '0.8rem', cursor: 'pointer' },
+  refreshBtn: { background: 'transparent', border: '1px solid rgba(34,214,220,0.2)', color: '#22D6DC', borderRadius: '6px', padding: '4px 12px', fontSize: '0.8rem', cursor: 'pointer' },
   filterRow: { display: 'flex', gap: '0.4rem', marginBottom: '1rem', flexWrap: 'wrap' },
   filterBtn: { background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#888', borderRadius: '6px', padding: '5px 12px', fontSize: '0.78rem', cursor: 'pointer' },
-  filterBtnActive: { background: 'rgba(0,194,199,0.1)', color: '#00C2C7', borderColor: '#00C2C7' },
+  filterBtnActive: { background: 'rgba(34,214,220,0.1)', color: '#22D6DC', borderColor: '#22D6DC' },
   loading: { color: '#555', fontSize: '0.85rem', padding: '2rem', textAlign: 'center' },
   empty: { color: '#555', fontSize: '0.85rem', padding: '2rem', textAlign: 'center' },
   list: { display: 'flex', flexDirection: 'column', gap: '0.5rem' },
   ticketCard: { background: '#0D1520', borderRadius: '10px', padding: '1rem', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)', transition: 'border-color 0.2s' },
   ticketTop: { display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.4rem', flexWrap: 'wrap' },
-  ticketId: { color: '#00C2C7', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.78rem' },
+  ticketId: { color: '#22D6DC', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.78rem' },
   priorityBadge: { fontSize: '0.65rem', fontFamily: 'Share Tech Mono, monospace', border: '1px solid', borderRadius: '10px', padding: '1px 7px' },
   statusBadge: { fontSize: '0.65rem', fontFamily: 'Share Tech Mono, monospace' },
   ticketMeta: { color: '#666', fontSize: '0.75rem', marginBottom: '0.3rem' },
   ticketDesc: { color: '#aaa', fontSize: '0.82rem', lineHeight: 1.4 },
   ticketTime: { color: '#444', fontSize: '0.72rem', marginTop: '0.4rem', fontFamily: 'Share Tech Mono, monospace' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '1rem' },
-  detailModal: { background: '#1A2332', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '12px', padding: '1.5rem', maxWidth: '520px', width: '100%', position: 'relative', maxHeight: '85vh', overflowY: 'auto' },
+  detailModal: { background: '#1A2332', border: '1px solid rgba(34,214,220,0.2)', borderRadius: '12px', padding: '1.5rem', maxWidth: '520px', width: '100%', position: 'relative', maxHeight: '85vh', overflowY: 'auto' },
   closeBtn: { position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', color: '#555', fontSize: '1rem', cursor: 'pointer' },
-  detailId: { color: '#00C2C7', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.82rem', marginBottom: '0.5rem' },
+  detailId: { color: '#22D6DC', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.82rem', marginBottom: '0.5rem' },
   detailRow: { display: 'flex', gap: '0.5rem', fontSize: '0.78rem', fontFamily: 'Share Tech Mono, monospace', marginBottom: '0.5rem', flexWrap: 'wrap' },
   detailMeta: { color: '#666', fontSize: '0.78rem', marginBottom: '0.75rem' },
   detailDesc: { background: '#0D1520', borderRadius: '8px', padding: '0.75rem', color: '#ccc', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: '1rem' },
   notesLabel: { color: '#555', fontSize: '0.72rem', fontFamily: 'Share Tech Mono, monospace', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.4rem' },
-  notesInput: { width: '100%', background: '#0D1520', border: '1px solid rgba(0,194,199,0.2)', borderRadius: '8px', padding: '8px 10px', color: '#F4F6F8', fontSize: '0.85rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: '1rem' },
+  notesInput: { width: '100%', background: '#0D1520', border: '1px solid rgba(34,214,220,0.2)', borderRadius: '8px', padding: '8px 10px', color: '#F4F6F8', fontSize: '0.85rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: '1rem' },
   actionRow: { display: 'flex', gap: '0.5rem', flexWrap: 'wrap' },
-  actionBtn: { background: 'rgba(184,146,42,0.12)', color: '#B8922A', border: '1px solid rgba(184,146,42,0.3)', borderRadius: '6px', padding: '7px 14px', fontSize: '0.8rem', cursor: 'pointer' },
+  actionBtn: { background: 'rgba(216,172,50,0.12)', color: '#D8AC32', border: '1px solid rgba(216,172,50,0.3)', borderRadius: '6px', padding: '7px 14px', fontSize: '0.8rem', cursor: 'pointer' },
 }

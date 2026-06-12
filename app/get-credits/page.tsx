@@ -17,7 +17,7 @@ function LoadingShell() {
     <div
       style={{ background: '#0D1520', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
     >
-      <div style={{ color: '#00C2C7', fontFamily: "'Share Tech Mono', monospace", fontSize: 14 }}>
+      <div style={{ color: '#22D6DC', fontFamily: "'Share Tech Mono', monospace", fontSize: 14 }}>
         Loading…
       </div>
     </div>

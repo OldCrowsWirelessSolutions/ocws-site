@@ -300,7 +300,7 @@ function renderVisual(stage: TourStage) {
           </div>
           {!!d.locations && <div style={v.verdictMeta}>{d.locations as number} locations scanned</div>}
           <div style={v.findingsRow}>
-            {!!d.findings && <div style={v.findingStat}><span style={{ color: '#00C2C7' }}>{d.findings as number}</span> findings</div>}
+            {!!d.findings && <div style={v.findingStat}><span style={{ color: '#22D6DC' }}>{d.findings as number}</span> findings</div>}
             {!!d.critical && <div style={v.findingStat}><span style={{ color: '#e05555' }}>{d.critical as number}</span> critical</div>}
           </div>
           {typeof d.topFinding === 'string' && d.topFinding && (
@@ -332,8 +332,8 @@ function renderVisual(stage: TourStage) {
               <div style={v.comfortLabel}>LEVEL 1</div>
               <p style={v.comfortText}>{d.level1 as string}</p>
             </div>
-            <div style={{ ...v.comfortBox, borderColor: '#00C2C7' }}>
-              <div style={{ ...v.comfortLabel, color: '#00C2C7' }}>LEVEL 5</div>
+            <div style={{ ...v.comfortBox, borderColor: '#22D6DC' }}>
+              <div style={{ ...v.comfortLabel, color: '#22D6DC' }}>LEVEL 5</div>
               <p style={v.comfortText}>{d.level5 as string}</p>
             </div>
           </div>
@@ -344,13 +344,13 @@ function renderVisual(stage: TourStage) {
           <div style={v.compareTable}>
             <div style={v.compareHeader}>
               <div style={v.compareCell} />
-              <div style={{ ...v.compareCell, color: '#00C2C7', fontWeight: 700 }}>Corvus</div>
+              <div style={{ ...v.compareCell, color: '#22D6DC', fontWeight: 700 }}>Corvus</div>
               <div style={v.compareCell}>{(d.competitorName as string) || 'Competitor'}</div>
             </div>
             {(d.rows as Array<{ label: string; corvus: string; competitor: string }>).map(row => (
               <div key={row.label} style={v.compareRow}>
                 <div style={v.compareCell}>{row.label}</div>
-                <div style={{ ...v.compareCell, color: row.corvus === '✓' ? '#00C2C7' : '#F4F6F8' }}>{row.corvus}</div>
+                <div style={{ ...v.compareCell, color: row.corvus === '✓' ? '#22D6DC' : '#F4F6F8' }}>{row.corvus}</div>
                 <div style={{ ...v.compareCell, color: row.competitor === '✗' ? '#e05555' : '#888' }}>{row.competitor}</div>
               </div>
             ))}
@@ -404,57 +404,57 @@ function renderVisual(stage: TourStage) {
 }
 
 const s: Record<string, React.CSSProperties> = {
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1.25rem', background: '#1A2332', borderBottom: '1px solid rgba(0,194,199,0.15)' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1.25rem', background: '#1A2332', borderBottom: '1px solid rgba(34,214,220,0.15)' },
   headerLeft: { display: 'flex', alignItems: 'center', gap: '0.6rem' },
-  headerLabel: { color: '#00C2C7', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.72rem', letterSpacing: '0.1em' },
+  headerLabel: { color: '#22D6DC', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.72rem', letterSpacing: '0.1em' },
   headerRight: { display: 'flex', alignItems: 'center', gap: '0.75rem' },
   muteBtn: { background: 'transparent', border: 'none', fontSize: '1rem', cursor: 'pointer' },
   progress: { color: '#555', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.78rem' },
   closeBtn: { background: 'rgba(224,85,85,0.1)', border: '1px solid rgba(224,85,85,0.3)', color: '#e05555', fontSize: '0.75rem', cursor: 'pointer', borderRadius: '6px', padding: '4px 10px', fontFamily: 'Share Tech Mono, monospace', letterSpacing: '0.05em' },
   progressBar: { height: '3px', background: '#1A2332' },
-  progressFill: { height: '100%', background: 'linear-gradient(90deg, #0D6E7A, #00C2C7)', transition: 'width 0.5s ease' },
+  progressFill: { height: '100%', background: 'linear-gradient(90deg, #0D6E7A, #22D6DC)', transition: 'width 0.5s ease' },
   main: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflow: 'auto' },
   openingWrap: { textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: '560px' },
   openingLine: { color: '#F4F6F8', fontSize: 'clamp(1rem, 2.5vw, 1.35rem)', fontStyle: 'italic', lineHeight: 1.6, marginBottom: '1rem' },
   audioIndicator: { display: 'flex', alignItems: 'center', gap: '0.4rem' },
-  audioDot: { width: '8px', height: '8px', borderRadius: '50%', background: '#00C2C7', animation: 'pulse 1s infinite' },
+  audioDot: { width: '8px', height: '8px', borderRadius: '50%', background: '#22D6DC', animation: 'pulse 1s infinite' },
   stageWrap: { display: 'grid', gridTemplateColumns: 'min(220px, 30%) 1fr', gap: '1.5rem', width: '100%', maxWidth: '900px', alignItems: 'start' },
   stageLeft: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', minWidth: 0 },
-  stageCorvusBox: { background: '#1A2332', borderLeft: '3px solid #00C2C7', padding: '0.75rem 1rem', borderRadius: '0 8px 8px 0', width: '100%' },
-  corvusLabel: { color: '#00C2C7', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.65rem', letterSpacing: '0.12em', marginBottom: '0.3rem' },
+  stageCorvusBox: { background: '#1A2332', borderLeft: '3px solid #22D6DC', padding: '0.75rem 1rem', borderRadius: '0 8px 8px 0', width: '100%' },
+  corvusLabel: { color: '#22D6DC', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.65rem', letterSpacing: '0.12em', marginBottom: '0.3rem' },
   corvusQuote: { color: '#ccc', fontSize: '0.85rem', fontStyle: 'italic', lineHeight: 1.6, margin: 0 },
   audioWave: { display: 'flex', gap: '3px', alignItems: 'flex-end', height: '20px' },
-  wavebar: { width: '4px', background: '#00C2C7', borderRadius: '2px', animation: 'wave 0.8s ease-in-out infinite', height: '100%' },
+  wavebar: { width: '4px', background: '#22D6DC', borderRadius: '2px', animation: 'wave 0.8s ease-in-out infinite', height: '100%' },
   stageRight: { display: 'flex', flexDirection: 'column', gap: '1rem' },
-  stageTitleRow: { borderBottom: '1px solid rgba(0,194,199,0.15)', paddingBottom: '0.5rem' },
+  stageTitleRow: { borderBottom: '1px solid rgba(34,214,220,0.15)', paddingBottom: '0.5rem' },
   stageTitle: { color: '#F4F6F8', fontSize: '1.3rem', fontWeight: 700, margin: 0 },
   stageBody: { color: '#aaa', fontSize: '0.92rem', lineHeight: 1.6, margin: 0 },
   navRow: { display: 'flex', gap: '0.6rem', alignItems: 'center', marginTop: '0.5rem', flexWrap: 'wrap' as const },
   backBtn: { background: 'transparent', border: '1px solid rgba(255,255,255,0.12)', color: '#888', borderRadius: '8px', padding: '10px 18px', fontSize: '0.88rem', cursor: 'pointer' },
   closingBackBtn: { background: 'transparent', border: 'none', color: '#555', fontSize: '0.82rem', cursor: 'pointer', alignSelf: 'flex-start' as const, marginBottom: '0.5rem' },
-  nextBtn: { background: '#1A2332', border: '1px solid rgba(0,194,199,0.3)', color: '#00C2C7', borderRadius: '8px', padding: '10px 24px', fontSize: '0.9rem', cursor: 'pointer', alignSelf: 'flex-start', marginTop: '0.5rem' },
+  nextBtn: { background: '#1A2332', border: '1px solid rgba(34,214,220,0.3)', color: '#22D6DC', borderRadius: '8px', padding: '10px 24px', fontSize: '0.9rem', cursor: 'pointer', alignSelf: 'flex-start', marginTop: '0.5rem' },
   skipBtn: { background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)', borderRadius: '8px', padding: '10px 18px', fontSize: '0.78rem', cursor: 'pointer', marginLeft: 'auto' },
-  ctaBtn: { display: 'inline-block', background: 'linear-gradient(135deg, #0D6E7A, #00C2C7)', color: '#fff', borderRadius: '8px', padding: '13px 28px', textDecoration: 'none', fontWeight: 700, fontSize: '1rem', marginTop: '0.5rem', alignSelf: 'flex-start' },
+  ctaBtn: { display: 'inline-block', background: 'linear-gradient(135deg, #0D6E7A, #22D6DC)', color: '#fff', borderRadius: '8px', padding: '13px 28px', textDecoration: 'none', fontWeight: 700, fontSize: '1rem', marginTop: '0.5rem', alignSelf: 'flex-start' },
   closingWrap: { textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem', maxWidth: '520px' },
   closingLine: { color: '#F4F6F8', fontSize: '1.2rem', fontStyle: 'italic', lineHeight: 1.6, margin: 0 },
   closingActions: { display: 'flex', flexDirection: 'column', gap: '0.6rem', width: '100%' },
-  closingCta: { display: 'block', background: 'linear-gradient(135deg, #0D6E7A, #00C2C7)', color: '#fff', borderRadius: '8px', padding: '13px', textDecoration: 'none', fontWeight: 700, fontSize: '1rem', textAlign: 'center' },
-  closingSecondary: { display: 'block', color: '#00C2C7', fontSize: '0.9rem', textDecoration: 'none', textAlign: 'center' },
-  closingDismiss: { background: 'rgba(0,194,199,0.12)', border: '1px solid rgba(0,194,199,0.35)', borderRadius: '8px', color: '#00C2C7', fontFamily: 'monospace', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.08em', padding: '9px 20px', cursor: 'pointer' },
+  closingCta: { display: 'block', background: 'linear-gradient(135deg, #0D6E7A, #22D6DC)', color: '#fff', borderRadius: '8px', padding: '13px', textDecoration: 'none', fontWeight: 700, fontSize: '1rem', textAlign: 'center' },
+  closingSecondary: { display: 'block', color: '#22D6DC', fontSize: '0.9rem', textDecoration: 'none', textAlign: 'center' },
+  closingDismiss: { background: 'rgba(34,214,220,0.12)', border: '1px solid rgba(34,214,220,0.35)', borderRadius: '8px', color: '#22D6DC', fontFamily: 'monospace', fontSize: '0.78rem', fontWeight: 700, letterSpacing: '0.08em', padding: '9px 20px', cursor: 'pointer' },
 };
 
 const v: Record<string, React.CSSProperties> = {
   statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' },
-  statBox: { background: '#0D1520', borderRadius: '8px', padding: '0.75rem', textAlign: 'center', border: '1px solid rgba(0,194,199,0.12)' },
-  statNum: { color: '#00C2C7', fontSize: '1.6rem', fontWeight: 900, fontFamily: 'Share Tech Mono, monospace' },
+  statBox: { background: '#0D1520', borderRadius: '8px', padding: '0.75rem', textAlign: 'center', border: '1px solid rgba(34,214,220,0.12)' },
+  statNum: { color: '#22D6DC', fontSize: '1.6rem', fontWeight: 900, fontFamily: 'Share Tech Mono, monospace' },
   statLabel: { color: '#888', fontSize: '0.78rem', marginTop: '2px' },
   stepList: { display: 'flex', flexDirection: 'column', gap: '0.6rem' },
   step: { display: 'flex', gap: '0.75rem', alignItems: 'center' },
   stepNum: { width: '26px', height: '26px', borderRadius: '50%', background: '#0D6E7A', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.82rem', fontWeight: 700, flexShrink: 0 },
   stepText: { color: '#ccc', fontSize: '0.9rem' },
-  verdictBox: { background: '#0D1520', borderRadius: '10px', padding: '1rem', border: '1px solid rgba(0,194,199,0.15)', display: 'flex', flexDirection: 'column', gap: '0.6rem' },
+  verdictBox: { background: '#0D1520', borderRadius: '10px', padding: '1rem', border: '1px solid rgba(34,214,220,0.15)', display: 'flex', flexDirection: 'column', gap: '0.6rem' },
   verdictHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' },
-  verdictLabel: { color: '#00C2C7', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.68rem', letterSpacing: '0.12em' },
+  verdictLabel: { color: '#22D6DC', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.68rem', letterSpacing: '0.12em' },
   verdictClient: { color: '#F4F6F8', fontWeight: 700, fontSize: '0.95rem' },
   verdictMeta: { color: '#888', fontSize: '0.8rem' },
   findingsRow: { display: 'flex', gap: '1rem' },
@@ -462,30 +462,30 @@ const v: Record<string, React.CSSProperties> = {
   topFinding: { background: 'rgba(224,85,85,0.08)', border: '1px solid rgba(224,85,85,0.2)', borderRadius: '6px', padding: '0.5rem 0.75rem' },
   tfLabel: { color: '#e05555', fontSize: '0.65rem', fontFamily: 'Share Tech Mono, monospace', letterSpacing: '0.1em', marginBottom: '3px' },
   tfText: { color: '#F4F6F8', fontSize: '0.88rem' },
-  fixBox: { background: 'rgba(0,194,199,0.06)', borderLeft: '3px solid #00C2C7', padding: '0.5rem 0.75rem' },
-  fixLabel: { color: '#00C2C7', fontSize: '0.65rem', fontFamily: 'Share Tech Mono, monospace', letterSpacing: '0.1em', marginBottom: '3px' },
+  fixBox: { background: 'rgba(34,214,220,0.06)', borderLeft: '3px solid #22D6DC', padding: '0.5rem 0.75rem' },
+  fixLabel: { color: '#22D6DC', fontSize: '0.65rem', fontFamily: 'Share Tech Mono, monospace', letterSpacing: '0.1em', marginBottom: '3px' },
   fixText: { color: '#ccc', fontSize: '0.85rem', lineHeight: 1.5 },
-  excerptBox: { background: '#1A2332', borderLeft: '3px solid #B8922A', padding: '0.5rem 0.75rem' },
-  excerptLabel: { color: '#B8922A', fontSize: '0.65rem', fontFamily: 'Share Tech Mono, monospace', letterSpacing: '0.1em', marginBottom: '3px' },
+  excerptBox: { background: '#1A2332', borderLeft: '3px solid #D8AC32', padding: '0.5rem 0.75rem' },
+  excerptLabel: { color: '#D8AC32', fontSize: '0.65rem', fontFamily: 'Share Tech Mono, monospace', letterSpacing: '0.1em', marginBottom: '3px' },
   excerptText: { color: '#ccc', fontSize: '0.85rem', lineHeight: 1.5, fontStyle: 'italic' },
   comfortWrap: { display: 'flex', flexDirection: 'column', gap: '0.75rem' },
   comfortBox: { background: '#0D1520', borderRadius: '8px', padding: '0.75rem 1rem', border: '1px solid' },
   comfortLabel: { color: '#888', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.68rem', letterSpacing: '0.12em', marginBottom: '0.3rem' },
   comfortText: { color: '#ccc', fontSize: '0.88rem', lineHeight: 1.5, margin: 0, fontStyle: 'italic' },
-  compareTable: { border: '1px solid rgba(0,194,199,0.15)', borderRadius: '8px', overflow: 'hidden' },
+  compareTable: { border: '1px solid rgba(34,214,220,0.15)', borderRadius: '8px', overflow: 'hidden' },
   compareHeader: { display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', background: '#0D6E7A' },
   compareRow: { display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', borderTop: '1px solid rgba(255,255,255,0.05)' },
   compareCell: { padding: '7px 10px', color: '#aaa', fontSize: '0.82rem', fontFamily: 'Share Tech Mono, monospace' },
   featureList: { display: 'flex', flexDirection: 'column', gap: '0.5rem' },
   featureItem: { display: 'flex', gap: '0.6rem', alignItems: 'center' },
-  featureCheck: { color: '#00C2C7', fontWeight: 700, flexShrink: 0 },
+  featureCheck: { color: '#22D6DC', fontWeight: 700, flexShrink: 0 },
   featureText: { color: '#ccc', fontSize: '0.9rem' },
   tierList: { display: 'flex', flexDirection: 'column', gap: '0.4rem' },
   tierRow: { display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '0.5rem', background: '#0D1520', borderRadius: '6px', padding: '7px 10px', alignItems: 'center' },
-  tierName: { color: '#00C2C7', fontWeight: 700, fontSize: '0.88rem' },
+  tierName: { color: '#22D6DC', fontWeight: 700, fontSize: '0.88rem' },
   tierDesc: { color: '#888', fontSize: '0.82rem' },
-  tierPrice: { color: '#B8922A', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.82rem', textAlign: 'right' },
-  characterBox: { background: '#0D1520', borderRadius: '10px', padding: '1rem', border: '1px solid rgba(184,146,42,0.2)', display: 'flex', flexDirection: 'column', gap: '0.75rem' },
+  tierPrice: { color: '#D8AC32', fontFamily: 'Share Tech Mono, monospace', fontSize: '0.82rem', textAlign: 'right' },
+  characterBox: { background: '#0D1520', borderRadius: '10px', padding: '1rem', border: '1px solid rgba(216,172,50,0.2)', display: 'flex', flexDirection: 'column', gap: '0.75rem' },
   characterQuote: { color: '#ccc', fontStyle: 'italic', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 },
   characterMeta: { color: '#666', fontSize: '0.82rem', lineHeight: 1.5 },
 };

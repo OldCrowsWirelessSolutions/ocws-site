@@ -48,9 +48,9 @@ interface ReportRecord {
 }
 
 const REPORT_TYPE_LABELS: Record<ReportType, string> = {
-  verdict: "Verdict", reckoning_small: "Small Reckoning",
-  reckoning_standard: "Standard Reckoning", reckoning_commercial: "Commercial Reckoning",
-  reckoning_pro: "Pro Reckoning",
+  verdict: "WiFi Health Report", reckoning_small: "Small Whole-Home Survey",
+  reckoning_standard: "Standard Whole-Home Survey", reckoning_commercial: "Commercial Whole-Home Survey",
+  reckoning_pro: "Pro Whole-Home Survey",
 };
 
 const SEVERITY_COLORS: Record<ReportSeverity, { color: string; bg: string; border: string }> = {
@@ -87,9 +87,9 @@ interface SubDetails {
 
 type TierCfg = { label: string; color: string; textColor: string; monthlyVerdicts: number; price: string };
 const TIER_CONFIG: Record<SubscriptionTier, TierCfg> = {
-  fledgling: { label: "FLEDGLING", color: "#B8922A", textColor: "#0D1520", monthlyVerdicts: 1,      price: "$10/mo"   },
-  nest:      { label: "NEST",      color: "#00C2C7", textColor: "#0D1520", monthlyVerdicts: 3,      price: "$20/mo"   },
-  flock:     { label: "FLOCK",     color: "#B8922A", textColor: "#0D1520", monthlyVerdicts: 15,     price: "$100/mo"  },
+  fledgling: { label: "FLEDGLING", color: "#D8AC32", textColor: "#0D1520", monthlyVerdicts: 1,      price: "$10/mo"   },
+  nest:      { label: "NEST",      color: "#22D6DC", textColor: "#0D1520", monthlyVerdicts: 3,      price: "$20/mo"   },
+  flock:     { label: "FLOCK",     color: "#D8AC32", textColor: "#0D1520", monthlyVerdicts: 15,     price: "$100/mo"  },
   murder:    { label: "MURDER",    color: "#9B1C1C", textColor: "#ffffff", monthlyVerdicts: 999999, price: "$950/mo"  },
 };
 
@@ -111,7 +111,7 @@ const card: React.CSSProperties = {
 };
 
 const sectionLabel: React.CSSProperties = {
-  color: "#00C2C7", fontSize: "11px", fontWeight: 700,
+  color: "#22D6DC", fontSize: "11px", fontWeight: 700,
   letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px",
 };
 
@@ -138,11 +138,11 @@ function TabBar({ tabs, active, onSelect }: {
           <button key={t.id} onClick={() => onSelect(t.id)} data-tab={t.id}
             style={{
               padding: "8px 16px", fontSize: "12px", fontWeight: isActive ? 700 : 500,
-              border: isActive ? "1px solid rgba(0,194,199,0.5)" : "1px solid rgba(255,255,255,0.09)",
+              border: isActive ? "1px solid rgba(34,214,220,0.5)" : "1px solid rgba(255,255,255,0.09)",
               borderRadius: "8px", cursor: "pointer", whiteSpace: "nowrap",
               transition: "all 0.15s",
-              background: isActive ? "rgba(0,194,199,0.13)" : "rgba(255,255,255,0.03)",
-              color: isActive ? "#00C2C7" : "rgba(255,255,255,0.45)",
+              background: isActive ? "rgba(34,214,220,0.13)" : "rgba(255,255,255,0.03)",
+              color: isActive ? "#22D6DC" : "rgba(255,255,255,0.45)",
               letterSpacing: isActive ? "0.02em" : "0",
             }}
           >
@@ -935,7 +935,7 @@ export default function DashboardPage() {
   if (phase === "loading") {
     return (
       <div style={{ minHeight: "70vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <p style={{ color: "#00C2C7", fontFamily: "monospace", fontSize: "13px", letterSpacing: "0.2em" }}>AUTHENTICATING...</p>
+        <p style={{ color: "#22D6DC", fontFamily: "monospace", fontSize: "13px", letterSpacing: "0.2em" }}>AUTHENTICATING...</p>
       </div>
     );
   }
@@ -953,24 +953,24 @@ export default function DashboardPage() {
               </div>
               <div style={{ textAlign: "left" }}>
                 <p style={{ color: "#ffffff", fontSize: "16px", fontWeight: 700, margin: 0 }}>Corvus Dashboard</p>
-                <p style={{ color: "#00C2C7", fontSize: "11px", margin: 0 }}>Old Crows Wireless Solutions</p>
+                <p style={{ color: "#22D6DC", fontSize: "11px", margin: 0 }}>Old Crows Wireless Solutions</p>
               </div>
             </div>
             <p style={{ color: "#888888", fontSize: "13px" }}>Enter your Subscription ID to access your dashboard.</p>
           </div>
           <form onSubmit={handleLoginWrapped} style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "32px" }}>
-            <label style={{ display: "block", color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>Subscription ID</label>
+            <label style={{ display: "block", color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>Subscription ID</label>
             <input type="password" autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="text" placeholder="OCWS-NEST-XXXXXXXX" value={codeInput} onChange={e => setCodeInput(e.target.value)}
               style={{ ...inputStyle, marginBottom: authError ? "8px" : "20px" }} />
             {authError && <p style={{ color: "#F87171", fontSize: "12px", marginBottom: "16px" }}>{authError}</p>}
             <button type="submit" disabled={validating || !codeInput.trim()}
-              style={{ width: "100%", padding: "12px", background: validating || !codeInput.trim() ? "#0D6E7A" : "#00C2C7", color: "#0D1520", borderRadius: "10px", border: "none", fontSize: "14px", fontWeight: 700, cursor: validating || !codeInput.trim() ? "not-allowed" : "pointer", letterSpacing: "0.05em" }}>
+              style={{ width: "100%", padding: "12px", background: validating || !codeInput.trim() ? "#0D6E7A" : "#22D6DC", color: "#0D1520", borderRadius: "10px", border: "none", fontSize: "14px", fontWeight: 700, cursor: validating || !codeInput.trim() ? "not-allowed" : "pointer", letterSpacing: "0.05em" }}>
               {validating ? "Validating..." : "Access Dashboard"}
             </button>
           </form>
           <p style={{ textAlign: "center", marginTop: "20px", fontSize: "12px", color: "#555555" }}>
             Don&rsquo;t have a subscription?{" "}
-            <Link href="/crows-eye" style={{ color: "#00C2C7" }}>Get Corvus&rsquo; Verdict</Link>
+            <Link href="/crows-eye" style={{ color: "#22D6DC" }}>Get a WiFi Health Report</Link>
           </p>
         </div>
       </div>
@@ -996,7 +996,7 @@ export default function DashboardPage() {
   // Tab definitions per user type
   const fledglingTabs: { id: SubTab; label: string }[] = [
     { id: "chat",      label: "Ask Corvus"   },
-    { id: "crow",      label: "🦅 My Verdict" },
+    { id: "crow",      label: "🦅 My Report" },
     { id: "tour",      label: "🎬 Tour"       },
     { id: "help",      label: "Help"          },
     { id: "settings",  label: "Settings"      },
@@ -1044,7 +1044,7 @@ export default function DashboardPage() {
         {/* Credits row */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: "16px" }}>
           <div style={card}>
-            <p style={{ ...sectionLabel, marginBottom: "8px" }}>Verdict Credits</p>
+            <p style={{ ...sectionLabel, marginBottom: "8px" }}>WiFi Health Report Credits</p>
             <p style={{ color: "#ffffff", fontSize: "52px", fontWeight: 800, lineHeight: 1, marginBottom: "4px" }}>
               {isUnlimited ? "∞" : verdictsRemaining}
             </p>
@@ -1053,18 +1053,18 @@ export default function DashboardPage() {
             </p>
             {!isUnlimited && (
               <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: "100px", height: "6px", overflow: "hidden", marginBottom: "12px" }}>
-                <div style={{ height: "100%", width: `${progressPct}%`, background: progressPct > 80 ? "#F87171" : "#00C2C7", borderRadius: "100px", transition: "width 0.4s ease" }} />
+                <div style={{ height: "100%", width: `${progressPct}%`, background: progressPct > 80 ? "#F87171" : "#22D6DC", borderRadius: "100px", transition: "width 0.4s ease" }} />
               </div>
             )}
             {details?.current_period_end && <p style={{ color: "#555555", fontSize: "11px" }}>Resets {fmtDate(details.current_period_end)}</p>}
           </div>
 
           <div style={card}>
-            <p style={{ color: "#B8922A", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>Reckoning Credits</p>
+            <p style={{ color: "#D8AC32", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>Whole-Home Survey Credits</p>
             {(["small", "standard", "commercial"] as const).map(key => (
               <div key={key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
                 <span style={{ color: "#888888", fontSize: "13px", textTransform: "capitalize" }}>{key}</span>
-                <span style={{ color: recUnlim[key] ? "#B8922A" : rec[key] > 0 ? "#ffffff" : "#444444", fontSize: "14px", fontWeight: 700, fontFamily: "monospace" }}>
+                <span style={{ color: recUnlim[key] ? "#D8AC32" : rec[key] > 0 ? "#ffffff" : "#444444", fontSize: "14px", fontWeight: 700, fontFamily: "monospace" }}>
                   {recUnlim[key] ? "∞" : rec[key]}
                 </span>
               </div>
@@ -1074,11 +1074,11 @@ export default function DashboardPage() {
           <div style={card}>
             <p style={{ ...sectionLabel, marginBottom: "8px" }}>Quick Actions</p>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <button onClick={() => navigateTab("crow")} style={{ display: "block", background: "#00C2C7", color: "#0D1520", borderRadius: "10px", padding: "11px 16px", fontSize: "13px", fontWeight: 700, border: "none", cursor: "pointer", textAlign: "center", width: "100%" }}>
-                Run a Verdict →
+              <button onClick={() => navigateTab("crow")} style={{ display: "block", background: "#22D6DC", color: "#0D1520", borderRadius: "10px", padding: "11px 16px", fontSize: "13px", fontWeight: 700, border: "none", cursor: "pointer", textAlign: "center", width: "100%" }}>
+                Run a WiFi Health Report →
               </button>
-              <button onClick={() => navigateTab("crow")} style={{ display: "block", background: "rgba(184,146,42,0.1)", border: "1px solid rgba(184,146,42,0.3)", color: "#B8922A", borderRadius: "10px", padding: "11px 16px", fontSize: "13px", fontWeight: 700, cursor: "pointer", textAlign: "center", width: "100%" }}>
-                Run a Reckoning →
+              <button onClick={() => navigateTab("crow")} style={{ display: "block", background: "rgba(216,172,50,0.1)", border: "1px solid rgba(216,172,50,0.3)", color: "#D8AC32", borderRadius: "10px", padding: "11px 16px", fontSize: "13px", fontWeight: 700, cursor: "pointer", textAlign: "center", width: "100%" }}>
+                Run a Whole-Home Survey →
               </button>
             </div>
           </div>
@@ -1089,7 +1089,7 @@ export default function DashboardPage() {
           <div style={card}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <p style={{ ...sectionLabel, marginBottom: 0 }}>Recent Activity</p>
-              {hasReports && <button onClick={() => navigateTab("reports")} style={{ background: "none", border: "none", color: "#00C2C7", fontSize: "12px", cursor: "pointer" }}>View all →</button>}
+              {hasReports && <button onClick={() => navigateTab("reports")} style={{ background: "none", border: "none", color: "#22D6DC", fontSize: "12px", cursor: "pointer" }}>View all →</button>}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {reports.slice(0, 3).map(r => {
@@ -1114,8 +1114,8 @@ export default function DashboardPage() {
         {reports.length === 0 && !reportsLoading && (
           <div style={{ ...card, textAlign: "center", padding: "40px" }}>
             <p style={{ color: "#555555", fontSize: "14px", marginBottom: "8px" }}>No scans yet.</p>
-            <p style={{ color: "#888888", fontSize: "13px", marginBottom: "20px" }}>Run your first Verdict or Reckoning to start tracking.</p>
-            <button onClick={() => navigateTab("crow")} style={{ display: "inline-block", background: "#00C2C7", color: "#0D1520", borderRadius: "10px", padding: "10px 24px", fontSize: "14px", fontWeight: 700, border: "none", cursor: "pointer" }}>
+            <p style={{ color: "#888888", fontSize: "13px", marginBottom: "20px" }}>Run your first WiFi Health Report or Whole-Home Survey to start tracking.</p>
+            <button onClick={() => navigateTab("crow")} style={{ display: "inline-block", background: "#22D6DC", color: "#0D1520", borderRadius: "10px", padding: "10px 24px", fontSize: "14px", fontWeight: 700, border: "none", cursor: "pointer" }}>
               Run Your First Scan →
             </button>
           </div>
@@ -1124,7 +1124,7 @@ export default function DashboardPage() {
         {lastReport && myAnalytics && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: "12px" }}>
             {([
-              { label: "Total Scans",      value: myAnalytics.totalScans,         color: "#00C2C7" },
+              { label: "Total Scans",      value: myAnalytics.totalScans,         color: "#22D6DC" },
               { label: "Critical Findings",value: myAnalytics.totalCritical,       color: "#F87171" },
               { label: "Avg Findings",     value: myAnalytics.avgFindingsPerScan.toFixed(1), color: "#aaaaaa" },
               { label: "Last Scan",        value: myAnalytics.lastScan ? new Date(myAnalytics.lastScan).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—", color: "#555555" },
@@ -1152,7 +1152,7 @@ export default function DashboardPage() {
     return (
       <div style={card}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px", flexWrap: "wrap", gap: "10px" }}>
-          <p style={{ ...sectionLabel, marginBottom: 0 }}>Past Verdicts &amp; Reckonings</p>
+          <p style={{ ...sectionLabel, marginBottom: 0 }}>Past WiFi Health Reports &amp; Whole-Home Surveys</p>
           {reports.length > 0 && <span style={{ color: "#555555", fontSize: "12px" }}>{reports.length} report{reports.length !== 1 ? "s" : ""}</span>}
         </div>
         {isSubType && tier === "flock" && <p style={{ color: "#888888", fontSize: "12px", marginBottom: "16px" }}>Reports stored for 6 months</p>}
@@ -1162,7 +1162,7 @@ export default function DashboardPage() {
         ) : reports.length === 0 ? (
           <div style={{ textAlign: "center", padding: "32px 16px" }}>
             <p style={{ color: "#555555", fontSize: "14px", marginBottom: "10px" }}>No reports yet.</p>
-            <button onClick={() => navigateTab("crow")} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: "#00C2C7", color: "#0D1520", borderRadius: "10px", padding: "10px 26px", fontSize: "14px", fontWeight: 700, border: "none", cursor: "pointer" }}>
+            <button onClick={() => navigateTab("crow")} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: "#22D6DC", color: "#0D1520", borderRadius: "10px", padding: "10px 26px", fontSize: "14px", fontWeight: 700, border: "none", cursor: "pointer" }}>
               Run a Scan →
             </button>
           </div>
@@ -1177,7 +1177,7 @@ export default function DashboardPage() {
                 <div key={r.reportId} style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", overflow: "hidden" }}>
                   <div style={{ padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
-                      <span style={{ background: "rgba(0,194,199,0.12)", color: "#00C2C7", fontSize: "9px", fontWeight: 800, letterSpacing: "0.18em", padding: "3px 8px", borderRadius: "20px", border: "1px solid rgba(0,194,199,0.25)", whiteSpace: "nowrap", flexShrink: 0 }}>
+                      <span style={{ background: "rgba(34,214,220,0.12)", color: "#22D6DC", fontSize: "9px", fontWeight: 800, letterSpacing: "0.18em", padding: "3px 8px", borderRadius: "20px", border: "1px solid rgba(34,214,220,0.25)", whiteSpace: "nowrap", flexShrink: 0 }}>
                         {REPORT_TYPE_LABELS[r.type] ?? r.type}
                       </span>
                       <div style={{ minWidth: 0 }}>
@@ -1191,7 +1191,7 @@ export default function DashboardPage() {
                       </span>
                       <span style={{ color: "#555555", fontSize: "11px" }}>{r.findingCount} finding{r.findingCount !== 1 ? "s" : ""}</span>
                       <button onClick={() => setExpandedReport(isOpen ? null : r.reportId)}
-                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "7px", color: "#00C2C7", fontSize: "11px", fontWeight: 600, padding: "5px 12px", cursor: "pointer" }}>
+                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "7px", color: "#22D6DC", fontSize: "11px", fontWeight: 600, padding: "5px 12px", cursor: "pointer" }}>
                         {isOpen ? "Collapse" : "View Report"}
                       </button>
                     </div>
@@ -1209,7 +1209,7 @@ export default function DashboardPage() {
                                   <span style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600 }}>{f.title}</span>
                                 </div>
                                 <p style={{ color: "#888888", fontSize: "12px", marginBottom: "6px", lineHeight: 1.6 }}>{f.description}</p>
-                                {f.fix && <p style={{ color: "#00C2C7", fontSize: "12px", lineHeight: 1.6 }}><strong>Fix:</strong> {f.fix}</p>}
+                                {f.fix && <p style={{ color: "#22D6DC", fontSize: "12px", lineHeight: 1.6 }}><strong>Fix:</strong> {f.fix}</p>}
                               </div>
                             );
                           })}
@@ -1245,7 +1245,7 @@ export default function DashboardPage() {
           <>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: "12px", marginBottom: "20px" }}>
               {([
-                { label: "Total Scans",      value: myAnalytics.totalScans,         color: "#00C2C7" },
+                { label: "Total Scans",      value: myAnalytics.totalScans,         color: "#22D6DC" },
                 { label: "Critical Findings",value: myAnalytics.totalCritical,       color: "#F87171" },
                 { label: "Avg Findings",     value: myAnalytics.avgFindingsPerScan.toFixed(1), color: "#aaaaaa" },
                 { label: "Last Scan",        value: myAnalytics.lastScan ? new Date(myAnalytics.lastScan).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—", color: "#555555" },
@@ -1284,9 +1284,9 @@ export default function DashboardPage() {
             )}
             <div style={{ background: "#0D1520", borderRadius: "10px", padding: "20px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: analyticsNarrative ? "16px" : "0" }}>
-                <p style={{ color: "#B8922A", fontSize: "10px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", margin: 0 }}>Corvus Take on My Usage</p>
+                <p style={{ color: "#D8AC32", fontSize: "10px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", margin: 0 }}>Corvus Take on My Usage</p>
                 <button onClick={handleGetMyNarrative} disabled={narrativeLoading}
-                  style={{ background: narrativeLoading ? "rgba(184,146,42,0.06)" : "rgba(184,146,42,0.1)", border: "1px solid rgba(184,146,42,0.25)", borderRadius: "8px", color: "#B8922A", fontSize: "12px", padding: "7px 14px", cursor: narrativeLoading ? "not-allowed" : "pointer" }}>
+                  style={{ background: narrativeLoading ? "rgba(216,172,50,0.06)" : "rgba(216,172,50,0.1)", border: "1px solid rgba(216,172,50,0.25)", borderRadius: "8px", color: "#D8AC32", fontSize: "12px", padding: "7px 14px", cursor: narrativeLoading ? "not-allowed" : "pointer" }}>
                   {narrativeLoading ? "Corvus is thinking…" : "Get Corvus' Take"}
                 </button>
               </div>
@@ -1295,7 +1295,7 @@ export default function DashboardPage() {
             </div>
           </>
         )}
-        {!analyticsLoading && !myAnalytics && <p style={{ color: "#333333", fontSize: "13px", fontStyle: "italic" }}>No scan history yet. Run your first Verdict or Reckoning to start tracking.</p>}
+        {!analyticsLoading && !myAnalytics && <p style={{ color: "#333333", fontSize: "13px", fontStyle: "italic" }}>No scan history yet. Run your first WiFi Health Report or Whole-Home Survey to start tracking.</p>}
       </div>
     );
   }
@@ -1304,16 +1304,16 @@ export default function DashboardPage() {
     if (!isSubType) return (
       <div style={{ ...card, textAlign: "center", padding: "40px" }}>
         <p style={{ color: "#888888", fontSize: "14px" }}>Credit purchases are available for subscription plans.</p>
-        <Link href="/#pricing" style={{ display: "inline-block", marginTop: "16px", background: "#00C2C7", color: "#0D1520", borderRadius: "10px", padding: "10px 24px", fontSize: "14px", fontWeight: 700, textDecoration: "none" }}>View Plans →</Link>
+        <Link href="/#pricing" style={{ display: "inline-block", marginTop: "16px", background: "#22D6DC", color: "#0D1520", borderRadius: "10px", padding: "10px 24px", fontSize: "14px", fontWeight: 700, textDecoration: "none" }}>View Plans →</Link>
       </div>
     );
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
         {/* Buy More Verdicts */}
         <div style={card}>
-          <p style={sectionLabel}>Buy More Verdicts</p>
+          <p style={sectionLabel}>Buy More WiFi Health Reports</p>
           {tier === "murder" ? (
-            <p style={{ color: "#555555", fontSize: "13px" }}>Murder subscribers have unlimited Verdict credits — no purchase needed.</p>
+            <p style={{ color: "#555555", fontSize: "13px" }}>Murder subscribers have unlimited WiFi Health Report credits — no purchase needed.</p>
           ) : (() => {
             const cp = sub?.credit_pricing;
             const sp = cp?.singlePrice ?? 0;
@@ -1327,10 +1327,10 @@ export default function DashboardPage() {
                 {packs.map(({ pack, label, price, savings }) => (
                   <div key={pack} style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "16px", textAlign: "center" }}>
                     <p style={{ color: "#888888", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>{label}</p>
-                    <p style={{ color: "#00C2C7", fontSize: "26px", fontWeight: 800, lineHeight: 1, marginBottom: "4px" }}>${price}</p>
+                    <p style={{ color: "#22D6DC", fontSize: "26px", fontWeight: 800, lineHeight: 1, marginBottom: "4px" }}>${price}</p>
                     {savings ? <p style={{ color: "#4ADE80", fontSize: "10px", marginBottom: "10px" }}>{savings}</p> : <div style={{ height: "18px", marginBottom: "10px" }} />}
                     <button onClick={() => handleBuyCredits(pack)} disabled={buyingCredits !== null}
-                      style={{ width: "100%", background: buyingCredits === pack ? "#0D6E7A" : "#00C2C7", color: "#0D1520", border: "none", borderRadius: "7px", padding: "8px", fontSize: "12px", fontWeight: 700, cursor: buyingCredits !== null ? "not-allowed" : "pointer" }}>
+                      style={{ width: "100%", background: buyingCredits === pack ? "#0D6E7A" : "#22D6DC", color: "#0D1520", border: "none", borderRadius: "7px", padding: "8px", fontSize: "12px", fontWeight: 700, cursor: buyingCredits !== null ? "not-allowed" : "pointer" }}>
                       {buyingCredits === pack ? "Redirecting…" : "Buy Now"}
                     </button>
                   </div>
@@ -1342,9 +1342,9 @@ export default function DashboardPage() {
 
         {/* Buy More Reckonings */}
         <div style={card}>
-          <p style={{ color: "#B8922A", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>Buy More Reckonings</p>
+          <p style={{ color: "#D8AC32", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>Buy More Whole-Home Surveys</p>
           {tier === "murder" ? (
-            <p style={{ color: "#555555", fontSize: "13px" }}>Murder subscribers have unlimited Reckonings — no purchase needed.</p>
+            <p style={{ color: "#555555", fontSize: "13px" }}>Murder subscribers have unlimited Whole-Home Surveys — no purchase needed.</p>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: "12px" }}>
               {(["small","standard","commercial"] as const).map(key => {
@@ -1353,9 +1353,9 @@ export default function DashboardPage() {
                 return available ? (
                   <div key={key} style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "16px", textAlign: "center" }}>
                     <p style={{ color: "#888888", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "capitalize" as const, marginBottom: "6px" }}>{key}</p>
-                    <p style={{ color: "#B8922A", fontSize: "26px", fontWeight: 800, lineHeight: 1, marginBottom: "10px" }}>${prices[key]}</p>
+                    <p style={{ color: "#D8AC32", fontSize: "26px", fontWeight: 800, lineHeight: 1, marginBottom: "10px" }}>${prices[key]}</p>
                     <button onClick={() => handleBuyReckoning(key)} disabled={buyingReckoning !== null}
-                      style={{ width: "100%", background: buyingReckoning === key ? "#0D6E7A" : "#B8922A", color: "#0D1520", border: "none", borderRadius: "7px", padding: "8px", fontSize: "12px", fontWeight: 700, cursor: buyingReckoning !== null ? "not-allowed" : "pointer" }}>
+                      style={{ width: "100%", background: buyingReckoning === key ? "#0D6E7A" : "#D8AC32", color: "#0D1520", border: "none", borderRadius: "7px", padding: "8px", fontSize: "12px", fontWeight: 700, cursor: buyingReckoning !== null ? "not-allowed" : "pointer" }}>
                       {buyingReckoning === key ? "Redirecting…" : "Buy Now"}
                     </button>
                   </div>
@@ -1371,20 +1371,20 @@ export default function DashboardPage() {
         </div>
 
         {/* Honor code */}
-        <div style={{ ...card, background: "rgba(184,146,42,0.06)", border: "1px solid rgba(184,146,42,0.2)" }}>
-          <p style={{ color: "#B8922A", fontSize: "12px" }}>
-            Military or First Responder? Enter <code style={{ fontFamily: "monospace", background: "rgba(184,146,42,0.1)", padding: "2px 6px", borderRadius: "4px" }}>CORVUS-HONOR</code> at checkout for your discount.
+        <div style={{ ...card, background: "rgba(216,172,50,0.06)", border: "1px solid rgba(216,172,50,0.2)" }}>
+          <p style={{ color: "#D8AC32", fontSize: "12px" }}>
+            Military or First Responder? Enter <code style={{ fontFamily: "monospace", background: "rgba(216,172,50,0.1)", padding: "2px 6px", borderRadius: "4px" }}>CORVUS-HONOR</code> at checkout for your discount.
           </p>
         </div>
 
         {/* Mobile app purchase gateway link */}
-        <div style={{ ...card, background: "rgba(0,194,199,0.04)", border: "1px solid rgba(0,194,199,0.15)" }}>
+        <div style={{ ...card, background: "rgba(34,214,220,0.04)", border: "1px solid rgba(34,214,220,0.15)" }}>
           <p style={{ color: "#888888", fontSize: "12px", marginBottom: "8px" }}>
             Purchasing from the mobile app?
           </p>
           <Link
             href={`/get-credits?product=verdict&userId=${storedCode}`}
-            style={{ color: "#00C2C7", fontSize: "13px", fontWeight: 600, textDecoration: "none" }}
+            style={{ color: "#22D6DC", fontSize: "13px", fontWeight: 600, textDecoration: "none" }}
           >
             Open web purchase gateway &rarr;
           </Link>
@@ -1410,7 +1410,7 @@ export default function DashboardPage() {
               <p style={{ ...sectionLabel, marginBottom: 0 }}>Team Seats — {seatInfo.totalSeats} of {seatInfo.maxTotal} maximum</p>
               {tier !== "nest" && seatInfo.totalSeats < seatInfo.maxTotal && (
                 <button onClick={() => { setShowInviteModal(true); setInviteError(""); }}
-                  style={{ background: "rgba(0,194,199,0.1)", border: "1px solid rgba(0,194,199,0.3)", borderRadius: "8px", color: "#00C2C7", fontSize: "12px", fontWeight: 600, padding: "7px 14px", cursor: "pointer" }}>
+                  style={{ background: "rgba(34,214,220,0.1)", border: "1px solid rgba(34,214,220,0.3)", borderRadius: "8px", color: "#22D6DC", fontSize: "12px", fontWeight: 600, padding: "7px 14px", cursor: "pointer" }}>
                   + Invite Team Member
                 </button>
               )}
@@ -1419,7 +1419,7 @@ export default function DashboardPage() {
               <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "20px", textAlign: "center" }}>
                 <p style={{ color: "#ffffff", fontSize: "14px", fontWeight: 600, marginBottom: "8px" }}>Your plan includes 1 seat.</p>
                 <p style={{ color: "#888888", fontSize: "13px", marginBottom: "16px" }}>Upgrade to Flock to add up to 4 additional team members.</p>
-                <a href="/#pricing" style={{ display: "inline-block", background: "#B8922A", color: "#0D1520", borderRadius: "8px", fontSize: "13px", fontWeight: 700, padding: "9px 20px", textDecoration: "none" }}>Upgrade to Flock →</a>
+                <a href="/#pricing" style={{ display: "inline-block", background: "#D8AC32", color: "#0D1520", borderRadius: "8px", fontSize: "13px", fontWeight: 700, padding: "9px 20px", textDecoration: "none" }}>Upgrade to Flock →</a>
               </div>
             ) : (
               <>
@@ -1429,7 +1429,7 @@ export default function DashboardPage() {
                     <span style={{ color: "#555555", fontSize: "12px" }}>{seatInfo.totalSeats} / {seatInfo.maxTotal}</span>
                   </div>
                   <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: "4px", height: "6px" }}>
-                    <div style={{ background: seatInfo.totalSeats >= seatInfo.maxTotal ? "#F87171" : "#00C2C7", borderRadius: "4px", height: "6px", width: `${Math.min(100, (seatInfo.totalSeats / seatInfo.maxTotal) * 100)}%`, transition: "width 0.3s" }} />
+                    <div style={{ background: seatInfo.totalSeats >= seatInfo.maxTotal ? "#F87171" : "#22D6DC", borderRadius: "4px", height: "6px", width: `${Math.min(100, (seatInfo.totalSeats / seatInfo.maxTotal) * 100)}%`, transition: "width 0.3s" }} />
                   </div>
                 </div>
                 {seatInfo.members.length > 0 && (
@@ -1464,7 +1464,7 @@ export default function DashboardPage() {
                       <div style={{ display: "flex", borderRadius: "8px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
                         {(["monthly", "annual"] as const).map(p => (
                           <button key={p} type="button" onClick={() => setSeatBillingPeriod(p)}
-                            style={{ padding: "8px 14px", fontSize: "12px", fontWeight: 600, border: "none", cursor: "pointer", background: seatBillingPeriod === p ? "rgba(0,194,199,0.15)" : "rgba(255,255,255,0.04)", color: seatBillingPeriod === p ? "#00C2C7" : "rgba(255,255,255,0.5)" }}>
+                            style={{ padding: "8px 14px", fontSize: "12px", fontWeight: 600, border: "none", cursor: "pointer", background: seatBillingPeriod === p ? "rgba(34,214,220,0.15)" : "rgba(255,255,255,0.04)", color: seatBillingPeriod === p ? "#22D6DC" : "rgba(255,255,255,0.5)" }}>
                             {p.charAt(0).toUpperCase() + p.slice(1)}
                           </button>
                         ))}
@@ -1472,7 +1472,7 @@ export default function DashboardPage() {
                       {seatBillingPeriod === "annual" && <span style={{ color: "#4ADE80", fontSize: "11px", fontWeight: 600 }}>Save 20%</span>}
                     </div>
                     <button onClick={handleBuySeats} disabled={buyingSeats}
-                      style={{ background: buyingSeats ? "#0D6E7A" : "#00C2C7", color: "#0D1520", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: 700, padding: "10px 20px", cursor: buyingSeats ? "not-allowed" : "pointer" }}>
+                      style={{ background: buyingSeats ? "#0D6E7A" : "#22D6DC", color: "#0D1520", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: 700, padding: "10px 20px", cursor: buyingSeats ? "not-allowed" : "pointer" }}>
                       {buyingSeats ? "Redirecting…" : "Add Seats"}
                     </button>
                   </div>
@@ -1495,7 +1495,7 @@ export default function DashboardPage() {
                   </div>
                   {teamReport && (
                     <button onClick={handleExportCSV}
-                      style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.25)", borderRadius: "8px", color: "#00C2C7", fontSize: "11px", fontWeight: 600, padding: "6px 14px", cursor: "pointer" }}>
+                      style={{ background: "rgba(34,214,220,0.08)", border: "1px solid rgba(34,214,220,0.25)", borderRadius: "8px", color: "#22D6DC", fontSize: "11px", fontWeight: 600, padding: "6px 14px", cursor: "pointer" }}>
                       Export CSV
                     </button>
                   )}
@@ -1507,7 +1507,7 @@ export default function DashboardPage() {
                   <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "8px" }}>
                     {([ ["7d","Last 7 days"], ["30d","Last 30 days"], ["90d","Last 90 days"], ["this_month","This Month"], ["last_month","Last Month"] ] as [string, string][]).map(([iv, lbl]) => (
                       <button key={iv} onClick={() => setTeamReportInterval(iv)}
-                        style={{ padding: "5px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${teamReportInterval === iv ? "rgba(0,194,199,0.5)" : "rgba(255,255,255,0.1)"}`, borderRadius: "20px", cursor: "pointer", background: teamReportInterval === iv ? "rgba(0,194,199,0.12)" : "transparent", color: teamReportInterval === iv ? "#00C2C7" : "rgba(255,255,255,0.45)", transition: "all 0.15s" }}>
+                        style={{ padding: "5px 12px", fontSize: "11px", fontWeight: 600, border: `1px solid ${teamReportInterval === iv ? "rgba(34,214,220,0.5)" : "rgba(255,255,255,0.1)"}`, borderRadius: "20px", cursor: "pointer", background: teamReportInterval === iv ? "rgba(34,214,220,0.12)" : "transparent", color: teamReportInterval === iv ? "#22D6DC" : "rgba(255,255,255,0.45)", transition: "all 0.15s" }}>
                         {lbl}
                       </button>
                     ))}
@@ -1516,7 +1516,7 @@ export default function DashboardPage() {
                     <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
                       {teamAvailableMonths.map((m) => (
                         <button key={m} onClick={() => setTeamReportInterval(m)}
-                          style={{ padding: "4px 10px", fontSize: "10px", fontWeight: 600, border: `1px solid ${teamReportInterval === m ? "rgba(184,146,42,0.5)" : "rgba(255,255,255,0.08)"}`, borderRadius: "20px", cursor: "pointer", background: teamReportInterval === m ? "rgba(184,146,42,0.1)" : "transparent", color: teamReportInterval === m ? "#D4AF37" : "rgba(255,255,255,0.35)" }}>
+                          style={{ padding: "4px 10px", fontSize: "10px", fontWeight: 600, border: `1px solid ${teamReportInterval === m ? "rgba(216,172,50,0.5)" : "rgba(255,255,255,0.08)"}`, borderRadius: "20px", cursor: "pointer", background: teamReportInterval === m ? "rgba(216,172,50,0.1)" : "transparent", color: teamReportInterval === m ? "#D4AF37" : "rgba(255,255,255,0.35)" }}>
                           {new Date(m + "-02").toLocaleString("en-US", { month: "short", year: "2-digit" })}
                         </button>
                       ))}
@@ -1525,7 +1525,7 @@ export default function DashboardPage() {
                 </div>
 
                 <button onClick={() => loadTeamReport(storedCode, teamReportInterval)} disabled={teamReportLoading}
-                  style={{ background: teamReportLoading ? "#0D6E7A" : "#00C2C7", color: "#0D1520", border: "none", borderRadius: "8px", fontSize: "12px", fontWeight: 700, padding: "8px 20px", cursor: teamReportLoading ? "not-allowed" : "pointer", marginBottom: "20px" }}>
+                  style={{ background: teamReportLoading ? "#0D6E7A" : "#22D6DC", color: "#0D1520", border: "none", borderRadius: "8px", fontSize: "12px", fontWeight: 700, padding: "8px 20px", cursor: teamReportLoading ? "not-allowed" : "pointer", marginBottom: "20px" }}>
                   {teamReportLoading ? "Analyzing…" : "Generate Report"}
                 </button>
 
@@ -1535,7 +1535,7 @@ export default function DashboardPage() {
                     {/* Stats row */}
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px", marginBottom: "16px" }}>
                       {[
-                        { label: "Total Scans",      value: String(teamReport.totalTeamScans),       color: "#00C2C7" },
+                        { label: "Total Scans",      value: String(teamReport.totalTeamScans),       color: "#22D6DC" },
                         { label: "Active Members",   value: `${teamReport.memberReports.filter(m => m.totalScans > 0).length} / ${teamReport.memberReports.length}`, color: "#4ADE80" },
                         { label: "Critical Findings",value: String(teamReport.totalCriticalFindings),  color: "#F87171" },
                         { label: "Avg Scans/Member", value: String(teamReport.avgScansPerMember), color: "#FBBF24" },
@@ -1549,7 +1549,7 @@ export default function DashboardPage() {
 
                     {/* Corvus briefing */}
                     {(teamReport.corvusBriefing || teamBriefingLoading) && (
-                      <div style={{ background: "rgba(0,194,199,0.04)", border: "1px solid rgba(0,194,199,0.15)", borderRadius: "10px", padding: "14px 16px", marginBottom: "16px", display: "flex", gap: "12px", alignItems: "flex-start" }}>
+                      <div style={{ background: "rgba(34,214,220,0.04)", border: "1px solid rgba(34,214,220,0.15)", borderRadius: "10px", padding: "14px 16px", marginBottom: "16px", display: "flex", gap: "12px", alignItems: "flex-start" }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src="/corvus_still.png" alt="Corvus" style={{ width: "24px", height: "24px", borderRadius: "50%", flexShrink: 0, marginTop: "2px" }} />
                         {teamBriefingLoading ? (
@@ -1574,7 +1574,7 @@ export default function DashboardPage() {
                               <p style={{ color: "#444444", fontSize: "10px", fontFamily: "monospace", margin: "2px 0 0", letterSpacing: "0.08em" }}>{m.mostUsedProduct !== "—" ? m.mostUsedProduct : ""}</p>
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                              <span style={{ color: "#00C2C7", fontSize: "12px", fontWeight: 600 }}>{m.totalScans} scan{m.totalScans !== 1 ? "s" : ""}</span>
+                              <span style={{ color: "#22D6DC", fontSize: "12px", fontWeight: 600 }}>{m.totalScans} scan{m.totalScans !== 1 ? "s" : ""}</span>
                               {m.criticalFindings > 0 && <span style={{ color: "#F87171", fontSize: "11px" }}>{m.criticalFindings} critical</span>}
                               <span style={{ color: "#555555", fontSize: "11px" }}>{m.lastActive ? new Date(m.lastActive).toLocaleDateString() : "No activity"}</span>
                               <span style={{ color: "#444444", fontSize: "12px" }}>›</span>
@@ -1593,15 +1593,15 @@ export default function DashboardPage() {
                 <p style={{ color: "#888888", fontSize: "13px", marginBottom: "16px", lineHeight: 1.6 }}>See everything your team runs. All reports from all seats flow into a single dashboard.</p>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "18px" }}>
                   {(["monthly", "annual"] as const).map((p) => (
-                    <div key={p} onClick={() => setTeamLeadBilling(p)} style={{ background: teamLeadBilling === p ? "rgba(0,194,199,0.08)" : "#0D1520", border: `1px solid ${teamLeadBilling === p ? "rgba(0,194,199,0.4)" : "rgba(255,255,255,0.08)"}`, borderRadius: "12px", padding: "16px", textAlign: "center", cursor: "pointer" }}>
+                    <div key={p} onClick={() => setTeamLeadBilling(p)} style={{ background: teamLeadBilling === p ? "rgba(34,214,220,0.08)" : "#0D1520", border: `1px solid ${teamLeadBilling === p ? "rgba(34,214,220,0.4)" : "rgba(255,255,255,0.08)"}`, borderRadius: "12px", padding: "16px", textAlign: "center", cursor: "pointer" }}>
                       <p style={{ color: "#888888", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "6px" }}>{p === "monthly" ? "Monthly" : "Annual"}</p>
-                      <p style={{ color: teamLeadBilling === p ? "#00C2C7" : "#ffffff", fontSize: "24px", fontWeight: 800, lineHeight: 1, marginBottom: "4px" }}>{p === "monthly" ? "+$35/mo" : "+$300/yr"}</p>
+                      <p style={{ color: teamLeadBilling === p ? "#22D6DC" : "#ffffff", fontSize: "24px", fontWeight: 800, lineHeight: 1, marginBottom: "4px" }}>{p === "monthly" ? "+$35/mo" : "+$300/yr"}</p>
                       {p === "annual" && <p style={{ color: "#4ADE80", fontSize: "10px" }}>save $120</p>}
                     </div>
                   ))}
                 </div>
                 <button onClick={handleUpgradeTeamLead} disabled={buyingTeamLead}
-                  style={{ background: buyingTeamLead ? "#0D6E7A" : "#00C2C7", color: "#0D1520", border: "none", borderRadius: "10px", fontSize: "13px", fontWeight: 700, padding: "11px 24px", cursor: buyingTeamLead ? "not-allowed" : "pointer" }}>
+                  style={{ background: buyingTeamLead ? "#0D6E7A" : "#22D6DC", color: "#0D1520", border: "none", borderRadius: "10px", fontSize: "13px", fontWeight: 700, padding: "11px 24px", cursor: buyingTeamLead ? "not-allowed" : "pointer" }}>
                   {buyingTeamLead ? "Redirecting…" : "Upgrade to Team Lead →"}
                 </button>
               </>
@@ -1722,7 +1722,7 @@ export default function DashboardPage() {
             <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
               {teamAvailableMonths.map((m) => (
                 <button key={m} onClick={() => setTeamReportInterval(m)}
-                  style={{ padding: "4px 10px", fontSize: "10px", fontWeight: 600, border: `1px solid ${teamReportInterval === m ? "rgba(184,146,42,0.5)" : "rgba(255,255,255,0.08)"}`, borderRadius: "20px", cursor: "pointer", background: teamReportInterval === m ? "rgba(184,146,42,0.1)" : "transparent", color: teamReportInterval === m ? "#D4AF37" : "rgba(255,255,255,0.35)" }}>
+                  style={{ padding: "4px 10px", fontSize: "10px", fontWeight: 600, border: `1px solid ${teamReportInterval === m ? "rgba(216,172,50,0.5)" : "rgba(255,255,255,0.08)"}`, borderRadius: "20px", cursor: "pointer", background: teamReportInterval === m ? "rgba(216,172,50,0.1)" : "transparent", color: teamReportInterval === m ? "#D4AF37" : "rgba(255,255,255,0.35)" }}>
                   {new Date(m + "-02").toLocaleString("en-US", { month: "short", year: "2-digit" })}
                 </button>
               ))}
@@ -1731,7 +1731,7 @@ export default function DashboardPage() {
         </div>
 
         <button onClick={() => loadTeamReport(storedCode, teamReportInterval)} disabled={teamReportLoading}
-          style={{ background: teamReportLoading ? "rgba(184,146,42,0.3)" : "rgba(212,175,55,0.15)", color: teamReportLoading ? "#888888" : "#D4AF37", border: "1px solid rgba(212,175,55,0.35)", borderRadius: "8px", fontSize: "12px", fontWeight: 700, padding: "8px 20px", cursor: teamReportLoading ? "not-allowed" : "pointer", marginBottom: "20px" }}>
+          style={{ background: teamReportLoading ? "rgba(216,172,50,0.3)" : "rgba(212,175,55,0.15)", color: teamReportLoading ? "#888888" : "#D4AF37", border: "1px solid rgba(212,175,55,0.35)", borderRadius: "8px", fontSize: "12px", fontWeight: 700, padding: "8px 20px", cursor: teamReportLoading ? "not-allowed" : "pointer", marginBottom: "20px" }}>
           {teamReportLoading ? "Analyzing…" : "Generate Report"}
         </button>
 
@@ -1836,7 +1836,7 @@ export default function DashboardPage() {
           </div>
           <p style={{ color: "#555555", fontSize: "11px", marginTop: "12px" }}>
             To cancel, contact{" "}
-            <a href="mailto:joshua@oldcrowswireless.com" style={{ color: "#00C2C7" }}>joshua@oldcrowswireless.com</a>.
+            <a href="mailto:joshua@oldcrowswireless.com" style={{ color: "#22D6DC" }}>joshua@oldcrowswireless.com</a>.
           </p>
         </div>
 
@@ -1844,7 +1844,7 @@ export default function DashboardPage() {
         <div style={card}>
           <p style={sectionLabel}>Your Subscriber Code</p>
           <div style={{ background: "#0D1520", border: "1px solid #0D6E7A", borderRadius: "12px", padding: "20px 24px", textAlign: "center", marginBottom: "16px" }}>
-            <p style={{ color: "#00C2C7", fontSize: "10px", fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: "8px" }}>Subscriber Code</p>
+            <p style={{ color: "#22D6DC", fontSize: "10px", fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: "8px" }}>Subscriber Code</p>
             <p style={{ color: "#ffffff", fontSize: "22px", fontWeight: 700, fontFamily: "monospace", letterSpacing: "0.1em" }}>{codeVisible ? storedCode : "••••••••••••••••••••"}</p>
             {codeStats && <p style={{ color: "#555555", fontSize: "11px", marginTop: "8px" }}>Used {codeStats.usageCount} time{codeStats.usageCount !== 1 ? "s" : ""}{codeStats.lastUsed ? ` · last used ${fmtDate(codeStats.lastUsed)}` : ""}</p>}
           </div>
@@ -1852,7 +1852,7 @@ export default function DashboardPage() {
             <button onClick={() => setCodeVisible(v => !v)} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#ffffff", fontSize: "13px", padding: "8px 16px", cursor: "pointer" }}>
               {codeVisible ? "Hide Code" : "Show Code"}
             </button>
-            <button onClick={copyCode} style={{ background: codeCopied ? "rgba(0,194,199,0.12)" : "rgba(255,255,255,0.05)", border: `1px solid ${codeCopied ? "rgba(0,194,199,0.4)" : "rgba(255,255,255,0.1)"}`, borderRadius: "8px", color: codeCopied ? "#00C2C7" : "#ffffff", fontSize: "13px", padding: "8px 16px", cursor: "pointer" }}>
+            <button onClick={copyCode} style={{ background: codeCopied ? "rgba(34,214,220,0.12)" : "rgba(255,255,255,0.05)", border: `1px solid ${codeCopied ? "rgba(34,214,220,0.4)" : "rgba(255,255,255,0.1)"}`, borderRadius: "8px", color: codeCopied ? "#22D6DC" : "#ffffff", fontSize: "13px", padding: "8px 16px", cursor: "pointer" }}>
               {codeCopied ? "Copied!" : "Copy Code"}
             </button>
             {details?.customer_email && (
@@ -1861,7 +1861,7 @@ export default function DashboardPage() {
               </button>
             )}
           </div>
-          <p style={{ color: "#444444", fontSize: "11px" }}>Lost your code? <a href="/recover-code" style={{ color: "#00C2C7" }}>Recover it here</a></p>
+          <p style={{ color: "#444444", fontSize: "11px" }}>Lost your code? <a href="/recover-code" style={{ color: "#22D6DC" }}>Recover it here</a></p>
         </div>
 
         {/* Subscription management */}
@@ -1875,7 +1875,7 @@ export default function DashboardPage() {
                 return <span style={{ color, background: `${color}18`, border: `1px solid ${color}40`, borderRadius: "20px", fontSize: "11px", fontWeight: 700, padding: "3px 10px" }}>{st === "cancelling" ? "Cancelling" : st.charAt(0).toUpperCase() + st.slice(1)}</span>;
               })()}
             </div>
-            {subMgmtFeedback && <div style={{ background: "rgba(0,194,199,0.08)", border: "1px solid rgba(0,194,199,0.25)", borderRadius: "10px", padding: "12px 16px", marginBottom: "16px" }}><p style={{ color: "#00C2C7", fontSize: "13px", margin: 0 }}>{subMgmtFeedback}</p></div>}
+            {subMgmtFeedback && <div style={{ background: "rgba(34,214,220,0.08)", border: "1px solid rgba(34,214,220,0.25)", borderRadius: "10px", padding: "12px 16px", marginBottom: "16px" }}><p style={{ color: "#22D6DC", fontSize: "13px", margin: 0 }}>{subMgmtFeedback}</p></div>}
             {(details.status === "active" || !details.status) && (
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px", padding: "18px" }}>
@@ -1896,7 +1896,7 @@ export default function DashboardPage() {
             {(details.status as string) === "paused" && (
               <div style={{ background: "#0D1520", border: "1px solid rgba(251,191,36,0.25)", borderRadius: "12px", padding: "20px" }}>
                 <p style={{ color: "#FBBF24", fontSize: "13px", fontWeight: 600, marginBottom: "16px" }}>Your subscription is paused.</p>
-                <button onClick={handleReactivate} disabled={subMgmtLoading === "reactivate"} style={{ background: "#00C2C7", color: "#0D1520", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: 700, padding: "10px 20px", cursor: "pointer" }}>
+                <button onClick={handleReactivate} disabled={subMgmtLoading === "reactivate"} style={{ background: "#22D6DC", color: "#0D1520", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: 700, padding: "10px 20px", cursor: "pointer" }}>
                   {subMgmtLoading === "reactivate" ? "Reactivating…" : "Reactivate Now"}
                 </button>
               </div>
@@ -1905,7 +1905,7 @@ export default function DashboardPage() {
               <div style={{ background: "#0D1520", border: "1px solid rgba(248,113,113,0.25)", borderRadius: "12px", padding: "20px" }}>
                 <p style={{ color: "#F87171", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>Your subscription will end on {details.current_period_end ? fmtDate(details.current_period_end) : "your next billing date"}.</p>
                 <p style={{ color: "#888888", fontSize: "12px", marginBottom: "16px" }}>You have full access until then.</p>
-                <button onClick={handleReactivate} disabled={subMgmtLoading === "reactivate"} style={{ background: "rgba(0,194,199,0.1)", border: "1px solid rgba(0,194,199,0.3)", color: "#00C2C7", borderRadius: "8px", fontSize: "13px", fontWeight: 700, padding: "10px 20px", cursor: "pointer" }}>
+                <button onClick={handleReactivate} disabled={subMgmtLoading === "reactivate"} style={{ background: "rgba(34,214,220,0.1)", border: "1px solid rgba(34,214,220,0.3)", color: "#22D6DC", borderRadius: "8px", fontSize: "13px", fontWeight: 700, padding: "10px 20px", cursor: "pointer" }}>
                   {subMgmtLoading === "reactivate" ? "Reactivating…" : "Keep My Subscription"}
                 </button>
               </div>
@@ -1930,8 +1930,8 @@ export default function DashboardPage() {
   }
 
   function renderProducts() {
-    const accentGold   = "#B8922A";
-    const accentCyan   = "#00C2C7";
+    const accentGold   = "#D8AC32";
+    const accentCyan   = "#22D6DC";
 
     interface Product {
       id: string; name: string; tagline: string; description: string;
@@ -1941,35 +1941,35 @@ export default function DashboardPage() {
     const products: Product[] = [
       {
         id: "verdict",
-        name: "Corvus' Verdict",
-        tagline: "Real-time RF intelligence scan",
+        name: "WiFi Health Report",
+        tagline: "Real-time WiFi intelligence scan",
         description: "Instant wireless signal analysis — signal strength, interference sources, channel congestion, and actionable recommendations. Results in seconds.",
         accent: accentCyan,
         link: "/crows-eye",
       },
       {
         id: "reckoning_small",
-        name: "Small Reckoning",
+        name: "Small Whole-Home Survey",
         tagline: "Residential deep-dive survey",
-        description: "Comprehensive RF assessment for homes and small spaces up to ~2,500 sq ft. Includes interference mapping, channel analysis, and full PDF report.",
+        description: "Comprehensive WiFi assessment for homes and small spaces up to ~2,500 sq ft. Includes interference mapping, channel analysis, and full PDF report.",
         requiresTier: "flock",
         accent: accentGold,
         link: "/crows-eye",
       },
       {
         id: "reckoning_standard",
-        name: "Standard Reckoning",
+        name: "Standard Whole-Home Survey",
         tagline: "Commercial baseline survey",
-        description: "Full RF baseline for offices and mid-size commercial spaces. Coverage gap analysis, multi-AP interference, tenant isolation, and remediation plan.",
+        description: "Full WiFi baseline for offices and mid-size commercial spaces. Coverage gap analysis, multi-AP interference, tenant isolation, and remediation plan.",
         requiresTier: "flock",
         accent: accentGold,
         link: "/crows-eye",
       },
       {
         id: "reckoning_commercial",
-        name: "Commercial Reckoning",
-        tagline: "Enterprise RF baseline",
-        description: "Comprehensive enterprise-grade survey covering large facilities, multi-floor deployments, and complex RF environments. Full remediation roadmap included.",
+        name: "Commercial Whole-Home Survey",
+        tagline: "Enterprise WiFi baseline",
+        description: "Comprehensive enterprise-grade survey covering large facilities, multi-floor deployments, and complex WiFi environments. Full remediation roadmap included.",
         requiresTier: "murder",
         accent: "#9B1C1C",
         link: "/crows-eye",
@@ -1977,23 +1977,23 @@ export default function DashboardPage() {
       {
         id: "hybrid",
         name: "Hybrid Survey Mode",
-        tagline: "Cross-structure RF analysis",
+        tagline: "Cross-structure WiFi analysis",
         description: "Analyze wireless environments that span multiple structures or mixed indoor/outdoor zones. Captures inter-building interference and coverage hand-off gaps.",
         accent: accentCyan,
         link: "/crows-eye",
       },
       {
         id: "reckoning_pro",
-        name: "Pro Reckoning",
+        name: "Pro Whole-Home Survey",
         tagline: "Multi-site portfolio analysis",
-        description: "Unified RF assessment across multiple locations with comparative benchmarking, trend identification, and portfolio-level remediation prioritization.",
+        description: "Unified WiFi assessment across multiple locations with comparative benchmarking, trend identification, and portfolio-level remediation prioritization.",
         comingSoon: true,
         accent: accentGold,
       },
       {
         id: "historical",
         name: "Historical Trend Analysis",
-        tagline: "RF environment over time",
+        tagline: "WiFi environment over time",
         description: "Track how your wireless environment evolves across multiple scans. Identify degradation patterns, seasonal interference, and infrastructure drift.",
         comingSoon: true,
         accent: accentCyan,
@@ -2044,14 +2044,14 @@ export default function DashboardPage() {
                 display: "flex", flexDirection: "column", gap: "10px",
               }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: isAvail ? p.accent : isComing ? "#555" : "#B8922A", marginTop: "4px", flexShrink: 0 }} />
+                  <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: isAvail ? p.accent : isComing ? "#555" : "#D8AC32", marginTop: "4px", flexShrink: 0 }} />
                   {isComing && (
                     <span style={{ fontSize: "11px", background: "rgba(255,255,255,0.06)", color: "#888", borderRadius: "20px", padding: "2px 10px", fontFamily: "monospace" }}>
                       🥚 Coming Soon
                     </span>
                   )}
                   {isUpgrade && (
-                    <span style={{ fontSize: "10px", background: "rgba(184,146,42,0.12)", color: accentGold, border: `1px solid rgba(184,146,42,0.3)`, borderRadius: "20px", padding: "2px 10px", fontFamily: "monospace" }}>
+                    <span style={{ fontSize: "10px", background: "rgba(216,172,50,0.12)", color: accentGold, border: `1px solid rgba(216,172,50,0.3)`, borderRadius: "20px", padding: "2px 10px", fontFamily: "monospace" }}>
                       Upgrade Required
                     </span>
                   )}
@@ -2077,7 +2077,7 @@ export default function DashboardPage() {
                 )}
                 {isUpgrade && (
                   <button onClick={() => navigateTab("billing" as AnyTab)}
-                    style={{ marginTop: "auto", background: "rgba(184,146,42,0.1)", border: `1px solid rgba(184,146,42,0.3)`, color: accentGold, borderRadius: "8px", padding: "9px 16px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}>
+                    style={{ marginTop: "auto", background: "rgba(216,172,50,0.1)", border: `1px solid rgba(216,172,50,0.3)`, color: accentGold, borderRadius: "8px", padding: "9px 16px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}>
                     Upgrade Plan →
                   </button>
                 )}
@@ -2117,14 +2117,14 @@ export default function DashboardPage() {
     return (
       <div style={{ maxWidth: 680, display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: 24 }}>
-          <p style={{ color: "#00C2C7", fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Help & Training</p>
+          <p style={{ color: "#22D6DC", fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Help & Training</p>
           <p style={{ color: "#888888", fontSize: "0.78rem", marginBottom: 20, lineHeight: 1.6 }}>
             Corvus will walk you through each section of the dashboard. Select a tour and I&apos;ll guide you step by step with live highlights.
           </p>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {availableTours.map(tour => (
-              <div key={tour.id} style={{ background: "rgba(13,21,32,0.8)", border: "1px solid rgba(0,194,199,0.12)", borderRadius: 12, padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+              <div key={tour.id} style={{ background: "rgba(13,21,32,0.8)", border: "1px solid rgba(34,214,220,0.12)", borderRadius: 12, padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
                 <div style={{ flex: 1 }}>
                   <p style={{ color: "#F4F6F8", fontSize: "0.88rem", fontWeight: 600, marginBottom: 4 }}>
                     🐦‍⬛ {tour.name}
@@ -2136,7 +2136,7 @@ export default function DashboardPage() {
                 </div>
                 <button
                   onClick={() => setActiveTour(tour)}
-                  style={{ padding: "8px 20px", background: "rgba(0,194,199,0.1)", border: "1px solid rgba(0,194,199,0.3)", borderRadius: 8, color: "#00C2C7", fontFamily: "'Share Tech Mono', monospace", fontSize: "0.62rem", letterSpacing: "0.08em", cursor: "pointer", transition: "all 0.2s", flexShrink: 0 }}
+                  style={{ padding: "8px 20px", background: "rgba(34,214,220,0.1)", border: "1px solid rgba(34,214,220,0.3)", borderRadius: 8, color: "#22D6DC", fontFamily: "'Share Tech Mono', monospace", fontSize: "0.62rem", letterSpacing: "0.08em", cursor: "pointer", transition: "all 0.2s", flexShrink: 0 }}
                 >
                   Start Tour →
                 </button>
@@ -2149,10 +2149,10 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <div style={{ background: "rgba(184,146,42,0.05)", border: "1px solid rgba(184,146,42,0.15)", borderRadius: 12, padding: "14px 18px" }}>
-          <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.6rem", color: "#B8922A", letterSpacing: "0.12em", marginBottom: 6 }}>QUESTIONS?</p>
+        <div style={{ background: "rgba(216,172,50,0.05)", border: "1px solid rgba(216,172,50,0.15)", borderRadius: 12, padding: "14px 18px" }}>
+          <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.6rem", color: "#D8AC32", letterSpacing: "0.12em", marginBottom: 6 }}>QUESTIONS?</p>
           <p style={{ color: "#888888", fontSize: "0.75rem", lineHeight: 1.6 }}>
-            Tours cover the UI. For RF questions, technical analysis, or help interpreting your scan results — use the <strong style={{ color: "#F4F6F8" }}>Ask Corvus</strong> tab. I&apos;m there.
+            Tours cover the UI. For WiFi questions, technical analysis, or help interpreting your scan results — use the <strong style={{ color: "#F4F6F8" }}>Ask Corvus</strong> tab. I&apos;m there.
           </p>
         </div>
       </div>
@@ -2163,13 +2163,13 @@ export default function DashboardPage() {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
         <div style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "28px" }}>
-          <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>Platform Tour</p>
+          <p style={{ color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>Platform Tour</p>
           <p style={{ color: "#888888", fontSize: "13px", lineHeight: 1.6, marginBottom: "20px" }}>
             Let Corvus walk you through everything your Fledgling subscription includes — and what&apos;s waiting for you when you upgrade.
           </p>
           <button
             onClick={() => setAutoTourLevel("nest")}
-            style={{ background: "rgba(0,194,199,0.1)", border: "1px solid rgba(0,194,199,0.3)", borderRadius: "10px", color: "#00C2C7", fontSize: "13px", fontWeight: 700, padding: "12px 24px", cursor: "pointer" }}
+            style={{ background: "rgba(34,214,220,0.1)", border: "1px solid rgba(34,214,220,0.3)", borderRadius: "10px", color: "#22D6DC", fontSize: "13px", fontWeight: 700, padding: "12px 24px", cursor: "pointer" }}
           >
             Start Corvus Tour →
           </button>
@@ -2186,14 +2186,14 @@ export default function DashboardPage() {
     if (fledglingVerdictUsed) {
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          <div style={{ background: "rgba(184,146,42,0.06)", border: "1px solid rgba(184,146,42,0.2)", borderRadius: "16px", padding: "32px", textAlign: "center" }}>
-            <p style={{ color: "#B8922A", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>FREE VERDICT USED</p>
+          <div style={{ background: "rgba(216,172,50,0.06)", border: "1px solid rgba(216,172,50,0.2)", borderRadius: "16px", padding: "32px", textAlign: "center" }}>
+            <p style={{ color: "#D8AC32", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>FREE WIFI HEALTH REPORT USED</p>
             <p style={{ color: "#F4F6F8", fontSize: "15px", fontStyle: "italic", lineHeight: 1.7, marginBottom: "24px" }}>&ldquo;{verdictLine}&rdquo;</p>
             <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxWidth: "360px", margin: "0 auto" }}>
-              <a href="/#pricing" style={{ display: "block", background: "#00C2C7", color: "#0D1520", borderRadius: "10px", padding: "12px 20px", fontSize: "14px", fontWeight: 700, textDecoration: "none", textAlign: "center" }}>
+              <a href="/#pricing" style={{ display: "block", background: "#22D6DC", color: "#0D1520", borderRadius: "10px", padding: "12px 20px", fontSize: "14px", fontWeight: 700, textDecoration: "none", textAlign: "center" }}>
                 Upgrade to Nest — $20/mo →
               </a>
-              <p style={{ color: "#555555", fontSize: "12px" }}>3 Verdicts/mo · Small Reckonings · Full platform access</p>
+              <p style={{ color: "#555555", fontSize: "12px" }}>3 WiFi Health Reports/mo · Small Whole-Home Surveys · Full platform access</p>
             </div>
           </div>
         </div>
@@ -2201,24 +2201,24 @@ export default function DashboardPage() {
     }
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-        <div style={{ background: "rgba(184,146,42,0.06)", border: "1px solid rgba(184,146,42,0.3)", borderRadius: "16px", padding: "28px" }}>
-          <p style={{ color: "#B8922A", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>YOUR FREE VERDICT</p>
+        <div style={{ background: "rgba(216,172,50,0.06)", border: "1px solid rgba(216,172,50,0.3)", borderRadius: "16px", padding: "28px" }}>
+          <p style={{ color: "#D8AC32", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>YOUR FREE WIFI HEALTH REPORT</p>
           <p style={{ color: "#F4F6F8", fontSize: "14px", fontStyle: "italic", lineHeight: 1.7, marginBottom: "20px" }}>&ldquo;{verdictLine}&rdquo;</p>
-          <div style={{ background: "rgba(0,194,199,0.06)", border: "1px solid rgba(0,194,199,0.15)", borderRadius: "10px", padding: "16px 18px", marginBottom: "20px" }}>
-            <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>How to use it</p>
+          <div style={{ background: "rgba(34,214,220,0.06)", border: "1px solid rgba(34,214,220,0.15)", borderRadius: "10px", padding: "16px 18px", marginBottom: "20px" }}>
+            <p style={{ color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>How to use it</p>
             <ol style={{ color: "#aaaaaa", fontSize: "13px", margin: 0, paddingLeft: "18px", lineHeight: 1.8 }}>
               <li>Download Crow&apos;s Eye on Android (Google Play)</li>
               <li>Open the app and tap Scan — Corvus handles the rest automatically</li>
-              <li>Enter your subscriber code in the app to unlock your free full Verdict</li>
+              <li>Enter your subscriber code in the app to unlock your free full WiFi Health Report</li>
             </ol>
           </div>
-          <a href="/crows-eye" onClick={handleGoToCrowsEye} style={{ display: "inline-block", background: "#B8922A", color: "#0D1520", borderRadius: "10px", padding: "12px 24px", fontSize: "14px", fontWeight: 700, textDecoration: "none" }}>
+          <a href="/crows-eye" onClick={handleGoToCrowsEye} style={{ display: "inline-block", background: "#D8AC32", color: "#0D1520", borderRadius: "10px", padding: "12px 24px", fontSize: "14px", fontWeight: 700, textDecoration: "none" }}>
             Go to Crow&apos;s Eye →
           </a>
         </div>
-        <div style={{ background: "rgba(0,194,199,0.04)", border: "1px solid rgba(0,194,199,0.1)", borderRadius: "12px", padding: "16px 20px" }}>
+        <div style={{ background: "rgba(34,214,220,0.04)", border: "1px solid rgba(34,214,220,0.1)", borderRadius: "12px", padding: "16px 20px" }}>
           <p style={{ color: "#555555", fontSize: "12px", lineHeight: 1.6 }}>
-            Ready for more? <a href="/#pricing" style={{ color: "#00C2C7" }}>Upgrade to Nest</a> for 3 Verdicts/month, Small Reckonings, and the full Corvus platform.
+            Ready for more? <a href="/#pricing" style={{ color: "#22D6DC" }}>Upgrade to Nest</a> for 3 WiFi Health Reports/month, Small Whole-Home Surveys, and the full Corvus platform.
           </p>
         </div>
       </div>
@@ -2289,7 +2289,7 @@ export default function DashboardPage() {
 
       {/* Admin impersonation banner */}
       {isAdminView && (
-        <div style={{ background: "#B8922A", color: "#0D1520", borderRadius: "12px", padding: "14px 20px", marginBottom: "24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+        <div style={{ background: "#D8AC32", color: "#0D1520", borderRadius: "12px", padding: "14px 20px", marginBottom: "24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
           <p style={{ fontWeight: 700, fontSize: "14px", margin: 0 }}>
             🔐 ADMIN VIEW — Viewing as <span style={{ fontFamily: "monospace", letterSpacing: "0.08em" }}>{storedCode}</span>
           </p>
@@ -2302,13 +2302,13 @@ export default function DashboardPage() {
 
       {/* Fledgling Banner */}
       {isFledgling && (
-        <div style={{ background: "linear-gradient(135deg, #7A5A1A 0%, #B8922A 50%, #7A5A1A 100%)", borderRadius: "12px", padding: "16px 24px", marginBottom: "24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+        <div style={{ background: "linear-gradient(135deg, #7A5A1A 0%, #D8AC32 50%, #7A5A1A 100%)", borderRadius: "12px", padding: "16px 24px", marginBottom: "24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
           <div>
             <p style={{ color: "#0D1520", fontSize: "13px", fontWeight: 800, letterSpacing: "0.1em", margin: "0 0 4px" }}>
               🐦 FLEDGLING — {details?.customer_name ?? "Subscriber"}
             </p>
             <p style={{ color: "rgba(13,21,32,0.7)", fontSize: "12px", margin: 0 }}>
-              {fledglingVerdictUsed ? "Free Verdict used · Upgrade to Nest for more" : "1 free Verdict ready · Ask Corvus anything"}
+              {fledglingVerdictUsed ? "Free WiFi Health Report used · Upgrade to Nest for more" : "1 free WiFi Health Report ready · Ask Corvus anything"}
             </p>
           </div>
           <span style={{ color: "#0D1520", fontSize: "11px", fontWeight: 700, background: "rgba(0,0,0,0.12)", borderRadius: "20px", padding: "4px 12px" }}>FLEDGLING</span>
@@ -2317,12 +2317,12 @@ export default function DashboardPage() {
 
       {/* VIP Gold Banner */}
       {isVIP && (
-        <div style={{ background: "linear-gradient(135deg, #B8922A 0%, #D4AF37 50%, #B8922A 100%)", borderRadius: "12px", padding: "18px 24px", marginBottom: "24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+        <div style={{ background: "linear-gradient(135deg, #D8AC32 0%, #D4AF37 50%, #D8AC32 100%)", borderRadius: "12px", padding: "18px 24px", marginBottom: "24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
           <div>
             <p style={{ color: "#0D1520", fontSize: "13px", fontWeight: 800, letterSpacing: "0.1em", margin: "0 0 4px" }}>
               👑 VIP ACCESS — {sub?.vip_name} · {sub?.vip_title}
             </p>
-            <p style={{ color: "rgba(13,21,32,0.7)", fontSize: "12px", margin: 0 }}>{sub?.vip_company} · Unlimited Verdicts · Unlimited Reckonings · Team Lead</p>
+            <p style={{ color: "rgba(13,21,32,0.7)", fontSize: "12px", margin: 0 }}>{sub?.vip_company} · Unlimited WiFi Health Reports · Unlimited Whole-Home Surveys · Team Lead</p>
           </div>
           <span style={{ color: "#0D1520", fontSize: "11px", fontWeight: 700, background: "rgba(0,0,0,0.12)", borderRadius: "20px", padding: "4px 12px" }}>FOUNDING MEMBER</span>
         </div>
@@ -2338,8 +2338,8 @@ export default function DashboardPage() {
             <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
               <span style={{ color: "#ffffff", fontSize: "18px", fontWeight: 700 }}>{sub?.customer_name ?? details?.customer_name ?? "Subscriber"}</span>
               {!isVIP && <span style={{ background: tc.color, color: tc.textColor, fontSize: "10px", fontWeight: 800, letterSpacing: "0.18em", padding: "3px 10px", borderRadius: "20px" }}>{tc.label}</span>}
-              {isVIP && <span style={{ background: "linear-gradient(90deg, #B8922A, #D4AF37)", color: "#0D1520", fontSize: "10px", fontWeight: 800, letterSpacing: "0.18em", padding: "3px 10px", borderRadius: "20px" }}>VIP</span>}
-              {!isSubType && !isVIP && (sub?.type === "admin" || sub?.type === "founder") && <span style={{ background: "rgba(184,146,42,0.15)", color: "#B8922A", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", padding: "3px 8px", borderRadius: "20px", border: "1px solid rgba(184,146,42,0.3)" }}>{sub.type.toUpperCase()} ACCESS</span>}
+              {isVIP && <span style={{ background: "linear-gradient(90deg, #D8AC32, #D4AF37)", color: "#0D1520", fontSize: "10px", fontWeight: 800, letterSpacing: "0.18em", padding: "3px 10px", borderRadius: "20px" }}>VIP</span>}
+              {!isSubType && !isVIP && (sub?.type === "admin" || sub?.type === "founder") && <span style={{ background: "rgba(216,172,50,0.15)", color: "#D8AC32", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", padding: "3px 8px", borderRadius: "20px", border: "1px solid rgba(216,172,50,0.3)" }}>{sub.type.toUpperCase()} ACCESS</span>}
             </div>
             <p style={{ color: "#888888", fontSize: "12px", marginTop: "2px" }}>Corvus Subscriber Dashboard</p>
           </div>
@@ -2348,7 +2348,7 @@ export default function DashboardPage() {
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>ID</span>
             <span style={{ color: "#ffffff", fontSize: "13px", fontFamily: "monospace", letterSpacing: "0.08em" }}>{codeVisible ? storedCode : "••••••••••••••"}</span>
-            <button onClick={() => setCodeVisible(v => !v)} style={{ background: "none", border: "none", color: "#00C2C7", fontSize: "11px", cursor: "pointer", padding: "2px 6px" }}>{codeVisible ? "Hide" : "Show"}</button>
+            <button onClick={() => setCodeVisible(v => !v)} style={{ background: "none", border: "none", color: "#22D6DC", fontSize: "11px", cursor: "pointer", padding: "2px 6px" }}>{codeVisible ? "Hide" : "Show"}</button>
           </div>
           <AudioToggle />
           <button onClick={handleLogout} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#888888", fontSize: "12px", padding: "6px 14px", cursor: "pointer" }}>Sign Out</button>
@@ -2385,7 +2385,7 @@ export default function DashboardPage() {
             <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "520px", maxHeight: "80vh", overflowY: "auto" }}>
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "20px" }}>
                 <div>
-                  <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", margin: "0 0 4px" }}>Member Detail</p>
+                  <p style={{ color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", margin: "0 0 4px" }}>Member Detail</p>
                   <p style={{ color: "#ffffff", fontSize: "18px", fontWeight: 700, margin: 0 }}>{m.codeMasked}</p>
                   <p style={{ color: "#444444", fontSize: "11px", fontFamily: "monospace", margin: "4px 0 0", letterSpacing: "0.08em" }}>Last active: {m.lastActive ? new Date(m.lastActive).toLocaleDateString() : "Never"}</p>
                 </div>
@@ -2397,7 +2397,7 @@ export default function DashboardPage() {
               {/* Stats */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", marginBottom: "20px" }}>
                 {[
-                  { label: "Scans",        value: String(m.totalScans),          color: "#00C2C7" },
+                  { label: "Scans",        value: String(m.totalScans),          color: "#22D6DC" },
                   { label: "Critical",     value: String(m.criticalFindings),     color: "#F87171" },
                   { label: "Avg/Scan",     value: String(m.avgFindingsPerScan),   color: "#FBBF24" },
                 ].map((s) => (
@@ -2426,7 +2426,7 @@ export default function DashboardPage() {
                   <p style={{ color: "#555555", fontSize: "10px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "8px" }}>Locations ({m.locationsScanned.length})</p>
                   <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
                     {m.locationsScanned.slice(0, 5).map((loc) => (
-                      <span key={loc} style={{ background: "rgba(0,194,199,0.06)", border: "1px solid rgba(0,194,199,0.15)", borderRadius: "20px", color: "#00C2C7", fontSize: "11px", padding: "3px 10px" }}>
+                      <span key={loc} style={{ background: "rgba(34,214,220,0.06)", border: "1px solid rgba(34,214,220,0.15)", borderRadius: "20px", color: "#22D6DC", fontSize: "11px", padding: "3px 10px" }}>
                         {loc}
                       </span>
                     ))}
@@ -2446,7 +2446,7 @@ export default function DashboardPage() {
       {showInviteModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
           <div style={{ background: "#0D1520", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "420px" }}>
-            <p style={{ color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>Invite Team Member</p>
+            <p style={{ color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "16px" }}>Invite Team Member</p>
             <div style={{ marginBottom: "12px" }}>
               <label style={{ color: "#888888", fontSize: "12px", display: "block", marginBottom: "6px" }}>Name</label>
               <input type="text" value={inviteName} onChange={e => setInviteName(e.target.value)} placeholder="Jane Smith" autoComplete="off" autoCorrect="off" spellCheck={false} style={inputStyle} />
@@ -2459,7 +2459,7 @@ export default function DashboardPage() {
             <p style={{ color: "#555555", fontSize: "11px", marginBottom: "16px", lineHeight: 1.6 }}>A personal access code will be generated and sent to their email.</p>
             <div style={{ display: "flex", gap: "10px" }}>
               <button onClick={handleInviteMember} disabled={inviting || !inviteName.trim() || !inviteEmail.trim()}
-                style={{ flex: 1, background: inviting ? "#0D6E7A" : "#00C2C7", color: "#0D1520", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: 700, padding: "10px", cursor: inviting || !inviteName.trim() || !inviteEmail.trim() ? "not-allowed" : "pointer", opacity: !inviteName.trim() || !inviteEmail.trim() ? 0.5 : 1 }}>
+                style={{ flex: 1, background: inviting ? "#0D6E7A" : "#22D6DC", color: "#0D1520", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: 700, padding: "10px", cursor: inviting || !inviteName.trim() || !inviteEmail.trim() ? "not-allowed" : "pointer", opacity: !inviteName.trim() || !inviteEmail.trim() ? 0.5 : 1 }}>
                 {inviting ? "Sending…" : "Send Invite"}
               </button>
               <button onClick={() => { setShowInviteModal(false); setInviteError(""); setInviteName(""); setInviteEmail(""); }}

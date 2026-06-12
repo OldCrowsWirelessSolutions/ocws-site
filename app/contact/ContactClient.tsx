@@ -64,7 +64,7 @@ export default function ContactClient() {
     <main style={{ background: "#0D1520", minHeight: "100vh" }}>
       <section className="ocws-container py-16">
         <div className="max-w-2xl">
-          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#00C2C7", letterSpacing: "0.18em" }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#22D6DC", letterSpacing: "0.18em" }}>
             Old Crows Wireless Solutions
           </p>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Get in Touch</h1>
@@ -91,7 +91,7 @@ export default function ContactClient() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1 text-white">
-                  Full name <span style={{ color: "#00C2C7" }}>*</span>
+                  Full name <span style={{ color: "#22D6DC" }}>*</span>
                 </label>
                 <input
                   value={name}
@@ -103,7 +103,7 @@ export default function ContactClient() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1 text-white">
-                  Email <span style={{ color: "#00C2C7" }}>*</span>
+                  Email <span style={{ color: "#22D6DC" }}>*</span>
                 </label>
                 <input
                   value={email}
@@ -147,7 +147,7 @@ export default function ContactClient() {
 
             <div>
               <label className="block text-sm font-medium mb-1 text-white">
-                Message <span style={{ color: "#00C2C7" }}>*</span>
+                Message <span style={{ color: "#22D6DC" }}>*</span>
               </label>
               <textarea
                 value={message}
@@ -200,7 +200,7 @@ export default function ContactClient() {
                 type="submit"
                 disabled={status === "sending"}
                 className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold disabled:opacity-60 transition"
-                style={{ background: "#00C2C7", color: "#0D1520" }}
+                style={{ background: "#22D6DC", color: "#0D1520" }}
               >
                 {status === "sending" ? "Sending…" : "Send message"}
               </button>

@@ -58,7 +58,7 @@ export default function RecoverCodePage() {
             </div>
             <div style={{ textAlign: "left" }}>
               <p style={{ color: "#ffffff", fontSize: "16px", fontWeight: 700, margin: 0 }}>Recover Your Subscriber Code</p>
-              <p style={{ color: "#00C2C7", fontSize: "11px", margin: 0 }}>Old Crows Wireless Solutions</p>
+              <p style={{ color: "#22D6DC", fontSize: "11px", margin: 0 }}>Old Crows Wireless Solutions</p>
             </div>
           </div>
           <p style={{ color: "#888888", fontSize: "13px", lineHeight: 1.6 }}>
@@ -77,12 +77,12 @@ export default function RecoverCodePage() {
           {status === "sent" ? (
             <div style={{ textAlign: "center", padding: "16px 0" }}>
               <p style={{ fontSize: "32px", marginBottom: "12px" }}>🐦‍⬛</p>
-              <p style={{ color: "#00C2C7", fontSize: "16px", fontWeight: 700, marginBottom: "8px" }}>
+              <p style={{ color: "#22D6DC", fontSize: "16px", fontWeight: 700, marginBottom: "8px" }}>
                 Check your email.
               </p>
               <p style={{ color: "#888888", fontSize: "13px", lineHeight: 1.6 }}>
                 Your code is on its way. If you don&rsquo;t see it within a few minutes, check your spam folder or contact{" "}
-                <a href="mailto:joshua@oldcrowswireless.com" style={{ color: "#00C2C7" }}>
+                <a href="mailto:joshua@oldcrowswireless.com" style={{ color: "#22D6DC" }}>
                   joshua@oldcrowswireless.com
                 </a>.
               </p>
@@ -93,7 +93,7 @@ export default function RecoverCodePage() {
                   alignItems: "center",
                   justifyContent: "center",
                   marginTop: "24px",
-                  background: "#00C2C7",
+                  background: "#22D6DC",
                   color: "#0D1520",
                   borderRadius: "10px",
                   padding: "10px 24px",
@@ -109,7 +109,7 @@ export default function RecoverCodePage() {
             <form onSubmit={handleSubmit}>
               <label style={{
                 display: "block",
-                color: "#00C2C7",
+                color: "#22D6DC",
                 fontSize: "11px",
                 fontWeight: 700,
                 letterSpacing: "0.15em",
@@ -155,7 +155,7 @@ export default function RecoverCodePage() {
                 style={{
                   width: "100%",
                   padding: "12px",
-                  background: status === "sending" || !email.trim() ? "#0D6E7A" : "#00C2C7",
+                  background: status === "sending" || !email.trim() ? "#0D6E7A" : "#22D6DC",
                   color: "#0D1520",
                   borderRadius: "10px",
                   border: "none",
@@ -173,9 +173,9 @@ export default function RecoverCodePage() {
 
         <p style={{ textAlign: "center", marginTop: "20px", fontSize: "12px", color: "#555555" }}>
           Have your code?{" "}
-          <Link href="/dashboard" style={{ color: "#00C2C7" }}>Go to Dashboard</Link>
+          <Link href="/dashboard" style={{ color: "#22D6DC" }}>Go to Dashboard</Link>
           {" · "}
-          <Link href="/crows-eye" style={{ color: "#00C2C7" }}>Crow&rsquo;s Eye</Link>
+          <Link href="/crows-eye" style={{ color: "#22D6DC" }}>Crow&rsquo;s Eye</Link>
         </p>
       </div>
     </div>

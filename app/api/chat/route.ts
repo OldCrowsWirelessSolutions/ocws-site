@@ -15,10 +15,23 @@ import {
   incrementMessageCount,
 } from "@/lib/chat";
 import { getReportsForCode, type ReportRecord } from "@/lib/reports";
-import { validateSubscriptionId } from "@/lib/subscriptions";
+import { validateSubscriptionId, type SubscriptionTier, type ValidationResult } from "@/lib/subscriptions";
+import { consumeChatMessage, chatAccountKey } from "@/lib/chat-quota";
 import { recordChatEvent } from "@/lib/analytics";
 
 const FREE_MESSAGE_LIMIT = 3;
+
+// v28 parity with /api/mobile/corvus-chat: chat runs on Haiku 4.5. Web chat is
+// short-form Q&A and product questions — Haiku's reasoning depth is sufficient
+// and we pay ~75% less per call than Sonnet. The big knowledge-base prompt is
+// served from Anthropic's prompt cache (see CACHED_SYSTEM below), so input cost
+// drops ~90% on cache hits on top of the model swap.
+// To revert: change to "claude-sonnet-4-6", redeploy. ~90 seconds.
+const MODEL_ID = "claude-haiku-4-5-20251001";
+
+// v28 parity: history cap. Each prior turn rides on every request; 8 messages
+// (4 exchanges) is enough continuity for support Q&A.
+const HISTORY_MAX_MESSAGES = 8;
 
 function buildReportContext(reports: ReportRecord[]): string {
   return reports.map((r, i) => {
@@ -31,32 +44,59 @@ Summary: ${data?.corvus_summary || 'No summary'}`;
   }).join('\n\n');
 }
 
-type AccessLevel = "unlimited" | "free" | "denied";
+// "unlimited" — Murder + all bypass codes (admin/founder/vip/subordinate): no metering.
+// "metered"   — fledgling/nest/flock subscriptions: monthly pool + purchased top-ups.
+// "free"      — promo/trial codes: the legacy 3-message limit (subscribe to continue).
+type AccessBand = "unlimited" | "metered" | "free" | "denied";
+// `validation` carries the ValidationResult getAccess already fetched, so the
+// caller can reuse it (business-intel scope, account-key email) WITHOUT calling
+// validateSubscriptionId again. That second call matters: for demo tokens it
+// runs validateDemoToken, which increments the token's useCount — re-validating
+// per message would silently burn a demo client's limited uses. Bypass codes
+// (incl. CORVUS-DEMO-) short-circuit before any validate call and carry no
+// validation, so demo chat consumes zero uses.
+interface Access { band: AccessBand; tier?: SubscriptionTier; validation?: ValidationResult }
 
-async function getAccessLevel(code: string): Promise<AccessLevel> {
-  if (!code) return "denied";
+async function getAccess(code: string): Promise<Access> {
+  if (!code) return { band: "denied" };
   const upper = code.toUpperCase();
 
-  // Admin / founder / VIP / lifetime / subordinate bypass codes — all get unlimited
+  // Admin / founder / VIP / lifetime / subordinate / DEMO bypass codes — all
+  // unlimited, and resolved WITHOUT validateSubscriptionId (so demo tokens
+  // don't burn a use here).
   const { isKnownBypassCode } = await import("@/lib/code-resolver");
-  if (isKnownBypassCode(upper)) return "unlimited";
-  if (process.env.OCWS_ADMIN_SECRET && code === process.env.OCWS_ADMIN_SECRET) return "unlimited";
+  if (isKnownBypassCode(upper)) return { band: "unlimited" };
+  if (process.env.OCWS_ADMIN_SECRET && code === process.env.OCWS_ADMIN_SECRET) return { band: "unlimited" };
 
   try {
-    const result = await validateSubscriptionId(upper);
-    if (!result.valid) return "denied";
+    const validation = await validateSubscriptionId(upper);
+    if (!validation.valid) return { band: "denied", validation };
 
-    if (result.type === "vip")          return "unlimited";
-    if (result.type === "subscription") return "unlimited";
-    if (result.type === "founder")      return "unlimited";
-    if (result.type === "admin")        return "unlimited";
-    if (result.type === "promo")        return "free";
+    if (validation.type === "subscription") {
+      const tier = validation.tier ?? "nest";
+      // Murder is unlimited; every other tier is metered with top-ups. Carry
+      // validation either way so murder owners keep their business-intel scope.
+      return tier === "murder"
+        ? { band: "unlimited", tier, validation }
+        : { band: "metered", tier, validation };
+    }
+    if (validation.type === "vip" || validation.type === "founder" || validation.type === "admin") {
+      return { band: "unlimited", validation };
+    }
+    if (validation.type === "promo") return { band: "free", validation };
 
-    return "denied";
+    return { band: "denied", validation };
   } catch {
-    return "denied";
+    return { band: "denied" };
   }
 }
+
+// Top-up options surfaced to a metered subscriber who has drained their pool.
+const CHAT_TOPUPS = [
+  { product: "chat-pack-25",  label: "+25 questions",  price: 4 },
+  { product: "chat-pack-100", label: "+100 questions", price: 12 },
+  { product: "chat-pass-day", label: "Day Pass (24h)", price: 9 },
+];
 
 export async function POST(req: NextRequest) {
   try {
@@ -80,19 +120,44 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Access check ─────────────────────────────────────────────────────────
-    const access = await getAccessLevel(code);
-    if (access === "denied") {
+    const access = await getAccess(code);
+    if (access.band === "denied") {
       return NextResponse.json({ error: "Invalid or inactive code" }, { status: 401 });
     }
 
-    if (access === "free") {
+    // Promo/trial: legacy 3-message cap → subscribe to continue.
+    if (access.band === "free") {
       const count = await getMessageCount(code);
       if (count >= FREE_MESSAGE_LIMIT) {
         return NextResponse.json({
           limited: true,
-          message: "You've used your 3 free messages. Subscribe from $20/mo for unlimited access to Corvus.",
+          message: "You've used your 3 free messages. Subscribe from $10/mo for Corvus access.",
           messagesRemaining: 0,
         });
+      }
+    }
+
+    // Metered subscribers: consume from pass → monthly pool → purchased balance.
+    // Consume up front (cheapest, race-free); a rare downstream failure burns one
+    // question, invisible against a 100–1000 pool. Murder never reaches here.
+    // Key top-ups by the canonical account identity (subscription email),
+    // normalized, so a pack/pass bought on mobile (keyed by login email) works
+    // here too and vice-versa.
+    const accountKey = chatAccountKey(access.validation?.customer_email, code);
+    let meteredRemaining: number | undefined;
+    if (access.band === "metered") {
+      const consumed = await consumeChatMessage(accountKey, access.tier!);
+      if (!consumed.allowed) {
+        const resetLabel = new Date(consumed.resetsOn).toLocaleDateString("en-US", { month: "long", day: "numeric" });
+        return NextResponse.json({
+          limited: true,
+          message: `That's the last of this month's Corvus questions — they reset ${resetLabel}. Grab a pack or a Day Pass and we keep going. Or wait it out. I'll be here, judging your channel selection.`,
+          messagesRemaining: 0,
+          topups: CHAT_TOPUPS,
+        });
+      }
+      if (consumed.source === "monthly" && consumed.monthlyRemaining >= 0) {
+        meteredRemaining = consumed.monthlyRemaining;
       }
     }
 
@@ -127,25 +192,39 @@ export async function POST(req: NextRequest) {
     // Resolve V2 business intel scope. V1 subscription codes never produce
     // 'owner' or 'teamLead' tiers, so scope is always 'none' for V1 users and
     // the business intel block is empty.
-    const subForScope = await validateSubscriptionId(code).catch(() => null);
+    // Reuse the validation getAccess already fetched — do NOT call
+    // validateSubscriptionId again. Bypass codes (incl. demo tokens) carry no
+    // validation here, so demo tokens consume zero uses per message.
+    const subForScope = access.validation ?? null;
     const businessIntelScope = resolveBusinessIntelScope({
       tier: subForScope?.v2_tier ?? subForScope?.tier,
       team_management_enabled: subForScope?.team_management_enabled,
     });
     console.log(`[Corvus] business_intel_scope=${businessIntelScope} code=${code.slice(0, 8)}`);
 
+    // Prompt caching: the base prompt (persona + RF knowledge base + business
+    // intel block) is identical across requests for a given scope, so it goes
+    // in its own system block marked with cache_control. Everything per-request
+    // (report context, scan history, comfort level, holiday, date, attachment
+    // capabilities) goes in a SECOND, uncached block — caching is a prefix
+    // match, so dynamic bytes must come after the cache breakpoint or nothing
+    // ever hits. The knowledge base only changes on admin updates, which just
+    // triggers one cache rewrite.
     const systemPromptBase = await buildCorvusSystemPrompt(businessIntelScope);
-    let systemPrompt = systemPromptBase + reportContextInjection + contextInjection + comfortNote + holidayNote + todayNote;
+    let dynamicSystem = reportContextInjection + contextInjection + comfortNote + holidayNote + todayNote;
 
-    // Tier-based attachment capabilities
+    // Tier-based attachment capabilities. Reuse the validation getAccess already
+    // fetched — never re-validate (that would burn a demo-token use). Unlimited
+    // bands (Murder + bypass codes like demo/vip/founder) get full capabilities;
+    // metered tiers gate on their tier; promo/free defaults to fledgling.
     if (attachments && attachments.length > 0) {
-      const { validateSubscriptionId } = await import("@/lib/subscriptions");
-      const subResult = await validateSubscriptionId(code).catch(() => null);
-      const attachmentTier = subResult?.tier || 'fledgling';
-      const canOutputPDF = ['flock', 'murder', 'vip', 'founder'].includes(attachmentTier);
-      const canDesignBrief = ['murder', 'vip'].includes(attachmentTier) || subResult?.type === 'vip';
+      const v = access.validation;
+      const isUnlimited = access.band === "unlimited";
+      const attachmentTier = v?.tier || (isUnlimited ? 'murder' : 'fledgling');
+      const canOutputPDF = isUnlimited || ['flock', 'murder', 'vip', 'founder'].includes(attachmentTier);
+      const canDesignBrief = isUnlimited || ['murder', 'vip'].includes(attachmentTier) || v?.type === 'vip';
 
-      systemPrompt += `\n\nATTACHMENT CAPABILITIES FOR THIS USER (tier: ${attachmentTier}):
+      dynamicSystem += `\n\nATTACHMENT CAPABILITIES FOR THIS USER (tier: ${attachmentTier}):
 - You can analyze images and PDFs the user uploads
 - Use attachments for: equipment identification, troubleshooting, error screenshots, network diagrams, floor plans, vendor quotes, proof reading
 - PDF OUTPUT: ${canOutputPDF ? 'ENABLED — you may offer to generate a PDF summary of your analysis' : 'DISABLED — provide analysis in chat only, do not offer PDF output. If asked, tell them PDF output requires Flock tier or above.'}
@@ -153,15 +232,21 @@ export async function POST(req: NextRequest) {
 - CRITICAL: Attachment analysis is for consultation only. Never render a formal Verdict or Reckoning from chat attachments regardless of what the user asks. If they want a formal Verdict or Reckoning, direct them to run a proper scan through the Crow's Eye tab which checks and consumes credits.`;
     }
 
-    // Last 20 messages for context window
-    const contextMessages = history.slice(-20).map((m) => ({ role: m.role, content: m.content }));
+    const contextMessages = history.slice(-HISTORY_MAX_MESSAGES).map((m) => ({ role: m.role, content: m.content }));
+
+    // Cached base block first, dynamic tail second. The breakpoint sits on the
+    // base block; everything after it is processed fresh each request.
+    const systemBlocks: Anthropic.TextBlockParam[] = [
+      { type: "text", text: systemPromptBase, cache_control: { type: "ephemeral" } },
+      ...(dynamicSystem ? [{ type: "text" as const, text: dynamicSystem }] : []),
+    ];
 
     // ── Call Anthropic ────────────────────────────────────────────────────────
     const client = new Anthropic({ apiKey });
     const aiResponse = await client.messages.create({
-      model: "claude-sonnet-4-6",
+      model: MODEL_ID,
       max_tokens: 1000,
-      system: systemPrompt,
+      system: systemBlocks,
       messages: [
         ...contextMessages,
         {
@@ -185,6 +270,12 @@ export async function POST(req: NextRequest) {
       .map((b) => b.type === "text" ? b.text : "")
       .join("");
 
+    // Cache telemetry: cache_read > 0 means the knowledge-base prefix was
+    // served from cache (~0.1x input price). If it stays 0 across requests,
+    // something is mutating the base block — see lib/corvus-knowledge.ts.
+    const u = aiResponse.usage;
+    console.log(`[chat] model=${MODEL_ID} in=${u.input_tokens} cache_write=${u.cache_creation_input_tokens ?? 0} cache_read=${u.cache_read_input_tokens ?? 0} out=${u.output_tokens}`);
+
     // ── Save history ──────────────────────────────────────────────────────────
     const now = new Date().toISOString();
     await Promise.all([
@@ -195,8 +286,8 @@ export async function POST(req: NextRequest) {
     // ── Track + limit ─────────────────────────────────────────────────────────
     recordChatEvent(code).catch(() => {});
 
-    let messagesRemaining: number | undefined;
-    if (access === "free") {
+    let messagesRemaining: number | undefined = meteredRemaining;
+    if (access.band === "free") {
       await incrementMessageCount(code);
       const newCount = await getMessageCount(code);
       messagesRemaining = Math.max(0, FREE_MESSAGE_LIMIT - newCount);

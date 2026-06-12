@@ -69,7 +69,7 @@ export async function sendSubscriptionConfirmation(opts: {
   const html = `
     <div style="font-family:Arial,sans-serif;line-height:1.6;max-width:600px;margin:0 auto;">
       <div style="background:#0D1520;padding:24px 32px;border-radius:12px 12px 0 0;">
-        <p style="color:#00C2C7;font-size:12px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin:0 0 8px;">
+        <p style="color:#22D6DC;font-size:12px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin:0 0 8px;">
           Old Crows Wireless Solutions LLC
         </p>
         <h1 style="color:#ffffff;font-size:24px;margin:0;">Your Corvus Subscription is Active</h1>
@@ -81,7 +81,7 @@ export async function sendSubscriptionConfirmation(opts: {
         </p>
 
         <div style="background:#0D1520;border:1px solid #0D6E7A;border-radius:12px;padding:20px 24px;margin:0 0 24px;text-align:center;">
-          <p style="color:#00C2C7;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;margin:0 0 8px;">
+          <p style="color:#22D6DC;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;margin:0 0 8px;">
             Your Subscription ID
           </p>
           <p style="color:#ffffff;font-size:28px;font-weight:700;letter-spacing:0.1em;font-family:monospace;margin:0;">
@@ -95,19 +95,19 @@ export async function sendSubscriptionConfirmation(opts: {
             <td style="color:#ffffff;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);text-align:right;">${tierName} — ${tierPrice}</td>
           </tr>
           <tr>
-            <td style="color:#888888;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">Verdicts / month</td>
+            <td style="color:#888888;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">WiFi Health Reports / month</td>
             <td style="color:#ffffff;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);text-align:right;">${verdicts}</td>
           </tr>
           <tr>
-            <td style="color:#888888;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">Small Reckonings / month</td>
+            <td style="color:#888888;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">Small Whole-Home Surveys / month</td>
             <td style="color:#ffffff;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);text-align:right;">${smallReck}</td>
           </tr>
           <tr>
-            <td style="color:#888888;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">Standard Reckonings / month</td>
+            <td style="color:#888888;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">Standard Whole-Home Surveys / month</td>
             <td style="color:#ffffff;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);text-align:right;">${stdReck}</td>
           </tr>
           <tr>
-            <td style="color:#888888;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">Commercial Reckonings / month</td>
+            <td style="color:#888888;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">Commercial Whole-Home Surveys / month</td>
             <td style="color:#ffffff;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);text-align:right;">${comReck}</td>
           </tr>
           <tr>
@@ -120,14 +120,14 @@ export async function sendSubscriptionConfirmation(opts: {
           </tr>
         </table>
 
-        <div style="background:rgba(0,194,199,0.06);border:1px solid rgba(0,194,199,0.2);border-radius:8px;padding:14px 18px;margin:0 0 20px;">
+        <div style="background:rgba(34,214,220,0.06);border:1px solid rgba(34,214,220,0.2);border-radius:8px;padding:14px 18px;margin:0 0 20px;">
           <p style="color:#aaaaaa;font-size:12px;margin:0;line-height:1.6;">
-            <strong style="color:#00C2C7;">Seat policy:</strong> Each device using this subscription counts as one seat. Access is limited to the ${seatLimit} device${seatLimit !== 1 ? "s" : ""} allowed under your plan. Devices are registered when you first apply your Subscription ID on a new browser or device.
+            <strong style="color:#22D6DC;">Seat policy:</strong> Each device using this subscription counts as one seat. Access is limited to the ${seatLimit} device${seatLimit !== 1 ? "s" : ""} allowed under your plan. Devices are registered when you first apply your Subscription ID on a new browser or device.
           </p>
         </div>
 
         <p style="color:#aaaaaa;font-size:13px;margin:0 0 8px;">
-          <strong style="color:#ffffff;">How to use it:</strong> Go to <a href="https://oldcrowswireless.com/dashboard" style="color:#00C2C7;">oldcrowswireless.com/dashboard</a>, enter your Subscription ID in the Subscription ID field, and click Apply Subscription. Your included credits will be applied automatically.
+          <strong style="color:#ffffff;">How to use it:</strong> Go to <a href="https://oldcrowswireless.com/dashboard" style="color:#22D6DC;">oldcrowswireless.com/dashboard</a>, enter your Subscription ID in the Subscription ID field, and click Apply Subscription. Your included credits will be applied automatically.
         </p>
         <p style="color:#555555;font-size:11px;margin:24px 0 0;">
           &copy; 2026 Old Crows Wireless Solutions LLC. Corvus&rsquo; Verdict and Crow&rsquo;s Eye are unregistered trademarks of Old Crows Wireless Solutions LLC.
@@ -144,10 +144,10 @@ export async function sendSubscriptionConfirmation(opts: {
     ``,
     `Subscription ID: ${opts.subscription_id}`,
     `Plan: ${tierName} — ${tierPrice}`,
-    `Verdicts/month: ${verdicts}`,
-    `Small Reckonings/month: ${smallReck}`,
-    `Standard Reckonings/month: ${stdReck}`,
-    `Commercial Reckonings/month: ${comReck}`,
+    `WiFi Health Reports/month: ${verdicts}`,
+    `Small Whole-Home Surveys/month: ${smallReck}`,
+    `Standard Whole-Home Surveys/month: ${stdReck}`,
+    `Commercial Whole-Home Surveys/month: ${comReck}`,
     `Devices (seats): Up to ${seatLimit}`,
     `Next billing date: ${periodEnd}`,
     ``,
@@ -189,7 +189,7 @@ export async function sendSubscriptionRecovery(opts: {
   const html = `
     <div style="font-family:Arial,sans-serif;line-height:1.6;max-width:600px;margin:0 auto;">
       <div style="background:#0D1520;padding:24px 32px;border-radius:12px 12px 0 0;">
-        <p style="color:#00C2C7;font-size:12px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin:0 0 8px;">
+        <p style="color:#22D6DC;font-size:12px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin:0 0 8px;">
           Old Crows Wireless Solutions LLC
         </p>
         <h1 style="color:#ffffff;font-size:24px;margin:0;">Your New Subscription ID</h1>
@@ -201,7 +201,7 @@ export async function sendSubscriptionRecovery(opts: {
         </p>
 
         <div style="background:#0D1520;border:1px solid #0D6E7A;border-radius:12px;padding:20px 24px;margin:0 0 24px;text-align:center;">
-          <p style="color:#00C2C7;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;margin:0 0 8px;">
+          <p style="color:#22D6DC;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;margin:0 0 8px;">
             Your New Subscription ID
           </p>
           <p style="color:#ffffff;font-size:28px;font-weight:700;letter-spacing:0.1em;font-family:monospace;margin:0;">
@@ -210,7 +210,7 @@ export async function sendSubscriptionRecovery(opts: {
         </div>
 
         <p style="color:#aaaaaa;font-size:13px;margin:0 0 8px;">
-          If you did not request this recovery, contact us at <a href="mailto:joshua@oldcrowswireless.com" style="color:#00C2C7;">joshua@oldcrowswireless.com</a> immediately.
+          If you did not request this recovery, contact us at <a href="mailto:joshua@oldcrowswireless.com" style="color:#22D6DC;">joshua@oldcrowswireless.com</a> immediately.
         </p>
         <p style="color:#555555;font-size:11px;margin:24px 0 0;">
           &copy; 2026 Old Crows Wireless Solutions LLC.
@@ -267,10 +267,10 @@ export async function sendWelcomeEmail(
     ``,
     `Your subscriber code: ${code}`,
     ``,
-    `This code unlocks your full Verdict at oldcrowswireless.com/dashboard.`,
+    `This code unlocks your full WiFi Health Report at oldcrowswireless.com/dashboard.`,
     `Enter it when Corvus renders your free teaser analysis.`,
     ``,
-    `You have ${credits} Verdicts included this month.`,
+    `You have ${credits} WiFi Health Reports included this month.`,
     ``,
     `SETTING UP YOUR DASHBOARD PASSWORD:`,
     `On your first login you will be prompted to create a personal password for your dashboard. This password is yours alone — we never see it and cannot recover it for you, so store it somewhere safe.`,
@@ -282,7 +282,7 @@ export async function sendWelcomeEmail(
     `2. Take three screenshots — Access Points, 2.4 GHz graph, 5 GHz graph`,
     `3. Go to oldcrowswireless.com/dashboard`,
     `4. Upload screenshots and analyze`,
-    `5. Enter ${code} to unlock your full Verdict`,
+    `5. Enter ${code} to get your full WiFi Health Report`,
     ``,
     `Access your subscriber dashboard at:`,
     `oldcrowswireless.com/dashboard`,
@@ -297,7 +297,7 @@ export async function sendWelcomeEmail(
   const html = `
     <div style="font-family:Arial,sans-serif;line-height:1.6;max-width:600px;margin:0 auto;">
       <div style="background:#0D1520;padding:24px 32px;border-radius:12px 12px 0 0;">
-        <p style="color:#00C2C7;font-size:12px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin:0 0 8px;">
+        <p style="color:#22D6DC;font-size:12px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin:0 0 8px;">
           Old Crows Wireless Solutions LLC
         </p>
         <h1 style="color:#ffffff;font-size:22px;margin:0;">Your Corvus subscription is active</h1>
@@ -308,7 +308,7 @@ export async function sendWelcomeEmail(
         </p>
 
         <div style="background:#0D1520;border:1px solid #0D6E7A;border-radius:12px;padding:20px 24px;margin:0 0 24px;text-align:center;">
-          <p style="color:#00C2C7;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;margin:0 0 8px;">
+          <p style="color:#22D6DC;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;margin:0 0 8px;">
             Your Subscriber Code
           </p>
           <p style="color:#ffffff;font-size:28px;font-weight:700;letter-spacing:0.12em;font-family:monospace;margin:0;">
@@ -317,38 +317,38 @@ export async function sendWelcomeEmail(
         </div>
 
         <p style="color:#aaaaaa;font-size:13px;margin:0 0 8px;">
-          This code unlocks your full Verdict at
-          <a href="https://oldcrowswireless.com/dashboard" style="color:#00C2C7;">oldcrowswireless.com/dashboard</a>.
+          This code unlocks your full WiFi Health Report at
+          <a href="https://oldcrowswireless.com/dashboard" style="color:#22D6DC;">oldcrowswireless.com/dashboard</a>.
           Enter it when Corvus renders your free teaser analysis.
         </p>
         <p style="color:#aaaaaa;font-size:13px;margin:0 0 20px;">
-          You have <strong style="color:#ffffff;">${escapeHtml(credits)} Verdicts</strong> included this month.
+          You have <strong style="color:#ffffff;">${escapeHtml(credits)} WiFi Health Reports</strong> included this month.
         </p>
 
         <div style="background:rgba(212,175,55,0.06);border:1px solid rgba(212,175,55,0.2);border-radius:8px;padding:14px 18px;margin:0 0 20px;">
           <p style="color:#D4AF37;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 8px;">Setting Up Your Dashboard Password</p>
           <p style="color:#aaaaaa;font-size:13px;margin:0 0 8px;line-height:1.6;">On your first login you will be prompted to create a personal password for your dashboard. This password is yours alone &mdash; we never see it and cannot recover it for you, so store it somewhere safe.</p>
-          <p style="color:#aaaaaa;font-size:13px;margin:0;line-height:1.6;">If you ever lose your password contact <a href="mailto:joshua@oldcrowswireless.com" style="color:#00C2C7;">joshua@oldcrowswireless.com</a> and we will reset your access within 24 hours.</p>
+          <p style="color:#aaaaaa;font-size:13px;margin:0;line-height:1.6;">If you ever lose your password contact <a href="mailto:joshua@oldcrowswireless.com" style="color:#22D6DC;">joshua@oldcrowswireless.com</a> and we will reset your access within 24 hours.</p>
         </div>
 
-        <div style="background:rgba(0,194,199,0.06);border:1px solid rgba(0,194,199,0.2);border-radius:8px;padding:14px 18px;margin:0 0 20px;">
-          <p style="color:#00C2C7;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 10px;">How to use Crow&rsquo;s Eye</p>
+        <div style="background:rgba(34,214,220,0.06);border:1px solid rgba(34,214,220,0.2);border-radius:8px;padding:14px 18px;margin:0 0 20px;">
+          <p style="color:#22D6DC;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 10px;">How to use Crow&rsquo;s Eye</p>
           <ol style="color:#aaaaaa;font-size:13px;margin:0;padding-left:20px;">
             <li style="margin-bottom:6px;">Download WiFi Analyzer (free — green icon, Google Play or App Store)</li>
             <li style="margin-bottom:6px;">Take three screenshots — Access Points, 2.4 GHz graph, 5 GHz graph</li>
-            <li style="margin-bottom:6px;">Go to <a href="https://oldcrowswireless.com/dashboard" style="color:#00C2C7;">oldcrowswireless.com/dashboard</a></li>
+            <li style="margin-bottom:6px;">Go to <a href="https://oldcrowswireless.com/dashboard" style="color:#22D6DC;">oldcrowswireless.com/dashboard</a></li>
             <li style="margin-bottom:6px;">Upload screenshots and analyze</li>
-            <li>Enter <strong style="color:#ffffff;">${escapeHtml(code)}</strong> to unlock your full Verdict</li>
+            <li>Enter <strong style="color:#ffffff;">${escapeHtml(code)}</strong> to get your full WiFi Health Report</li>
           </ol>
         </div>
 
         <p style="color:#aaaaaa;font-size:13px;margin:0 0 8px;">
           Access your subscriber dashboard at
-          <a href="https://oldcrowswireless.com/dashboard" style="color:#00C2C7;">oldcrowswireless.com/dashboard</a>.
+          <a href="https://oldcrowswireless.com/dashboard" style="color:#22D6DC;">oldcrowswireless.com/dashboard</a>.
         </p>
         <p style="color:#aaaaaa;font-size:13px;margin:0 0 24px;">
           Lost your code? Go to
-          <a href="https://oldcrowswireless.com/recover-code" style="color:#00C2C7;">oldcrowswireless.com/recover-code</a>
+          <a href="https://oldcrowswireless.com/recover-code" style="color:#22D6DC;">oldcrowswireless.com/recover-code</a>
           and enter your email.
         </p>
 
@@ -396,7 +396,7 @@ export async function sendCodeRecoveryEmail(
     ``,
     `Tier: ${tierName}`,
     ``,
-    `Use this code at oldcrowswireless.com/dashboard to unlock your full Verdict.`,
+    `Use this code at oldcrowswireless.com/dashboard to get your full WiFi Health Report.`,
     `Access your dashboard at oldcrowswireless.com/dashboard.`,
     ``,
     `If you did not request this email, please contact joshua@oldcrowswireless.com`,
@@ -407,7 +407,7 @@ export async function sendCodeRecoveryEmail(
   const html = `
     <div style="font-family:Arial,sans-serif;line-height:1.6;max-width:600px;margin:0 auto;">
       <div style="background:#0D1520;padding:24px 32px;border-radius:12px 12px 0 0;">
-        <p style="color:#00C2C7;font-size:12px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin:0 0 8px;">
+        <p style="color:#22D6DC;font-size:12px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin:0 0 8px;">
           Old Crows Wireless Solutions LLC
         </p>
         <h1 style="color:#ffffff;font-size:22px;margin:0;">Your Corvus Subscriber Code</h1>
@@ -416,7 +416,7 @@ export async function sendCodeRecoveryEmail(
         <p style="color:#aaaaaa;margin:0 0 24px;">Here is your Corvus subscriber code:</p>
 
         <div style="background:#0D1520;border:1px solid #0D6E7A;border-radius:12px;padding:20px 24px;margin:0 0 24px;text-align:center;">
-          <p style="color:#00C2C7;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;margin:0 0 8px;">
+          <p style="color:#22D6DC;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;margin:0 0 8px;">
             Subscriber Code
           </p>
           <p style="color:#ffffff;font-size:28px;font-weight:700;letter-spacing:0.12em;font-family:monospace;margin:0;">
@@ -427,16 +427,16 @@ export async function sendCodeRecoveryEmail(
 
         <p style="color:#aaaaaa;font-size:13px;margin:0 0 8px;">
           Use this code at
-          <a href="https://oldcrowswireless.com/dashboard" style="color:#00C2C7;">oldcrowswireless.com/dashboard</a>
-          to unlock your full Verdict.
+          <a href="https://oldcrowswireless.com/dashboard" style="color:#22D6DC;">oldcrowswireless.com/dashboard</a>
+          to get your full WiFi Health Report.
         </p>
         <p style="color:#aaaaaa;font-size:13px;margin:0 0 20px;">
           Access your dashboard at
-          <a href="https://oldcrowswireless.com/dashboard" style="color:#00C2C7;">oldcrowswireless.com/dashboard</a>.
+          <a href="https://oldcrowswireless.com/dashboard" style="color:#22D6DC;">oldcrowswireless.com/dashboard</a>.
         </p>
         <p style="color:#555555;font-size:12px;margin:0 0 24px;">
           If you did not request this email, please contact
-          <a href="mailto:joshua@oldcrowswireless.com" style="color:#00C2C7;">joshua@oldcrowswireless.com</a>.
+          <a href="mailto:joshua@oldcrowswireless.com" style="color:#22D6DC;">joshua@oldcrowswireless.com</a>.
         </p>
         <p style="color:#555555;font-size:11px;margin:0;">
           &copy; 2026 Old Crows Wireless Solutions LLC.
@@ -475,16 +475,16 @@ export async function sendFledglingWelcomeEmail(
     ``,
     `Your subscriber code: ${code}`,
     ``,
-    `You have 1 free Verdict credit ready to use.`,
+    `You have 1 free WiFi Health Report credit ready to use.`,
     ``,
     `SETTING UP YOUR DASHBOARD:`,
     `Go to oldcrowswireless.com/dashboard, enter your code, and set a password on first login.`,
     ``,
-    `HOW TO USE YOUR FREE VERDICT:`,
+    `HOW TO USE YOUR FREE WIFI HEALTH REPORT:`,
     `1. Android: download WiFi Analyzer (free, Google Play). iPhone: download AirPort Utility by Apple (free, App Store) — then Settings → AirPort Utility → turn on WiFi Scanner`,
     `2. Take three screenshots — signal list, 2.4 GHz filtered, 5 GHz filtered`,
     `3. Go to oldcrowswireless.com/dashboard`,
-    `4. Upload screenshots, analyze, and enter ${code} to unlock your free Verdict`,
+    `4. Upload screenshots, analyze, and enter ${code} to get your free WiFi Health Report`,
     ``,
     `Ready for more? Upgrade to a Nest subscription at any time from your dashboard.`,
     ``,
@@ -496,18 +496,18 @@ export async function sendFledglingWelcomeEmail(
   const html = `
     <div style="font-family:Arial,sans-serif;line-height:1.6;max-width:600px;margin:0 auto;">
       <div style="background:#0D1520;padding:24px 32px;border-radius:12px 12px 0 0;">
-        <p style="color:#B8922A;font-size:12px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin:0 0 8px;">
+        <p style="color:#D8AC32;font-size:12px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin:0 0 8px;">
           Old Crows Wireless Solutions LLC
         </p>
         <h1 style="color:#ffffff;font-size:22px;margin:0;">Welcome to Corvus — Fledgling</h1>
       </div>
       <div style="background:#1A2332;padding:32px;border-radius:0 0 12px 12px;border:1px solid rgba(255,255,255,0.08);">
         <p style="color:#aaaaaa;margin:0 0 20px;">
-          Your <strong style="color:#ffffff;">Fledgling</strong> subscription is active. You have <strong style="color:#B8922A;">1 free Verdict</strong> waiting for you.
+          Your <strong style="color:#ffffff;">Fledgling</strong> subscription is active. You have <strong style="color:#D8AC32;">1 free WiFi Health Report</strong> waiting for you.
         </p>
 
         <div style="background:#0D1520;border:1px solid #7A5A1A;border-radius:12px;padding:20px 24px;margin:0 0 24px;text-align:center;">
-          <p style="color:#B8922A;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;margin:0 0 8px;">
+          <p style="color:#D8AC32;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;margin:0 0 8px;">
             Your Subscriber Code
           </p>
           <p style="color:#ffffff;font-size:28px;font-weight:700;letter-spacing:0.12em;font-family:monospace;margin:0;">
@@ -515,26 +515,26 @@ export async function sendFledglingWelcomeEmail(
           </p>
         </div>
 
-        <div style="background:rgba(184,146,42,0.06);border:1px solid rgba(184,146,42,0.2);border-radius:8px;padding:14px 18px;margin:0 0 20px;">
-          <p style="color:#B8922A;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 10px;">How to use your free Verdict</p>
+        <div style="background:rgba(216,172,50,0.06);border:1px solid rgba(216,172,50,0.2);border-radius:8px;padding:14px 18px;margin:0 0 20px;">
+          <p style="color:#D8AC32;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 10px;">How to use your free WiFi Health Report</p>
           <ol style="color:#aaaaaa;font-size:13px;margin:0;padding-left:20px;">
             <li style="margin-bottom:6px;">Android: download WiFi Analyzer (free, Google Play). iPhone: download AirPort Utility by Apple (free, App Store) — then Settings → AirPort Utility → turn on WiFi Scanner</li>
             <li style="margin-bottom:6px;">Take three screenshots — signal list, 2.4 GHz filtered, 5 GHz filtered</li>
-            <li style="margin-bottom:6px;">Go to <a href="https://oldcrowswireless.com/dashboard" style="color:#00C2C7;">oldcrowswireless.com/dashboard</a></li>
+            <li style="margin-bottom:6px;">Go to <a href="https://oldcrowswireless.com/dashboard" style="color:#22D6DC;">oldcrowswireless.com/dashboard</a></li>
             <li style="margin-bottom:6px;">Upload screenshots and analyze</li>
-            <li>Enter <strong style="color:#ffffff;">${escapeHtml(code)}</strong> to unlock your free Verdict</li>
+            <li>Enter <strong style="color:#ffffff;">${escapeHtml(code)}</strong> to get your free WiFi Health Report</li>
           </ol>
         </div>
 
-        <div style="background:rgba(0,194,199,0.06);border:1px solid rgba(0,194,199,0.2);border-radius:8px;padding:14px 18px;margin:0 0 20px;">
-          <p style="color:#00C2C7;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 8px;">Setting Up Your Dashboard</p>
+        <div style="background:rgba(34,214,220,0.06);border:1px solid rgba(34,214,220,0.2);border-radius:8px;padding:14px 18px;margin:0 0 20px;">
+          <p style="color:#22D6DC;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 8px;">Setting Up Your Dashboard</p>
           <p style="color:#aaaaaa;font-size:13px;margin:0;">
-            Go to <a href="https://oldcrowswireless.com/dashboard" style="color:#00C2C7;">oldcrowswireless.com/dashboard</a>, enter your code, and create a password on your first login. You can chat with Corvus and access your Verdict from your dashboard.
+            Go to <a href="https://oldcrowswireless.com/dashboard" style="color:#22D6DC;">oldcrowswireless.com/dashboard</a>, enter your code, and create a password on your first login. You can chat with Corvus and access your WiFi Health Report from your dashboard.
           </p>
         </div>
 
         <p style="color:#aaaaaa;font-size:13px;margin:0 0 8px;">
-          Ready for more scans, Reckonings, and team features? Upgrade to <strong style="color:#ffffff;">Nest</strong> at any time from your dashboard.
+          Ready for more scans, Whole-Home Surveys, and team features? Upgrade to <strong style="color:#ffffff;">Nest</strong> at any time from your dashboard.
         </p>
         <p style="color:#555555;font-size:11px;margin:24px 0 0;">
           &copy; 2026 Old Crows Wireless Solutions LLC.
@@ -553,7 +553,7 @@ export async function sendFledglingWelcomeEmail(
     from,
     to: email,
     bcc,
-    subject: `Welcome to Corvus — your free Verdict is ready`,
+    subject: `Welcome to Corvus — your free WiFi Health Report is ready`,
     text,
     html,
     replyTo: bcc,

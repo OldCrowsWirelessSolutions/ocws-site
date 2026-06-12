@@ -48,14 +48,14 @@ const FALLBACK_PRICES: Record<string, number> = {
 };
 
 const PRODUCT_NAMES: Record<string, string> = {
-  "verdict": "Corvus\u2019 Verdict",
-  "reckoning-small": "Full Reckoning \u2014 Small",
-  "reckoning-standard": "Full Reckoning \u2014 Standard",
-  "reckoning-commercial": "Full Reckoning \u2014 Commercial",
-  "pro": "Pro Certified Reckoning",
-  "credit-single": "Verdict Credit \u2014 Single",
-  "credit-6pack": "Verdict Credits \u2014 6-Pack",
-  "credit-12pack": "Verdict Credits \u2014 12-Pack",
+  "verdict": "WiFi Health Report",
+  "reckoning-small": "Whole-Home Survey \u2014 Small",
+  "reckoning-standard": "Whole-Home Survey \u2014 Standard",
+  "reckoning-commercial": "Whole-Home Survey \u2014 Commercial",
+  "pro": "Pro Certified Whole-Home Survey",
+  "credit-single": "WiFi Health Report Credit \u2014 Single",
+  "credit-6pack": "WiFi Health Report Credits \u2014 6-Pack",
+  "credit-12pack": "WiFi Health Report Credits \u2014 12-Pack",
 };
 
 export async function POST(req: NextRequest) {

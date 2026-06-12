@@ -51,7 +51,7 @@ function getPasswordStrength(password: string): "weak" | "fair" | "good" | "stro
 const STRENGTH_COLOR: Record<string, string> = {
   weak:   "#E05555",
   fair:   "#D4AA3C",
-  good:   "#00C2C7",
+  good:   "#22D6DC",
   strong: "#3DBA7A",
 };
 
@@ -68,7 +68,7 @@ const inputStyle: React.CSSProperties = {
   fontFamily: "monospace", letterSpacing: "0.08em", outline: "none",
 };
 
-const btnPrimary = (disabled: boolean, color = "#00C2C7"): React.CSSProperties => ({
+const btnPrimary = (disabled: boolean, color = "#22D6DC"): React.CSSProperties => ({
   width: "100%", padding: "12px", background: disabled ? "#0D6E7A" : color,
   color: color === "#9B1C1C" ? "#ffffff" : "#0D1520",
   borderRadius: "10px", border: "none", fontSize: "14px", fontWeight: 700,
@@ -105,7 +105,7 @@ function StarFoxPanel({ line, gold = false }: { line: string; gold?: boolean }) 
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/corvus_still.png" className="corvus-panel-image" alt="Corvus" style={{ cursor: "pointer" }} onClick={() => speakCorvus(lineRef.current)} />
         <div className="corvus-panel-label">CORVUS</div>
-        <div className="corvus-panel-sublabel">RF INTELLIGENCE</div>
+        <div className="corvus-panel-sublabel">WIFI INTELLIGENCE</div>
       </div>
       <div className="corvus-panel-speech">
         <div className="corvus-speech-text">
@@ -167,7 +167,7 @@ type LoginStep =
 // ─── Shell (module-level — must NOT be defined inside LoginPage or it remounts
 //     on every keystroke, dismissing the mobile keyboard) ─────────────────────
 
-function Shell({ children, accentColor = "#00C2C7" }: { children: React.ReactNode; accentColor?: string }) {
+function Shell({ children, accentColor = "#22D6DC" }: { children: React.ReactNode; accentColor?: string }) {
   return (
     <div style={{ minHeight: "75vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
       <div style={{ width: "100%", maxWidth: "440px" }}>
@@ -574,17 +574,17 @@ export default function LoginPage() {
   if (step === "admin_password") {
     const isJoshua = pendingCode === "OCWS-CORVUS-FOUNDER-JOSHUA";
     return (
-      <Shell accentColor="#B8922A">
+      <Shell accentColor="#D8AC32">
         {isJoshua && <StarFoxPanel line={corvusLineRef.current} gold={true} />}
         {!isJoshua && (
         <div style={{ textAlign: "center", marginBottom: "24px" }}>
           <h1 style={{ color: "#ffffff", fontSize: "22px", fontWeight: 700, marginBottom: "4px" }}>Admin Authentication</h1>
-          <p style={{ color: "#B8922A", fontSize: "12px" }}>Step 2 of 2</p>
+          <p style={{ color: "#D8AC32", fontSize: "12px" }}>Step 2 of 2</p>
         </div>
         )}
-        <div style={{ background: "#1A2332", border: "1px solid rgba(184,146,42,0.2)", borderRadius: "16px", padding: "32px" }}>
+        <div style={{ background: "#1A2332", border: "1px solid rgba(216,172,50,0.2)", borderRadius: "16px", padding: "32px" }}>
           <form onSubmit={handleAdminPassword}>
-            <label style={{ display: "block", color: "#B8922A", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
+            <label style={{ display: "block", color: "#D8AC32", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
               Admin Password
             </label>
             <div style={{ position: "relative", marginBottom: adminPwError ? "8px" : "20px" }}>
@@ -602,13 +602,13 @@ export default function LoginPage() {
               </button>
             </div>
             {adminPwError && <p style={{ color: "#F87171", fontSize: "12px", marginBottom: "16px" }}>{adminPwError}</p>}
-            <button type="submit" disabled={!adminPw} style={btnPrimary(!adminPw, "#B8922A")}>
+            <button type="submit" disabled={!adminPw} style={btnPrimary(!adminPw, "#D8AC32")}>
               Access Admin Dashboard
             </button>
           </form>
         </div>
         <div style={{ textAlign: "center", marginTop: "20px" }}>
-          <button onClick={reset} style={{ background: "none", border: "none", color: "#00C2C7", fontSize: "12px", cursor: "pointer", padding: 0 }}>
+          <button onClick={reset} style={{ background: "none", border: "none", color: "#22D6DC", fontSize: "12px", cursor: "pointer", padding: 0 }}>
             ← Back
           </button>
         </div>
@@ -678,7 +678,7 @@ export default function LoginPage() {
               </form>
             </div>
             <div style={{ textAlign: "center", marginTop: "20px" }}>
-              <button onClick={reset} style={{ background: "none", border: "none", color: "#00C2C7", fontSize: "12px", cursor: "pointer", padding: 0 }}>
+              <button onClick={reset} style={{ background: "none", border: "none", color: "#22D6DC", fontSize: "12px", cursor: "pointer", padding: 0 }}>
                 ← Back
               </button>
             </div>
@@ -749,7 +749,7 @@ export default function LoginPage() {
           )}
         </div>
         <div style={{ textAlign: "center", marginTop: "20px" }}>
-          <button onClick={reset} style={{ background: "none", border: "none", color: "#00C2C7", fontSize: "12px", cursor: "pointer", padding: 0 }}>
+          <button onClick={reset} style={{ background: "none", border: "none", color: "#22D6DC", fontSize: "12px", cursor: "pointer", padding: 0 }}>
             ← Back
           </button>
         </div>
@@ -774,7 +774,7 @@ export default function LoginPage() {
               </p>
               <form onSubmit={handleSubCreatePassword}>
                 <div style={{ marginBottom: "6px" }}>
-                  <label style={{ display: "block", color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
+                  <label style={{ display: "block", color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
                     New Password
                   </label>
                   <div style={{ position: "relative" }}>
@@ -793,7 +793,7 @@ export default function LoginPage() {
                   <PasswordStrengthBar password={pw} />
                 </div>
                 <div style={{ marginBottom: pwError ? "8px" : "20px", marginTop: "8px" }}>
-                  <label style={{ display: "block", color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
+                  <label style={{ display: "block", color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
                     Confirm Password
                   </label>
                   <input
@@ -814,7 +814,7 @@ export default function LoginPage() {
               </form>
             </div>
             <div style={{ textAlign: "center", marginTop: "20px" }}>
-              <button onClick={reset} style={{ background: "none", border: "none", color: "#00C2C7", fontSize: "12px", cursor: "pointer", padding: 0 }}>
+              <button onClick={reset} style={{ background: "none", border: "none", color: "#22D6DC", fontSize: "12px", cursor: "pointer", padding: 0 }}>
                 ← Back
               </button>
             </div>
@@ -841,7 +841,7 @@ export default function LoginPage() {
             </div>
           ) : (
             <form onSubmit={handleSubEnterPassword}>
-              <label style={{ display: "block", color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
+              <label style={{ display: "block", color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
                 Password
               </label>
               <div style={{ position: "relative", marginBottom: "8px" }}>
@@ -880,7 +880,7 @@ export default function LoginPage() {
           )}
         </div>
         <div style={{ textAlign: "center", marginTop: "20px" }}>
-          <button onClick={reset} style={{ background: "none", border: "none", color: "#00C2C7", fontSize: "12px", cursor: "pointer", padding: 0 }}>
+          <button onClick={reset} style={{ background: "none", border: "none", color: "#22D6DC", fontSize: "12px", cursor: "pointer", padding: 0 }}>
             ← Back
           </button>
         </div>
@@ -904,7 +904,7 @@ export default function LoginPage() {
       </div>
       <div style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "32px" }}>
         <form onSubmit={handleSubmit}>
-          <label style={{ display: "block", color: "#00C2C7", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
+          <label style={{ display: "block", color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
             Access Code
           </label>
           <div style={{ position: "relative", marginBottom: error ? "8px" : "20px" }}>
@@ -928,11 +928,11 @@ export default function LoginPage() {
       </div>
       <div style={{ textAlign: "center", marginTop: "20px" }}>
         <p style={{ fontSize: "12px", color: "#555555", marginBottom: "8px" }}>
-          <Link href="/recover-code" style={{ color: "#00C2C7" }}>Lost your code? Recover it here</Link>
+          <Link href="/recover-code" style={{ color: "#22D6DC" }}>Lost your code? Recover it here</Link>
         </p>
         <p style={{ fontSize: "12px", color: "#555555" }}>
           Don&rsquo;t have a subscription?{" "}
-          <Link href="/#pricing" style={{ color: "#00C2C7" }}>See plans</Link>
+          <Link href="/#pricing" style={{ color: "#22D6DC" }}>See plans</Link>
         </p>
       </div>
     </Shell>

@@ -25,10 +25,10 @@ export default function Footer() {
               </div>
               <div className="leading-tight">
                 <div className="text-sm font-bold text-white">Crow&rsquo;s Eye</div>
-                <div className="text-xs" style={{ color: "#00C2C7" }}>by Old Crows Wireless Solutions</div>
+                <div className="text-xs" style={{ color: "#22D6DC" }}>by Old Crows Wireless Solutions</div>
               </div>
             </div>
-            <p className="text-sm font-semibold mb-1" style={{ color: "#00C2C7" }}>
+            <p className="text-sm font-semibold mb-1" style={{ color: "#22D6DC" }}>
               Powered by Corvus AI
             </p>
             <p className="text-xs text-white/40 mb-1">Pensacola, FL</p>
@@ -73,7 +73,7 @@ export default function Footer() {
 
           {/* Col 2: Navigate */}
           <div>
-            <h4 className="text-sm font-semibold mb-3" style={{ color: "#00C2C7" }}>Navigate</h4>
+            <h4 className="text-sm font-semibold mb-3" style={{ color: "#22D6DC" }}>Navigate</h4>
             <ul className="space-y-2 text-sm">
               <li><Link href="/how-it-works" className="text-white/50 hover:text-white transition">How It Works</Link></li>
               <li><Link href="/pricing" className="text-white/50 hover:text-white transition">Pricing</Link></li>
@@ -86,7 +86,7 @@ export default function Footer() {
 
           {/* Col 3: Account */}
           <div>
-            <h4 className="text-sm font-semibold mb-3" style={{ color: "#00C2C7" }}>Your Account</h4>
+            <h4 className="text-sm font-semibold mb-3" style={{ color: "#22D6DC" }}>Your Account</h4>
             <ul className="space-y-2 text-sm">
               <li><Link href="/login" className="text-white/50 hover:text-white transition">Log In</Link></li>
               <li><Link href="/dashboard" className="text-white/50 hover:text-white transition">Dashboard</Link></li>
@@ -106,7 +106,7 @@ export default function Footer() {
 
           {/* Col 4: Legal */}
           <div>
-            <h4 className="text-sm font-semibold mb-3" style={{ color: "#00C2C7" }}>Legal</h4>
+            <h4 className="text-sm font-semibold mb-3" style={{ color: "#22D6DC" }}>Legal</h4>
             <ul className="space-y-2 text-sm">
               <li><Link href="/privacy" className="text-white/50 hover:text-white transition">Privacy Policy</Link></li>
               <li><Link href="/account-deletion" className="text-white/50 hover:text-white transition">Account Deletion</Link></li>

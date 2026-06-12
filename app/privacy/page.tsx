@@ -25,7 +25,7 @@ export default function PrivacyPage() {
         <div className="ocws-container max-w-3xl mx-auto">
           <p
             className="text-xs font-semibold uppercase tracking-widest mb-4"
-            style={{ color: "#00C2C7", letterSpacing: "0.18em", fontFamily: "'Share Tech Mono', monospace" }}
+            style={{ color: "#22D6DC", letterSpacing: "0.18em", fontFamily: "'Share Tech Mono', monospace" }}
           >
             Old Crows Wireless Solutions LLC
           </p>
@@ -51,7 +51,7 @@ export default function PrivacyPage() {
               </p>
               <p className="mt-4">
                 We wrote this policy to be genuinely readable. If something is unclear, email us at{" "}
-                <a href="mailto:joshua@oldcrowswireless.com" style={{ color: "#00C2C7" }}>
+                <a href="mailto:joshua@oldcrowswireless.com" style={{ color: "#22D6DC" }}>
                   joshua@oldcrowswireless.com
                 </a>
                 .
@@ -70,10 +70,10 @@ export default function PrivacyPage() {
               <PolicySubsection title="Scan Data">
                 <p>
                   When you run a scan, the app collects WiFi network information visible to your device:
-                  SSIDs (network names), BSSIDs (router hardware addresses), signal strength, channel
+                  WiFi network names (SSIDs), router hardware addresses (BSSIDs), signal strength, channel
                   assignments, and encryption type. This data is collected <em>only during active scans
                   you initiate</em>. It is sent to Corvus for analysis and stored as part of your
-                  Verdict history in your account.
+                  WiFi Health Report history in your account.
                 </p>
                 <p className="mt-3">
                   We do <strong>not</strong> collect the content of network traffic. We do not intercept,
@@ -108,7 +108,7 @@ export default function PrivacyPage() {
                   Payment processing is handled entirely by <strong>Stripe</strong>. We do not store
                   card numbers, CVV codes, or any raw payment data. Stripe provides us with a
                   subscription ID and status indicator. See{" "}
-                  <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" style={{ color: "#00C2C7" }}>
+                  <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" style={{ color: "#22D6DC" }}>
                     Stripe&rsquo;s Privacy Policy
                   </a>{" "}
                   for how they handle payment data.
@@ -125,7 +125,7 @@ export default function PrivacyPage() {
                   "Personal information from children under 13",
                 ].map((item) => (
                   <li key={item} className="flex gap-3 items-start">
-                    <span style={{ color: "#00C2C7", marginTop: "2px", flexShrink: 0 }}>✓</span>
+                    <span style={{ color: "#22D6DC", marginTop: "2px", flexShrink: 0 }}>✓</span>
                     <span>{item}</span>
                   </li>
                 ))}
@@ -135,14 +135,14 @@ export default function PrivacyPage() {
             <PolicySection title="How We Use Your Data">
               <ul className="space-y-3 list-none pl-0">
                 {[
-                  ["To generate Verdict and Reckoning reports", "Your scan data is sent to the Corvus AI engine to produce your analysis."],
+                  ["To generate WiFi Health Reports and Whole-Home Surveys", "Your scan data is sent to the Corvus AI engine to produce your analysis."],
                   ["To maintain your account and subscription", "We use your email and subscription ID to authenticate you and manage billing through Stripe."],
                   ["To provide Talk to Corvus", "Conversation data is sent to the Anthropic Claude API for AI processing. Conversations may be stored in your account history."],
                   ["To improve Corvus AI analysis", "Aggregated, anonymized scan data may be used to improve analysis accuracy. Personally identifying information is not used for model training."],
                   ["To send transactional emails", "We send account confirmation emails and purchase receipts. We do not send marketing emails without your explicit consent."],
                 ].map(([title, desc]) => (
                   <li key={title as string} className="flex gap-3 items-start">
-                    <span style={{ color: "#00C2C7", marginTop: "2px", flexShrink: 0 }}>→</span>
+                    <span style={{ color: "#22D6DC", marginTop: "2px", flexShrink: 0 }}>→</span>
                     <span><strong style={{ color: "#fff" }}>{title}</strong> — {desc}</span>
                   </li>
                 ))}
@@ -152,12 +152,12 @@ export default function PrivacyPage() {
             <PolicySection title="Data Storage">
               <p>
                 Account data is stored securely via <strong>Upstash Redis</strong>, a managed database
-                service. Scan data is processed in real time and stored only as part of your Verdict
+                service. Scan data is processed in real time and stored only as part of your WiFi Health Report
                 history. All data is stored in the United States.
               </p>
               <p className="mt-3">
                 You can delete your account and all associated data by contacting us at{" "}
-                <a href="mailto:joshua@oldcrowswireless.com" style={{ color: "#00C2C7" }}>
+                <a href="mailto:joshua@oldcrowswireless.com" style={{ color: "#22D6DC" }}>
                   joshua@oldcrowswireless.com
                 </a>
                 . Deletion requests are processed within 7 business days.
@@ -170,7 +170,7 @@ export default function PrivacyPage() {
               </p>
               <div className="space-y-3">
                 {[
-                  ["Anthropic Claude API", "AI analysis processing for Verdicts and Talk to Corvus"],
+                  ["Anthropic Claude API", "AI analysis processing for WiFi Health Reports and Talk to Corvus"],
                   ["ElevenLabs", "Voice synthesis for Corvus audio responses"],
                   ["Stripe", "Payment processing and subscription management"],
                   ["Upstash Redis", "Account and scan data storage"],
@@ -204,19 +204,19 @@ export default function PrivacyPage() {
                   "Opt out of non-essential communications",
                 ].map((item) => (
                   <li key={item} className="flex gap-3 items-start">
-                    <span style={{ color: "#00C2C7", marginTop: "2px", flexShrink: 0 }}>✓</span>
+                    <span style={{ color: "#22D6DC", marginTop: "2px", flexShrink: 0 }}>✓</span>
                     <span>{item}</span>
                   </li>
                 ))}
               </ul>
               <p className="mt-4">
                 To exercise any of these rights, email{" "}
-                <a href="mailto:joshua@oldcrowswireless.com" style={{ color: "#00C2C7" }}>
+                <a href="mailto:joshua@oldcrowswireless.com" style={{ color: "#22D6DC" }}>
                   joshua@oldcrowswireless.com
                 </a>
                 . We will respond within 7 business days. To delete your account,
                 see our{" "}
-                <Link href="/account-deletion" style={{ color: "#00C2C7" }}>
+                <Link href="/account-deletion" style={{ color: "#22D6DC" }}>
                   Account Deletion page
                 </Link>
                 .
@@ -240,7 +240,7 @@ export default function PrivacyPage() {
               </p>
               <p className="mt-3">
                 The current version of this policy is always available at{" "}
-                <Link href="/privacy" style={{ color: "#00C2C7" }}>
+                <Link href="/privacy" style={{ color: "#22D6DC" }}>
                   oldcrowswireless.com/privacy
                 </Link>
                 .
@@ -250,7 +250,7 @@ export default function PrivacyPage() {
             <PolicySection title="Contact">
               <div
                 className="rounded-xl p-6"
-                style={{ background: "#1A2332", border: "1px solid rgba(0,194,199,0.15)" }}
+                style={{ background: "#1A2332", border: "1px solid rgba(34,214,220,0.15)" }}
               >
                 <p className="font-semibold text-white mb-1">Joshua Turner, Managing Member</p>
                 <p style={{ color: "#7A9AAB" }}>Old Crows Wireless Solutions LLC</p>
@@ -258,7 +258,7 @@ export default function PrivacyPage() {
                 <a
                   href="mailto:joshua@oldcrowswireless.com"
                   className="mt-3 inline-block"
-                  style={{ color: "#00C2C7" }}
+                  style={{ color: "#22D6DC" }}
                 >
                   joshua@oldcrowswireless.com
                 </a>
@@ -278,7 +278,7 @@ function PolicySection({ title, children }: { title: string; children: React.Rea
     <section>
       <h2
         className="text-xl font-bold text-white mb-4 pb-3"
-        style={{ borderBottom: "1px solid rgba(0,194,199,0.2)" }}
+        style={{ borderBottom: "1px solid rgba(34,214,220,0.2)" }}
       >
         {title}
       </h2>

@@ -5,7 +5,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Pricing — Old Crows Wireless Solutions",
   description:
-    "Crow's Eye subscription plans and pay-per-use Reckoning pricing. Fledgling, Nest, Flock, Murder, and OCWS Pro.",
+    "Crow's Eye subscription plans and pay-per-use Whole-Home Survey pricing. Fledgling, Nest, Flock, Murder, and OCWS Pro.",
 };
 
 export default function PricingPage() {
@@ -19,7 +19,7 @@ export default function PricingPage() {
         <div className="ocws-container text-center">
           <p
             className="text-xs font-semibold uppercase tracking-widest mb-4"
-            style={{ color: "#00C2C7", letterSpacing: "0.18em", fontFamily: "'Share Tech Mono', monospace" }}
+            style={{ color: "#22D6DC", letterSpacing: "0.18em", fontFamily: "'Share Tech Mono', monospace" }}
           >
             Crow&rsquo;s Eye &middot; Pricing
           </p>
@@ -27,7 +27,7 @@ export default function PricingPage() {
             Simple, honest pricing.
           </h1>
           <p className="text-base max-w-xl mx-auto" style={{ color: "#8AAABB" }}>
-            No hidden fees. No annual lock-in on most plans. Start with one Verdict and scale
+            No hidden fees. No annual lock-in on most plans. Start with one WiFi Health Report and scale
             when you&rsquo;re ready.
           </p>
         </div>
@@ -75,21 +75,21 @@ export default function PricingPage() {
             >
               <p
                 className="text-xs font-bold uppercase tracking-widest mb-5"
-                style={{ color: "#00C2C7" }}
+                style={{ color: "#22D6DC" }}
               >
                 The Corvus Way
               </p>
               <ul className="space-y-3">
                 {[
-                  "Scan your network with the app. Corvus reads your RF environment in seconds.",
+                  "Scan your network with the app. Corvus reads your WiFi environment in seconds.",
                   "Plain English diagnosis. No jargon. No condescension.",
                   "Specific fix instructions for your exact router and network.",
                   "Channel congestion mapped. Interference sources identified.",
                   "Signed PDF report you can hand to your ISP, landlord, or IT team.",
-                  "One Verdict: $50. Subscribe and run as many as you need.",
+                  "One WiFi Health Report: $50. Subscribe and run as many as you need.",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-3 text-sm" style={{ color: "#aaa" }}>
-                    <span style={{ color: "#00C2C7", flexShrink: 0, marginTop: "1px" }}>✓</span>
+                    <span style={{ color: "#22D6DC", flexShrink: 0, marginTop: "1px" }}>✓</span>
                     {item}
                   </li>
                 ))}
@@ -109,19 +109,19 @@ export default function PricingPage() {
       >
         <div className="ocws-container">
           <p className="text-sm mb-5" style={{ color: "#8AAABB" }}>
-            Not ready to subscribe? Buy a single Verdict directly — no subscription required.
+            Not ready to subscribe? Buy a single WiFi Health Report directly — no subscription required.
           </p>
           <Link
             href="/get-credits?product=verdict"
             className="inline-block rounded-2xl px-10 py-4 text-base font-bold"
-            style={{ background: "linear-gradient(135deg, #0D6E7A, #00C2C7)", color: "#fff" }}
+            style={{ background: "linear-gradient(135deg, #0D6E7A, #22D6DC)", color: "#fff" }}
           >
-            Buy a Verdict &mdash; $50
+            Buy a WiFi Health Report &mdash; $50
           </Link>
           <p className="text-xs mt-4" style={{ color: "#555" }}>
-            Need a Reckoning instead?{" "}
-            <Link href="/get-credits?product=reckoning" style={{ color: "rgba(0,194,199,0.6)" }}>
-              Purchase a Reckoning &rarr;
+            Need a Whole-Home Survey instead?{" "}
+            <Link href="/get-credits?product=reckoning" style={{ color: "rgba(34,214,220,0.6)" }}>
+              Purchase a Whole-Home Survey &rarr;
             </Link>
           </p>
         </div>

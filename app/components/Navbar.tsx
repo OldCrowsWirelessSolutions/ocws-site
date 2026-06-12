@@ -120,7 +120,7 @@ export default function Navbar() {
               <div className="text-sm font-semibold text-white truncate">
                 Crow&rsquo;s Eye
               </div>
-              <div className="text-xs truncate" style={{ color: "#00C2C7" }}>
+              <div className="text-xs truncate" style={{ color: "#22D6DC" }}>
                 by Old Crows Wireless Solutions
               </div>
             </div>
@@ -159,7 +159,7 @@ export default function Navbar() {
                   className="absolute top-full left-0 mt-2 rounded-xl border border-white/10 shadow-2xl py-2"
                   style={{ background: "#1A2332", minWidth: "200px", zIndex: 100 }}
                 >
-                  <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-widest" style={{ color: "#00C2C7", letterSpacing: "0.15em" }}>
+                  <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-widest" style={{ color: "#22D6DC", letterSpacing: "0.15em" }}>
                     Reviews &amp; Endorsements
                   </div>
                   <div className="mx-3 mb-1 border-t border-white/10" />
@@ -203,7 +203,7 @@ export default function Navbar() {
                   type="button"
                   onClick={() => setAccountOpen((v) => !v)}
                   className="rounded-lg px-3 py-2 text-sm font-semibold transition flex items-center gap-1"
-                  style={{ color: "#00C2C7", background: "rgba(0,194,199,0.07)", border: "1px solid rgba(0,194,199,0.18)" }}
+                  style={{ color: "#22D6DC", background: "rgba(34,214,220,0.07)", border: "1px solid rgba(34,214,220,0.18)" }}
                 >
                   My Account
                   <svg
@@ -219,7 +219,7 @@ export default function Navbar() {
                     className="absolute top-full right-0 mt-2 rounded-xl border border-white/10 shadow-2xl py-2"
                     style={{ background: "#1A2332", minWidth: "180px", zIndex: 100 }}
                   >
-                    <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-widest" style={{ color: "#00C2C7", letterSpacing: "0.15em" }}>
+                    <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-widest" style={{ color: "#22D6DC", letterSpacing: "0.15em" }}>
                       My Account
                     </div>
                     <div className="mx-3 mb-1 border-t border-white/10" />
@@ -261,7 +261,7 @@ export default function Navbar() {
               <Link
                 href="/login"
                 className="rounded-lg px-3 py-2 text-sm font-semibold transition"
-                style={{ color: "#00C2C7", background: "rgba(0,194,199,0.07)", border: "1px solid rgba(0,194,199,0.18)" }}
+                style={{ color: "#22D6DC", background: "rgba(34,214,220,0.07)", border: "1px solid rgba(34,214,220,0.18)" }}
               >
                 Log In
               </Link>
@@ -276,11 +276,11 @@ export default function Navbar() {
               rel="noopener noreferrer"
               className="hidden sm:inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold transition"
               style={{
-                background: "#00C2C7",
+                background: "#22D6DC",
                 color: "#0D1520",
               }}
               onMouseOver={e => { e.currentTarget.style.background = "#00a8ad" }}
-              onMouseOut={e => { e.currentTarget.style.background = "#00C2C7" }}
+              onMouseOut={e => { e.currentTarget.style.background = "#22D6DC" }}
             >
               Get the App
             </a>
@@ -289,7 +289,7 @@ export default function Navbar() {
               <Link
                 href="/login"
                 className="lg:hidden rounded-xl px-3 py-2 text-sm font-semibold"
-                style={{ color: "#00C2C7", border: "1px solid rgba(0,194,199,0.25)" }}
+                style={{ color: "#22D6DC", border: "1px solid rgba(34,214,220,0.25)" }}
               >
                 Log In
               </Link>
@@ -342,7 +342,7 @@ export default function Navbar() {
                 ))}
 
                 <div className="mx-3 mt-1 mb-1 border-t border-white/10" />
-                <div className="px-3 py-1 text-xs font-semibold uppercase tracking-widest" style={{ color: "#00C2C7" }}>
+                <div className="px-3 py-1 text-xs font-semibold uppercase tracking-widest" style={{ color: "#22D6DC" }}>
                   Reviews &amp; Endorsements
                 </div>
                 <a
@@ -375,14 +375,14 @@ export default function Navbar() {
 
                 {isLoggedIn ? (
                   <>
-                    <div className="px-3 py-1 text-xs font-semibold uppercase tracking-widest" style={{ color: "#00C2C7" }}>
+                    <div className="px-3 py-1 text-xs font-semibold uppercase tracking-widest" style={{ color: "#22D6DC" }}>
                       My Account
                     </div>
                     <Link
                       href="/dashboard"
                       onClick={() => setOpen(false)}
                       className="rounded-xl px-3 py-3 text-sm font-semibold hover:bg-white/10 transition flex items-center gap-2"
-                      style={{ color: "#00C2C7" }}
+                      style={{ color: "#22D6DC" }}
                     >
                       <span>📊</span> Dashboard
                     </Link>
@@ -412,7 +412,7 @@ export default function Navbar() {
                     href="/login"
                     onClick={() => setOpen(false)}
                     className="rounded-xl px-3 py-3 text-sm font-semibold hover:bg-white/10 transition"
-                    style={{ color: "#00C2C7", border: "1px solid rgba(0,194,199,0.25)" }}
+                    style={{ color: "#22D6DC", border: "1px solid rgba(34,214,220,0.25)" }}
                   >
                     Log In
                   </Link>
@@ -426,7 +426,7 @@ export default function Navbar() {
                   rel="noopener noreferrer"
                   onClick={() => setOpen(false)}
                   className="w-full inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold"
-                  style={{ background: "#00C2C7", color: "#0D1520" }}
+                  style={{ background: "#22D6DC", color: "#0D1520" }}
                 >
                   Download on Google Play
                 </a>

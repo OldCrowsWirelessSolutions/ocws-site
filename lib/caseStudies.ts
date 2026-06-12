@@ -51,7 +51,7 @@ export const CASE_STUDIES: CaseStudy[] = [
       },
       {
         number: 2,
-        title: 'Business SSID on 2.4 GHz Only',
+        title: 'Business WiFi Network on 2.4 GHz Only',
         severity: 'high',
         description:
           'POS terminals and card readers sharing 2.4 GHz band with customer devices. No 5 GHz offload configured.',
@@ -84,7 +84,7 @@ export const CASE_STUDIES: CaseStudy[] = [
         number: 1,
         title: 'Open Network — Zero Security on 2.4 GHz',
         severity: 'critical',
-        description: 'Primary SSID broadcasting with no encryption. All traffic visible to any device in range.',
+        description: 'Primary WiFi network broadcasting with no encryption. All traffic visible to any device in range.',
       },
       {
         number: 2,
@@ -101,7 +101,7 @@ export const CASE_STUDIES: CaseStudy[] = [
       },
       {
         number: 4,
-        title: 'No SSID Differentiation',
+        title: 'No WiFi Network Differentiation',
         severity: 'high',
         description: 'Staff and guest traffic indistinguishable. No QoS policy possible.',
       },
@@ -148,15 +148,15 @@ export const CASE_STUDIES: CaseStudy[] = [
         severity: 'critical',
         description:
           'Single router attempting to cover sanctuary, fellowship hall, offices, and detached shed. Shed receiving -48 to -66 dBm — marginal for basic internet, completely inadequate for streaming support during services. Multiple buildings require multiple access points.',
-        fix: 'Install wired access points in Fellowship Hall and Shed. Configure each with same SSID but different channels. Run CAT6 ethernet from main building. Test coverage during a live Sunday service with full congregant load.',
+        fix: 'Install wired access points in Fellowship Hall and Shed. Configure each with the same WiFi network name but different channels. Run CAT6 ethernet from main building. Test coverage during a live Sunday service with full congregant load.',
       },
       {
         number: 3,
-        title: 'Excessive SSID Count Creating Airtime Overhead',
+        title: 'Too Many WiFi Networks Creating Airtime Overhead',
         severity: 'critical',
         description:
-          "Multiple hidden networks broadcasting alongside the main 'ABAG Wifi' network. Every SSID broadcasts beacons every 100ms consuming airtime. During Sunday streaming with many simultaneous users, this overhead compounds congestion significantly.",
-        fix: 'Log into Netgear at 192.168.1.1. Navigate to Wireless Settings > Guest Network. Disable hidden networks and unnecessary guest SSIDs. Keep only main SSID and one guest SSID if required. Apply across all access points.',
+          "Multiple hidden networks broadcasting alongside the main 'ABAG Wifi' network. Every WiFi network broadcasts beacons every 100ms consuming airtime. During Sunday streaming with many simultaneous users, this overhead compounds congestion significantly.",
+        fix: 'Log into Netgear at 192.168.1.1. Navigate to Wireless Settings > Guest Network. Disable hidden networks and unnecessary guest networks. Keep only your main WiFi network and one guest network if required. Apply across all access points.',
       },
       {
         number: 4,

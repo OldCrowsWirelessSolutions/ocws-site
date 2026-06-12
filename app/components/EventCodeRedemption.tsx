@@ -58,9 +58,9 @@ export default function EventCodeRedemption({ defaultCode = '', onSuccess }: Pro
     })
     return (
       <div style={{ background: '#0D1520', border: '1px solid #0D6E7A', borderRadius: 12, padding: '1.5rem', maxWidth: 440, color: '#F4F6F8' }}>
-        <div style={{ color: '#00C2C7', fontSize: 13, fontWeight: 500, marginBottom: 8 }}>✓ Code Activated — {grants.codeLabel}</div>
+        <div style={{ color: '#22D6DC', fontSize: 13, fontWeight: 500, marginBottom: 8 }}>✓ Code Activated — {grants.codeLabel}</div>
         <p style={{ margin: '0 0 12px', fontSize: 15, lineHeight: 1.6 }}>
-          Corvus is ready. You have <strong>1 Verdict credit</strong> and <strong>24 hours of Talk to Corvus</strong> access.
+          Corvus is ready. You have <strong>1 WiFi Health Report credit</strong> and <strong>24 hours of Talk to Corvus</strong> access.
         </p>
         <div style={{ background: '#1A2332', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#888' }}>
           Chat access expires: <span style={{ color: '#F4F6F8' }}>{expiry}</span>
@@ -69,7 +69,7 @@ export default function EventCodeRedemption({ defaultCode = '', onSuccess }: Pro
           display: 'block', marginTop: 16, background: '#0D6E7A', color: '#F4F6F8',
           textAlign: 'center', padding: '10px 0', borderRadius: 8, textDecoration: 'none', fontWeight: 500
         }}>
-          Run Your Verdict →
+          Run Your WiFi Health Report →
         </a>
       </div>
     )
@@ -77,7 +77,7 @@ export default function EventCodeRedemption({ defaultCode = '', onSuccess }: Pro
 
   return (
     <div style={{ background: '#0D1520', border: '1px solid #1A2332', borderRadius: 12, padding: '1.5rem', maxWidth: 440, color: '#F4F6F8' }}>
-      <div style={{ fontSize: 13, color: '#888', marginBottom: 16 }}>Enter your event code to activate your free Verdict + Corvus chat access.</div>
+      <div style={{ fontSize: 13, color: '#888', marginBottom: 16 }}>Enter your event code to activate your free WiFi Health Report + Corvus chat access.</div>
 
       {[
         { label: 'Event Code', value: code, setter: setCode, placeholder: 'HACKTHECOAST2026', type: 'text' },

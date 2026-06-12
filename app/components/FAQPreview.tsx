@@ -7,15 +7,15 @@ import Link from "next/link";
 const PREVIEW_FAQS = [
   {
     q: "What is Crow's Eye?",
-    a: "Crow's Eye is an AI-powered wireless diagnostics app built on 17 years of U.S. Navy Electronic Warfare experience. Download it on Android, let Corvus scan your network automatically, and get a full Verdict — findings and fix steps — in minutes.",
+    a: "Crow's Eye is an AI-powered wireless diagnostics app built on 17 years of U.S. Navy Electronic Warfare experience. Download it on Android, let Corvus scan your network automatically, and get a full WiFi Health Report — findings and fix steps — in minutes.",
   },
   {
-    q: "What is a Corvus Verdict?",
-    a: "A Verdict is Corvus's AI-generated analysis of your wireless environment. It identifies channel conflicts, security gaps, coverage issues, and interference patterns — then delivers prioritized fix steps with manufacturer-specific instructions.",
+    q: "What is a WiFi Health Report?",
+    a: "A WiFi Health Report is Corvus's AI-generated analysis of your wireless environment. It identifies channel conflicts, security gaps, coverage issues, and interference patterns — then delivers prioritized fix steps with manufacturer-specific instructions.",
   },
   {
     q: "How much does it cost?",
-    a: "Fledgling tier is $10/month and includes 3 Verdicts. A single Verdict is $50 with no subscription required. Nest ($20/mo) includes 3 Verdicts per month. See all plans on the Pricing page.",
+    a: "Fledgling tier is $10/month and includes 3 WiFi Health Reports. A single WiFi Health Report is $50 with no subscription required. Nest ($20/mo) includes 3 WiFi Health Reports per month. See all plans on the Pricing page.",
   },
   {
     q: "What devices does it work on?",
@@ -52,7 +52,7 @@ export default function FAQPreview() {
                   className="shrink-0 transition-transform duration-200"
                   style={{
                     transform: openIdx === i ? "rotate(180deg)" : "rotate(0deg)",
-                    color: "#00C2C7",
+                    color: "#22D6DC",
                   }}
                   width="16"
                   height="16"
@@ -72,7 +72,7 @@ export default function FAQPreview() {
         </div>
 
         <div className="mt-8">
-          <Link href="/faq" className="text-sm font-semibold ocws-glow-hover rounded-lg px-2 py-1 -ml-2" style={{ color: "#00C2C7" }}>
+          <Link href="/faq" className="text-sm font-semibold ocws-glow-hover rounded-lg px-2 py-1 -ml-2" style={{ color: "#22D6DC" }}>
             See all questions →
           </Link>
         </div>

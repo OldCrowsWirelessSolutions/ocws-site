@@ -13,8 +13,8 @@ const LEVEL_LABELS: Record<string, string> = {
   flock: 'MSP / IT Tour',
   murder: 'RF Engineer Tour',
   full: 'Full Platform Tour',
-  verdict: "Corvus' Verdict Deep Dive",
-  reckoning: 'Full Reckoning Deep Dive',
+  verdict: 'WiFi Health Report Deep Dive',
+  reckoning: 'Whole-Home Survey Deep Dive',
   compare: 'Competitive Comparison Tour',
 };
 
@@ -85,19 +85,19 @@ export async function POST(req: NextRequest) {
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#0D1520;padding:40px 20px;">
     <tr>
       <td align="center">
-        <table width="560" cellpadding="0" cellspacing="0" style="background:#1A2332;border-radius:12px;overflow:hidden;border:1px solid rgba(0,194,199,0.2);">
+        <table width="560" cellpadding="0" cellspacing="0" style="background:#1A2332;border-radius:12px;overflow:hidden;border:1px solid rgba(34,214,220,0.2);">
 
           <tr>
-            <td style="background:#0D1520;padding:16px 28px;border-bottom:2px solid #B8922A;">
+            <td style="background:#0D1520;padding:16px 28px;border-bottom:2px solid #D8AC32;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td>
-                    <span style="color:#00C2C7;font-family:monospace;font-size:11px;letter-spacing:2px;">
+                    <span style="color:#22D6DC;font-family:monospace;font-size:11px;letter-spacing:2px;">
                       CORVUS · OLD CROWS WIRELESS SOLUTIONS
                     </span>
                   </td>
                   <td align="right">
-                    <span style="color:#B8922A;font-family:monospace;font-size:10px;letter-spacing:1px;">
+                    <span style="color:#D8AC32;font-family:monospace;font-size:10px;letter-spacing:1px;">
                       ${isDemo ? 'PERSONAL ACCESS' : 'PERSONAL TOUR'}
                     </span>
                   </td>
@@ -113,11 +113,11 @@ export async function POST(req: NextRequest) {
                 ${greeting}
               </p>
 
-              <div style="background:#0D1520;border-left:3px solid #00C2C7;padding:14px 18px;border-radius:0 8px 8px 0;margin:0 0 20px;">
+              <div style="background:#0D1520;border-left:3px solid #22D6DC;padding:14px 18px;border-radius:0 8px 8px 0;margin:0 0 20px;">
                 <p style="color:#aaa;font-size:13px;font-style:italic;margin:0;line-height:1.6;">
                   ${corvusLine}
                 </p>
-                <p style="color:#00C2C7;font-family:monospace;font-size:10px;letter-spacing:1px;margin:8px 0 0;">
+                <p style="color:#22D6DC;font-family:monospace;font-size:10px;letter-spacing:1px;margin:8px 0 0;">
                   — CORVUS · OLD CROWS WIRELESS SOLUTIONS
                 </p>
               </div>
@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
                 <tr>
                   <td align="center">
                     <a href="${tourUrl}"
-                       style="display:inline-block;background:linear-gradient(135deg,#0D6E7A,#00C2C7);color:#ffffff;text-decoration:none;font-weight:700;font-size:16px;padding:16px 40px;border-radius:8px;letter-spacing:0.3px;">
+                       style="display:inline-block;background:linear-gradient(135deg,#0D6E7A,#22D6DC);color:#ffffff;text-decoration:none;font-weight:700;font-size:16px;padding:16px 40px;border-radius:8px;letter-spacing:0.3px;">
                       ${buttonText}
                     </a>
                   </td>
@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
 
               <p style="color:#555;font-size:11px;text-align:center;margin:16px 0 0;font-family:monospace;">
                 If the button doesn't work, copy this link:<br>
-                <a href="${tourUrl}" style="color:#00C2C7;word-break:break-all;">${tourUrl}</a>
+                <a href="${tourUrl}" style="color:#22D6DC;word-break:break-all;">${tourUrl}</a>
               </p>
 
             </td>
@@ -156,7 +156,7 @@ export async function POST(req: NextRequest) {
                   <td>
                     <p style="color:#555;font-size:11px;margin:0;line-height:1.5;">
                       ${senderName} · Old Crows Wireless Solutions<br>
-                      <a href="https://oldcrowswireless.com" style="color:#00C2C7;text-decoration:none;">oldcrowswireless.com</a>
+                      <a href="https://oldcrowswireless.com" style="color:#22D6DC;text-decoration:none;">oldcrowswireless.com</a>
                       · Pensacola, FL
                     </p>
                   </td>

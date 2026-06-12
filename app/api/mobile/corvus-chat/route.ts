@@ -32,6 +32,14 @@ export const runtime    = "nodejs";
 export const maxDuration = 60;
 
 import redis from "@/lib/redis";
+import { consumePurchasedChat, chatAccountKey, CHAT_PACKS, CHAT_PASSES } from "@/lib/chat-quota";
+
+// Surfaced on the 402 so the app can render buy buttons at the wall.
+const CHAT_TOPUPS = [
+  { product: CHAT_PACKS["chat-pack-25"].product,  label: "+25 questions",  price: CHAT_PACKS["chat-pack-25"].priceUSD },
+  { product: CHAT_PACKS["chat-pack-100"].product, label: "+100 questions", price: CHAT_PACKS["chat-pack-100"].priceUSD },
+  { product: CHAT_PASSES["chat-pass-day"].product, label: "Day Pass (24h)", price: CHAT_PASSES["chat-pass-day"].priceUSD },
+];
 
 const APP_TOKEN = process.env.EXPO_PUBLIC_CORVUS_APP_TOKEN
   ?? process.env.OCWS_MOBILE_APP_TOKEN
@@ -119,6 +127,7 @@ export async function POST(req: Request) {
     // ── Quota check (pre-Anthropic) ───────────────────────────────────────
     // Only applies when verdictId is present AND tier is not in bypass set.
     let quotaBeforeCall: QuotaState = unlimitedQuota();
+    let paidFromTopup = false; // true when this message is covered by a purchased pack/pass
     if (verdictId && !unlimited) {
       let used = 0;
       try {
@@ -134,14 +143,25 @@ export async function POST(req: Request) {
       quotaBeforeCall = { used, limit: QUOTA_LIMIT, remaining, unlimited: false };
 
       if (remaining <= 0) {
-        return Response.json(
-          {
-            ok:    false,
-            error: "quota_exceeded",
-            quota: quotaBeforeCall,
-          },
-          { status: 402 },
-        );
+        // Per-scan free quota is spent. Before blocking, see if the user has a
+        // purchased top-up (a pack balance or an active pass) keyed by their
+        // account identity. If so, draw from it and let the message through —
+        // and skip the per-verdict increment below.
+        // Canonical key (lowercased email) so web-bought top-ups apply here too.
+        const topup = await consumePurchasedChat(chatAccountKey(userId, userId)).catch(() => ({ allowed: false, source: "none" as const }));
+        if (topup.allowed) {
+          paidFromTopup = true;
+        } else {
+          return Response.json(
+            {
+              ok:     false,
+              error:  "quota_exceeded",
+              quota:  quotaBeforeCall,
+              topups: CHAT_TOPUPS,
+            },
+            { status: 402 },
+          );
+        }
       }
     }
 
@@ -201,8 +221,9 @@ export async function POST(req: Request) {
     // ── Increment quota (post-success) ────────────────────────────────────
     // Only count consumed questions when we actually got a response back.
     // Failed Anthropic calls don't count against the user's quota.
+    // Don't burn a per-verdict question when the message was paid from a top-up.
     let quotaAfterCall: QuotaState = quotaBeforeCall;
-    if (verdictId && !unlimited) {
+    if (verdictId && !unlimited && !paidFromTopup) {
       try {
         const newCount = await redis.incr(quotaKey(userId, verdictId));
         await redis.expire(quotaKey(userId, verdictId), QUOTA_TTL_SECONDS);

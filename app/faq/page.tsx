@@ -14,7 +14,7 @@ const FAQS: { section: string; items: { q: string; a: string }[] }[] = [
     items: [
       {
         q: "What is Crow's Eye?",
-        a: "Crow's Eye is an AI-powered wireless diagnostics app built on 17 years of U.S. Navy Electronic Warfare experience. Download it on Android to scan your network and get a Corvus Verdict — findings and fix steps in minutes.",
+        a: "Crow's Eye is an AI-powered wireless diagnostics app built on 17 years of U.S. Navy Electronic Warfare experience. Download it on Android to scan your network and get a WiFi Health Report — findings and fix steps in minutes.",
       },
       {
         q: "How do I get the app?",
@@ -26,23 +26,23 @@ const FAQS: { section: string; items: { q: string; a: string }[] }[] = [
       },
       {
         q: "Does the app require internet?",
-        a: "WiFi scanning works on-device. Verdict generation and Talk to Corvus require an active internet connection.",
+        a: "WiFi scanning works on-device. WiFi Health Report generation and Talk to Corvus require an active internet connection.",
       },
     ],
   },
   {
-    section: "Verdicts & Reckonings",
+    section: "WiFi Health Reports & Whole-Home Surveys",
     items: [
       {
-        q: "What is a Corvus Verdict?",
-        a: "A Verdict is Corvus's AI-generated analysis of your wireless environment. It identifies channel conflicts, security gaps, coverage issues, and interference patterns — then delivers prioritized fix steps with manufacturer-specific instructions.",
+        q: "What is a WiFi Health Report?",
+        a: "A WiFi Health Report is Corvus's AI-generated analysis of your wireless environment. It identifies channel conflicts, security gaps, coverage issues, and interference patterns — then delivers prioritized fix steps with manufacturer-specific instructions.",
       },
       {
-        q: "What is a Full Reckoning?",
-        a: "A Full Reckoning is a multi-location wireless survey. You walk each room or area, Corvus scans each location, and delivers a comprehensive report covering every space — dead zones, site-wide patterns, and facility-level fixes.",
+        q: "What is a Whole-Home Survey?",
+        a: "A Whole-Home Survey is a multi-location wireless survey. You walk each room or area, Corvus scans each location, and delivers a comprehensive report covering every space — dead zones, site-wide patterns, and facility-level fixes.",
       },
       {
-        q: "How long does a Verdict take?",
+        q: "How long does a WiFi Health Report take?",
         a: "Corvus returns findings within a few minutes of completing the scan. The app guides you through the process step by step.",
       },
       {
@@ -51,7 +51,7 @@ const FAQS: { section: string; items: { q: string; a: string }[] }[] = [
       },
       {
         q: "How accurate is Corvus?",
-        a: "Corvus analyzes what is physically present in your wireless environment — every visible network, signal level, channel, and MAC address. His findings are based on measurable RF data, not guesses.",
+        a: "Corvus analyzes what is physically present in your wireless environment — every visible network, signal level, channel, and MAC address. His findings are based on measurable WiFi data, not guesses.",
       },
     ],
   },
@@ -60,19 +60,19 @@ const FAQS: { section: string; items: { q: string; a: string }[] }[] = [
     items: [
       {
         q: "Is there a free version?",
-        a: "Fledgling tier is $10/month and includes 3 Verdicts. A single Verdict is available for $50 with no subscription required.",
+        a: "Fledgling tier is $10/month and includes 3 WiFi Health Reports. A single WiFi Health Report is available for $50 with no subscription required.",
       },
       {
         q: "What are the subscription tiers?",
-        a: "Fledgling ($10/mo) — 3 Verdicts, unlimited Talk to Corvus chat. Nest ($20/mo or $160/yr) — homeowners and small businesses. Flock ($100/mo or $900/yr) — MSPs, IT consultants, and growing teams. Murder ($950/mo or $9,500/yr) — enterprise networks, multi-site operators, and mission-critical environments.",
+        a: "Fledgling ($10/mo) — 3 WiFi Health Reports, unlimited Talk to Corvus chat. Nest ($20/mo or $160/yr) — homeowners and small businesses. Flock ($100/mo or $900/yr) — MSPs, IT consultants, and growing teams. Murder ($950/mo or $9,500/yr) — enterprise networks, multi-site operators, and mission-critical environments.",
       },
       {
         q: "Can I cancel my subscription?",
         a: "Monthly Nest plans require a 3-month minimum commitment. After 90 days you can cancel anytime with no penalty. Annual plans can be cancelled for a prorated refund.",
       },
       {
-        q: "What if I need more Verdicts than my plan includes?",
-        a: "Buy extra Verdict credits anytime from your account dashboard. Credits never expire and roll over month to month.",
+        q: "What if I need more WiFi Health Reports than my plan includes?",
+        a: "Buy extra WiFi Health Report credits anytime from your account dashboard. Credits never expire and roll over month to month.",
       },
     ],
   },
@@ -81,11 +81,11 @@ const FAQS: { section: string; items: { q: string; a: string }[] }[] = [
     items: [
       {
         q: "What is Talk to Corvus?",
-        a: "An AI chat interface where you can ask Corvus anything about wireless networking, RF interference, security, or your specific network environment. Available to all logged-in users.",
+        a: "An AI chat interface where you can ask Corvus anything about wireless networking, WiFi interference, security, or your specific network environment. Available to all logged-in users.",
       },
       {
         q: "How current is Corvus's knowledge?",
-        a: "Corvus's core knowledge base covers RF fundamentals through Wi-Fi 7 and current enterprise standards. His foundational RF expertise — propagation, interference, channel planning, MAC analysis — does not change with standards updates.",
+        a: "Corvus's core knowledge base covers wireless fundamentals through Wi-Fi 7 and current enterprise standards. His foundational WiFi expertise — propagation, interference, channel planning, MAC analysis — does not change with standards updates.",
       },
       {
         q: "What if I can't log into my router?",
@@ -105,8 +105,8 @@ const FAQS: { section: string; items: { q: string; a: string }[] }[] = [
         a: "Academic institutional licensing for universities. Includes student seats, faculty seats, and campus IT director access. Pricing from $1,500/year.",
       },
       {
-        q: "Can I get a certified Full Reckoning?",
-        a: "Yes. The OCWS Pro Certified Reckoning includes Joshua Turner personally reviewing and certifying every finding. The certified report is valid for compliance documentation, insurance claims, board presentations, and vendor quotes. $1,500 for any size facility. Contact OCWS to request one.",
+        q: "Can I get a certified Whole-Home Survey?",
+        a: "Yes. The OCWS Pro Certified Whole-Home Survey includes Joshua Turner personally reviewing and certifying every finding. The certified report is valid for compliance documentation, insurance claims, board presentations, and vendor quotes. $1,500 for any size facility. Contact OCWS to request one.",
       },
       {
         q: "Where does OCWS do on-site assessments?",
@@ -134,7 +134,7 @@ export default function FAQPage() {
     <main style={{ background: "#0D1520", minHeight: "100vh" }}>
       <section className="ocws-container py-16">
         <div className="mb-12">
-          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#00C2C7", letterSpacing: "0.18em", fontFamily: "'Share Tech Mono', monospace" }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#22D6DC", letterSpacing: "0.18em", fontFamily: "'Share Tech Mono', monospace" }}>
             Crow&rsquo;s Eye &middot; OCWS
           </p>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -150,7 +150,7 @@ export default function FAQPage() {
             <div key={section.section}>
               <h2
                 className="text-xs font-semibold uppercase tracking-widest mb-4"
-                style={{ color: "#00C2C7", letterSpacing: "0.18em", fontFamily: "'Share Tech Mono', monospace" }}
+                style={{ color: "#22D6DC", letterSpacing: "0.18em", fontFamily: "'Share Tech Mono', monospace" }}
               >
                 {section.section}
               </h2>
@@ -165,7 +165,7 @@ export default function FAQPage() {
                       <span className="text-white font-semibold pr-4">{item.q}</span>
                       <svg
                         className="shrink-0 transition-transform duration-200 group-open:rotate-180"
-                        style={{ color: "#00C2C7" }}
+                        style={{ color: "#22D6DC" }}
                         width="16"
                         height="16"
                         viewBox="0 0 16 16"
@@ -196,7 +196,7 @@ export default function FAQPage() {
             <Link
               href="/crows-eye"
               className="inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-bold transition"
-              style={{ background: "#00C2C7", color: "#0D1520" }}
+              style={{ background: "#22D6DC", color: "#0D1520" }}
             >
               Get the App
             </Link>

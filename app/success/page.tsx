@@ -16,12 +16,12 @@ export default function SuccessPage() {
           Corvus has your payment.
         </h1>
         <p className="text-base mb-8" style={{ color: "#888" }}>
-          Your Verdict credit is ready. Head back to Crow&rsquo;s Eye and submit your screenshots to get your full analysis.
+          Your WiFi Health Report credit is ready. Head back to Crow&rsquo;s Eye and submit your screenshots to get your full analysis.
         </p>
         <Link
           href="/crows-eye"
           className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold transition"
-          style={{ background: "#00C2C7", color: "#0D1520" }}
+          style={{ background: "#22D6DC", color: "#0D1520" }}
         >
           Go to Crow&rsquo;s Eye →
         </Link>

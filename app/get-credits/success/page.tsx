@@ -16,10 +16,10 @@ function SuccessContent() {
   const [redirected, setRedirected] = useState(false)
 
   const productLabel =
-    product === 'reckoning-small'    ? 'Small Reckoning' :
-    product === 'reckoning-standard' ? 'Standard Reckoning' :
-    product === 'reckoning-commercial' ? 'Commercial Reckoning' :
-    "Verdict"
+    product === 'reckoning-small'    ? 'Small Whole-Home Survey' :
+    product === 'reckoning-standard' ? 'Standard Whole-Home Survey' :
+    product === 'reckoning-commercial' ? 'Commercial Whole-Home Survey' :
+    "WiFi Health Report"
 
   useEffect(() => {
     if (!returnUrl) return
@@ -94,7 +94,7 @@ function SuccessContent() {
 
       <p
         style={{
-          color: '#00C2C7',
+          color: '#22D6DC',
           fontFamily: "'Share Tech Mono', monospace",
           fontSize: 11,
           letterSpacing: '0.2em',
@@ -116,12 +116,12 @@ function SuccessContent() {
           <div>
             <div
               style={{
-                background: 'rgba(0,194,199,0.08)',
-                border: '1px solid rgba(0,194,199,0.25)',
+                background: 'rgba(34,214,220,0.08)',
+                border: '1px solid rgba(34,214,220,0.25)',
                 borderRadius: 12,
                 padding: '16px 24px',
                 marginBottom: 16,
-                color: '#00C2C7',
+                color: '#22D6DC',
                 fontSize: 15,
                 fontWeight: 600,
               }}
@@ -132,7 +132,7 @@ function SuccessContent() {
               Not redirecting?{' '}
               <a
                 href={buildDeepLink(returnUrl, product, userId)}
-                style={{ color: 'rgba(0,194,199,0.6)' }}
+                style={{ color: 'rgba(34,214,220,0.6)' }}
               >
                 Tap here to return to the app
               </a>
@@ -147,7 +147,7 @@ function SuccessContent() {
             href="/dashboard"
             style={{
               display: 'inline-block',
-              background: '#00C2C7',
+              background: '#22D6DC',
               color: '#0D1520',
               borderRadius: 12,
               padding: '13px 32px',
@@ -177,7 +177,7 @@ export default function SuccessPage() {
   return (
     <Suspense fallback={
       <div style={{ background: '#0D1520', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: '#00C2C7', fontFamily: "'Share Tech Mono', monospace", fontSize: 14 }}>Loading…</div>
+        <div style={{ color: '#22D6DC', fontFamily: "'Share Tech Mono', monospace", fontSize: 14 }}>Loading…</div>
       </div>
     }>
       <SuccessContent />

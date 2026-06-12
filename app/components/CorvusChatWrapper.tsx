@@ -42,8 +42,8 @@ export default function CorvusChatWrapper() {
       width: "52px",
       height: "52px",
       borderRadius: "50%",
-      background: "linear-gradient(135deg,#00C2C7,#007A7E)",
-      boxShadow: "0 4px 20px rgba(0,194,199,0.35)",
+      background: "linear-gradient(135deg,#22D6DC,#007A7E)",
+      boxShadow: "0 4px 20px rgba(34,214,220,0.35)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -58,11 +58,11 @@ export default function CorvusChatWrapper() {
         onClick={() => { window.location.hash = "chat"; }}
         onMouseEnter={e => {
           (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.08)";
-          (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 28px rgba(0,194,199,0.5)";
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 28px rgba(34,214,220,0.5)";
         }}
         onMouseLeave={e => {
           (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
-          (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 20px rgba(0,194,199,0.35)";
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 20px rgba(34,214,220,0.35)";
         }}
       >
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0D1520" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

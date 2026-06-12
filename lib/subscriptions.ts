@@ -46,6 +46,7 @@ export interface ValidationResult {
   type: "subscription" | "founder" | "admin" | "promo" | "vip" | null;
   tier?: SubscriptionTier;
   customer_name?: string;
+  customer_email?: string;           // canonical cross-surface identity (subscriptions only)
   verdicts_remaining?: number;       // 999 = unlimited
   verdicts_unlimited?: boolean;
   reckonings_remaining?: { small: number; standard: number; commercial: number };
@@ -431,6 +432,7 @@ export async function validateSubscriptionId(
     type: "subscription",
     tier: sub.tier,
     customer_name: sub.customer_name,
+    customer_email: sub.customer_email,
     verdicts_remaining,
     verdicts_unlimited,
     reckonings_remaining,
@@ -457,7 +459,7 @@ export async function consumeCredit(
     if (!unlimited) {
       const monthly_remaining = ent.verdicts_per_month - sub.verdicts_used;
       if (monthly_remaining <= 0 && sub.extra_verdict_credits <= 0) {
-        return { success: false, error: "No Verdict credits remaining this billing period." };
+        return { success: false, error: "No WiFi Health Report credits remaining this billing period." };
       }
       // Extra credits deplete first; monthly allotment is the fallback
       if (sub.extra_verdict_credits > 0) {
@@ -479,7 +481,7 @@ export async function consumeCredit(
     if (limit < 999999 && used >= limit) {
       return {
         success: false,
-        error: `No ${recType} Reckoning credits remaining this billing period.`,
+        error: `No ${recType} Whole-Home Survey credits remaining this billing period.`,
       };
     }
     if (limit !== Infinity) {

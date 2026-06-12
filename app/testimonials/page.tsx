@@ -21,7 +21,7 @@ function StarRow({ rating }: { rating: number }) {
   return (
     <div className="flex gap-0.5" aria-label={`${rating} out of 5 stars`}>
       {[...Array(5)].map((_, i) => (
-        <svg key={i} width="16" height="16" viewBox="0 0 16 16" fill={i < rating ? "#B8922A" : "#2a2a2a"} xmlns="http://www.w3.org/2000/svg">
+        <svg key={i} width="16" height="16" viewBox="0 0 16 16" fill={i < rating ? "#D8AC32" : "#2a2a2a"} xmlns="http://www.w3.org/2000/svg">
           <path d="M8 1l1.85 3.75 4.15.6-3 2.93.71 4.14L8 10.25l-3.71 1.97.71-4.14L2 5.35l4.15-.6L8 1z"/>
         </svg>
       ))}
@@ -91,13 +91,13 @@ export default function TestimonialsPage() {
       <section className="ocws-container py-16">
         {/* Header */}
         <div className="mb-4">
-          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#00C2C7", letterSpacing: "0.18em" }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#22D6DC", letterSpacing: "0.18em" }}>
             Crow&rsquo;s Eye · OCWS
           </p>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
             What clients are saying.
           </h1>
-          <p className="text-sm" style={{ color: "#B8922A" }}>
+          <p className="text-sm" style={{ color: "#D8AC32" }}>
             All testimonials are verified before posting.
           </p>
         </div>
@@ -108,20 +108,20 @@ export default function TestimonialsPage() {
           {/* Eric Mims — Featured (always shown) */}
           <div
             className="rounded-2xl p-8"
-            style={{ background: "#1A2332", border: "1px solid rgba(184,146,42,0.35)", borderTop: "3px solid #B8922A" }}
+            style={{ background: "#1A2332", border: "1px solid rgba(216,172,50,0.35)", borderTop: "3px solid #D8AC32" }}
           >
             {/* Stars + badge */}
             <div className="flex items-center justify-between gap-3 mb-5">
               <div className="flex gap-0.5" aria-label="5 out of 5 stars">
                 {[...Array(5)].map((_, i) => (
-                  <svg key={i} width="18" height="18" viewBox="0 0 16 16" fill="#B8922A" xmlns="http://www.w3.org/2000/svg">
+                  <svg key={i} width="18" height="18" viewBox="0 0 16 16" fill="#D8AC32" xmlns="http://www.w3.org/2000/svg">
                     <path d="M8 1l1.85 3.75 4.15.6-3 2.93.71 4.14L8 10.25l-3.71 1.97.71-4.14L2 5.35l4.15-.6L8 1z"/>
                   </svg>
                 ))}
               </div>
               <span
                 className="text-xs font-semibold px-2.5 py-1 rounded-full"
-                style={{ background: "rgba(184,146,42,0.12)", border: "1px solid rgba(184,146,42,0.3)", color: "#B8922A" }}
+                style={{ background: "rgba(216,172,50,0.12)", border: "1px solid rgba(216,172,50,0.3)", color: "#D8AC32" }}
               >
                 ★ Featured
               </span>
@@ -137,7 +137,7 @@ export default function TestimonialsPage() {
               <div>
                 <p className="text-sm font-bold text-white">Eric Mims</p>
                 <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>San Antonio, TX</p>
-                <p className="text-xs mt-1" style={{ color: "#B8922A" }}>30+ years IT experience · Network infrastructure lead</p>
+                <p className="text-xs mt-1" style={{ color: "#D8AC32" }}>30+ years IT experience · Network infrastructure lead</p>
               </div>
               <p className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>March 2026</p>
             </div>
@@ -198,7 +198,7 @@ export default function TestimonialsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1 text-white">
-                    Name <span style={{ color: "#00C2C7" }}>*</span>
+                    Name <span style={{ color: "#22D6DC" }}>*</span>
                   </label>
                   <input
                     value={tName}
@@ -223,7 +223,7 @@ export default function TestimonialsPage() {
 
               <div>
                 <label className="block text-sm font-medium mb-1 text-white">
-                  Testimonial <span style={{ color: "#00C2C7" }}>*</span>
+                  Testimonial <span style={{ color: "#22D6DC" }}>*</span>
                 </label>
                 <textarea
                   value={tText}
@@ -244,7 +244,7 @@ export default function TestimonialsPage() {
                       type="button"
                       onClick={() => setTRating(n)}
                       className="text-2xl transition"
-                      style={{ color: n <= tRating ? "#B8922A" : "#444" }}
+                      style={{ color: n <= tRating ? "#D8AC32" : "#444" }}
                     >
                       ★
                     </button>
@@ -279,7 +279,7 @@ export default function TestimonialsPage() {
                   type="submit"
                   disabled={status === "sending"}
                   className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold disabled:opacity-60 transition"
-                  style={{ background: "#00C2C7", color: "#0D1520" }}
+                  style={{ background: "#22D6DC", color: "#0D1520" }}
                 >
                   {status === "sending" ? "Submitting…" : "Submit Testimonial"}
                 </button>
