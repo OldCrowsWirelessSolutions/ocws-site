@@ -37,7 +37,12 @@ const APP_TOKEN = process.env.EXPO_PUBLIC_CORVUS_APP_TOKEN
   ?? process.env.OCWS_MOBILE_APP_TOKEN
   ?? "";
 
-const MODEL_ID = "claude-sonnet-4-20250514";
+// v28: chat moved to Haiku 4.5 for cost efficiency. Chat replies are
+// short-form Q&A (system prompt caps at 60 words default), so Haiku's
+// reasoning depth is sufficient and we pay ~75% less per call. Verdict
+// analysis stays on Sonnet 4.6 — see /api/mobile/verdict-analyze.
+// To revert: change to "claude-sonnet-4-20250514", redeploy. ~90 seconds.
+const MODEL_ID = "claude-haiku-4-5-20251001";
 const QUOTA_LIMIT = 5;
 const QUOTA_TTL_SECONDS = 60 * 60 * 24 * 90; // 90 days
 
@@ -105,9 +110,11 @@ export async function POST(req: Request) {
     const maxTokens = typeof body.max_tokens === "number" && body.max_tokens > 0
       ? Math.min(body.max_tokens, 4000)
       : 2000;
-    const modelId   = typeof body.model === "string" && body.model.length > 0
-      ? body.model
-      : MODEL_ID;
+    // v28: server pins the model — ignore any model override from mobile.
+    // This lets us swap chat models via Vercel env redeploy (~90s) without
+    // requiring an APK rebuild + Play Store review cycle.
+    const modelId = MODEL_ID;
+    void body.model;
 
     // ── Quota check (pre-Anthropic) ───────────────────────────────────────
     // Only applies when verdictId is present AND tier is not in bypass set.

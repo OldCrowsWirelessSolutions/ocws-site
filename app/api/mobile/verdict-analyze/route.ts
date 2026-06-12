@@ -59,6 +59,21 @@ export async function POST(req: Request) {
       return Response.json({ ok: false, error: "Service not configured" }, { status: 500 });
     }
 
+    // v28: hard cap on request body size. Pathological inputs (e.g. dozens
+    // of photos, runaway per-location data) can't burn Anthropic API quota
+    // on guaranteed-to-fail calls. The mobile-side 30-network cap (v23 for
+    // verdict, v28 for reckoning) keeps real flows well under this — at
+    // 4 photos × ~2MB each + JSON it caps around 9MB.
+    const contentLength = parseInt(req.headers.get("content-length") ?? "0", 10);
+    const MAX_BODY_BYTES = 10 * 1024 * 1024; // 10 MB
+    if (contentLength > MAX_BODY_BYTES) {
+      console.warn("[mobile/verdict-analyze] oversized request rejected:", contentLength);
+      return Response.json(
+        { ok: false, error: "Scan payload too large. Reduce photos or scan a less dense environment." },
+        { status: 413 },
+      );
+    }
+
     const body = await req.json().catch(() => null) as {
       prompt?:        string;
       panoramaPhotos?: string[]; // base64 JPEGs, no data: prefix
