@@ -294,10 +294,10 @@ export function getTourScript(level: TourLevel, visitorName?: string): TourScrip
           visualType: 'dashboard',
           visualData: {
             tiers: [
-              { name: 'Fledgling', desc: 'Demo teaser — problem count only', price: 'Free' },
+              { name: 'Fledgling', desc: 'Entry — 1 WiFi Health Report/mo', price: '$10/mo' },
               { name: 'Nest', desc: 'Homeowner — 3 WiFi Health Reports/mo', price: '$20/mo' },
-              { name: 'Flock', desc: 'MSP / IT — 15 WiFi Health Reports + white-label', price: '$100/mo' },
-              { name: 'Murder', desc: 'RF Engineer — unlimited + API', price: '$950/mo' },
+              { name: 'Flock', desc: 'Business & pros — 15 reports + team seats', price: '$100/mo' },
+              { name: 'Murder', desc: 'Many locations — unlimited', price: '$950/mo' },
               { name: 'OCWS Pro', desc: 'Certified — Joshua signs every one', price: '$750/report' },
             ],
           },
