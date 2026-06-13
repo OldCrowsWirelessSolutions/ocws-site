@@ -39,8 +39,11 @@ interface CorvisChatProps {
   isFounder?: boolean;
   /** VIP founding member */
   isVIP?: boolean;
-  /** Accessible reports for the report context selector (Team Leads / VIPs get subordinate reports) */
-  accessibleReports?: Array<{ reportId: string; clientName?: string; locationName?: string; createdAt: string; type: string }>;
+  /** Accessible reports for the report context selector. Every user gets their
+   *  own past scans here so they can pin one as context at any time — including
+   *  hours/days after the scan. `reportData` is the saved report JSON string
+   *  (full_findings / recommendations / corvus_summary) used to build context. */
+  accessibleReports?: Array<{ reportId: string; clientName?: string; locationName?: string; createdAt: string; type: string; reportData?: string }>;
 }
 
 // ─── Typewriter ───────────────────────────────────────────────────────────────
@@ -90,7 +93,6 @@ export default function CorvusChat({
   code,
   comfortLevel = 2,
   hasRecentVerdict = false,
-  isFreeTier = false,
   expanded = false,
   isFounder = false,
   isVIP = false,
@@ -102,7 +104,16 @@ export default function CorvusChat({
   const [input, setInput]                   = useState("");
   const [loading, setLoading]               = useState(false);
   const [typingId, setTypingId]             = useState<string | null>(null);
-  const [messagesRemaining, setMessagesRemaining] = useState<number | null>(isFreeTier ? 3 : null);
+  // Remaining-message counter. Populated from a non-consuming quota peek so it
+  // shows for every metered/free user (everyone except Murder / founder / VIP,
+  // who read back as unlimited and get no counter).
+  const [quota, setQuota] = useState<{
+    band: "free" | "metered" | "unlimited";
+    remaining: number;   // -1 = effectively unlimited
+    limit: number;       // -1 = no fixed monthly limit
+    unlimited: boolean;
+    passActive?: boolean;
+  } | null>(null);
   const [limited, setLimited]               = useState(false);
   const [upgradeMsg, setUpgradeMsg]         = useState("");
   const [topups, setTopups]                 = useState<Array<{ product: string; label: string; price: number }>>([]);
@@ -139,6 +150,35 @@ export default function CorvusChat({
       }
     } catch { /* non-fatal */ }
   }, []);
+
+  // Non-consuming quota peek → drives the remaining-message counter. Unlimited
+  // bands (Murder / founder / VIP) report unlimited:true and show no counter.
+  const refreshQuota = useCallback(async () => {
+    if (!code) return;
+    try {
+      const res = await fetch(`/api/chat?code=${encodeURIComponent(code)}`);
+      const d = await res.json() as {
+        ok?: boolean; band?: "free" | "metered" | "unlimited"; unlimited?: boolean;
+        remaining?: number; limit?: number; passActive?: boolean;
+      };
+      if (d?.unlimited || !d?.ok || !d?.band) {
+        setQuota({ band: "unlimited", remaining: -1, limit: -1, unlimited: true });
+        return;
+      }
+      setQuota({
+        band: d.band,
+        remaining: typeof d.remaining === "number" ? d.remaining : -1,
+        limit: typeof d.limit === "number" ? d.limit : -1,
+        unlimited: false,
+        passActive: !!d.passActive,
+      });
+    } catch { /* non-fatal — counter just won't show */ }
+  }, [code]);
+
+  // Refresh the counter when the panel opens.
+  useEffect(() => {
+    if (open) refreshQuota();
+  }, [open, refreshQuota]);
 
   // Greeting on first open
   useEffect(() => {
@@ -250,7 +290,7 @@ export default function CorvusChat({
         setTypingId(limitId);
         speakCorvusFull(limitMsg, 'chat');
         setLimited(true);
-        setMessagesRemaining(0);
+        setQuota((q) => (q ? { ...q, remaining: 0 } : q));
         setUpgradeMsg(data.message ?? "");
         setTopups(hasTopups ? data.topups! : []);
         return;
@@ -287,9 +327,15 @@ export default function CorvusChat({
         setMessages((prev) => [...prev, { id: aiId, role: "assistant", content: data.response! }]);
         setTypingId(aiId);
 
-        if (data.messagesRemaining !== undefined) {
-          setMessagesRemaining(data.messagesRemaining);
+        // Optimistic decrement for instant feedback, then reconcile with the
+        // server (covers metered users consuming from a pass/purchased balance,
+        // where the POST response doesn't carry the new monthly remaining).
+        if (typeof data.messagesRemaining === "number") {
+          setQuota((q) => (q ? { ...q, remaining: data.messagesRemaining! } : q));
+        } else {
+          setQuota((q) => (q && q.remaining > 0 ? { ...q, remaining: q.remaining - 1 } : q));
         }
+        refreshQuota();
 
         // Play pre-fetched audio if available, otherwise fall back to speakCorvusFull
         if (audioDataUrl) {
@@ -320,7 +366,7 @@ export default function CorvusChat({
     } finally {
       setLoading(false);
     }
-  }, [input, loading, limited, code, comfortLevel, activeReport]);
+  }, [input, loading, limited, code, comfortLevel, activeReport, refreshQuota]);
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -559,9 +605,13 @@ export default function CorvusChat({
           </button>
         </div>
 
-        {messagesRemaining !== null && !limited && (
+        {quota && !quota.unlimited && !limited && (
           <div style={{ background: "rgba(216,172,50,0.06)", borderBottom: "1px solid rgba(216,172,50,0.12)", padding: "6px 14px", fontSize: "11px", color: "#D8AC32", fontFamily: "monospace", flexShrink: 0 }}>
-            {messagesRemaining} of {3} free messages remaining
+            {quota.passActive
+              ? "Pass active — unlimited Corvus questions"
+              : quota.band === "free"
+                ? `${quota.remaining} of ${quota.limit > 0 ? quota.limit : 3} free messages remaining`
+                : `${quota.remaining} Corvus message${quota.remaining === 1 ? "" : "s"} left${quota.limit > 0 ? ` this month` : ""}`}
           </div>
         )}
 
@@ -578,8 +628,24 @@ export default function CorvusChat({
                 } else {
                   const found = accessibleReports.find(r => r.reportId === e.target.value);
                   if (found) {
-                    setActiveReport(found as unknown as ActiveReport);
-                    try { sessionStorage.setItem("corvus_active_report", JSON.stringify(found)); } catch { /* */ }
+                    // Rebuild a full ActiveReport from the saved report JSON so
+                    // Corvus gets findings + recommendations, not just a label.
+                    let parsed: { full_findings?: Array<{ severity?: string; title?: string; description?: string; body?: string }>; recommendations?: string[]; corvus_summary?: string } = {};
+                    try { parsed = found.reportData ? JSON.parse(found.reportData) : {}; } catch { /* */ }
+                    const built: ActiveReport = {
+                      reportId: found.reportId,
+                      product: found.type,
+                      clientName: found.clientName || found.locationName || "your location",
+                      findings: (parsed.full_findings ?? []).map(f => ({
+                        severity:    f.severity ?? "info",
+                        title:       f.title ?? "Finding",
+                        description: f.description ?? f.body ?? "",
+                      })),
+                      recommendations: parsed.recommendations ?? [],
+                      corvusAnalysis: parsed.corvus_summary ?? "",
+                    };
+                    setActiveReport(built);
+                    try { sessionStorage.setItem("corvus_active_report", JSON.stringify(built)); } catch { /* */ }
                   }
                 }
               }}
@@ -774,8 +840,8 @@ export default function CorvusChat({
             </div>
           </div>
 
-          {/* Free tier counter */}
-          {messagesRemaining !== null && !limited && (
+          {/* Remaining-message counter (metered + free; hidden for unlimited) */}
+          {quota && !quota.unlimited && !limited && (
             <div style={{
               background: "rgba(216,172,50,0.06)",
               borderBottom: "1px solid rgba(216,172,50,0.12)",
@@ -785,7 +851,11 @@ export default function CorvusChat({
               fontFamily: "monospace",
               flexShrink: 0,
             }}>
-              {messagesRemaining} of {3} free messages remaining
+              {quota.passActive
+                ? "Pass active — unlimited Corvus questions"
+                : quota.band === "free"
+                  ? `${quota.remaining} of ${quota.limit > 0 ? quota.limit : 3} free messages remaining`
+                  : `${quota.remaining} Corvus message${quota.remaining === 1 ? "" : "s"} left${quota.limit > 0 ? " this month" : ""}`}
             </div>
           )}
 

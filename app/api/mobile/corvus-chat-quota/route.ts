@@ -17,7 +17,7 @@ const APP_TOKEN = process.env.EXPO_PUBLIC_CORVUS_APP_TOKEN
 const QUOTA_LIMIT = 5;
 
 const UNLIMITED_TIERS = new Set([
-  "murder", "admin", "orgAdmin", "teamLead", "subordinate",
+  "murder", "admin", "orgAdmin", "teamLead", "subordinate", "vip", "founder",
 ]);
 
 function quotaKey(userId: string, verdictId: string): string {
@@ -37,6 +37,8 @@ export async function GET(req: Request) {
     const userId    = (url.searchParams.get("userId") ?? "").trim();
     const verdictId = (url.searchParams.get("verdictId") ?? "").trim();
     const userTier  = (url.searchParams.get("userTier") ?? "guest").trim();
+    // VIPs/founders carry an `unlimited` flag rather than a metered tier string.
+    const clientUnlimited = url.searchParams.get("unlimited") === "1";
 
     if (!userId) {
       return Response.json({ ok: false, error: "Bad request: userId required" }, { status: 400 });
@@ -49,7 +51,7 @@ export async function GET(req: Request) {
       });
     }
 
-    if (UNLIMITED_TIERS.has(userTier)) {
+    if (UNLIMITED_TIERS.has(userTier) || clientUnlimited) {
       return Response.json({
         ok: true,
         quota: { used: 0, limit: QUOTA_LIMIT, remaining: QUOTA_LIMIT, unlimited: true },

@@ -1924,6 +1924,14 @@ export default function DashboardPage() {
           hasRecentVerdict={reports.length > 0}
           expanded={true}
           isVIP={isVIP}
+          accessibleReports={reports.map(r => ({
+            reportId: r.reportId,
+            clientName: r.locationName,
+            locationName: r.locationName,
+            createdAt: r.createdAt,
+            type: REPORT_TYPE_LABELS[r.type] ?? r.type,
+            reportData: r.reportData,
+          }))}
         />
       </div>
     );

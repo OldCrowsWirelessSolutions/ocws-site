@@ -55,7 +55,7 @@ const QUOTA_LIMIT = 5;
 const QUOTA_TTL_SECONDS = 60 * 60 * 24 * 90; // 90 days
 
 const UNLIMITED_TIERS = new Set([
-  "murder", "admin", "orgAdmin", "teamLead", "subordinate",
+  "murder", "admin", "orgAdmin", "teamLead", "subordinate", "vip", "founder",
 ]);
 
 function quotaKey(userId: string, verdictId: string): string {
@@ -99,6 +99,7 @@ export async function POST(req: Request) {
       userId?:     string;
       userTier?:   string;
       verdictId?:  string;
+      unlimited?:  boolean;
     } | null;
 
     if (!body || !Array.isArray(body.messages) || body.messages.length === 0) {
@@ -114,7 +115,9 @@ export async function POST(req: Request) {
     const userId    = body.userId;
     const userTier  = (body.userTier ?? "guest").trim();
     const verdictId = (body.verdictId ?? "").trim();
-    const unlimited = UNLIMITED_TIERS.has(userTier);
+    // VIPs/founders carry an `unlimited` flag on their account (no metered tier
+    // string of their own), so honor that alongside the unlimited-tier set.
+    const unlimited = UNLIMITED_TIERS.has(userTier) || body.unlimited === true;
     const maxTokens = typeof body.max_tokens === "number" && body.max_tokens > 0
       ? Math.min(body.max_tokens, 4000)
       : 2000;

@@ -16,7 +16,7 @@ import {
 } from "@/lib/chat";
 import { getReportsForCode, type ReportRecord } from "@/lib/reports";
 import { validateSubscriptionId, type SubscriptionTier, type ValidationResult } from "@/lib/subscriptions";
-import { consumeChatMessage, chatAccountKey } from "@/lib/chat-quota";
+import { consumeChatMessage, chatAccountKey, getChatQuota } from "@/lib/chat-quota";
 import { recordChatEvent } from "@/lib/analytics";
 
 const FREE_MESSAGE_LIMIT = 3;
@@ -97,6 +97,53 @@ const CHAT_TOPUPS = [
   { product: "chat-pack-100", label: "+100 questions", price: 12 },
   { product: "chat-pass-day", label: "Day Pass (24h)", price: 9 },
 ];
+
+// Non-consuming quota peek. The chat UI calls this on mount so it can render
+// the "messages remaining" counter before the first message. Unlimited bands
+// (Murder + admin/founder/VIP/subordinate bypass codes) report unlimited:true
+// so the UI hides the counter for them. Mirrors the consume keying exactly
+// (chatAccountKey) so the number matches what POST will report.
+export async function GET(req: NextRequest) {
+  try {
+    const code = String(new URL(req.url).searchParams.get("code") ?? "").trim();
+    if (!code) return NextResponse.json({ ok: false, unlimited: true });
+
+    const access = await getAccess(code);
+
+    if (access.band === "denied") return NextResponse.json({ ok: false, unlimited: true });
+    if (access.band === "unlimited") return NextResponse.json({ ok: true, band: "unlimited", unlimited: true });
+
+    if (access.band === "free") {
+      const count = await getMessageCount(code);
+      return NextResponse.json({
+        ok: true, band: "free", unlimited: false,
+        limit: FREE_MESSAGE_LIMIT,
+        remaining: Math.max(0, FREE_MESSAGE_LIMIT - count),
+      });
+    }
+
+    // metered — monthly pool + purchased balance; an active pass reads as plenty.
+    const accountKey = chatAccountKey(access.validation?.customer_email, code);
+    const q = await getChatQuota(accountKey, access.tier!);
+    const remaining = q.monthlyRemaining < 0
+      ? -1
+      : q.monthlyRemaining + q.purchasedBalance;
+    return NextResponse.json({
+      ok: true, band: "metered", unlimited: false,
+      tier: access.tier,
+      limit: q.monthlyAllowance,
+      remaining,
+      monthlyRemaining: q.monthlyRemaining,
+      purchasedBalance: q.purchasedBalance,
+      passActive: !!q.passActiveUntil,
+      resetsOn: q.resetsOn,
+    });
+  } catch (err) {
+    console.error("[chat][GET] quota peek failed:", err);
+    // Fail-open to unlimited so a peek failure never blocks chatting.
+    return NextResponse.json({ ok: false, unlimited: true });
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
