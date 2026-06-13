@@ -60,11 +60,11 @@ const FAQS: { section: string; items: { q: string; a: string }[] }[] = [
     items: [
       {
         q: "Is there a free version?",
-        a: "Fledgling tier is $10/month and includes 3 WiFi Health Reports. A single WiFi Health Report is available for $50 with no subscription required.",
+        a: "Fledgling tier is $10/month and includes 1 WiFi Health Report. A single WiFi Health Report is available for $50 with no subscription required.",
       },
       {
         q: "What are the subscription tiers?",
-        a: "Fledgling ($10/mo) — 3 WiFi Health Reports, unlimited Talk to Corvus chat. Nest ($20/mo or $160/yr) — homeowners and small businesses. Flock ($100/mo or $900/yr) — businesses, IT pros, and growing teams. Murder ($950/mo or $9,500/yr) — large organizations, businesses with many locations, and mission-critical networks.",
+        a: "Fledgling ($10/mo) — 1 WiFi Health Report, plus Talk to Corvus chat. Nest ($20/mo or $160/yr) — homeowners and small businesses. Flock ($100/mo or $900/yr) — businesses, IT pros, and growing teams. Murder ($950/mo or $9,500/yr) — large organizations, businesses with many locations, and mission-critical networks.",
       },
       {
         q: "Can I cancel my subscription?",
