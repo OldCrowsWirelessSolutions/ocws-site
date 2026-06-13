@@ -53,7 +53,7 @@ export default function PricingPage() {
               </p>
               <ul className="space-y-3">
                 {[
-                  "Call your ISP. Wait 45 minutes. Get told \"it's your router.\"",
+                  "Call your internet provider. Wait 45 minutes. Get told \"it's your router.\"",
                   "Hire an IT consultant at $150/hr to hear what you already suspected.",
                   "Buy a new router. Same problems. No explanation why.",
                   "Google which channel to use. Guess. Try again next week.",
@@ -85,7 +85,7 @@ export default function PricingPage() {
                   "Plain English diagnosis. No jargon. No condescension.",
                   "Specific fix instructions for your exact router and network.",
                   "Channel congestion mapped. Interference sources identified.",
-                  "Signed PDF report you can hand to your ISP, landlord, or IT team.",
+                  "Signed PDF report you can hand to your internet provider, landlord, or IT team.",
                   "One WiFi Health Report: $50. Subscribe and run as many as you need.",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-3 text-sm" style={{ color: "#aaa" }}>

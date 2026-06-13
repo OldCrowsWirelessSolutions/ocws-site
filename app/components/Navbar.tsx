@@ -12,6 +12,7 @@ import AudioToggle from "@/app/components/AudioToggle";
 const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.oldcrowswireless.corvus";
 
 const navLinks = [
+  { href: "/what-is-corvus", label: "What is Corvus?" },
   { href: "/how-it-works", label: "How It Works" },
   { href: "/pricing", label: "Pricing" },
   { href: "/get-credits", label: "Buy Credits" },

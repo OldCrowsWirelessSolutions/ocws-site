@@ -60,7 +60,7 @@ export default function FeaturesPage() {
         <div className="ocws-container" style={{ maxWidth: "860px" }}>
           <p className="text-base leading-relaxed mb-4" style={{ color: "#B8CCD8" }}>
             Corvus is the AI intelligence engine behind Crow&rsquo;s Eye. He has read thousands of
-            wireless environments. He knows what your ISP isn&rsquo;t telling you. He has opinions
+            wireless environments. He knows what your internet provider isn&rsquo;t telling you. He has opinions
             about your router. He will share them.
           </p>
           <p className="text-base leading-relaxed mb-8" style={{ color: "#B8CCD8" }}>
@@ -291,7 +291,7 @@ export default function FeaturesPage() {
               &ldquo;I&rsquo;ve seen what professional WiFi analysis costs at the enterprise level. I built Corvus so that a barbershop owner, a church administrator, and a hospital IT director could all get the same quality of diagnosis — without needing a $2,400 subscription or a trained engineer.&rdquo;
             </p>
             <p className="text-sm italic leading-relaxed" style={{ color: "#F4F6F8", lineHeight: 1.8 }}>
-              &ldquo;The ISP will always say everything is fine on their end. Corvus will tell you the truth.&rdquo;
+              &ldquo;Your internet provider will always say everything is fine on their end. Corvus will tell you the truth.&rdquo;
             </p>
             <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "0.62rem", color: "#D8AC32", letterSpacing: "0.12em", marginTop: "16px" }}>
               — Joshua Turner · 17 Years U.S. Navy Electronic Warfare

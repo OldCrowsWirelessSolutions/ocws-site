@@ -47,7 +47,7 @@ const FAQS: { section: string; items: { q: string; a: string }[] }[] = [
       },
       {
         q: "What router brands does Corvus know?",
-        a: "Corvus has specific fix instructions for Cox/Vantiva, Netgear, TP-Link, ASUS, Linksys, Arris, Motorola, Eero, Google/Nest, Xfinity/Comcast, AT&T, Spectrum/Sagemcom, and most other common consumer and ISP-provided equipment.",
+        a: "Corvus has specific fix instructions for Cox/Vantiva, Netgear, TP-Link, ASUS, Linksys, Arris, Motorola, Eero, Google/Nest, Xfinity/Comcast, AT&T, Spectrum/Sagemcom, and most other common consumer and internet-provider equipment.",
       },
       {
         q: "How accurate is Corvus?",
@@ -64,7 +64,7 @@ const FAQS: { section: string; items: { q: string; a: string }[] }[] = [
       },
       {
         q: "What are the subscription tiers?",
-        a: "Fledgling ($10/mo) — 3 WiFi Health Reports, unlimited Talk to Corvus chat. Nest ($20/mo or $160/yr) — homeowners and small businesses. Flock ($100/mo or $900/yr) — MSPs, IT consultants, and growing teams. Murder ($950/mo or $9,500/yr) — enterprise networks, multi-site operators, and mission-critical environments.",
+        a: "Fledgling ($10/mo) — 3 WiFi Health Reports, unlimited Talk to Corvus chat. Nest ($20/mo or $160/yr) — homeowners and small businesses. Flock ($100/mo or $900/yr) — businesses, IT pros, and growing teams. Murder ($950/mo or $9,500/yr) — large organizations, businesses with many locations, and mission-critical networks.",
       },
       {
         q: "Can I cancel my subscription?",
@@ -89,7 +89,7 @@ const FAQS: { section: string; items: { q: string; a: string }[] }[] = [
       },
       {
         q: "What if I can't log into my router?",
-        a: "Every finding that requires router access includes login instructions for your specific equipment, including factory default credentials. If those have been changed, Corvus will note that and recommend contacting your ISP or calling OCWS for professional assistance.",
+        a: "Every finding that requires router access includes login instructions for your specific equipment, including factory default credentials. If those have been changed, Corvus will note that and recommend contacting your internet provider or calling OCWS for professional assistance.",
       },
     ],
   },

@@ -46,9 +46,9 @@ export default function HomePage() {
           </h1>
 
           <p className="text-base md:text-lg max-w-2xl mx-auto mb-10 leading-relaxed" style={{ color: '#8AAABB' }}>
-            Corvus finds what your ISP won&rsquo;t tell you &mdash; channel conflicts, security gaps,
-            dead zones &mdash; and tells you exactly how to fix them. Built on 17 years of
-            U.S. Navy Electronic Warfare expertise.
+            Corvus finds what your internet provider won&rsquo;t tell you &mdash; the hidden reasons
+            your WiFi is slow, drops, or leaves dead zones &mdash; and tells you exactly how to fix them.
+            Built on 17 years of U.S. Navy Electronic Warfare expertise.
           </p>
 
           <div className="flex flex-col items-center gap-3 mb-5">
@@ -346,7 +346,7 @@ export default function HomePage() {
                 <p className="text-2xl font-bold text-white">Custom</p>
               </div>
               <p className="text-sm mb-4" style={{ color: '#7A9AAB' }}>
-                Institutional pricing for universities, hospitals, government, and multi-site MSP deployments.
+                Institutional pricing for universities, hospitals, government, and businesses with multiple locations.
                 Volume discounts and dedicated support available.
               </p>
               <a
@@ -522,7 +522,7 @@ export default function HomePage() {
               { icon: '🏢', label: 'Enterprise', desc: 'Multi-floor deployments, coverage audits, and interference mapping.' },
               { icon: '🛒', label: 'Retail', desc: 'POS reliability and guest Wi-Fi optimization.' },
               { icon: '🏛️', label: 'Government', desc: 'Secure, segmented network verification and audit trails.' },
-              { icon: '🔧', label: 'MSPs', desc: 'Scalable diagnostics across your entire client base.' },
+              { icon: '🔧', label: 'IT & Repair Pros', desc: 'Scalable diagnostics across all your clients.' },
               { icon: '⛪', label: 'Houses of Worship', desc: 'Venue-wide coverage for services and live events.' },
             ].map(({ icon, label, desc }) => (
               <div
