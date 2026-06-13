@@ -662,6 +662,14 @@ export default function DashboardPage() {
     return () => window.removeEventListener("hashchange", onHashChange);
   }, [phase]);
 
+  // Single auth surface: the dashboard never prompts for a credential itself.
+  // If we're unauthenticated, hand off to /login (one door, one "Corvus Code").
+  useEffect(() => {
+    if (phase === "auth") {
+      try { window.location.replace("/login"); } catch { /* */ }
+    }
+  }, [phase]);
+
   const handleLoginWrapped = async (e: React.FormEvent) => {
     e.preventDefault();
     const code = codeInput.trim().toUpperCase();
@@ -943,36 +951,13 @@ export default function DashboardPage() {
   // ── Auth gate ─────────────────────────────────────────────────────────────
 
   if (phase === "auth") {
+    // The redirect effect above sends us to /login (the single auth surface).
+    // Render a brief hand-off state instead of a second credential prompt.
     return (
-      <div style={{ minHeight: "75vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
-        <div style={{ width: "100%", maxWidth: "440px" }}>
-          <div style={{ textAlign: "center", marginBottom: "32px" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "12px", marginBottom: "14px" }}>
-              <div style={{ position: "relative", width: "40px", height: "40px", flexShrink: 0 }}>
-                <Image src="/OCWS_Logo_Transparent.png" alt="OCWS" fill sizes="40px" style={{ objectFit: "contain" }} />
-              </div>
-              <div style={{ textAlign: "left" }}>
-                <p style={{ color: "#ffffff", fontSize: "16px", fontWeight: 700, margin: 0 }}>Corvus Dashboard</p>
-                <p style={{ color: "#22D6DC", fontSize: "11px", margin: 0 }}>Old Crows Wireless Solutions</p>
-              </div>
-            </div>
-            <p style={{ color: "#888888", fontSize: "13px" }}>Enter your Subscription ID to access your dashboard.</p>
-          </div>
-          <form onSubmit={handleLoginWrapped} style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "32px" }}>
-            <label style={{ display: "block", color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>Subscription ID</label>
-            <input type="password" autoComplete="off" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="text" placeholder="OCWS-NEST-XXXXXXXX" value={codeInput} onChange={e => setCodeInput(e.target.value)}
-              style={{ ...inputStyle, marginBottom: authError ? "8px" : "20px" }} />
-            {authError && <p style={{ color: "#F87171", fontSize: "12px", marginBottom: "16px" }}>{authError}</p>}
-            <button type="submit" disabled={validating || !codeInput.trim()}
-              style={{ width: "100%", padding: "12px", background: validating || !codeInput.trim() ? "#0D6E7A" : "#22D6DC", color: "#0D1520", borderRadius: "10px", border: "none", fontSize: "14px", fontWeight: 700, cursor: validating || !codeInput.trim() ? "not-allowed" : "pointer", letterSpacing: "0.05em" }}>
-              {validating ? "Validating..." : "Access Dashboard"}
-            </button>
-          </form>
-          <p style={{ textAlign: "center", marginTop: "20px", fontSize: "12px", color: "#555555" }}>
-            Don&rsquo;t have a subscription?{" "}
-            <Link href="/crows-eye" style={{ color: "#22D6DC" }}>Get a WiFi Health Report</Link>
-          </p>
-        </div>
+      <div style={{ minHeight: "70vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p style={{ color: "#22D6DC", fontFamily: "monospace", fontSize: "13px", letterSpacing: "0.2em" }}>
+          REDIRECTING TO SIGN IN…
+        </p>
       </div>
     );
   }

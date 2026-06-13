@@ -121,7 +121,7 @@ export default function GetCreditsClient() {
       return
     }
 
-    // Validate the subscription ID from the app
+    // Validate the Corvus Code from the app
     fetch('/api/subscriptions/validate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -145,7 +145,7 @@ export default function GetCreditsClient() {
     setLoginError('')
     const code = loginCode.trim().toUpperCase()
     if (!code || !loginPassword) {
-      setLoginError('Enter your Subscription ID and password.')
+      setLoginError('Enter your Corvus Code and password.')
       return
     }
     setLoginLoading(true)
@@ -159,11 +159,11 @@ export default function GetCreditsClient() {
       const identData = await identRes.json() as { type?: string; subscriptionId?: string; passwordSet?: boolean }
 
       if (!identData.type || identData.type === 'invalid') {
-        setLoginError('Subscription ID not found.')
+        setLoginError('Corvus Code not found.')
         return
       }
       if (identData.type !== 'subscriber') {
-        setLoginError('This ID type cannot be used here. Please use your subscription ID.')
+        setLoginError('This ID type cannot be used here. Please use your Corvus Code.')
         return
       }
 
@@ -377,7 +377,7 @@ export default function GetCreditsClient() {
               <div style={card}>
                 <div style={{ marginBottom: 12 }}>
                   <label style={{ display: 'block', fontSize: 12, color: '#888', marginBottom: 6 }}>
-                    Subscription ID
+                    Corvus Code
                   </label>
                   <input
                     type="text"
@@ -417,7 +417,7 @@ export default function GetCreditsClient() {
                 </button>
                 <p style={{ textAlign: 'center', marginTop: 14, fontSize: 12, color: '#555' }}>
                   <Link href="/recover-code" style={{ color: 'rgba(34,214,220,0.6)' }}>
-                    Forgot your Subscription ID?
+                    Forgot your Corvus Code?
                   </Link>
                 </p>
               </div>
@@ -446,7 +446,7 @@ export default function GetCreditsClient() {
                   </div>
                 ))}
                 <p style={{ fontSize: 11, color: '#555', marginBottom: 16, lineHeight: 1.5 }}>
-                  Creating an account generates your Subscription ID. You&rsquo;ll use this ID
+                  Creating an account generates your Corvus Code. You&rsquo;ll use this ID
                   to log in across devices. Save it somewhere safe.
                 </p>
                 {createError && (

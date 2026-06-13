@@ -21,6 +21,7 @@ import {
 } from "@/lib/subscriptions";
 import { CREDITS_BY_PRICE } from "@/lib/price-map";
 import { creditChatPack, grantChatPass } from "@/lib/chat-quota";
+import { upgradeAccountCode } from "@/lib/accounts";
 import redis from "@/lib/redis";
 import type { SubscriptionTier, SubscriptionStatus } from "@/lib/subscriptions";
 import {
@@ -54,6 +55,25 @@ function stripeStatusToLocal(status: Stripe.Subscription.Status): SubscriptionSt
   if (status === "past_due")                        return "past_due";
   if (status === "canceled" || status === "incomplete_expired") return "cancelled";
   return "expired";
+}
+
+// Account-display shape for a purchased tier (used by upgradeAccountCode).
+function tierAccountShape(tier: SubscriptionTier): { credits: number | null; unlimited: boolean } {
+  if (tier === "murder") return { credits: null, unlimited: true };
+  return { credits: TIER_ENTITLEMENTS[tier].verdicts_per_month, unlimited: false };
+}
+
+// One identity: if the buyer's email already has an account (e.g. a free shell
+// from email-first signup), re-key it onto the purchased code so their existing
+// password keeps working and they don't end up with two Corvus Codes. Best-
+// effort — never block subscription provisioning on this.
+async function reconcilePurchasedAccount(email: string, code: string, tier: SubscriptionTier): Promise<void> {
+  try {
+    const shape = tierAccountShape(tier);
+    await upgradeAccountCode({ email, newCode: code, tier, credits: shape.credits, unlimited: shape.unlimited });
+  } catch (err) {
+    console.error("[webhook] account reconcile (non-fatal):", err);
+  }
 }
 
 async function resolveCustomerEmail(
@@ -132,6 +152,8 @@ async function handleSubscriptionCreated(sub: Stripe.Subscription) {
   } catch (err) {
     console.error("[webhook] Confirmation email failed (non-fatal):", err);
   }
+
+  await reconcilePurchasedAccount(email, subscription_id, tier);
 
   console.log(`[webhook] Subscription created: ${subscription_id} for ${email}`);
 }
@@ -309,6 +331,8 @@ async function handleCheckoutSubscription(session: Stripe.Checkout.Session) {
   } catch (err) {
     console.error("[webhook] welcome email failed (non-fatal):", err);
   }
+
+  await reconcilePurchasedAccount(email, code, tier);
 
   console.log(`[webhook] checkout subscription: ${code} for ${email} (${tier})`);
 }

@@ -455,9 +455,6 @@ SUBSCRIPTION TIERS — current published pricing:
 
 Pay-per-use: a single WiFi Health Report is $50, no subscription required. WiFi Health Report credits never expire and roll over month to month.
 
-WHAT TODAY IS — HACK THE COAST 2026:
-Today is the public launch event in Pensacola. Attendees can redeem their event code at oldcrowswireless.com/hack-the-coast for one free WiFi Health Report and 24 hours of Talk to Corvus. Codes valid through May 10, 2026.
-
 HOW SOMEONE GETS THE APP:
 "Search Crow's Eye on Google Play. Or go to oldcrowswireless.com/crows-eye and tap the Play Store badge. Free to download. Sign in or create your account in under a minute. Tap Scan. I do the rest."
 
@@ -465,7 +462,7 @@ HOW SOMEONE GETS THE APP:
 ARCHITECTURE & TECHNICAL POSTURE — FOR SECURITY PROS
 ═══════════════════════════════════════════════
 
-You will be questioned by cybersecurity professionals at Hack the Coast. They will probe for capabilities AND for intentional limits. Answer both honestly. The intentional limits are a feature.
+You may be questioned by cybersecurity professionals. They will probe for capabilities AND for intentional limits. Answer both honestly. The intentional limits are a feature.
 
 WHAT THE APP DOES TECHNICALLY:
 - Passive RF observation only. The app reads publicly-broadcast beacon frames and 802.11 management frames. It does NOT capture data frames. It does NOT decrypt traffic. It does NOT join networks it doesn't own.

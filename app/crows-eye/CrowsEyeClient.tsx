@@ -1970,7 +1970,7 @@ export default function CrowsEyeClient() {
         ) : (
           <div>
             <label className="block text-sm font-semibold text-white mb-1">
-              Subscription ID
+              Corvus Code
             </label>
             <div className="flex gap-2">
               <div className="flex-1">
@@ -1980,7 +1980,7 @@ export default function CrowsEyeClient() {
                     value={accessCodeInput}
                     onChange={(e) => { setAccessCodeInput(e.target.value); setAccessCodeStatus(null); }}
                     onKeyDown={(e) => e.key === "Enter" && handleApplyCode()}
-                    placeholder="Enter your Subscription ID"
+                    placeholder="Enter your Corvus Code"
                     autoComplete="off"
                     className="w-full rounded-xl px-4 py-3 pr-16 text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
                     style={{ background: "rgba(0,0,0,0.3)", border: `1px solid ${accessCodeStatus === "invalid" ? "rgba(239,68,68,0.5)" : "rgba(255,255,255,0.1)"}` }}
@@ -1990,16 +1990,16 @@ export default function CrowsEyeClient() {
                     onClick={() => setAccessCodeVisible((v) => !v)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium transition"
                     style={{ color: "rgba(255,255,255,0.35)" }}
-                    aria-label={accessCodeVisible ? "Hide subscription ID" : "Show subscription ID"}
+                    aria-label={accessCodeVisible ? "Hide Corvus Code" : "Show Corvus Code"}
                   >
                     {accessCodeVisible ? "Hide" : "Show"}
                   </button>
                 </div>
                 {accessCodeStatus === "invalid" ? (
-                  <p className="mt-1 text-xs text-red-400">Invalid Subscription ID. Check your entry and try again.</p>
+                  <p className="mt-1 text-xs text-red-400">Invalid Corvus Code. Check your entry and try again.</p>
                 ) : (
                   <p className="mt-1 text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
-                    Enter your active subscription ID to apply included credits or member pricing.
+                    Enter your active Corvus Code to apply included credits or member pricing.
                   </p>
                 )}
               </div>
@@ -2022,7 +2022,7 @@ export default function CrowsEyeClient() {
                   className="text-xs transition"
                   style={{ color: "rgba(34,214,220,0.6)" }}
                 >
-                  Forgot your Subscription ID?
+                  Forgot your Corvus Code?
                 </button>
               ) : recoverySent ? (
                 <p className="text-xs" style={{ color: "#4ade80" }}>
@@ -2139,73 +2139,6 @@ export default function CrowsEyeClient() {
           </button>
         )}
       </div>
-
-      {/* ── EVENT CREDIT (Hack the Coast 2026) ──────────────────────────── */}
-      {mode === "single" && (
-        <div className="mb-6">
-          {eventCreditVerified ? (
-            <div
-              className="px-4 py-3 rounded-2xl text-sm"
-              style={{ background: "rgba(34,214,220,0.08)", border: "1px solid rgba(34,214,220,0.3)" }}
-            >
-              <div className="flex items-center justify-between">
-                <span style={{ color: "#22D6DC" }}>
-                  ✓ Event credit verified — your WiFi Health Report is on us
-                </span>
-                <button
-                  type="button"
-                  onClick={() => { setEventCreditVerified(false); setEventEmailInput(""); setEventCreditError(""); }}
-                  className="text-white/40 hover:text-white/70 transition text-xs ml-4"
-                >
-                  Remove
-                </button>
-              </div>
-              <p className="mt-1 text-xs" style={{ color: "rgba(34,214,220,0.6)" }}>
-                Click the button below to unlock your full WiFi Health Report at no charge.
-              </p>
-            </div>
-          ) : (
-            <div>
-              <label className="block text-sm font-semibold text-white mb-1">
-                Hack the Coast attendee?
-              </label>
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <input
-                    type="email"
-                    value={eventEmailInput}
-                    onChange={(e) => { setEventEmailInput(e.target.value); setEventCreditError(""); }}
-                    onKeyDown={(e) => e.key === "Enter" && handleCheckEventCredit()}
-                    placeholder="Email used when redeeming your code"
-                    autoComplete="email"
-                    className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
-                    style={{ background: "rgba(0,0,0,0.3)", border: `1px solid ${eventCreditError ? "rgba(239,68,68,0.5)" : "rgba(255,255,255,0.1)"}` }}
-                  />
-                  {eventCreditError ? (
-                    <p className="mt-1 text-xs text-red-400">{eventCreditError}</p>
-                  ) : (
-                    <p className="mt-1 text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
-                      Enter the email you used at{" "}
-                      <a href="/hack-the-coast" style={{ color: "rgba(34,214,220,0.7)" }} target="_blank" rel="noreferrer">
-                        /hack-the-coast
-                      </a>{" "}to apply your free WiFi Health Report credit.
-                    </p>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={handleCheckEventCredit}
-                  disabled={eventCreditChecking || !eventEmailInput.trim()}
-                  className="shrink-0 self-start rounded-xl px-4 py-3 text-sm font-semibold transition disabled:opacity-50"
-                  style={{ background: "rgba(34,214,220,0.15)", color: "#22D6DC", border: "1px solid rgba(34,214,220,0.3)" }}
-                >
-                  {eventCreditChecking ? "Checking…" : "Apply Credit"}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* ── PRICING INFO COLLAPSIBLE ─────────────────────────────────────── */}
       <div className="mb-10">

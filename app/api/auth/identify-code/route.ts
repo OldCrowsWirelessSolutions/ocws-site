@@ -11,7 +11,10 @@ import { validatePromoCode } from "@/lib/promo-codes";
 
 // Admin code — routes to /admin.
 // NOTE: NOT uppercased before comparison because it contains special chars.
-const ADMIN_CODE = process.env.OCWS_ADMIN_SECRET ?? "SpectrumLife2026!!";
+// Secret lives only in env — no hardcoded fallback (avoids committing a real
+// credential). If unset, ADMIN_CODE is "" and the empty-input guard below means
+// no one matches it.
+const ADMIN_CODE = process.env.OCWS_ADMIN_SECRET ?? "";
 
 // Admin first-factor code — starts two-step admin login flow.
 const ADMIN_FIRST_FACTOR_CODE = "OCWS-CORVUS-FOUNDER-JOSHUA";
@@ -55,8 +58,11 @@ export async function POST(req: Request) {
     return Response.json({ type: "founder", tier: founding.tier, name: founding.name, passwordSet });
   }
 
-  // 3. Admin first-factor code — triggers two-step admin login
-  if (code === ADMIN_FIRST_FACTOR_CODE) {
+  // 3. Admin first-factor — triggers the two-step admin login (code → password,
+  // gated by OCWS_ADMIN_SECRET). "ADMIN" is the owner's Corvus Code;
+  // OCWS-CORVUS-FOUNDER-JOSHUA is the legacy founder code. Both land here.
+  // (Typing the raw secret as the code still works one-step, just above.)
+  if (code === ADMIN_FIRST_FACTOR_CODE || code === "ADMIN") {
     return Response.json({ type: "admin_first_factor" });
   }
 

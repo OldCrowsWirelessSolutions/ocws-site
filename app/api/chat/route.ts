@@ -68,6 +68,14 @@ async function getAccess(code: string): Promise<Access> {
   if (isKnownBypassCode(upper)) return { band: "unlimited" };
   if (process.env.OCWS_ADMIN_SECRET && code === process.env.OCWS_ADMIN_SECRET) return { band: "unlimited" };
 
+  // Partner-portal credential — the help-desk operator chatting about a customer's
+  // scan. Partners aren't on the consumer chat economy, so they're unlimited.
+  // Verified against the partner store (not just a prefix match) before granting.
+  if (upper.startsWith("CORVUS-PARTNER-")) {
+    const { getPartnerByCode } = await import("@/lib/partner-channel");
+    return (await getPartnerByCode(upper)) ? { band: "unlimited" } : { band: "denied" };
+  }
+
   try {
     const validation = await validateSubscriptionId(upper);
     if (!validation.valid) return { band: "denied", validation };

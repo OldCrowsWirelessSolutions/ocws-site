@@ -20,9 +20,10 @@
 // same code, plus an email index for email-based login.
 
 import redis from "@/lib/redis";
+import { randomBytes } from "crypto";
 
 export interface AccountRecord {
-  code:        string;          // canonical code that bootstrapped the account (e.g. CORVUS-NATE, OCWS-FLOCK-PROMO-XYZ)
+  code:        string;          // canonical code that bootstrapped the account (e.g. CORVUS-NATE, OCWS-FLOCK-PROMO-XYZ, CORVUS-FREE-XXXXXXXX)
   email:       string;          // lowercased
   name:        string;
   tier:        AccountTier;
@@ -34,10 +35,11 @@ export interface AccountRecord {
   orgId?:      string;
   orgName?:    string;
   createdAt:   string;
-  source:      "vip" | "founder" | "subscriber" | "subordinate" | "demo";
+  source:      "vip" | "founder" | "subscriber" | "subordinate" | "demo" | "free";
 }
 
 export type AccountTier =
+  | "free"
   | "fledgling" | "nest" | "flock" | "murder"
   | "subordinate" | "teamLead" | "orgAdmin" | "admin";
 
@@ -47,11 +49,31 @@ function emailKey(email: string): string {
 
 function passwordKey(code: string, source: AccountRecord["source"]): string {
   // Match the existing /api/auth/set-password key naming so old endpoints
-  // and new account-create endpoint share the same storage.
-  if (source === "subscriber" || source === "subordinate") {
+  // and new account-create endpoint share the same storage. "free" shell
+  // accounts use the sub: namespace too — it's just a hash bucket keyed by code.
+  if (source === "subscriber" || source === "subordinate" || source === "free") {
     return `sub:${code.toUpperCase()}:password_hash`;
   }
   return `vip:${code.toUpperCase()}:password_hash`;
+}
+
+// ─── Free / shell codes ───────────────────────────────────────────────────────
+// Every signup mints a Corvus Code so identity + recovery work for everyone.
+// A free shell carries 0 paid credits until the holder buys or redeems.
+
+export const FREE_CODE_PREFIX = "CORVUS-FREE-";
+
+export function isFreeCode(code: string): boolean {
+  return code.toUpperCase().startsWith(FREE_CODE_PREFIX);
+}
+
+/** Mint a unique CORVUS-FREE-XXXXXXXX code (8 hex chars). */
+export async function generateFreeCode(): Promise<string> {
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const code = `${FREE_CODE_PREFIX}${randomBytes(4).toString("hex").toUpperCase()}`;
+    if (!(await getAccountByCode(code))) return code;
+  }
+  throw new Error("Failed to allocate unique free code");
 }
 
 export async function getAccountByCode(code: string): Promise<AccountRecord | null> {
@@ -98,6 +120,56 @@ export async function listAccounts(): Promise<AccountRecord[]> {
 
 export async function getPasswordKey(code: string, source: AccountRecord["source"]): Promise<string> {
   return passwordKey(code, source);
+}
+
+/**
+ * Re-key an account onto a newly purchased/redeemed code, carrying the password
+ * and identity over, so a free→paid upgrade keeps ONE Corvus Code. Called from
+ * the Stripe webhook (and promo redemption) when the buyer's email already has
+ * an account. Best-effort and idempotent; returns the upgraded record, or null
+ * if there was no existing account to upgrade.
+ */
+export async function upgradeAccountCode(args: {
+  email:      string;
+  newCode:    string;
+  tier:       AccountTier;
+  credits:    number | null;
+  unlimited:  boolean;
+  newSource?: AccountRecord["source"];
+}): Promise<AccountRecord | null> {
+  const email   = args.email.trim().toLowerCase();
+  const newCode  = args.newCode.toUpperCase();
+  const existing = await getAccountByEmail(email);
+  if (!existing) return null;            // nothing to reconcile
+  if (existing.code === newCode) return existing; // already on this code
+
+  const newSource = args.newSource ?? "subscriber";
+
+  // Move the password hash from the old code bucket to the new one so the
+  // holder's existing password keeps working against their upgraded code.
+  const oldPwKey = passwordKey(existing.code, existing.source);
+  const newPwKey = passwordKey(newCode, newSource);
+  const hash = await redis.get<string>(oldPwKey);
+  if (hash) await redis.set(newPwKey, hash);
+
+  const upgraded: AccountRecord = {
+    ...existing,
+    code:      newCode,
+    tier:      args.tier,
+    credits:   args.credits,
+    unlimited: args.unlimited,
+    source:    newSource,
+  };
+  await saveAccount(upgraded); // writes account:{newCode}, repoints by-email, indexes
+
+  // Retire the old shell record + its password so the stale code can't log in.
+  try {
+    await redis.del(`account:${existing.code}`);
+    await redis.srem("account:index", existing.code);
+    if (hash) await redis.del(oldPwKey);
+  } catch { /* non-fatal */ }
+
+  return upgraded;
 }
 
 /** Email format validator — matches /api/app-account/create. */

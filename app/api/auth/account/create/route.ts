@@ -21,6 +21,7 @@ import redis from "@/lib/redis";
 import {
   AccountRecord,
   AccountTier,
+  generateFreeCode,
   getAccountByCode,
   getAccountByEmail,
   getPasswordKey,
@@ -79,14 +80,43 @@ export async function POST(req: Request) {
     const email    = String(body.email    ?? "").trim().toLowerCase();
     const password = String(body.password ?? "").trim();
 
-    if (!code || !name || !email || !password) {
-      return Response.json({ error: "code, name, email, password required" }, { status: 400 });
+    if (!name || !email || !password) {
+      return Response.json({ error: "name, email, password required" }, { status: 400 });
     }
     if (!isValidEmail(email)) {
       return Response.json({ error: "Invalid email address" }, { status: 400 });
     }
     if (!isStrongEnough(password)) {
       return Response.json({ error: "Password must be at least 8 characters" }, { status: 400 });
+    }
+
+    // ── First-time signup with NO entitlement code → mint a free shell account.
+    // Every signup gets a Corvus Code (identity + recovery for everyone); a free
+    // shell carries 0 paid credits until the holder buys or redeems. If they
+    // later purchase, the Stripe webhook upgrades THIS account by email.
+    if (!code) {
+      const existing = await getAccountByEmail(email);
+      if (existing) {
+        return Response.json(
+          { error: "An account with that email already exists. Log in instead." },
+          { status: 409 },
+        );
+      }
+      const freeCode = await generateFreeCode();
+      const hash = await bcrypt.hash(password, 12);
+      await redis.set(await getPasswordKey(freeCode, "free"), hash);
+      const account: AccountRecord = {
+        code:      freeCode,
+        email,
+        name,
+        tier:      "free",
+        unlimited: false,
+        credits:   0,
+        createdAt: new Date().toISOString(),
+        source:    "free",
+      };
+      await saveAccount(account);
+      return Response.json({ ok: true, account });
     }
 
     // Refuse if email is already attached to a different code

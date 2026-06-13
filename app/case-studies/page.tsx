@@ -5,10 +5,18 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Case Studies | Old Crows Wireless Solutions",
   description:
-    "Real Crow's Eye WiFi Health Reports from real environments. Corvus in action at Pilchers Barbershop and Olive Baptist Church in Pensacola, FL.",
+    "Real Crow's Eye WiFi Health Reports from real environments — Pilchers Barbershop and Olive Baptist Church in Pensacola, FL — plus Corvus field-tested by security professionals.",
 };
 
-const cases = [
+const cases: {
+  name: string;
+  context: string;
+  summary: string;
+  findings: { color: string; text: string }[];
+  verdict: string;
+  pdfHref?: string;
+  anchor?: string;
+}[] = [
   {
     name: "Pilchers Barbershop",
     context: "Retail · Pensacola FL",
@@ -41,6 +49,22 @@ const cases = [
       "Corvus identified the router as an ASUS unit on an auto-assigned channel that coincided with the six highest-power neighboring networks. WPA3 enabled, channel moved to 11, guest WiFi network created with VLAN isolation. Security posture corrected in under 30 minutes.",
     pdfHref: "/Corvus_Verdict__Olive_Baptist_Church.pdf",
   },
+  {
+    name: "Tested by Security Professionals",
+    context: "Field Validation · Cybersecurity Conference · Pensacola FL · May 2026",
+    anchor: "tested-by-pros",
+    summary:
+      "At a regional cybersecurity conference, IT security officers, red-team operators, and healthcare practitioners deliberately tested Corvus across ten substantive conversations — probing technical methodology, compliance knowledge, and scope boundaries. Zero failures.",
+    findings: [
+      { color: "#4ade80", text: "Enterprise security officer (ISSO): full briefing on methodology, severity taxonomy, and fit with formal security assessments — validated" },
+      { color: "#4ade80", text: "Red-team operator: Corvus held to passive-observation scope and refused active-exploitation framing" },
+      { color: "#4ade80", text: "Healthcare / telehealth: accurate on HIPAA PHI transmission and 45 CFR for clinical networks" },
+      { color: "#4ade80", text: "Out-of-scope probe (data sanitization): answered “outside my lane” and cited NIST SP 800-88 — no fabrication" },
+      { color: "#4ade80", text: "Security architecture: confirmed the app holds zero API keys — no client-side secret to steal" },
+    ],
+    verdict:
+      "Across every adversarial test, Corvus stayed accurate and inside its lane. The takeaway from the room: the moat isn't a feature — it's knowledge accuracy plus scope integrity. A tool that knows its limits is one enterprises can trust.",
+  },
 ];
 
 export default function CaseStudiesPage() {
@@ -65,6 +89,7 @@ export default function CaseStudiesPage() {
           {cases.map((c) => (
             <div
               key={c.name}
+              id={c.anchor}
               className="rounded-2xl overflow-hidden"
               style={{ background: "#1A2332", borderTop: "3px solid #D8AC32" }}
             >
@@ -74,14 +99,16 @@ export default function CaseStudiesPage() {
                     <h2 className="text-2xl font-bold text-white mb-1">{c.name}</h2>
                     <p className="text-sm" style={{ color: "#888" }}>{c.context}</p>
                   </div>
-                  <a
-                    href={c.pdfHref}
-                    download
-                    className="shrink-0 inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold ocws-glow-hover"
-                    style={{ border: "1px solid #22D6DC", color: "#22D6DC", background: "transparent" }}
-                  >
-                    Download PDF Report
-                  </a>
+                  {c.pdfHref && (
+                    <a
+                      href={c.pdfHref}
+                      download
+                      className="shrink-0 inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold ocws-glow-hover"
+                      style={{ border: "1px solid #22D6DC", color: "#22D6DC", background: "transparent" }}
+                    >
+                      Download PDF Report
+                    </a>
+                  )}
                 </div>
 
                 <p className="text-sm leading-relaxed mb-6" style={{ color: "#aaa" }}>

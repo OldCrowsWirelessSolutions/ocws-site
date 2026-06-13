@@ -138,7 +138,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── SECTION 3: HACK THE COAST URGENCY ────────────────────────────── */}
+      {/* ── SECTION 3: PROOF — TESTED BY SECURITY PROFESSIONALS ───────────── */}
       <section
         style={{
           background: '#0D6E7A',
@@ -150,26 +150,28 @@ export default function HomePage() {
         <div className="ocws-container">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
 
-            {/* Left: event info */}
-            <div>
+            {/* Left: the proof */}
+            <div className="max-w-2xl">
               <p
-                className="text-2xl md:text-3xl font-bold mb-2"
-                style={{ color: '#D8AC32', fontFamily: "'Share Tech Mono', monospace" }}
+                className="text-xs font-semibold uppercase tracking-widest mb-2"
+                style={{ color: '#D8AC32', letterSpacing: '0.18em', fontFamily: "'Share Tech Mono', monospace" }}
               >
-                Meet Corvus Live
+                Proven under pressure
               </p>
-              <p className="text-sm md:text-base" style={{ color: 'rgba(255,255,255,0.75)' }}>
-                Hack the Coast Cybersecurity Conference &middot; May 9, 2026 &middot; Cowork Annex, Pensacola FL
+              <p className="text-xl md:text-2xl font-bold text-white mb-2">
+                Security pros tried to break Corvus. They couldn&rsquo;t.
+              </p>
+              <p className="text-sm md:text-base" style={{ color: 'rgba(255,255,255,0.78)' }}>
+                At a regional cybersecurity conference, red-team operators, an enterprise security officer, and
+                healthcare IT professionals deliberately tested Corvus across ten technical conversations —
+                methodology, compliance, scope. Zero failures.
               </p>
             </div>
 
-            {/* Right: offer + CTA */}
-            <div className="flex flex-col items-center md:items-end gap-4 w-full md:w-auto">
-              <p className="text-sm font-semibold text-white text-center md:text-right">
-                First 20 signups get 3 free WiFi Health Reports.
-              </p>
+            {/* Right: CTA */}
+            <div className="w-full md:w-auto">
               <Link
-                href="/hack-the-coast"
+                href="/case-studies#tested-by-pros"
                 className="w-full md:w-auto text-center rounded-xl px-6 py-3 text-sm font-bold transition"
                 style={{
                   background: '#22D6DC',
@@ -178,7 +180,7 @@ export default function HomePage() {
                   display: 'inline-block',
                 }}
               >
-                Claim Your Free Reports &rarr;
+                See what happened &rarr;
               </Link>
             </div>
 

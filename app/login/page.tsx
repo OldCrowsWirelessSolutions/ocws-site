@@ -154,10 +154,12 @@ const CROWS_EYE_ONLY_CODES = new Set(["CORVUS-HONOR"]);
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY || "SpectrumLife2026!!";
+const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY || "";
 
 type LoginStep =
   | "code"
+  | "email_login"
+  | "signup"
   | "admin_password"
   | "vip_create_password"
   | "vip_enter_password"
@@ -198,6 +200,10 @@ export default function LoginPage() {
   const [codeVisible, setCodeVisible] = useState(false);
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState("");
+
+  // Email login + first-time signup (unified-identity front door)
+  const [emailInput, setEmailInput]   = useState("");
+  const [signupName, setSignupName]   = useState("");
 
   // Step
   const [step, setStep] = useState<LoginStep>("code");
@@ -348,6 +354,7 @@ export default function LoginPage() {
     setPendingCode(""); setPendingSubscriptionId(""); setPendingName("");
     setPw(""); setPwConfirm(""); setPwError(""); setPwVisible(false);
     setAdminPw(""); setAdminPwError("");
+    setEmailInput(""); setSignupName("");
     setRateLimited(false); setShowForgot(false); setShowSuccess(false);
   }
 
@@ -559,6 +566,52 @@ export default function LoginPage() {
       if (data.rateLimited) { setRateLimited(true); speakCorvus(pick(CORVUS_RATE_LIMITED)); }
       else if (data.valid) { storeAndRedirect(pendingSubscriptionId); }
       else { const errLine = pick(CORVUS_WRONG_PASSWORD); setPwError(errLine); speakCorvus(errLine); }
+    } catch { setPwError("Connection error. Please try again."); }
+    finally { setPwLoading(false); }
+  }
+
+  // ── Email login (returning user, unified credential) ─────────────────────────
+
+  async function handleEmailLogin(e: React.FormEvent) {
+    e.preventDefault();
+    unlockAudio();
+    if (!emailInput.trim() || !pw) return;
+    setPwError(""); setPwLoading(true); setRateLimited(false);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier: emailInput.trim(), password: pw }),
+      });
+      const data = await res.json() as { valid?: boolean; rateLimited?: boolean; account?: { code?: string } };
+      if (data.rateLimited) { setRateLimited(true); speakCorvus(pick(CORVUS_RATE_LIMITED)); }
+      else if (data.valid && data.account?.code) { await maybeShowTribute(data.account.code); }
+      else { const errLine = pick(CORVUS_WRONG_PASSWORD); setPwError(errLine); speakCorvus(errLine); }
+    } catch { setPwError("Connection error. Please try again."); }
+    finally { setPwLoading(false); }
+  }
+
+  // ── First-time signup (mints a Corvus Code) ──────────────────────────────────
+
+  async function handleSignup(e: React.FormEvent) {
+    e.preventDefault();
+    unlockAudio();
+    if (!signupName.trim() || !emailInput.trim() || !pw || !pwConfirm) return;
+    if (pw.length < 8) { setPwError("Password must be at least 8 characters."); return; }
+    if (pw !== pwConfirm) { setPwError("Passwords do not match."); return; }
+    setPwError(""); setPwLoading(true);
+    try {
+      const res = await fetch("/api/auth/account/create", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: signupName.trim(), email: emailInput.trim(), password: pw }),
+      });
+      const data = await res.json() as { ok?: boolean; error?: string; account?: { code?: string } };
+      if (data.ok && data.account?.code) {
+        await flashSuccessAndRedirect(data.account.code);
+      } else if (res.status === 409) {
+        setPwError(data.error ?? "That email already has an account. Sign in instead.");
+      } else {
+        setPwError(data.error ?? "Couldn't create your account. Try again.");
+      }
     } catch { setPwError("Connection error. Please try again."); }
     finally { setPwLoading(false); }
   }
@@ -888,6 +941,115 @@ export default function LoginPage() {
     );
   }
 
+  // ── Email login (returning user) ─────────────────────────────────────────────
+
+  if (step === "email_login") {
+    return (
+      <Shell>
+        <div style={{ textAlign: "center", marginBottom: "24px" }}>
+          <h1 style={{ color: "#ffffff", fontSize: "22px", fontWeight: 700, marginBottom: "8px" }}>Sign In</h1>
+          <p style={{ color: "#888888", fontSize: "13px" }}>Use your email and password.</p>
+        </div>
+        <div style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "32px" }}>
+          {rateLimited ? (
+            <div style={{ textAlign: "center", padding: "12px 0" }}>
+              <p style={{ fontFamily: "monospace", fontSize: "13px", color: "#E05555", marginBottom: "8px" }}>{pick(CORVUS_RATE_LIMITED)}</p>
+              <p style={{ color: "#888888", fontSize: "12px" }}>Try again in 60 minutes.</p>
+            </div>
+          ) : (
+            <form onSubmit={handleEmailLogin}>
+              <label style={{ display: "block", color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>Email</label>
+              <input type="email" autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck={false}
+                placeholder="you@example.com" value={emailInput} onChange={e => setEmailInput(e.target.value)}
+                style={{ ...inputStyle, fontFamily: "inherit", letterSpacing: "normal", marginBottom: "16px" }} autoFocus />
+              <label style={{ display: "block", color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>Password</label>
+              <div style={{ position: "relative", marginBottom: pwError ? "8px" : "20px" }}>
+                <input type={pwVisible ? "text" : "password"} autoComplete="current-password" autoCapitalize="off" autoCorrect="off"
+                  placeholder="Your password" value={pw} onChange={e => setPw(e.target.value)}
+                  style={{ ...inputStyle, fontFamily: "inherit", letterSpacing: "normal", paddingRight: "60px" }} />
+                <button type="button" onClick={() => setPwVisible(v => !v)}
+                  style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#555555", fontSize: "11px", cursor: "pointer", fontWeight: 600, padding: "4px" }}>
+                  {pwVisible ? "Hide" : "Show"}
+                </button>
+              </div>
+              {pwError && <p style={{ color: "#E05555", fontSize: "12px", marginBottom: "16px" }}>{pwError}</p>}
+              <button type="submit" disabled={pwLoading || !emailInput.trim() || !pw} style={btnPrimary(pwLoading || !emailInput.trim() || !pw)}>
+                {pwLoading ? "Signing in…" : "Sign In"}
+              </button>
+            </form>
+          )}
+        </div>
+        <div style={{ textAlign: "center", marginTop: "20px" }}>
+          <p style={{ fontSize: "12px", color: "#555555", marginBottom: "8px" }}>
+            <button onClick={() => { reset(); setStep("code"); }} style={{ background: "none", border: "none", color: "#22D6DC", fontSize: "12px", cursor: "pointer", padding: 0 }}>Use your Corvus Code instead</button>
+          </p>
+          <p style={{ fontSize: "12px", color: "#555555", marginBottom: "8px" }}>
+            <Link href="/recover-code" style={{ color: "#22D6DC" }}>Lost your Corvus Code? Recover it</Link>
+          </p>
+          <p style={{ fontSize: "12px", color: "#555555" }}>
+            First time?{" "}
+            <button onClick={() => { reset(); setStep("signup"); }} style={{ background: "none", border: "none", color: "#22D6DC", fontSize: "12px", cursor: "pointer", padding: 0 }}>Create your account</button>
+          </p>
+        </div>
+      </Shell>
+    );
+  }
+
+  // ── First-time signup (mints a Corvus Code) ──────────────────────────────────
+
+  if (step === "signup") {
+    return (
+      <Shell>
+        {showSuccess
+          ? <SuccessFlash line={successLine} />
+          : (
+          <>
+            <div style={{ textAlign: "center", marginBottom: "24px" }}>
+              <h1 style={{ color: "#ffffff", fontSize: "22px", fontWeight: 700, marginBottom: "8px" }}>Create Your Account</h1>
+              <p style={{ color: "#888888", fontSize: "13px" }}>We&rsquo;ll set you up with your own Corvus Code.</p>
+            </div>
+            <div style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "32px" }}>
+              <form onSubmit={handleSignup}>
+                <label style={{ display: "block", color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>Your Name</label>
+                <input autoComplete="name" placeholder="Full name" value={signupName} onChange={e => setSignupName(e.target.value)}
+                  style={{ ...inputStyle, fontFamily: "inherit", letterSpacing: "normal", marginBottom: "16px" }} autoFocus />
+                <label style={{ display: "block", color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>Email</label>
+                <input type="email" autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck={false}
+                  placeholder="you@example.com" value={emailInput} onChange={e => setEmailInput(e.target.value)}
+                  style={{ ...inputStyle, fontFamily: "inherit", letterSpacing: "normal", marginBottom: "16px" }} />
+                <label style={{ display: "block", color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>Password</label>
+                <div style={{ position: "relative" }}>
+                  <input type={pwVisible ? "text" : "password"} autoComplete="new-password" autoCapitalize="off" autoCorrect="off"
+                    placeholder="At least 8 characters" value={pw} onChange={e => setPw(e.target.value)}
+                    style={{ ...inputStyle, fontFamily: "inherit", letterSpacing: "normal", paddingRight: "60px" }} />
+                  <button type="button" onClick={() => setPwVisible(v => !v)}
+                    style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#555555", fontSize: "11px", cursor: "pointer", fontWeight: 600, padding: "4px" }}>
+                    {pwVisible ? "Hide" : "Show"}
+                  </button>
+                </div>
+                <PasswordStrengthBar password={pw} />
+                <label style={{ display: "block", color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", margin: "12px 0 8px" }}>Confirm Password</label>
+                <input type={pwVisible ? "text" : "password"} autoComplete="new-password" autoCapitalize="off" autoCorrect="off"
+                  placeholder="Repeat password" value={pwConfirm} onChange={e => setPwConfirm(e.target.value)}
+                  style={{ ...inputStyle, fontFamily: "inherit", letterSpacing: "normal", marginBottom: pwError ? "8px" : "20px" }} />
+                {pwError && <p style={{ color: "#E05555", fontSize: "12px", marginBottom: "16px" }}>{pwError}</p>}
+                <button type="submit" disabled={pwLoading || !signupName.trim() || !emailInput.trim() || !pw || !pwConfirm} style={btnPrimary(pwLoading || !signupName.trim() || !emailInput.trim() || !pw || !pwConfirm)}>
+                  {pwLoading ? "Creating…" : "Create Account & Continue"}
+                </button>
+              </form>
+            </div>
+            <div style={{ textAlign: "center", marginTop: "20px" }}>
+              <p style={{ fontSize: "12px", color: "#555555" }}>
+                Already have an account?{" "}
+                <button onClick={() => { reset(); setStep("email_login"); }} style={{ background: "none", border: "none", color: "#22D6DC", fontSize: "12px", cursor: "pointer", padding: 0 }}>Sign in</button>
+              </p>
+            </div>
+          </>
+        )}
+      </Shell>
+    );
+  }
+
   // ── Code entry (default) ─────────────────────────────────────────────────────
 
   return (
@@ -899,13 +1061,13 @@ export default function LoginPage() {
         <StarFoxPanel line={sessionExpiredLineRef.current || pick(CORVUS_SESSION_EXPIRED)} />
       )}
       <div style={{ textAlign: "center", marginBottom: "24px" }}>
-        <h1 style={{ color: "#ffffff", fontSize: "22px", fontWeight: 700, marginBottom: "8px" }}>Enter Your Access Code</h1>
-        <p style={{ color: "#888888", fontSize: "13px" }}>Subscriber code, founding code, or admin access</p>
+        <h1 style={{ color: "#ffffff", fontSize: "22px", fontWeight: 700, marginBottom: "8px" }}>Enter Your Corvus Code</h1>
+        <p style={{ color: "#888888", fontSize: "13px" }}>Subscriber, founding, or admin code</p>
       </div>
       <div style={{ background: "#1A2332", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "32px" }}>
         <form onSubmit={handleSubmit}>
           <label style={{ display: "block", color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
-            Access Code
+            Corvus Code
           </label>
           <div style={{ position: "relative", marginBottom: error ? "8px" : "20px" }}>
             <input
@@ -928,7 +1090,14 @@ export default function LoginPage() {
       </div>
       <div style={{ textAlign: "center", marginTop: "20px" }}>
         <p style={{ fontSize: "12px", color: "#555555", marginBottom: "8px" }}>
-          <Link href="/recover-code" style={{ color: "#22D6DC" }}>Lost your code? Recover it here</Link>
+          <button onClick={() => { reset(); setStep("email_login"); }} style={{ background: "none", border: "none", color: "#22D6DC", fontSize: "12px", cursor: "pointer", padding: 0 }}>Sign in with email instead</button>
+        </p>
+        <p style={{ fontSize: "12px", color: "#555555", marginBottom: "8px" }}>
+          First time?{" "}
+          <button onClick={() => { reset(); setStep("signup"); }} style={{ background: "none", border: "none", color: "#22D6DC", fontSize: "12px", cursor: "pointer", padding: 0 }}>Create your account</button>
+        </p>
+        <p style={{ fontSize: "12px", color: "#555555", marginBottom: "8px" }}>
+          <Link href="/recover-code" style={{ color: "#22D6DC" }}>Lost your Corvus Code? Recover it here</Link>
         </p>
         <p style={{ fontSize: "12px", color: "#555555" }}>
           Don&rsquo;t have a subscription?{" "}

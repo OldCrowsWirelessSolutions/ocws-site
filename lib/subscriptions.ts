@@ -6,6 +6,7 @@
 import redis from "./redis";
 import { isVIPCode, getVIPCode, validateSubordinateCode } from "./vip-codes";
 import { isLifetimeCode, getLifetimeCode, getLifetimeCreditsRemaining } from "./lifetime-codes";
+import { getAccountByCode, isFreeCode } from "./accounts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -269,6 +270,27 @@ export async function validateSubscriptionId(
       verdicts_unlimited: tier === "flock",
       reckonings_remaining: { small: session.allowReckoning ? 999999 : 0, standard: 0, commercial: 0 },
       reckonings_unlimited: { small: session.allowReckoning ?? false, standard: false, commercial: false },
+    };
+  }
+
+  // -0.5 Free / shell accounts (CORVUS-FREE-XXXXXXXX) — a signed-in identity with
+  // zero paid scan credits until the holder buys or redeems. Valid so the
+  // dashboard loads (showing an upgrade CTA) instead of bouncing back to /login.
+  // type "founder" (like demo) so loadDashboard skips the subscription-only fetches.
+  if (isFreeCode(code)) {
+    const account = await getAccountByCode(code);
+    if (!account) return { valid: false, type: null, error: "Unknown code." };
+    return {
+      valid: true,
+      type: "founder",
+      tier: "fledgling",
+      customer_name: account.name,
+      customer_email: account.email,
+      verdicts_remaining: 0,
+      verdicts_unlimited: false,
+      reckonings_remaining: { small: 0, standard: 0, commercial: 0 },
+      reckonings_unlimited: { small: false, standard: false, commercial: false },
+      extra_verdict_credits: 0,
     };
   }
 

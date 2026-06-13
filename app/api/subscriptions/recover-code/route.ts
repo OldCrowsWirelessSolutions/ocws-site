@@ -5,7 +5,8 @@
 
 export const runtime = "nodejs";
 
-import { getSubscription, getSubscriptionByEmail, REDIS_KEYS } from "@/lib/subscriptions";
+import { getSubscription, getSubscriptionByEmail, REDIS_KEYS, type SubscriptionTier } from "@/lib/subscriptions";
+import { getAccountByEmail } from "@/lib/accounts";
 import { sendCodeRecoveryEmail } from "@/lib/subscription-email";
 import redis from "@/lib/redis";
 
@@ -55,14 +56,26 @@ export async function POST(req: Request) {
 
     // Fallback: look up by email index (covers OCWS-format subscription IDs)
     const sub = await getSubscriptionByEmail(email);
-    if (!sub || sub.status !== "active") {
+    if (sub && sub.status === "active") {
+      try {
+        await sendCodeRecoveryEmail(email, sub.subscription_id, sub.tier);
+      } catch (err) {
+        console.error("[recover-code] email send failed (non-fatal):", err);
+      }
       return Response.json(SAFE_RESPONSE);
     }
 
-    try {
-      await sendCodeRecoveryEmail(email, sub.subscription_id, sub.tier);
-    } catch (err) {
-      console.error("[recover-code] email send failed (non-fatal):", err);
+    // Final fallback: any account indexed by email — free shell codes, VIP, and
+    // anything else that lives in the unified account hub but not the
+    // subscription tables. This is what makes "email recovers your Corvus Code"
+    // work for every account, not just paid subscribers.
+    const account = await getAccountByEmail(email);
+    if (account) {
+      try {
+        await sendCodeRecoveryEmail(email, account.code, account.tier as SubscriptionTier);
+      } catch (err) {
+        console.error("[recover-code] account email send failed (non-fatal):", err);
+      }
     }
 
     return Response.json(SAFE_RESPONSE);

@@ -107,7 +107,7 @@ export const OWNER_VOICE_SAMPLES = [
   "Huntsville NDA contact hasn't responded in nineteen days. You know what that means. Either they're running the pilot, they're stuck in legal, or they've gone cold. Pick one and act accordingly. I drafted three messages, one for each scenario.",
   "Your LTV:CAC ratio just crossed 4.2 this month. That's elite. Write it down, put it in the pitch deck, and stop apologizing in investor meetings.",
   "API burn is 62% of revenue on free-tier conversations. That's not a business, that's a hobby with overhead. Gate chat behind a Verdict or a paid tier in the next seven days.",
-  "Patent 1 USPTO deadline is in 14 days. Hack the Coast is in 21. I'm going to bring this up every morning until you file. You have been warned.",
+  "Patent 1 USPTO deadline is in 14 days. I'm going to bring this up every morning until you file. You have been warned.",
 ];
 
 export const TEAM_LEAD_VOICE_SAMPLES = [
@@ -215,7 +215,6 @@ COMPLIANCE TRENDS (post-V2.5)
 
 CLOCK-BASED ALERTS
 - Patent USPTO deadline within 30 / 14 / 7 / 3 / 1 days
-- Hack the Coast countdown
 - Raise closing target countdown
 - Renewal windows: Campus customers within 60 / 30 / 14 days of renewal
 - API cost anomalies: daily burn >125% of 30-day average
