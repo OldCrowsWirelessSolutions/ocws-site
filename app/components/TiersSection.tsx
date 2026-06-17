@@ -218,7 +218,7 @@ export default function TiersSection() {
 
   return (
     <section className="py-20" style={{ background: "#1A2332" }}>
-      <div className="ocws-container">
+      <div className="mx-auto max-w-7xl px-6 md:px-10">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-white">
             Crow&rsquo;s Eye for everyone.
@@ -231,7 +231,7 @@ export default function TiersSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-6">
           {/* Subscription tiers */}
           {tiers.map((tier) => (
             <div
