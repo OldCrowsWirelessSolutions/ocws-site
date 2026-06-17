@@ -5,8 +5,7 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { getEventsForCode, buildSummary } from "@/lib/analytics";
 import { validateSubscriptionId } from "@/lib/subscriptions";
-
-const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY ?? "SpectrumLife2026!!";
+import { isValidAdminKey } from "@/lib/adminAuth";
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,7 +16,7 @@ export async function POST(req: NextRequest) {
     if (!code) return NextResponse.json({ error: "Code required" }, { status: 400 });
 
     // Validate: code must belong to requester unless admin
-    if (adminKey !== ADMIN_KEY) {
+    if (!isValidAdminKey(adminKey)) {
       const validation = await validateSubscriptionId(code);
       if (!validation.valid) {
         return NextResponse.json({ error: "Invalid code" }, { status: 403 });

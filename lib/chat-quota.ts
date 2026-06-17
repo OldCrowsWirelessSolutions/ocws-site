@@ -69,6 +69,79 @@ export function isChatProduct(product: string): boolean {
   return product in CHAT_PACKS || product in CHAT_PASSES;
 }
 
+// ─── Free (non-subscriber) chat economy ──────────────────────────────────────
+// Free accounts get this many INCLUDED Corvus questions per "bucket" (a report,
+// or the "general" bucket for chat not tied to a report), then draw on purchased
+// packs/passes. This single constant + the consume/peek helpers below are shared
+// by web (/api/chat) and mobile (/api/mobile/corvus-chat) so the two surfaces
+// behave IDENTICALLY for free users — change the number here to change both.
+export const FREE_CHAT_QUESTIONS_PER_BUCKET = 5;
+
+// Bucket key for general (non-report) free chat. Per-report buckets use the
+// reportId/verdictId directly.
+export const FREE_CHAT_GENERAL_BUCKET = "__general__";
+
+const FREE_CHAT_TTL_SECONDS = 60 * 60 * 24 * 90; // 90d, matches the mobile counter
+
+function freeChatKey(accountId: string, bucket: string): string {
+  // Same namespace the mobile per-verdict counter already uses, so a free user's
+  // count for a given report is consistent across web and mobile.
+  return `corvus:v1:chat_count:${accountId.slice(0, 100)}:${bucket.slice(0, 100)}`;
+}
+
+export interface FreeChatState {
+  allowed:   boolean;
+  source:    "included" | "pass" | "balance" | "none";
+  used:      number; // included questions used in this bucket
+  remaining: number; // included questions left in this bucket (0 once on top-ups)
+  limit:     number; // FREE_CHAT_QUESTIONS_PER_BUCKET
+}
+
+/** Non-mutating snapshot of a free account's per-bucket chat allowance. */
+export async function peekFreeChat(accountId: string, bucket: string): Promise<FreeChatState> {
+  const used = Number((await redis.get<number>(freeChatKey(accountId, bucket))) ?? 0);
+  const remaining = Math.max(0, FREE_CHAT_QUESTIONS_PER_BUCKET - used);
+  return {
+    allowed: remaining > 0,
+    source: remaining > 0 ? "included" : "none",
+    used,
+    remaining,
+    limit: FREE_CHAT_QUESTIONS_PER_BUCKET,
+  };
+}
+
+/**
+ * Consume one free-account chat message for a bucket (reportId or "general").
+ * Order: included per-bucket allowance → active pass → purchased balance.
+ * `accountId` is the canonical account key (lowercased email via chatAccountKey).
+ */
+export async function consumeFreeChat(accountId: string, bucket: string): Promise<FreeChatState> {
+  const key = freeChatKey(accountId, bucket);
+  const used = Number((await redis.get<number>(key)) ?? 0);
+
+  if (used < FREE_CHAT_QUESTIONS_PER_BUCKET) {
+    const n = await redis.incr(key);
+    await redis.expire(key, FREE_CHAT_TTL_SECONDS);
+    return {
+      allowed: true,
+      source: "included",
+      used: n,
+      remaining: Math.max(0, FREE_CHAT_QUESTIONS_PER_BUCKET - n),
+      limit: FREE_CHAT_QUESTIONS_PER_BUCKET,
+    };
+  }
+
+  // Included allowance spent — fall through to purchased packs/passes (account-wide).
+  const topup = await consumePurchasedChat(accountId);
+  return {
+    allowed: topup.allowed,
+    source: topup.allowed ? topup.source : "none",
+    used,
+    remaining: 0,
+    limit: FREE_CHAT_QUESTIONS_PER_BUCKET,
+  };
+}
+
 /**
  * Canonical cross-surface account key for chat top-ups. The same human keys to
  * the same bucket on web (subscription email) and mobile (login email), so a

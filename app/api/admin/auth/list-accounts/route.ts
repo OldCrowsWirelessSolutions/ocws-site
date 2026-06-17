@@ -6,11 +6,10 @@
 export const runtime = "nodejs";
 
 import { listAccounts } from "@/lib/accounts";
-
-const ADMIN_SECRET = process.env.OCWS_ADMIN_SECRET || "SpectrumLife2026!!";
+import { isValidAdminKey } from "@/lib/adminAuth";
 
 function isAuthed(req: Request): boolean {
-  return (req.headers.get("x-admin-key") ?? "") === ADMIN_SECRET;
+  return isValidAdminKey(req.headers.get("x-admin-key"));
 }
 
 export async function GET(req: Request) {

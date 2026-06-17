@@ -10,6 +10,7 @@ import { NextRequest } from "next/server";
 import Stripe from "stripe";
 import { validateSubscriptionId } from "@/lib/subscriptions";
 import { CHAT_PACKS, CHAT_PASSES, chatAccountKey } from "@/lib/chat-quota";
+import { getAccountByCode } from "@/lib/accounts";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
   apiVersion: "2026-02-25.clover",
@@ -30,24 +31,33 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Must be a real subscription. Murder is already unlimited — nothing to buy.
+    // Subscribers (except Murder, which is unlimited) AND free accounts can buy
+    // top-ups. Resolve the buyer's email either way so the webhook credits the
+    // right cross-surface key.
+    let customerEmail: string | undefined;
     const result = await validateSubscriptionId(code);
-    if (!result.valid || result.type !== "subscription") {
-      return Response.json({ error: "Invalid or inactive subscription." }, { status: 403 });
-    }
-    if (result.tier === "murder") {
-      return Response.json(
-        { error: "Murder includes unlimited Corvus — no top-up needed." },
-        { status: 400 }
-      );
+    if (result.valid && result.type === "subscription") {
+      if (result.tier === "murder") {
+        return Response.json(
+          { error: "Murder includes unlimited Corvus — no top-up needed." },
+          { status: 400 }
+        );
+      }
+      customerEmail = result.customer_email;
+    } else {
+      // Not a subscription — allow free shell accounts (non-subscribers with a code).
+      const acct = await getAccountByCode(code);
+      if (!acct || !(acct.source === "free" || acct.tier === "free")) {
+        return Response.json({ error: "Invalid or inactive account." }, { status: 403 });
+      }
+      customerEmail = acct.email;
     }
 
     const item     = pack ?? pass!;
     const origin   = req.headers.get("origin") ?? "https://oldcrowswireless.com";
-    // accountId = canonical cross-surface key (subscription email, normalized),
-    // so this pack/pass also covers the same person on mobile. Falls back to the
-    // code if the record somehow has no email.
-    const accountId = chatAccountKey(result.customer_email, code);
+    // accountId = canonical cross-surface key (lowercased email), so this pack/pass
+    // also covers the same person on mobile. Falls back to the code if no email.
+    const accountId = chatAccountKey(customerEmail, code);
     const metadata: Record<string, string> = pack
       ? { type: "chat_pack", accountId, subscriptionId: code, code, product, questions: String(pack.questions) }
       : { type: "chat_pass", accountId, subscriptionId: code, code, product, hours: String(pass!.hours) };

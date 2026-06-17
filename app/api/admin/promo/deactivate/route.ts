@@ -2,12 +2,10 @@
 export const runtime = "nodejs";
 
 import { deactivatePromoCode } from "@/lib/promo-codes";
-
-const ADMIN_SECRET = process.env.OCWS_ADMIN_SECRET || "SpectrumLife2026!!";
+import { isValidAdminKey } from "@/lib/adminAuth";
 
 function isAuthed(req: Request): boolean {
-  const key = req.headers.get("x-admin-key") ?? "";
-  return key === ADMIN_SECRET;
+  return isValidAdminKey(req.headers.get("x-admin-key"));
 }
 
 export async function POST(req: Request) {

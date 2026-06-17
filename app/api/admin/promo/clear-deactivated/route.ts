@@ -1,11 +1,9 @@
 export const runtime = "nodejs";
 import redis from "@/lib/redis";
-
-const ADMIN_SECRET = process.env.OCWS_ADMIN_SECRET || process.env.NEXT_PUBLIC_ADMIN_KEY || "SpectrumLife2026!!";
+import { isValidAdminKey } from "@/lib/adminAuth";
 
 export async function POST(req: Request) {
-  const key = req.headers.get("x-admin-key") ?? "";
-  if (key !== ADMIN_SECRET) {
+  if (!isValidAdminKey(req.headers.get("x-admin-key"))) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {

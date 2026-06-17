@@ -2,6 +2,7 @@
 export const runtime = "nodejs";
 
 import { generatePromoCode, PromoType, PromoProduct, ExpiryType } from "@/lib/promo-codes";
+import { isValidAdminKey } from "@/lib/adminAuth";
 
 const VALID_TYPES: PromoType[] = [
   "verdict",
@@ -21,11 +22,8 @@ const VALID_EXPIRY_TYPES: ExpiryType[] = [
   "single_use", "24h", "48h", "72h", "7d", "14d", "30d",
 ];
 
-const ADMIN_SECRET = process.env.OCWS_ADMIN_SECRET || "SpectrumLife2026!!";
-
 function isAuthed(req: Request): boolean {
-  const key = req.headers.get("x-admin-key") ?? "";
-  return key === ADMIN_SECRET;
+  return isValidAdminKey(req.headers.get("x-admin-key"));
 }
 
 export async function POST(req: Request) {

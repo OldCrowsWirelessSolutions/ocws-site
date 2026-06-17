@@ -152,9 +152,22 @@ const CODES_EXEMPT_FROM_PASSWORD = new Set(["CORVUS-NEST"]);
 // These codes are for Crow's Eye only — not dashboard logins.
 const CROWS_EYE_ONLY_CODES = new Set(["CORVUS-HONOR"]);
 
+// Personalized welcome-back lines for any returning user we recognize by name.
+const welcomeBackLines = (first: string): string[] => [
+  `${first}. Back on the perch — Corvus kept your channel warm.`,
+  `Well, well — ${first} returns. I already know why you're here.`,
+  `${first}. The roost missed you. Password, and we fly.`,
+];
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY || "";
+// The admin secret is NEVER embedded client-side. The admin enters it (as their
+// code, or as the admin password) and it's validated server-side; the entered
+// value is what we store + send onward. See /api/admin/verify and lib/adminAuth.ts.
+function getAdminKey(): string {
+  if (typeof window === "undefined") return "";
+  try { return localStorage.getItem("corvus_admin_auth") ?? ""; } catch { return ""; }
+}
 
 type LoginStep =
   | "code"
@@ -304,8 +317,12 @@ export default function LoginPage() {
       instructionRef.current = pick(CORVUS_PASSWORD_INSTRUCTIONS);
       speakCorvus(corvusLineRef.current);
     } else if (step === "vip_enter_password") {
-      const lines = CORVUS_VIP_RETURNING[pendingCode] ?? CORVUS_RETURNING_WELCOME;
-      corvusLineRef.current = pick(lines);
+      const first = pendingName.trim().split(/\s+/)[0];
+      if (first) {
+        corvusLineRef.current = pick(welcomeBackLines(first));
+      } else {
+        corvusLineRef.current = pick(CORVUS_VIP_RETURNING[pendingCode] ?? CORVUS_RETURNING_WELCOME);
+      }
       instructionRef.current = pick(CORVUS_PASSWORD_INSTRUCTIONS);
       speakCorvus(corvusLineRef.current);
     } else if (step === "sub_create_password") {
@@ -314,8 +331,14 @@ export default function LoginPage() {
       instructionRef.current = pick(CORVUS_PASSWORD_INSTRUCTIONS);
       speakCorvus(corvusLineRef.current);
     } else if (step === "sub_enter_password") {
-      const lines = sessionExpired ? CORVUS_SESSION_EXPIRED : (CORVUS_SUB_RETURNING[pendingCode] ?? CORVUS_RETURNING_WELCOME);
-      corvusLineRef.current = pick(lines);
+      const first = pendingName.trim().split(/\s+/)[0];
+      if (sessionExpired) {
+        corvusLineRef.current = pick(CORVUS_SESSION_EXPIRED);
+      } else if (first) {
+        corvusLineRef.current = pick(welcomeBackLines(first));
+      } else {
+        corvusLineRef.current = pick(CORVUS_SUB_RETURNING[pendingCode] ?? CORVUS_RETURNING_WELCOME);
+      }
       instructionRef.current = pick(CORVUS_PASSWORD_INSTRUCTIONS);
       speakCorvus(corvusLineRef.current);
     } else {
@@ -327,8 +350,11 @@ export default function LoginPage() {
   // Fetch founder stats when Joshua's code is detected — personalizes the greeting
   useEffect(() => {
     if (pendingCode !== "OCWS-CORVUS-FOUNDER-JOSHUA") return;
+    // Pre-auth this header is empty, so the call simply 401s and the greeting
+    // falls back to its default — no embedded secret, graceful degradation. Live
+    // founder stats still render on the admin dashboard after authentication.
     fetch("/api/analytics/founder-stats", {
-      headers: { "x-admin-key": ADMIN_KEY },
+      headers: { "x-admin-key": getAdminKey() },
     })
       .then(r => r.ok ? r.json() : null)
       .then((data: { totalScans: number; newScans: number; activeSubscribers: number; pendingTestimonials: number } | null) => {
@@ -433,7 +459,9 @@ export default function LoginPage() {
       const upperRaw = raw.toUpperCase();
 
       if (data.type === "admin") {
-        try { localStorage.setItem("corvus_admin_auth", ADMIN_KEY); } catch { /* */ }
+        // The entered code IS the admin secret (the server just confirmed it).
+        // Store what they typed — never an embedded value.
+        try { localStorage.setItem("corvus_admin_auth", raw); } catch { /* */ }
         router.push("/admin");
       } else if (data.type === "admin_first_factor") {
         setPendingCode(upperRaw);
@@ -454,6 +482,7 @@ export default function LoginPage() {
           return;
         }
         setPendingCode(upperRaw); setPendingSubscriptionId(code);
+        if (data.name) setPendingName(data.name);
         setStep(data.passwordSet ? "sub_enter_password" : "sub_create_password");
       } else if (data.type === "promo") {
         setError("Promo codes are used on the Crow's Eye page, not here.");
@@ -469,15 +498,21 @@ export default function LoginPage() {
 
   // ── Admin password ───────────────────────────────────────────────────────────
 
-  function handleAdminPassword(e: React.FormEvent) {
+  async function handleAdminPassword(e: React.FormEvent) {
     e.preventDefault();
     if (!adminPw) return;
     setAdminPwError("");
-    if (adminPw === ADMIN_KEY) {
-      try { localStorage.setItem("corvus_admin_auth", ADMIN_KEY); } catch { /* */ }
-      router.push("/admin");
-    } else {
-      setAdminPwError("Invalid admin password.");
+    // Validate the typed secret server-side; store the typed value on success.
+    try {
+      const res = await fetch("/api/admin/verify", { headers: { "x-admin-key": adminPw } });
+      if (res.ok) {
+        try { localStorage.setItem("corvus_admin_auth", adminPw); } catch { /* */ }
+        router.push("/admin");
+      } else {
+        setAdminPwError("Invalid admin password.");
+      }
+    } catch {
+      setAdminPwError("Connection error. Please try again.");
     }
   }
 
@@ -532,20 +567,23 @@ export default function LoginPage() {
 
   async function handleSubCreatePassword(e: React.FormEvent) {
     e.preventDefault();
-    if (!pw || !pwConfirm) return;
+    if (!signupName.trim() || !emailInput.trim() || !pw || !pwConfirm) return;
     if (pw.length < 8) { setPwError("Password must be at least 8 characters."); return; }
     if (pw !== pwConfirm) { setPwError("Passwords do not match."); return; }
     setPwError(""); setPwLoading(true);
     try {
-      const res = await fetch("/api/auth/set-password", {
+      // Capture name + email + password together: stores the password (hashed,
+      // never returned) and an account profile, so Corvus can greet them back
+      // and they can later sign in by email.
+      const res = await fetch("/api/auth/set-identity", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: pendingSubscriptionId, password: pw }),
+        body: JSON.stringify({ code: pendingSubscriptionId, name: signupName.trim(), email: emailInput.trim(), password: pw }),
       });
       const data = await res.json() as { ok?: boolean; error?: string };
       if (data.ok) {
         await flashSuccessAndRedirect(pendingSubscriptionId);
       } else {
-        setPwError(data.error ?? "Failed to set password.");
+        setPwError(data.error ?? "Failed to set up your account.");
       }
     } catch { setPwError("Connection error. Please try again."); }
     finally { setPwLoading(false); }
@@ -826,6 +864,28 @@ export default function LoginPage() {
                 {instructionRef.current}
               </p>
               <form onSubmit={handleSubCreatePassword}>
+                <div style={{ marginBottom: "16px" }}>
+                  <label style={{ display: "block", color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
+                    Your Name
+                  </label>
+                  <input
+                    type="text" autoComplete="name" autoCapitalize="words"
+                    placeholder="So Corvus knows what to call you"
+                    value={signupName} onChange={e => setSignupName(e.target.value)}
+                    style={inputStyle}
+                  />
+                </div>
+                <div style={{ marginBottom: "16px" }}>
+                  <label style={{ display: "block", color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
+                    Email
+                  </label>
+                  <input
+                    type="email" autoComplete="email" autoCorrect="off" autoCapitalize="off"
+                    placeholder="For signing in and account recovery"
+                    value={emailInput} onChange={e => setEmailInput(e.target.value)}
+                    style={inputStyle}
+                  />
+                </div>
                 <div style={{ marginBottom: "6px" }}>
                   <label style={{ display: "block", color: "#22D6DC", fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "8px" }}>
                     New Password
@@ -861,7 +921,7 @@ export default function LoginPage() {
                     {pwError}
                   </p>
                 )}
-                <button type="submit" disabled={pwLoading || !pw || !pwConfirm} style={btnPrimary(pwLoading || !pw || !pwConfirm)}>
+                <button type="submit" disabled={pwLoading || !signupName.trim() || !emailInput.trim() || !pw || !pwConfirm} style={btnPrimary(pwLoading || !signupName.trim() || !emailInput.trim() || !pw || !pwConfirm)}>
                   {pwLoading ? "Setting up…" : "Set Password & Enter Dashboard"}
                 </button>
               </form>

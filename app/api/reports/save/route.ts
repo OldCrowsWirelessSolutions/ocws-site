@@ -7,6 +7,7 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { saveReport, ReportRecord, ReportType, ReportSeverity } from "@/lib/reports";
 import { validateSubscriptionId } from "@/lib/subscriptions";
+import { getAccountByCode, FREE_REPORT_RETENTION_DAYS } from "@/lib/accounts";
 
 const RETENTION_BY_TIER: Record<string, number> = {
   nest:   0,
@@ -27,6 +28,15 @@ async function getRetentionDays(code: string): Promise<number | null> {
   // Bypass codes (admin secret, founding NEST code) — valid but no storage
   if (upper === "OCWS-CORVUS-FOUNDER-JOSHUA" || upper === "CORVUS-NEST") return 0;
   if (process.env.OCWS_ADMIN_SECRET && code === process.env.OCWS_ADMIN_SECRET) return 0;
+
+  // Free (non-subscriber) accounts — give them 2 weeks to revisit a saved report.
+  // Checked before validateSubscriptionId because free codes aren't subscriptions.
+  try {
+    const acct = await getAccountByCode(upper);
+    if (acct && (acct.source === "free" || acct.tier === "free")) {
+      return FREE_REPORT_RETENTION_DAYS;
+    }
+  } catch { /* non-fatal — fall through to subscription validation */ }
 
   try {
     const result = await validateSubscriptionId(upper);

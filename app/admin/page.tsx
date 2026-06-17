@@ -111,7 +111,13 @@ const ADMIN_TABS: { id: AdminTab; label: string }[] = [
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY || "SpectrumLife2026!!";
+// The admin secret is NEVER embedded client-side. It's the value the admin typed
+// at login, kept in localStorage and sent as the x-admin-key header; the server
+// validates it (see /api/admin/verify and lib/adminAuth.ts).
+function getAdminKey(): string {
+  if (typeof window === "undefined") return "";
+  try { return localStorage.getItem("corvus_admin_auth") ?? ""; } catch { return ""; }
+}
 
 const TIER_COLORS: Record<SubscriptionTier, { bg: string; text: string }> = {
   fledgling: { bg: "#7A5A1A", text: "#ffffff" },
@@ -427,7 +433,7 @@ export default function AdminPage() {
   useEffect(() => {
     if (phase !== "dashboard") return;
     fetch("/api/analytics/founder-stats", {
-      headers: { "x-admin-key": ADMIN_KEY },
+      headers: { "x-admin-key": getAdminKey() },
     })
       .then(r => r.ok ? r.json() : null)
       .then((data: FounderStats | null) => {
@@ -447,7 +453,7 @@ export default function AdminPage() {
     setLoadError("");
     try {
       const res = await fetch("/api/admin/subscribers", {
-        headers: { "x-admin-key": ADMIN_KEY },
+        headers: { "x-admin-key": getAdminKey() },
       });
       if (!res.ok) throw new Error("Unauthorized");
       const data = await res.json();
@@ -486,7 +492,7 @@ export default function AdminPage() {
     setLoadingPromos(true);
     try {
       const res = await fetch("/api/admin/promo/list", {
-        headers: { "x-admin-key": ADMIN_KEY },
+        headers: { "x-admin-key": getAdminKey() },
       });
       const data = await res.json();
       setPromoCodes(data.codes ?? []);
@@ -498,7 +504,7 @@ export default function AdminPage() {
     setLoadingReports(true);
     try {
       const res = await fetch("/api/admin/reports", {
-        headers: { "x-admin-key": ADMIN_KEY },
+        headers: { "x-admin-key": getAdminKey() },
       });
       if (res.ok) {
         const data = await res.json();
@@ -512,7 +518,7 @@ export default function AdminPage() {
     setLoadingVip(true);
     try {
       const res = await fetch("/api/admin/vip/activity", {
-        headers: { "x-admin-key": ADMIN_KEY },
+        headers: { "x-admin-key": getAdminKey() },
       });
       if (res.ok) {
         const data = await res.json();
@@ -525,7 +531,7 @@ export default function AdminPage() {
   const loadVipPasswords = useCallback(async () => {
     try {
       const res = await fetch("/api/admin/vip/password-status", {
-        headers: { "x-admin-key": ADMIN_KEY },
+        headers: { "x-admin-key": getAdminKey() },
       });
       if (res.ok) {
         const data = await res.json() as { statuses?: Record<string, boolean> };
@@ -538,7 +544,7 @@ export default function AdminPage() {
     setLoadingPlatform(true);
     try {
       const res = await fetch("/api/analytics/platform", {
-        headers: { "x-admin-key": ADMIN_KEY },
+        headers: { "x-admin-key": getAdminKey() },
       });
       if (res.ok) {
         const data = await res.json();
@@ -552,7 +558,7 @@ export default function AdminPage() {
     setLoadingChat(true);
     try {
       const res = await fetch("/api/analytics/chat", {
-        headers: { "x-admin-key": ADMIN_KEY },
+        headers: { "x-admin-key": getAdminKey() },
       });
       if (res.ok) setChatAnalytics(await res.json());
     } catch { /* non-fatal */ }
@@ -563,7 +569,7 @@ export default function AdminPage() {
     setLoadingTestimonials(true);
     try {
       const res = await fetch("/api/admin/testimonials/pending", {
-        headers: { "x-admin-key": ADMIN_KEY },
+        headers: { "x-admin-key": getAdminKey() },
       });
       if (res.ok) {
         const data = await res.json();
@@ -576,7 +582,7 @@ export default function AdminPage() {
   const loadLifetimeMembers = useCallback(async () => {
     try {
       const res = await fetch("/api/admin/lifetime-members", {
-        headers: { "x-admin-key": ADMIN_KEY },
+        headers: { "x-admin-key": getAdminKey() },
       });
       if (res.ok) {
         const data = await res.json() as { members?: LifetimeMemberRecord[] };
@@ -598,12 +604,20 @@ export default function AdminPage() {
   }
 
   useEffect(() => {
-    try {
-      if (localStorage.getItem("corvus_admin_auth") === ADMIN_KEY) {
-        setPhase("dashboard");
-        loadAll();
-      }
-    } catch { /* */ }
+    const stored = getAdminKey();
+    if (!stored) return;
+    // Validate the stored secret server-side — never compare against an embedded
+    // value. If it's stale/invalid, drop it so the login screen shows.
+    fetch("/api/admin/verify", { headers: { "x-admin-key": stored } })
+      .then((r) => {
+        if (r.ok) {
+          setPhase("dashboard");
+          loadAll();
+        } else {
+          try { localStorage.removeItem("corvus_admin_auth"); } catch { /* */ }
+        }
+      })
+      .catch(() => { /* leave on login screen */ });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -679,14 +693,21 @@ export default function AdminPage() {
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
-  function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (password === ADMIN_KEY) {
-      try { localStorage.setItem("corvus_admin_auth", ADMIN_KEY); } catch { /* */ }
-      setPhase("dashboard");
-      loadAll();
-    } else {
-      setAuthError("Incorrect password.");
+    setAuthError("");
+    // Validate the typed secret server-side; only store it if the server accepts it.
+    try {
+      const res = await fetch("/api/admin/verify", { headers: { "x-admin-key": password } });
+      if (res.ok) {
+        try { localStorage.setItem("corvus_admin_auth", password); } catch { /* */ }
+        setPhase("dashboard");
+        loadAll();
+      } else {
+        setAuthError("Incorrect password.");
+      }
+    } catch {
+      setAuthError("Connection error. Please try again.");
     }
   }
 
@@ -699,7 +720,7 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/admin/impersonate", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+        headers: { "Content-Type": "application/json", "x-admin-key": getAdminKey() },
         body: JSON.stringify({ code }),
       });
       const data = await res.json() as { valid?: boolean; subscriptionId?: string };
@@ -727,7 +748,7 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/admin/vip/reset-password", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+        headers: { "Content-Type": "application/json", "x-admin-key": getAdminKey() },
         body: JSON.stringify({ code }),
       });
       const data = await res.json() as { ok?: boolean; error?: string };
@@ -754,7 +775,7 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/admin/codes/deactivate", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+        headers: { "Content-Type": "application/json", "x-admin-key": getAdminKey() },
         body: JSON.stringify({ subscription_id }),
       });
       const data = await res.json();
@@ -775,7 +796,7 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/admin/codes/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+        headers: { "Content-Type": "application/json", "x-admin-key": getAdminKey() },
         body: JSON.stringify({
           tier: genTier,
           email: genEmail.trim().toLowerCase(),
@@ -804,7 +825,7 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/admin/credits/add", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+        headers: { "Content-Type": "application/json", "x-admin-key": getAdminKey() },
         body: JSON.stringify({
           subscription_id: credSubId.trim().toUpperCase(),
           credits: Number(credAmount),
@@ -844,7 +865,7 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/admin/promo/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+        headers: { "Content-Type": "application/json", "x-admin-key": getAdminKey() },
         body: JSON.stringify({
           type: derivedType,
           products: promoProducts,
@@ -871,7 +892,7 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/admin/promo/deactivate", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+        headers: { "Content-Type": "application/json", "x-admin-key": getAdminKey() },
         body: JSON.stringify({ code }),
       });
       const data = await res.json();
@@ -892,7 +913,7 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/admin/codes/revoke", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+        headers: { "Content-Type": "application/json", "x-admin-key": getAdminKey() },
         body: JSON.stringify({ code }),
       });
       const data = await res.json() as { revoked?: boolean; codeType?: string; error?: string };
@@ -934,7 +955,7 @@ export default function AdminPage() {
   async function loadKnowledgeStatus() {
     try {
       const res = await fetch('/api/admin/knowledge/status', {
-        headers: { 'x-admin-key': ADMIN_KEY },
+        headers: { 'x-admin-key': getAdminKey() },
       });
       if (res.ok) {
         const data = await res.json() as { lastUpdated: string | null; nextScheduled: string; knowledgeSize: number };
@@ -951,7 +972,7 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/admin/knowledge/update', {
         method: 'POST',
-        headers: { 'x-admin-key': ADMIN_KEY },
+        headers: { 'x-admin-key': getAdminKey() },
       });
       const data = await res.json() as { success?: boolean; preview?: string; error?: string };
       if (data.success) {
@@ -976,7 +997,7 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/admin/testimonials/approve", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+        headers: { "Content-Type": "application/json", "x-admin-key": getAdminKey() },
         body: JSON.stringify({ id }),
       });
       if (!res.ok) throw new Error("Failed");
@@ -991,7 +1012,7 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/admin/testimonials/deny", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+        headers: { "Content-Type": "application/json", "x-admin-key": getAdminKey() },
         body: JSON.stringify({ id }),
       });
       if (!res.ok) throw new Error("Failed");
@@ -1680,7 +1701,7 @@ export default function AdminPage() {
                   try {
                     const res = await fetch('/api/admin/promo/clear-deactivated', {
                       method: 'POST',
-                      headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
+                      headers: { 'Content-Type': 'application/json', 'x-admin-key': getAdminKey() },
                     });
                     if (res.ok) {
                       flash(`Cleared ${promoDeactivated} deactivated codes`);
@@ -2029,7 +2050,7 @@ export default function AdminPage() {
                                 onClick={async () => {
                                   await fetch("/api/admin/codes/revoke", {
                                     method: "POST",
-                                    headers: { "Content-Type": "application/json", "x-admin-key": ADMIN_KEY },
+                                    headers: { "Content-Type": "application/json", "x-admin-key": getAdminKey() },
                                     body: JSON.stringify({ code: s.code }),
                                   });
                                   loadVipActivity();
@@ -2421,7 +2442,7 @@ export default function AdminPage() {
       case "products":     return renderProducts();
       case "demo":         return renderDemo();
       case "tour":         return renderTour();
-      case "code-manager": return <CodeManagerTab authKey={ADMIN_KEY} role="admin" />;
+      case "code-manager": return <CodeManagerTab authKey={getAdminKey()} role="admin" />;
       case "chat":         return renderAdminChat();
       case "crow":         return renderAdminCrowsEye();
       case "settings":     return renderSettings();
@@ -2431,7 +2452,7 @@ export default function AdminPage() {
   function renderDemo() {
     return (
       <div>
-        <DemoTokenManager authKey={ADMIN_KEY} isAdmin={true} />
+        <DemoTokenManager authKey={getAdminKey()} isAdmin={true} />
       </div>
     );
   }
@@ -2439,7 +2460,7 @@ export default function AdminPage() {
   function renderTour() {
     return (
       <div>
-        <CorvusTourManager authKey={ADMIN_KEY} isAdmin={true} />
+        <CorvusTourManager authKey={getAdminKey()} isAdmin={true} />
       </div>
     );
   }

@@ -4,13 +4,13 @@
 export const runtime = "nodejs";
 
 import redis from "@/lib/redis";
+import { isValidAdminKey } from "@/lib/adminAuth";
 
-const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY ?? "SpectrumLife2026!!";
 const VIP_CODES = new Set(["CORVUS-NEST", "CORVUS-NATE", "CORVUS-MIKE", "CORVUS-ERIC"]);
 
 export async function POST(req: Request) {
   const adminKey = req.headers.get("x-admin-key") ?? "";
-  if (adminKey !== ADMIN_KEY) {
+  if (!isValidAdminKey(adminKey)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 

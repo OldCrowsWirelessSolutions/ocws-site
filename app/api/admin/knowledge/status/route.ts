@@ -2,10 +2,11 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getKnowledgeBase, getKnowledgeLastUpdated } from '@/lib/corvus-knowledge'
+import { isValidAdminKey } from "@/lib/adminAuth";
 
 export async function GET(request: NextRequest) {
   const adminKey = request.headers.get('x-admin-key')
-  if (adminKey !== process.env.NEXT_PUBLIC_ADMIN_KEY) {
+  if (!isValidAdminKey(adminKey)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

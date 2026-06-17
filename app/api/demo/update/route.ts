@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import redis from '@/lib/redis'
-
-const ADMIN_KEY = process.env.ADMIN_DEMO_KEY ?? process.env.NEXT_PUBLIC_ADMIN_KEY ?? 'SpectrumLife2026!!'
+import { isValidAdminKey } from "@/lib/adminAuth";
 
 export async function POST(req: NextRequest) {
   try {
     const { authKey, token, lockedSSID, locationLabel } = await req.json()
-    if (authKey !== ADMIN_KEY) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!isValidAdminKey(authKey)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     if (!token) return NextResponse.json({ error: 'token required' }, { status: 400 })
 
     const key = `demo:token:${token}`

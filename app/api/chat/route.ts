@@ -16,7 +16,8 @@ import {
 } from "@/lib/chat";
 import { getReportsForCode, type ReportRecord } from "@/lib/reports";
 import { validateSubscriptionId, type SubscriptionTier, type ValidationResult } from "@/lib/subscriptions";
-import { consumeChatMessage, chatAccountKey, getChatQuota } from "@/lib/chat-quota";
+import { consumeChatMessage, chatAccountKey, getChatQuota, getPurchasedChat, consumeFreeChat, peekFreeChat, FREE_CHAT_GENERAL_BUCKET } from "@/lib/chat-quota";
+import { getAccountByCode } from "@/lib/accounts";
 import { recordChatEvent } from "@/lib/analytics";
 
 const FREE_MESSAGE_LIMIT = 3;
@@ -47,7 +48,7 @@ Summary: ${data?.corvus_summary || 'No summary'}`;
 // "unlimited" — Murder + all bypass codes (admin/founder/vip/subordinate): no metering.
 // "metered"   — fledgling/nest/flock subscriptions: monthly pool + purchased top-ups.
 // "free"      — promo/trial codes: the legacy 3-message limit (subscribe to continue).
-type AccessBand = "unlimited" | "metered" | "free" | "denied";
+type AccessBand = "unlimited" | "metered" | "free" | "free_account" | "denied";
 // `validation` carries the ValidationResult getAccess already fetched, so the
 // caller can reuse it (business-intel scope, account-key email) WITHOUT calling
 // validateSubscriptionId again. That second call matters: for demo tokens it
@@ -55,7 +56,7 @@ type AccessBand = "unlimited" | "metered" | "free" | "denied";
 // per message would silently burn a demo client's limited uses. Bypass codes
 // (incl. CORVUS-DEMO-) short-circuit before any validate call and carry no
 // validation, so demo chat consumes zero uses.
-interface Access { band: AccessBand; tier?: SubscriptionTier; validation?: ValidationResult }
+interface Access { band: AccessBand; tier?: SubscriptionTier; validation?: ValidationResult; email?: string }
 
 async function getAccess(code: string): Promise<Access> {
   if (!code) return { band: "denied" };
@@ -75,6 +76,16 @@ async function getAccess(code: string): Promise<Access> {
     const { getPartnerByCode } = await import("@/lib/partner-channel");
     return (await getPartnerByCode(upper)) ? { band: "unlimited" } : { band: "denied" };
   }
+
+  // Free shell accounts (CORVUS-FREE-…) — non-subscribers with a saved-report
+  // account. Included per-report allowance + buyable top-ups. Checked before
+  // subscription validation since free codes aren't subscriptions.
+  try {
+    const acct = await getAccountByCode(upper);
+    if (acct && (acct.source === "free" || acct.tier === "free")) {
+      return { band: "free_account", email: acct.email };
+    }
+  } catch { /* fall through to subscription validation */ }
 
   try {
     const validation = await validateSubscriptionId(upper);
@@ -130,6 +141,24 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    // free_account — 5 included questions per report (or general), then top-ups.
+    if (access.band === "free_account") {
+      const reportId = String(new URL(req.url).searchParams.get("reportId") ?? "").trim();
+      const bucket = reportId || FREE_CHAT_GENERAL_BUCKET;
+      const acctKey = chatAccountKey(access.email, code);
+      const snap = await peekFreeChat(acctKey, bucket);
+      const topup = await getPurchasedChat(acctKey).catch(() => ({ passActive: false, balance: 0 }));
+      return NextResponse.json({
+        ok: true, band: "free", unlimited: false,
+        tier: "free",
+        limit: snap.limit,
+        remaining: snap.remaining + (topup.passActive ? 9999 : topup.balance),
+        monthlyRemaining: snap.remaining,
+        purchasedBalance: topup.balance,
+        passActive: topup.passActive,
+      });
+    }
+
     // metered — monthly pool + purchased balance; an active pass reads as plenty.
     const accountKey = chatAccountKey(access.validation?.customer_email, code);
     const q = await getChatQuota(accountKey, access.tier!);
@@ -155,8 +184,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json() as { code?: string; message?: string; comfortLevel?: number; reportContext?: string; attachments?: Array<{ base64: string; mediaType: string; name: string }> };
+    const body = await req.json() as { code?: string; message?: string; comfortLevel?: number; reportContext?: string; reportId?: string; attachments?: Array<{ base64: string; mediaType: string; name: string }> };
     const code    = String(body?.code    ?? "").trim();
+    const reportId = body?.reportId ? String(body.reportId).trim() : "";
     const message = String(body?.message ?? "").trim().slice(0, 2000);
     const comfortLevel = Number(body?.comfortLevel ?? 2);
     const reportContext = body?.reportContext ? String(body.reportContext).slice(0, 4000) : null;
@@ -198,8 +228,24 @@ export async function POST(req: NextRequest) {
     // Key top-ups by the canonical account identity (subscription email),
     // normalized, so a pack/pass bought on mobile (keyed by login email) works
     // here too and vice-versa.
-    const accountKey = chatAccountKey(access.validation?.customer_email, code);
+    const accountKey = chatAccountKey(access.email ?? access.validation?.customer_email, code);
     let meteredRemaining: number | undefined;
+
+    // Free accounts: 5 included questions per report (or "general"), then top-ups.
+    if (access.band === "free_account") {
+      const bucket = reportId || FREE_CHAT_GENERAL_BUCKET;
+      const consumed = await consumeFreeChat(accountKey, bucket);
+      if (!consumed.allowed) {
+        return NextResponse.json({
+          limited: true,
+          message: "That's your free questions for this report — grab a question pack or a Day Pass and Corvus keeps going. Or run a fresh scan for five more.",
+          messagesRemaining: 0,
+          topups: CHAT_TOPUPS,
+        });
+      }
+      if (consumed.source === "included") meteredRemaining = consumed.remaining;
+    }
+
     if (access.band === "metered") {
       const consumed = await consumeChatMessage(accountKey, access.tier!);
       if (!consumed.allowed) {

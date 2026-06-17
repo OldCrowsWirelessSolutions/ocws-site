@@ -5,11 +5,10 @@
 export const runtime = "nodejs";
 
 import { LIFETIME_CODES, getLifetimeCreditsRemaining } from "@/lib/lifetime-codes";
-
-const ADMIN_KEY = process.env.OCWS_ADMIN_SECRET ?? "SpectrumLife2026!!";
+import { isValidAdminKey } from "@/lib/adminAuth";
 
 export async function GET(req: Request) {
-  if (req.headers.get("x-admin-key") !== ADMIN_KEY) {
+  if (!isValidAdminKey(req.headers.get("x-admin-key"))) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 

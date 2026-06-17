@@ -37,7 +37,7 @@ import {
 import { redeemPromoCode, validatePromoCode } from "@/lib/promo-codes";
 
 // VIP codes that bootstrap a permanent identity. Match coderedeem.tsx VALID_CODES
-// on the mobile side. OCWS2026 is admin-only and bypasses this flow.
+// on the mobile side. The admin secret is admin-only and bypasses this flow.
 const VIP_CODE_PROFILE: Record<string, {
   name:    string;
   tier:    AccountTier;

@@ -63,6 +63,11 @@ function passwordKey(code: string, source: AccountRecord["source"]): string {
 
 export const FREE_CODE_PREFIX = "CORVUS-FREE-";
 
+// Non-subscribers (free accounts) keep their saved reports for this long, so they
+// can revisit a Verdict they didn't export. Single source of truth — used by the
+// report-save retention logic on web and mobile.
+export const FREE_REPORT_RETENTION_DAYS = 14;
+
 export function isFreeCode(code: string): boolean {
   return code.toUpperCase().startsWith(FREE_CODE_PREFIX);
 }

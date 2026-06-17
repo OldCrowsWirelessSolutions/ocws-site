@@ -6,6 +6,20 @@ export const runtime = "nodejs";
 
 import redis from "@/lib/redis";
 import { validatePromoCode } from "@/lib/promo-codes";
+import { getAccountByCode } from "@/lib/accounts";
+
+// First name on file for a code, if any — used only to let Corvus greet the
+// holder back ("Welcome back, Joshua"). First name only: the minimum PII needed
+// for the greeting on this unauthenticated endpoint.
+async function firstNameForCode(code: string): Promise<string | undefined> {
+  try {
+    const acct = await getAccountByCode(code);
+    const first = acct?.name?.trim().split(/\s+/)[0];
+    return first || undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 // ─── Hardcoded codes ─────────────────────────────────────────────────────────
 
@@ -41,7 +55,7 @@ export async function POST(req: Request) {
 
   // 1. Admin code — exact match, do NOT uppercase (contains special chars)
   if (raw === ADMIN_CODE) {
-    return Response.json({ type: "admin" });
+    return Response.json({ type: "admin", name: "Joshua" });
   }
 
   // All remaining checks use uppercased input
@@ -81,11 +95,13 @@ export async function POST(req: Request) {
         const hash = await redis.get<string>(`sub:${code}:password_hash`);
         passwordSet = !!hash;
       } catch { /* non-fatal */ }
+      const subCode = record.subscriptionId ?? code;
       return Response.json({
         type: "subscriber",
         tier: record.tier ?? null,
-        subscriptionId: record.subscriptionId ?? code,
+        subscriptionId: subCode,
         passwordSet,
+        name: await firstNameForCode(subCode),
       });
     }
   } catch {
@@ -112,7 +128,7 @@ export async function POST(req: Request) {
       const hash = await redis.get<string>(`sub:${code}:password_hash`);
       passwordSet = !!hash;
     } catch { /* non-fatal */ }
-    return Response.json({ type: "subscriber", subscriptionId: code, passwordSet });
+    return Response.json({ type: "subscriber", subscriptionId: code, passwordSet, name: await firstNameForCode(code) });
   }
 
   return Response.json({ type: "invalid" });

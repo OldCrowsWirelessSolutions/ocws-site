@@ -156,7 +156,8 @@ export default function CorvusChat({
   const refreshQuota = useCallback(async () => {
     if (!code) return;
     try {
-      const res = await fetch(`/api/chat?code=${encodeURIComponent(code)}`);
+      const reportQ = activeReport?.reportId ? `&reportId=${encodeURIComponent(activeReport.reportId)}` : "";
+      const res = await fetch(`/api/chat?code=${encodeURIComponent(code)}${reportQ}`);
       const d = await res.json() as {
         ok?: boolean; band?: "free" | "metered" | "unlimited"; unlimited?: boolean;
         remaining?: number; limit?: number; passActive?: boolean;
@@ -173,7 +174,7 @@ export default function CorvusChat({
         passActive: !!d.passActive,
       });
     } catch { /* non-fatal — counter just won't show */ }
-  }, [code]);
+  }, [code, activeReport?.reportId]);
 
   // Refresh the counter when the panel opens.
   useEffect(() => {
@@ -261,6 +262,7 @@ export default function CorvusChat({
           message: text,
           comfortLevel,
           reportContext,
+          reportId: activeReport?.reportId,
           attachments: attachments.map(a => ({ base64: a.base64, mediaType: a.mediaType, name: a.name })),
         }),
       });

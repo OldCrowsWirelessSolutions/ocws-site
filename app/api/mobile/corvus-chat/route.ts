@@ -32,7 +32,7 @@ export const runtime    = "nodejs";
 export const maxDuration = 60;
 
 import redis from "@/lib/redis";
-import { consumePurchasedChat, chatAccountKey, CHAT_PACKS, CHAT_PASSES } from "@/lib/chat-quota";
+import { consumePurchasedChat, consumeFreeChat, chatAccountKey, CHAT_PACKS, CHAT_PASSES, FREE_CHAT_QUESTIONS_PER_BUCKET, FREE_CHAT_GENERAL_BUCKET } from "@/lib/chat-quota";
 
 // Surfaced on the 402 so the app can render buy buttons at the wall.
 const CHAT_TOPUPS = [
@@ -51,7 +51,7 @@ const APP_TOKEN = process.env.EXPO_PUBLIC_CORVUS_APP_TOKEN
 // analysis stays on Sonnet 4.6 — see /api/mobile/verdict-analyze.
 // To revert: change to "claude-sonnet-4-20250514", redeploy. ~90 seconds.
 const MODEL_ID = "claude-haiku-4-5-20251001";
-const QUOTA_LIMIT = 5;
+const QUOTA_LIMIT = FREE_CHAT_QUESTIONS_PER_BUCKET;
 const QUOTA_TTL_SECONDS = 60 * 60 * 24 * 90; // 90 days
 
 const UNLIMITED_TIERS = new Set([
@@ -165,6 +165,26 @@ export async function POST(req: Request) {
             { status: 402 },
           );
         }
+      }
+    }
+
+    // Free users also get a capped GENERAL (no-report) chat bucket — matches the
+    // web economy so free chat can't run unbounded outside a report. Paid tiers
+    // keep open general chat.
+    if (!verdictId && !unlimited && userTier === "free") {
+      let allowed = true;
+      try {
+        const consumed = await consumeFreeChat(chatAccountKey(userId, userId), FREE_CHAT_GENERAL_BUCKET);
+        allowed = consumed.allowed;
+      } catch (err) {
+        console.error("[mobile/corvus-chat] free general quota failed:", err);
+        allowed = true; // fail open on infra errors
+      }
+      if (!allowed) {
+        return Response.json(
+          { ok: false, error: "quota_exceeded", quota: { used: QUOTA_LIMIT, limit: QUOTA_LIMIT, remaining: 0, unlimited: false }, topups: CHAT_TOPUPS },
+          { status: 402 },
+        );
       }
     }
 

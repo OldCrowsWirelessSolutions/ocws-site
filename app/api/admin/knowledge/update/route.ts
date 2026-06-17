@@ -3,6 +3,7 @@ export const maxDuration = 60;
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getKnowledgeBase, updateKnowledgeBase } from '@/lib/corvus-knowledge'
+import { isValidAdminKey } from "@/lib/adminAuth";
 
 export async function POST(request: NextRequest) {
   // Accept admin key header OR Vercel cron secret
@@ -10,7 +11,7 @@ export async function POST(request: NextRequest) {
   const cronHeader  = request.headers.get('x-vercel-cron')
   const cronSecret  = process.env.CRON_SECRET
 
-  const isAdmin  = adminKey === process.env.NEXT_PUBLIC_ADMIN_KEY
+  const isAdmin  = isValidAdminKey(adminKey)
   const isCron   = cronHeader === '1' && cronSecret && cronHeader !== null
 
   if (!isAdmin && !isCron) {

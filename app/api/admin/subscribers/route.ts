@@ -7,11 +7,10 @@ export const runtime = "nodejs";
 import { NextRequest } from "next/server";
 import redis from "@/lib/redis";
 import type { SubscriptionRecord } from "@/lib/subscriptions";
-
-const ADMIN_SECRET = process.env.OCWS_ADMIN_SECRET || process.env.NEXT_PUBLIC_ADMIN_KEY || "SpectrumLife2026!!";
+import { isValidAdminKey } from "@/lib/adminAuth";
 
 export async function GET(req: NextRequest) {
-  if (req.headers.get("x-admin-key") !== ADMIN_SECRET) {
+  if (!isValidAdminKey(req.headers.get("x-admin-key"))) {
     return Response.json({ error: "Unauthorized." }, { status: 401 });
   }
 

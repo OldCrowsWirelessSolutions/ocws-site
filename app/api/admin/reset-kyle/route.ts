@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Redis } from '@upstash/redis'
+import { isValidAdminKey } from "@/lib/adminAuth";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
@@ -8,7 +9,7 @@ const redis = new Redis({
 
 export async function POST(req: NextRequest) {
   const { authKey } = await req.json()
-  if (authKey !== process.env.NEXT_PUBLIC_ADMIN_KEY) {
+  if (!isValidAdminKey(authKey)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

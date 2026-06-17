@@ -521,6 +521,14 @@ export default function CrowsEyeClient() {
     label?: string;
   } | null>(null);
   const [appliedSubscriptionId, setAppliedSubscriptionId] = useState<string | null>(null);
+
+  // Non-subscriber "save this report to a free account" prompt (full_verdict).
+  const [acctName, setAcctName]           = useState("");
+  const [acctEmail, setAcctEmail]         = useState("");
+  const [acctPassword, setAcctPassword]   = useState("");
+  const [acctError, setAcctError]         = useState("");
+  const [acctSaving, setAcctSaving]       = useState(false);
+  const [acctSavedCode, setAcctSavedCode] = useState<string | null>(null);
   const [subscriptionEntitlement, setSubscriptionEntitlement] = useState<SubscriptionEntitlement | null>(null);
 
   // Event credit (Hack the Coast 2026)
@@ -1061,6 +1069,74 @@ export default function CrowsEyeClient() {
   }
 
   // ─── Report saving ────────────────────────────────────────────────────────
+  // Save the current Verdict under a specific code (used by the free-account flow).
+  // subscriptionId + email are both indexed so the dashboard can find it by either.
+  async function saveReportUnder(codeUsed: string, email: string | null) {
+    if (!result) return;
+    const severity: "critical" | "warning" | "info" =
+      result.critical_count > 0 ? "critical" : result.warning_count > 0 ? "warning" : "info";
+    const reportType = mode === "site" ? "reckoning_small" : "verdict";
+    const locationName = (name.trim() ||
+      (mode === "site" && locations[0]?.name ? locations[0].name : "Unknown")).slice(0, 200);
+    const reportId = `OCWS-RPT-${Date.now()}-${Math.random().toString(16).slice(2, 8).toUpperCase()}`;
+    await fetch("/api/reports/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        reportId,
+        type: reportType,
+        subscriptionId: codeUsed,
+        email,
+        codeUsed,
+        createdAt: new Date().toISOString(),
+        locationName,
+        findingCount: result.full_findings?.length ?? result.problems_found,
+        severity,
+        reportData: JSON.stringify({
+          full_findings: result.full_findings ?? [],
+          recommendations: result.recommendations ?? [],
+          corvus_summary: result.corvus_summary ?? "",
+          cross_structure_analysis: result.cross_structure_analysis ?? null,
+        }),
+        pdfAvailable: false,
+      }),
+    });
+  }
+
+  // Non-subscriber: mint a free Corvus Code (name + email + password) and save
+  // this Verdict under it, so they can revisit it for 2 weeks. Password is hashed
+  // server-side and never returned.
+  async function handleCreateFreeAccountAndSave() {
+    if (!acctName.trim() || !acctEmail.trim() || acctPassword.length < 8) {
+      setAcctError("Enter your name, email, and a password of at least 8 characters.");
+      return;
+    }
+    setAcctError("");
+    setAcctSaving(true);
+    try {
+      const res = await fetch("/api/auth/account/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: acctName.trim(), email: acctEmail.trim(), password: acctPassword }),
+      });
+      const data = await res.json() as { ok?: boolean; error?: string; account?: { code?: string } };
+      if (!data.ok || !data.account?.code) {
+        setAcctError(
+          res.status === 409
+            ? (data.error ?? "That email already has an account — sign in to save it there.")
+            : (data.error ?? "Couldn't create your account. Please try again."),
+        );
+        return;
+      }
+      await saveReportUnder(data.account.code, acctEmail.trim());
+      setAcctSavedCode(data.account.code);
+    } catch {
+      setAcctError("Connection error. Please try again.");
+    } finally {
+      setAcctSaving(false);
+    }
+  }
+
   // Fires once per full_verdict reveal — saves silently in the background.
   const reportSavedIdRef = useRef<string | null>(null);
 
@@ -3301,6 +3377,54 @@ export default function CrowsEyeClient() {
                     >
                       {pdfGenerating ? "Generating PDF…" : "Download WiFi Health Report PDF"}
                     </button>
+                  </div>
+                )}
+
+                {/* Keep this report — non-subscribers, after the full reveal */}
+                {verdictStep >= result.full_findings.length &&
+                  !appliedSubscriptionId &&
+                  appliedCode?.type !== "subscriber" &&
+                  appliedCode?.type !== "admin" &&
+                  appliedCode?.type !== "founder" &&
+                  appliedCode?.type !== "promo" && (
+                  <div className="ocws-tile p-6 space-y-4" style={{ borderLeft: "3px solid var(--ocws-cyan)" }}>
+                    {acctSavedCode ? (
+                      <>
+                        <p className="text-xs font-semibold uppercase tracking-widest ocws-accent-cyan">Report Saved</p>
+                        <p className="text-white text-base leading-relaxed">
+                          Done — Corvus will keep this report for <span className="font-semibold">2 weeks</span>. Sign in with your email at{" "}
+                          <a href="/login" className="ocws-accent-cyan underline">oldcrowswireless.com/login</a> any time to revisit it and ask Corvus about it.
+                        </p>
+                        <p className="ocws-muted text-xs">Your Corvus Code: <span className="font-mono text-white/80">{acctSavedCode}</span></p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-xs font-semibold uppercase tracking-widest ocws-accent-cyan">Keep This Report</p>
+                        <p className="ocws-muted text-sm leading-relaxed">
+                          Didn&rsquo;t grab the PDF? Make a free account and Corvus holds this report for <span className="text-white font-semibold">2 weeks</span> — revisit it any time and chat with Corvus about it (5 free questions included).
+                        </p>
+                        <div className="space-y-3">
+                          <input type="text" autoComplete="name" placeholder="Your name"
+                            value={acctName} onChange={(e) => setAcctName(e.target.value)}
+                            className="w-full rounded-xl px-4 py-3 text-white text-sm outline-none"
+                            style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.12)" }} />
+                          <input type="email" autoComplete="email" placeholder="Email"
+                            value={acctEmail} onChange={(e) => setAcctEmail(e.target.value)}
+                            className="w-full rounded-xl px-4 py-3 text-white text-sm outline-none"
+                            style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.12)" }} />
+                          <input type="password" autoComplete="new-password" placeholder="Password (8+ characters)"
+                            value={acctPassword} onChange={(e) => setAcctPassword(e.target.value)}
+                            className="w-full rounded-xl px-4 py-3 text-white text-sm outline-none"
+                            style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.12)" }} />
+                        </div>
+                        {acctError && <p className="text-sm" style={{ color: "#E05555" }}>{acctError}</p>}
+                        <button onClick={handleCreateFreeAccountAndSave} disabled={acctSaving}
+                          className="w-full sm:w-auto rounded-2xl px-8 py-4 text-base font-bold tracking-tight transition min-h-[56px] disabled:opacity-60 disabled:cursor-not-allowed"
+                          style={{ background: "linear-gradient(135deg, var(--ocws-cyan), var(--ocws-cyan2))", color: "#05070b", boxShadow: "0 8px 28px rgba(0,212,255,0.25)" }}>
+                          {acctSaving ? "Saving…" : "Save My Report (Free · 2 Weeks)"}
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>

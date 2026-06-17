@@ -20,6 +20,7 @@ function retentionDaysForTier(tier: string): number {
   if (tier === 'flock') return 180;
   if (tier === 'nest') return 90;
   if (tier === 'fledgling') return 30;
+  if (tier === 'free') return 14; // non-subscribers: 2-week access to revisit
   return 30; // promo/demo codes get 30 days
 }
 

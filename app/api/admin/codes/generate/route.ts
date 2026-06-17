@@ -11,12 +11,12 @@ import {
 } from "@/lib/subscriptions";
 import type { SubscriptionTier } from "@/lib/subscriptions";
 import { sendSubscriptionConfirmation } from "@/lib/subscription-email";
+import { isValidAdminKey } from "@/lib/adminAuth";
 
-const ADMIN_SECRET = process.env.OCWS_ADMIN_SECRET || "SpectrumLife2026!!";
 const VALID_TIERS: SubscriptionTier[] = ["nest", "flock", "murder"];
 
 export async function POST(req: NextRequest) {
-  if (req.headers.get("x-admin-key") !== ADMIN_SECRET) {
+  if (!isValidAdminKey(req.headers.get("x-admin-key"))) {
     return Response.json({ error: "Unauthorized." }, { status: 401 });
   }
 

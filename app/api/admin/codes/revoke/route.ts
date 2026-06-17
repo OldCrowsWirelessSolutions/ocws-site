@@ -7,12 +7,11 @@ import redis from "@/lib/redis";
 import { revokeSubordinateByCode } from "@/lib/vip-codes";
 import { deactivatePromoCode } from "@/lib/promo-codes";
 import { getSubscription, updateSubscription } from "@/lib/subscriptions";
-
-const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_KEY ?? "SpectrumLife2026!!";
+import { isValidAdminKey } from "@/lib/adminAuth";
 
 export async function POST(req: NextRequest) {
   const adminKey = req.headers.get("x-admin-key") ?? "";
-  if (adminKey !== ADMIN_KEY) {
+  if (!isValidAdminKey(adminKey)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
