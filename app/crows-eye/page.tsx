@@ -9,7 +9,7 @@ const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.oldcro
 export const metadata: Metadata = {
   title: "Crow's Eye — Download the App | OCWS",
   description:
-    "Crow's Eye is now available on Android. Download the app and let Corvus run a full wireless diagnostic on your network in minutes.",
+    "Full bars but still buffering? Crow's Eye scans your WiFi and Corvus gives you the verdict your signal icon won't — plus the 10-minute fix. Free on Android.",
 };
 
 function PlayStoreBadge({ href }: { href: string }) {
@@ -94,11 +94,12 @@ export default function CrowsEyePage() {
             Crow&rsquo;s Eye &middot; Now Available
           </p>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
-            Crow&rsquo;s Eye is now<br />available on Android.
+            Full bars. Still buffering.<br />Your WiFi&rsquo;s lying to you.
           </h1>
           <p className="text-base md:text-lg max-w-xl mx-auto mb-10 leading-relaxed" style={{ color: "#8AAABB" }}>
-            Download the app and let Corvus run a full wireless diagnostic on your
-            network in minutes. No engineer required.
+            Crow&rsquo;s Eye scans your network and Corvus hands you the verdict your
+            signal icon won&rsquo;t &mdash; plus the 10-minute fix. Built on 17 years of
+            Navy Electronic Warfare experience. No engineer required.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
