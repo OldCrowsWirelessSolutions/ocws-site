@@ -45,6 +45,31 @@ export async function POST(req: Request) {
       );
     }
 
+    // Privileged accounts NEVER consume a promo slot — founder, VIPs, paid
+    // tiers, and team accounts get the fix free without drawing down the 1,000.
+    // Only plain free users (fledgling/guest) count against the cap. Enforced
+    // here server-side as a backstop even though the app also skips the call
+    // for these tiers.
+    const userTier = String(body?.userTier ?? "").trim().toLowerCase();
+    const unlimited =
+      body?.unlimited === true || body?.unlimited === 1 || body?.unlimited === "1";
+    const PRIVILEGED = new Set([
+      "admin", "founder", "vip", "murder", "flock", "pro", "nest",
+      "orgadmin", "teamlead", "subordinate",
+    ]);
+    if (unlimited || PRIVILEGED.has(userTier)) {
+      const claimed = Math.min((await redis.get<number>(COUNT_KEY)) ?? 0, CAP);
+      return Response.json({
+        ok: true,
+        granted: true,
+        privileged: true,
+        alreadyClaimed: false,
+        claimed,
+        remaining: Math.max(0, CAP - claimed),
+        cap: CAP,
+      });
+    }
+
     // Idempotent: a verdict already granted a free fix re-grants without
     // consuming another slot (re-opens, app restarts, retries).
     const already = await redis.sismember(GRANTED_KEY, verdictId);
