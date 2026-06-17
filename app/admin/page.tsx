@@ -11,6 +11,7 @@ import CorvusTourManager from "@/app/components/CorvusTourManager";
 import CodeManagerTab from "@/app/components/CodeManagerTab";
 import { CORVUS_JOSHUA_DASHBOARD_LOAD } from "@/lib/corvus-ui-strings";
 import QRCodeDisplay from "@/app/components/QRCodeDisplay";
+import FreeFixCounter from "@/app/components/FreeFixCounter";
 
 function AdminCrowsEyeTab() {
   return (
@@ -2484,6 +2485,11 @@ export default function AdminPage() {
 
       {/* Corvus founder greeting */}
       <AdminCorvusGreeting greetingRef={dashGreetingRef} statsReady={founderStats !== null} />
+
+      {/* First-1,000-free-fixes promo tracker — visible on every tab */}
+      <div style={{ marginBottom: "20px" }}>
+        <FreeFixCounter variant="admin" />
+      </div>
 
       <TabBar
         tabs={ADMIN_TABS}

@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import FreeFixCounter from "../components/FreeFixCounter";
 
 // TODO: Update with your actual Play Store listing URL when published
 const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.oldcrowswireless.crowseye";
@@ -101,6 +102,10 @@ export default function CrowsEyePage() {
             signal icon won&rsquo;t &mdash; plus the 10-minute fix. Built on 17 years of
             Navy Electronic Warfare experience. No engineer required.
           </p>
+
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "28px" }}>
+            <FreeFixCounter />
+          </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
             <PlayStoreBadge href={PLAY_STORE_URL} />
