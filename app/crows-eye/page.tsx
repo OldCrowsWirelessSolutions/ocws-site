@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 // TODO: Update with your actual Play Store listing URL when published
-const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.oldcrowswireless.corvus";
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.oldcrowswireless.crowseye";
 
 export const metadata: Metadata = {
   title: "Crow's Eye — Download the App | OCWS",

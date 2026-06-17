@@ -9,7 +9,7 @@ import { getApprovedEndorsements } from "@/lib/endorsements";
 import AudioToggle from "@/app/components/AudioToggle";
 
 // TODO: Update with your actual Play Store listing URL when published
-const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.oldcrowswireless.corvus";
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.oldcrowswireless.crowseye";
 
 const navLinks = [
   { href: "/what-is-corvus", label: "What is Corvus?" },

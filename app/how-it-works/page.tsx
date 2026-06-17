@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "Download Crow's Eye on Android. Corvus scans your wireless environment automatically and delivers a full WiFi Health Report in minutes — no screenshots, no third-party apps required.",
 };
 
-const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.oldcrowswireless.corvus";
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.oldcrowswireless.crowseye";
 
 const STEPS = [
   {

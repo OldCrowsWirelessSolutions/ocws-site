@@ -5,7 +5,7 @@ import HeroAnimation from './components/HeroAnimation'
 import { PlayStoreBadge } from './components/PlayStoreBadge'
 
 // TODO: Update to your actual Play Store listing URL once published
-const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.oldcrowswireless.corvus'
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.oldcrowswireless.crowseye'
 
 export const metadata: Metadata = {
   title: 'Crow\'s Eye by OCWS — AI Wireless Diagnostics',

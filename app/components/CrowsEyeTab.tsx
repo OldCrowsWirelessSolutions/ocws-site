@@ -1151,7 +1151,7 @@ export default function CrowsEyeTab({
               Download Crow&apos;s Eye on Android to scan your network. The app handles everything automatically.
             </p>
             <a
-              href="https://play.google.com/store/apps/details?id=com.oldcrowswireless.corvus"
+              href="https://play.google.com/store/apps/details?id=com.oldcrowswireless.crowseye"
               target="_blank"
               rel="noopener noreferrer"
               style={{

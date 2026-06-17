@@ -2205,7 +2205,7 @@ export default function CrowsEyeClient() {
 
         {/* Download CTA */}
         <a
-          href="https://play.google.com/store/apps/details?id=com.oldcrowswireless.corvus"
+          href="https://play.google.com/store/apps/details?id=com.oldcrowswireless.crowseye"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-3 px-5 py-3 rounded-xl mb-8 transition"

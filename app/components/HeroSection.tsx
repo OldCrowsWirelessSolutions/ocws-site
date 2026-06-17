@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 
-const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.oldcrowswireless.corvus";
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.oldcrowswireless.crowseye";
 
 export default function HeroSection() {
   return (

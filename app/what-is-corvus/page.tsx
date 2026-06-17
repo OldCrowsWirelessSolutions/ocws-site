@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     "Corvus is an app that scans your WiFi, tells you in plain English what's making it slow or dropping, and shows you exactly how to fix it. For homes and businesses.",
 };
 
-const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.oldcrowswireless.corvus";
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.oldcrowswireless.crowseye";
 
 // What it does — four plain beats.
 const STEPS = [

@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 // TODO: Update with your actual Play Store listing URL when published
-const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.oldcrowswireless.corvus";
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.oldcrowswireless.crowseye";
 
 export default function Footer() {
   return (
