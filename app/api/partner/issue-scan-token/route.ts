@@ -33,6 +33,7 @@ export async function POST(req: Request) {
       customerName?:   string;
       customerNotes?:  string;
       reportType?:     string;
+      agentName?:      string;
     };
 
     // Whitelist the requested scan type; anything unknown falls back to a Verdict.
@@ -46,6 +47,7 @@ export async function POST(req: Request) {
       customerName:   body?.customerName,
       customerNotes:  body?.customerNotes,
       reportType,
+      agentName:      typeof body?.agentName === "string" ? body.agentName.slice(0, 80) : undefined,
     });
 
     return Response.json({

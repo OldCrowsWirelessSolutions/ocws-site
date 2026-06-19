@@ -65,7 +65,10 @@ export default function HelpDeskTab({ subscriptionCode }: { subscriptionCode: st
 
   const [reportType, setReportType] = useState<ReportType>("verdict");
   const [customerName, setCustomerName] = useState("");
+  const [agentName, setAgentName] = useState("");
   const [expiryHours, setExpiryHours] = useState(24);
+
+  const [monitor, setMonitor] = useState<any>(null);
   const [issuing, setIssuing] = useState(false);
   const [issued, setIssued] = useState<{ token: string; expiresAt: string; reportType: string } | null>(null);
   const [issueError, setIssueError] = useState("");
@@ -110,7 +113,16 @@ export default function HelpDeskTab({ subscriptionCode }: { subscriptionCode: st
     }
   }, [leadCode]);
 
-  useEffect(() => { loadScans(); }, [loadScans]);
+  const loadMonitor = useCallback(async () => {
+    if (!leadCode) return;
+    try {
+      const res = await fetch("/api/partner/monitor", { headers: { "x-partner-lead-code": leadCode } });
+      const data = await res.json();
+      if (data?.ok) setMonitor(data);
+    } catch { /* noop */ }
+  }, [leadCode]);
+
+  useEffect(() => { loadScans(); loadMonitor(); }, [loadScans, loadMonitor]);
 
   async function issueToken() {
     if (!leadCode || issuing) return;
@@ -119,7 +131,7 @@ export default function HelpDeskTab({ subscriptionCode }: { subscriptionCode: st
       const res = await fetch("/api/partner/issue-scan-token", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-partner-lead-code": leadCode },
-        body: JSON.stringify({ reportType, customerName: customerName.trim() || undefined, expiresInHours: expiryHours }),
+        body: JSON.stringify({ reportType, customerName: customerName.trim() || undefined, agentName: agentName.trim() || undefined, expiresInHours: expiryHours }),
       });
       const data = await res.json();
       if (data?.ok) setIssued({ token: data.token, expiresAt: data.expiresAt, reportType: data.reportType });
@@ -171,6 +183,9 @@ export default function HelpDeskTab({ subscriptionCode }: { subscriptionCode: st
         <label style={label}>Caller name (optional)</label>
         <input style={input} value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="e.g. Jane from 142 Oak St" />
 
+        <label style={label}>Issued by — agent (optional)</label>
+        <input style={input} value={agentName} onChange={(e) => setAgentName(e.target.value)} placeholder="your name — tags this code for the Team Lead read-out" />
+
         <label style={label}>Code expires in (hours)</label>
         <input style={{ ...input, maxWidth: 140 }} type="number" min={1} max={168} value={expiryHours} onChange={(e) => setExpiryHours(Math.max(1, Math.min(168, Number(e.target.value) || 24)))} />
 
@@ -203,11 +218,55 @@ export default function HelpDeskTab({ subscriptionCode }: { subscriptionCode: st
         )}
       </div>
 
+      {/* This month — billing + per-agent read-out (Team Lead / Owner) */}
+      {monitor?.bill && (() => {
+        const bMonth: string = monitor.bill.month;
+        const lines: any[] = (monitor.bill.lines || []).filter((l: any) => l.count > 0);
+        const scansM: any[] = monitor.scans || [];
+        const byAgent: Record<string, number> = {};
+        scansM.forEach((s) => { const a = s.agentName || "Unattributed"; byAgent[a] = (byAgent[a] || 0) + 1; });
+        const tLabel: Record<string, string> = {
+          verdict: "Verdicts", reckoning_small: "Small Reckonings", reckoning_standard: "Standard Reckonings",
+          reckoning_commercial: "Commercial Reckonings", reckoning_pro: "Pro Reckonings",
+        };
+        const row: React.CSSProperties = { display: "flex", justifyContent: "space-between", fontSize: 14, color: "#F4F6F8", padding: "3px 0" };
+        return (
+          <div style={panel}>
+            <h3 style={{ color: CYAN, fontSize: 15, marginTop: 0, marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.08em" }}>This month — your cut ({bMonth})</h3>
+            {lines.length === 0 && <p style={{ color: "rgba(244,246,248,0.5)", fontSize: 14, margin: 0 }}>No completed scans yet this month.</p>}
+            {lines.map((l) => (
+              <div key={l.type} style={row}>
+                <span>{tLabel[l.type] || l.type} — {l.count} × {l.rateUSD === null ? "(rate TBD)" : "$" + l.rateUSD}</span>
+                <span style={{ fontWeight: 700 }}>{l.subtotalUSD === null ? "—" : "$" + l.subtotalUSD.toLocaleString()}</span>
+              </div>
+            ))}
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.12)", marginTop: 8, paddingTop: 8 }}>
+              <div style={{ ...row, fontSize: 13, color: "rgba(244,246,248,0.6)" }}><span>Platform (Murder)</span><span>${monitor.bill.platformUSD.toLocaleString()}</span></div>
+              <div style={{ ...row, fontSize: 13, color: "rgba(244,246,248,0.6)" }}><span>Usage (completed scans)</span><span>${monitor.bill.usageUSD.toLocaleString()}</span></div>
+              <div style={{ ...row, fontSize: 16, fontWeight: 800, color: CYAN }}><span>Total owed to OCWS</span><span>${monitor.bill.totalUSD.toLocaleString()}</span></div>
+            </div>
+            {monitor.bill.unpricedCount > 0 && (
+              <p style={{ color: "#FFC857", fontSize: 12, marginBottom: 0 }}>
+                {monitor.bill.unpricedCount} larger-reckoning scan{monitor.bill.unpricedCount === 1 ? "" : "s"} not yet priced — set the MSRP to bill them.
+              </p>
+            )}
+            {Object.keys(byAgent).length > 0 && (
+              <div style={{ marginTop: 14 }}>
+                <div style={label}>By agent</div>
+                {Object.entries(byAgent).map(([a, c]) => (
+                  <div key={a} style={{ ...row, fontSize: 13, color: "rgba(244,246,248,0.75)" }}><span>{a}</span><span>{c} scan{c === 1 ? "" : "s"}</span></div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       {/* Scans */}
       <div style={panel}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
           <h3 style={{ color: CYAN, fontSize: 15, margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>Caller scans</h3>
-          <button style={{ ...btn, background: "transparent", color: CYAN, border: `1px solid ${CYAN}`, padding: "6px 12px" }} onClick={loadScans} disabled={loadingScans}>
+          <button style={{ ...btn, background: "transparent", color: CYAN, border: `1px solid ${CYAN}`, padding: "6px 12px" }} onClick={() => { loadScans(); loadMonitor(); }} disabled={loadingScans}>
             {loadingScans ? "Refreshing…" : "Refresh"}
           </button>
         </div>

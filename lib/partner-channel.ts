@@ -66,6 +66,8 @@ export interface PartnerScanRecord {
   locationName:  string;
   findingCount:  number;
   severity:      ReportSeverity;
+  reportType:    ReportType;      // verdict / reckoning_* — drives the per-type bill
+  agentName:     string | null;   // which help-desk agent issued the underlying token
   timestamp:     number;          // ms epoch
 }
 
@@ -148,7 +150,7 @@ export class PartnerCapError extends Error {}
  */
 export async function issueScanToken(
   leadCode: string,
-  opts: { expiresInHours?: number; customerName?: string; customerNotes?: string; reportType?: ReportType } = {},
+  opts: { expiresInHours?: number; customerName?: string; customerNotes?: string; reportType?: ReportType; agentName?: string } = {},
 ): Promise<ScanTokenRecord> {
   const code = leadCode.toUpperCase().trim();
 
@@ -200,11 +202,19 @@ export async function issueScanToken(
   };
 
   const ttlSeconds = Math.ceil(ttlHours * 60 * 60);
-  await Promise.all([
+  const writes: Promise<unknown>[] = [
     redis.set(`partner:scan_token:${token}`, record, { ex: ttlSeconds }),
     redis.sadd(`partner:tokens:by-partner:${code}`, token),
     redis.expire(`partner:tokens:by-partner:${code}`, TOKEN_INDEX_TTL),
-  ]);
+  ];
+  // Agent attribution: persist which help-desk agent issued this token so the
+  // completed scan can be tagged at record time WITHOUT a mobile change (the
+  // mobile only knows the token). Outlives the token TTL so attribution survives.
+  const agentName = opts.agentName?.trim();
+  if (agentName) {
+    writes.push(redis.set(`partner:token_agent:${token}`, agentName, { ex: 60 * 60 * 24 * 30 }));
+  }
+  await Promise.all(writes);
 
   return record;
 }
@@ -284,7 +294,8 @@ export async function recordPartnerScan(args: {
   findingCount?: number;
   severity?:    ReportSeverity;
   customerName?: string | null;
-  reportType?:  ReportRecord["type"];
+  reportType?:  ReportType;
+  agentName?:   string | null;
 }): Promise<PartnerScanRecord> {
   const leadCode = args.leadCode.toUpperCase().trim();
   const now = new Date();
@@ -294,6 +305,14 @@ export async function recordPartnerScan(args: {
 
   const severity: ReportSeverity = args.severity ?? "info";
   const locationName = (args.locationName ?? "").trim() || "Partner scan";
+  const reportType: ReportType = args.reportType ?? "verdict";
+
+  // Agent attribution: prefer an explicit agentName, else recover it from the
+  // token the agent issued (partner:token_agent:{token}, written at issue time).
+  let agentName: string | null = (typeof args.agentName === "string" && args.agentName.trim()) || null;
+  if (!agentName && args.token) {
+    agentName = (await redis.get<string>(`partner:token_agent:${args.token.toUpperCase().trim()}`)) ?? null;
+  }
 
   // Full report body — no TTL (partner reports persist for the relationship).
   // subscriptionId is set to the partner leadCode (not a real subscription) so
@@ -302,7 +321,7 @@ export async function recordPartnerScan(args: {
   // instead of the O(all-reports) keys('report:*') fallback for operator chat.
   await saveReport(reportId, {
     reportId,
-    type:           args.reportType ?? "verdict",
+    type:           reportType,
     subscriptionId: leadCode,
     email:          null,
     codeUsed:       leadCode,
@@ -324,14 +343,19 @@ export async function recordPartnerScan(args: {
     locationName,
     findingCount: args.findingCount ?? 0,
     severity,
+    reportType,
+    agentName,
     timestamp:    ts,
   };
 
+  const ym = ymOf(now);
   await Promise.all([
     redis.set(`partner:scan:${scanId}`, scan),
     redis.zadd(`partner:scan_log:${leadCode}`, { score: ts, member: scanId }),
-    // The billable event — atomic per-month counter.
-    redis.incr(`partner:scan_count:${leadCode}:${ymOf(now)}`),
+    // The billable event — atomic counters. Total (back-compat) + per-type so
+    // the monthly invoice can apply the right rate to each scan type.
+    redis.incr(`partner:scan_count:${leadCode}:${ym}`),
+    redis.incr(`partner:scan_count:${leadCode}:${ym}:${reportType}`),
   ]);
 
   return scan;
@@ -368,4 +392,26 @@ export async function getScanCount(leadCode: string, month: string): Promise<num
   const code = leadCode.toUpperCase().trim();
   const raw = await redis.get<number>(`partner:scan_count:${code}:${month}`);
   return Number(raw ?? 0);
+}
+
+export const ALL_REPORT_TYPES: ReportType[] = [
+  "verdict",
+  "reckoning_small",
+  "reckoning_standard",
+  "reckoning_commercial",
+  "reckoning_pro",
+];
+
+/** Completed-scan counts for a month, broken out by scan type (the billing basis). */
+export async function getScanCountsByType(
+  leadCode: string,
+  month: string,
+): Promise<Record<ReportType, number>> {
+  const code = leadCode.toUpperCase().trim();
+  const vals = await Promise.all(
+    ALL_REPORT_TYPES.map((t) => redis.get<number>(`partner:scan_count:${code}:${month}:${t}`)),
+  );
+  const out = {} as Record<ReportType, number>;
+  ALL_REPORT_TYPES.forEach((t, i) => { out[t] = Number(vals[i] ?? 0); });
+  return out;
 }
