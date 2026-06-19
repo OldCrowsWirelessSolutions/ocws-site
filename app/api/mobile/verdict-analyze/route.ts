@@ -25,12 +25,35 @@
 // extractable, but it stops opportunistic third-party abuse of the
 // endpoint and lets us rotate via Vercel env vars if needed.
 
+import redis from "@/lib/redis";
+
 export const runtime    = "nodejs";
 export const maxDuration = 300;
 
 const APP_TOKEN = process.env.EXPO_PUBLIC_CORVUS_APP_TOKEN
   ?? process.env.OCWS_MOBILE_APP_TOKEN
   ?? "";
+
+// Per-IP rate limit. The scan is intentionally free and ungated (the soft
+// x-app-token is bundled in the APK and easily extracted), so this is the real
+// guard against scripted abuse running up our Anthropic spend on the open
+// endpoint. Generous enough that no genuine user hits it. Fails OPEN if Redis
+// is unavailable — we never block a real scan because the limiter is down.
+const RATE_LIMIT_MAX    = 30;        // requests per IP per window
+const RATE_LIMIT_WINDOW = 60 * 60;   // 1 hour, in seconds
+
+async function rateLimited(ip: string): Promise<boolean> {
+  if (!ip) return false;
+  try {
+    const key = `corvus:v1:verdict:rl:${ip}`;
+    const n = await redis.incr(key);
+    if (n === 1) await redis.expire(key, RATE_LIMIT_WINDOW);
+    return n > RATE_LIMIT_MAX;
+  } catch (err: any) {
+    console.warn("[mobile/verdict-analyze] rate-limit check failed (failing open):", err?.message ?? err);
+    return false;
+  }
+}
 
 // Single source of truth for which Sonnet model the mobile app uses.
 // Bumping this here ships a fix to every running app instantly.
@@ -59,17 +82,33 @@ export async function POST(req: Request) {
       return Response.json({ ok: false, error: "Service not configured" }, { status: 500 });
     }
 
+    // ── Rate limit (per IP) ──────────────────────────────────────────────────
+    const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim()
+      || (req.headers.get("x-real-ip") ?? "").trim();
+    if (await rateLimited(ip)) {
+      console.warn("[mobile/verdict-analyze] rate limit hit:", ip);
+      return Response.json(
+        { ok: false, error: "Too many scans in a short window. Give Corvus a few minutes and try again." },
+        { status: 429 },
+      );
+    }
+
     // v28: hard cap on request body size. Pathological inputs (e.g. dozens
     // of photos, runaway per-location data) can't burn Anthropic API quota
     // on guaranteed-to-fail calls. The mobile-side 30-network cap (v23 for
     // verdict, v28 for reckoning) keeps real flows well under this — at
     // 4 photos × ~2MB each + JSON it caps around 9MB.
+    // Vercel rejects request bodies > ~4.5 MB at the edge with an opaque
+    // FUNCTION_PAYLOAD_TOO_LARGE before this code even runs, so the old 10 MB
+    // cap was dead. Cap at 4 MB so we return an honest JSON error for the
+    // borderline case instead of Vercel's cryptic text response. (The mobile
+    // client also downscales photos now, so real scans land far under this.)
     const contentLength = parseInt(req.headers.get("content-length") ?? "0", 10);
-    const MAX_BODY_BYTES = 10 * 1024 * 1024; // 10 MB
+    const MAX_BODY_BYTES = 4 * 1024 * 1024; // 4 MB
     if (contentLength > MAX_BODY_BYTES) {
       console.warn("[mobile/verdict-analyze] oversized request rejected:", contentLength);
       return Response.json(
-        { ok: false, error: "Scan payload too large. Reduce photos or scan a less dense environment." },
+        { ok: false, error: "Your photos are too large to send. Attach fewer photos and try again." },
         { status: 413 },
       );
     }
@@ -168,22 +207,26 @@ export async function POST(req: Request) {
         upstream.status,
         errBody.slice(0, 500),
       );
-      // Translate 4xx (oversized payload, deprecated model, bad image, etc.)
-      // into a tester-friendly message; pass through the status so the
-      // mobile retry policy can distinguish 4xx (don't retry) from 5xx.
+      // Honest, specific errors. We previously blamed every upstream 400 on a
+      // "dense RF environment / oversized payload" — that guess masked the real
+      // base64-prefix bug for weeks and sent users chasing phantom RF problems.
+      // Report what actually failed; pass the status through so the mobile retry
+      // policy can still distinguish 4xx (don't retry) from 5xx.
       if (upstream.status === 400) {
+        const isImageErr = /image|base64/i.test(errBody);
         return Response.json(
           {
             ok: false,
-            error:
-              "Corvus couldn't process this scan — likely an oversized payload " +
-              "from a dense RF environment. Try again with fewer photos attached.",
+            error: isImageErr
+              ? "Corvus couldn't read one of the attached photos. Retake it (or run the scan without photos) and try again."
+              : "Corvus couldn't process this scan. This looks like a bug on our end, not your network — please try again, and report it if it keeps happening.",
+            code: isImageErr ? "bad_image" : "upstream_400",
           },
           { status: 400 },
         );
       }
       return Response.json(
-        { ok: false, error: `Upstream returned ${upstream.status}` },
+        { ok: false, error: `Corvus's analysis service returned an error (${upstream.status}). Please try again shortly.` },
         { status: upstream.status >= 500 ? 502 : upstream.status },
       );
     }
