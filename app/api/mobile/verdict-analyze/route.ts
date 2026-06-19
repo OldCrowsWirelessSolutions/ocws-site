@@ -90,12 +90,28 @@ export async function POST(req: Request) {
     const content: Content[] = [];
     const photos = Array.isArray(body.panoramaPhotos) ? body.panoramaPhotos.slice(0, 4) : [];
     for (const photo of photos) {
-      if (typeof photo === "string" && photo.length > 0) {
-        content.push({
-          type: "image",
-          source: { type: "base64", media_type: "image/jpeg", data: photo },
-        });
+      if (typeof photo !== "string" || photo.length === 0) continue;
+      // HOTFIX (2026-06-18): the Verdict screen (scan.tsx) historically stored
+      // photos WITH a "data:image/jpeg;base64,<b64>" prefix and sent the whole
+      // data-URI here. Anthropic's source.data wants RAW base64 only, so the
+      // prefix produced `invalid base64 data` and 400'd the ENTIRE scan — the
+      // real cause behind the mislabeled "dense RF / oversized payload" errors.
+      // Strip any data-URI prefix and recover the declared media type, so every
+      // already-installed app build is fixed server-side without a rebuild.
+      let mediaType = "image/jpeg";
+      let data = photo;
+      const m = /^data:([a-zA-Z0-9.+-]+\/[a-zA-Z0-9.+-]+)?;base64,/.exec(photo);
+      if (m) {
+        if (m[1]) mediaType = m[1];
+        data = photo.slice(m[0].length);
       }
+      // Defensively drop whitespace some encoders inject into base64 payloads.
+      data = data.replace(/\s/g, "");
+      if (data.length === 0) continue;
+      content.push({
+        type: "image",
+        source: { type: "base64", media_type: mediaType, data },
+      });
     }
     content.push({ type: "text", text: body.prompt });
 
