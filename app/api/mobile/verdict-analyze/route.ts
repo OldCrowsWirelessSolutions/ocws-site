@@ -37,9 +37,12 @@ const APP_TOKEN = process.env.EXPO_PUBLIC_CORVUS_APP_TOKEN
 // Per-IP rate limit. The scan is intentionally free and ungated (the soft
 // x-app-token is bundled in the APK and easily extracted), so this is the real
 // guard against scripted abuse running up our Anthropic spend on the open
-// endpoint. Generous enough that no genuine user hits it. Fails OPEN if Redis
-// is unavailable — we never block a real scan because the limiter is down.
-const RATE_LIMIT_MAX    = 30;        // requests per IP per window
+// endpoint. Set high on purpose: at events (Hack the Coast, expos) a whole
+// venue shares one public IP, so dozens of legitimate users hit this from the
+// same address — the cap must clear a crowd while still stopping an unbounded
+// scripted loop. Fails OPEN if Redis is down — never block a real scan because
+// the limiter is unavailable.
+const RATE_LIMIT_MAX    = 120;       // requests per IP per window
 const RATE_LIMIT_WINDOW = 60 * 60;   // 1 hour, in seconds
 
 async function rateLimited(ip: string): Promise<boolean> {
