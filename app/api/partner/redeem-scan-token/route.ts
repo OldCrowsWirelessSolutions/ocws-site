@@ -29,8 +29,9 @@ export async function POST(req: Request) {
     return Response.json({
       ok: true,
       grant: {
-        leadCode:  result.leadCode,
-        expiresAt: result.expiresAt,
+        leadCode:   result.leadCode,
+        expiresAt:  result.expiresAt,
+        reportType: result.reportType ?? "verdict",
       },
       customerName: result.customerName ?? null,
     });

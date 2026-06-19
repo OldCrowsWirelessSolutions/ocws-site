@@ -27,7 +27,7 @@
 
 import redis from "@/lib/redis";
 import { PARTNER_CONFIG } from "@/lib/partner-config";
-import { saveReport, getReportById, type ReportRecord, type ReportSeverity } from "@/lib/reports";
+import { saveReport, getReportById, type ReportRecord, type ReportSeverity, type ReportType } from "@/lib/reports";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -49,6 +49,11 @@ export interface ScanTokenRecord {
   usedAt:        string | null;
   customerName:  string | null;
   customerNotes: string | null;
+  // The scan the agent pre-selected for this caller. The mobile app reads this at
+  // redeem time and runs exactly this scan type/level (verdict vs reckoning_*),
+  // so the help-desk agent controls what the customer scans. Defaults to verdict
+  // for backward-compat with any token issued before this field existed.
+  reportType:    ReportType;
 }
 
 export interface PartnerScanRecord {
@@ -143,7 +148,7 @@ export class PartnerCapError extends Error {}
  */
 export async function issueScanToken(
   leadCode: string,
-  opts: { expiresInHours?: number; customerName?: string; customerNotes?: string } = {},
+  opts: { expiresInHours?: number; customerName?: string; customerNotes?: string; reportType?: ReportType } = {},
 ): Promise<ScanTokenRecord> {
   const code = leadCode.toUpperCase().trim();
 
@@ -191,6 +196,7 @@ export async function issueScanToken(
     usedAt:        null,
     customerName:  opts.customerName?.trim() || null,
     customerNotes: opts.customerNotes?.trim() || null,
+    reportType:    opts.reportType ?? "verdict",
   };
 
   const ttlSeconds = Math.ceil(ttlHours * 60 * 60);
@@ -225,6 +231,7 @@ export interface RedeemResult {
   leadCode?:    string;
   expiresAt?:   string;
   customerName?: string | null;
+  reportType?:  ReportType;
 }
 
 /**
@@ -257,6 +264,7 @@ export async function redeemScanToken(rawToken: string): Promise<RedeemResult> {
     leadCode:     record.leadCode,
     expiresAt:    record.expiresAt,
     customerName: record.customerName,
+    reportType:   record.reportType ?? "verdict", // back-compat: pre-field tokens
   };
 }
 

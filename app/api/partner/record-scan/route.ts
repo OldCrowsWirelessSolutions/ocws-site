@@ -8,13 +8,20 @@
 export const runtime = "nodejs";
 
 import { getPartnerByCode, recordPartnerScan } from "@/lib/partner-channel";
-import type { ReportSeverity } from "@/lib/reports";
+import type { ReportSeverity, ReportType } from "@/lib/reports";
 
 const APP_TOKEN = process.env.EXPO_PUBLIC_CORVUS_APP_TOKEN
   ?? process.env.OCWS_MOBILE_APP_TOKEN
   ?? "";
 
 const SEVERITIES: ReportSeverity[] = ["critical", "warning", "info"];
+const REPORT_TYPES: ReportType[] = [
+  "verdict",
+  "reckoning_small",
+  "reckoning_standard",
+  "reckoning_commercial",
+  "reckoning_pro",
+];
 
 export async function POST(req: Request) {
   try {
@@ -34,6 +41,7 @@ export async function POST(req: Request) {
       findingCount?: number;
       severity?:     string;
       customerName?: string;
+      reportType?:   string;
     };
 
     const leadCode = String(body?.leadCode ?? "").trim().toUpperCase();
@@ -57,6 +65,10 @@ export async function POST(req: Request) {
       ? (body!.severity as ReportSeverity)
       : "info";
 
+    const reportType: ReportType = REPORT_TYPES.includes(body?.reportType as ReportType)
+      ? (body!.reportType as ReportType)
+      : "verdict";
+
     const scan = await recordPartnerScan({
       leadCode,
       token:        body?.token ?? null,
@@ -66,6 +78,7 @@ export async function POST(req: Request) {
       findingCount: Number(body?.findingCount ?? 0),
       severity,
       customerName: body?.customerName ?? null,
+      reportType,
     });
 
     return Response.json({ ok: true, scanId: scan.scanId });

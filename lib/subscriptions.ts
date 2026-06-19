@@ -736,3 +736,34 @@ export async function removeSeatMember(
   const filtered = current.filter(m => m.email.toLowerCase() !== email.toLowerCase());
   await redis.set(SEAT_MEMBERS_KEY(subscriptionId), filtered);
 }
+
+// ─── Help-desk partner bridge (Murder tier) ──────────────────────────────────
+// A Murder subscription can run a help desk: issue scan tokens to callers and
+// view the resulting scans. That machinery lives in the partner channel
+// (lib/partner-channel.ts), keyed by a CORVUS-PARTNER-* leadCode. We lazily mint
+// and cache exactly one leadCode per Murder subscription the first time the
+// dashboard asks. Idempotent: ensurePartner() dedupes on email and the cache key
+// keeps repeat lookups O(1).
+
+const SUB_PARTNER_KEY = (subId: string) => `subscription:partner:${subId}`;
+
+/**
+ * Return the partner leadCode that backs a Murder subscription's help desk,
+ * provisioning one on first use. Returns null for non-Murder / inactive subs.
+ */
+export async function getPartnerLeadCode(subscriptionId: string): Promise<string | null> {
+  const sub = await getSubscription(subscriptionId);
+  if (!sub || sub.status !== "active" || sub.tier !== "murder") return null;
+
+  const cached = await redis.get<string>(SUB_PARTNER_KEY(subscriptionId));
+  if (cached) return cached;
+
+  const { ensurePartner } = await import("./partner-channel");
+  const partner = await ensurePartner({
+    name:    sub.customer_name,
+    email:   sub.customer_email,
+    company: sub.customer_name,
+  });
+  await redis.set(SUB_PARTNER_KEY(subscriptionId), partner.leadCode);
+  return partner.leadCode;
+}

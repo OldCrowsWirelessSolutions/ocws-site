@@ -13,6 +13,7 @@ import CorvusTourManager from "@/app/components/CorvusTourManager";
 import CodeManagerTab from "@/app/components/CodeManagerTab";
 import DemoTokenManager from "@/app/components/DemoTokenManager";
 import ClientManagerTab from "@/app/components/ClientManagerTab";
+import HelpDeskTab from "@/app/components/HelpDeskTab";
 import OnboardingWalkthrough from "@/app/components/OnboardingWalkthrough";
 import { TOURS, type Tour } from "@/lib/corvus-tours";
 import type { TourLevel } from "@/lib/corvusTour";
@@ -117,7 +118,7 @@ const sectionLabel: React.CSSProperties = {
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
-type SubTab  = "overview" | "reports" | "analytics" | "credits" | "team" | "billing" | "chat" | "products" | "crow" | "settings" | "help" | "tour" | "clients";
+type SubTab  = "overview" | "reports" | "analytics" | "credits" | "team" | "billing" | "chat" | "products" | "crow" | "settings" | "help" | "tour" | "clients" | "helpdesk";
 type VIPTab  = "overview" | "reports" | "analytics" | "codes"   | "team" | "chat"  | "products" | "crow" | "settings" | "help" | "tour" | "code-manager" | "clients";
 type AnyTab  = SubTab | VIPTab;
 
@@ -995,6 +996,7 @@ export default function DashboardPage() {
     { id: "credits",    label: "Buy Credits" },
     ...(hasTeam || isVIP ? [{ id: "team" as SubTab, label: "Team" }] : []),
     ...((tier === "flock" || tier === "murder") ? [{ id: "clients" as SubTab, label: "👥 Clients" }] : []),
+    ...(tier === "murder" ? [{ id: "helpdesk" as SubTab, label: "🆘 Help Desk" }] : []),
     ...(isSubType ? [{ id: "billing" as SubTab, label: "Account & Billing" }] : []),
     { id: "products",   label: "Products"    },
     { id: "chat",       label: "Ask Corvus"  },
@@ -2255,6 +2257,7 @@ export default function DashboardPage() {
       case "credits":    return renderCredits();
       case "team":       return renderTeam();
       case "clients":    return <ClientManagerTab subscriptionCode={storedCode} tier={tier} reports={reports} />;
+      case "helpdesk":   return <HelpDeskTab subscriptionCode={storedCode} />;
       case "billing":    return renderBilling();
       case "products":   return renderProducts();
       case "chat":       return renderChat();
