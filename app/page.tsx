@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import HeroAnimation from './components/HeroAnimation'
 import { PlayStoreBadge } from './components/PlayStoreBadge'
+import FreeFixCounter from './components/FreeFixCounter'
 
 // TODO: Update to your actual Play Store listing URL once published
 const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.oldcrowswireless.crowseye'
@@ -60,6 +61,11 @@ export default function HomePage() {
             >
               Use on web instead &rarr;
             </Link>
+          </div>
+
+          {/* First-1,000-free-fixes launch promo — live scarcity counter */}
+          <div className="flex justify-center" style={{ marginTop: '12px' }}>
+            <FreeFixCounter />
           </div>
         </div>
       </section>
