@@ -15,6 +15,11 @@ interface CrowsEyeTabProps {
   lockedSSID?: string;
 }
 
+// Step-by-step fixes are FREE during the first-1,000-scans promo. When the promo
+// ends, flip this to true to re-gate steps behind the paywall (blurred + unlock CTA).
+// Single source of truth — the findings renderer below branches on it.
+const STEPS_GATED = false;
+
 const PROCESSING_LINES = [
   'Rolling Perception on your WiFi environment...',
   'Identifying all networks in range... I see you, channel 11 squatters...',
@@ -1696,9 +1701,25 @@ export default function CrowsEyeTab({
                 Findings
               </div>
 
-              {report.findings.map((finding, i) => (
-                <div key={i} style={getSeverityStyle(finding.severity)}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 6 }}>
+              {/* Collapse affordance: hide native marker, rotate our chevron on open */}
+              <style>{`
+                details.ce-finding > summary { list-style: none; }
+                details.ce-finding > summary::-webkit-details-marker { display: none; }
+                details.ce-finding > summary .ce-chev { transition: transform 0.15s ease; }
+                details.ce-finding[open] > summary .ce-chev { transform: rotate(180deg); }
+              `}</style>
+
+              {report.findings.map((finding, i) => {
+                // CRITICAL findings start expanded; everything else collapses to a headline.
+                const startOpen = finding.severity?.toUpperCase() === 'CRITICAL';
+                return (
+                <details key={i} className="ce-finding" style={getSeverityStyle(finding.severity)} {...(startOpen ? { open: true } : {})}>
+                  <summary style={{
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                  }}>
                     <span style={{
                       fontFamily: 'monospace',
                       fontSize: '0.55rem',
@@ -1709,7 +1730,6 @@ export default function CrowsEyeTab({
                       borderRadius: 4,
                       padding: '2px 6px',
                       flexShrink: 0,
-                      marginTop: 2,
                     }}>
                       {finding.severity?.toUpperCase()}
                     </span>
@@ -1718,80 +1738,109 @@ export default function CrowsEyeTab({
                       fontSize: '0.85rem',
                       fontWeight: 700,
                       color: '#F4F6F8',
+                      flex: 1,
                     }}>
                       {finding.title}
                     </div>
-                  </div>
+                    <span className="ce-chev" style={{
+                      color: 'rgba(34,214,220,0.6)',
+                      fontSize: '0.7rem',
+                      flexShrink: 0,
+                    }}>▾</span>
+                  </summary>
 
-                  {finding.description && (
-                    <p style={{
-                      margin: '0 0 8px',
-                      color: 'rgba(244,246,248,0.75)',
-                      fontSize: '0.8rem',
-                      lineHeight: 1.6,
-                    }}>
-                      {finding.description}
-                    </p>
-                  )}
-
-                  {finding.fix_summary && (
-                    <div style={{
-                      background: 'rgba(0,0,0,0.2)',
-                      border: '1px solid rgba(34,214,220,0.15)',
-                      borderRadius: 6,
-                      padding: '8px 10px',
-                      marginBottom: 8,
-                    }}>
-                      <span style={{ color: '#22D6DC', fontFamily: 'monospace', fontSize: '0.6rem', letterSpacing: '0.1em' }}>FIX: </span>
-                      <span style={{ color: 'rgba(244,246,248,0.85)', fontSize: '0.78rem' }}>{finding.fix_summary}</span>
-                    </div>
-                  )}
-
-                  {finding.steps && finding.steps.length > 0 && (
-                    <details style={{ marginTop: 6 }}>
-                      <summary style={{
-                        cursor: 'pointer',
-                        color: 'rgba(34,214,220,0.7)',
-                        fontFamily: 'monospace',
-                        fontSize: '0.65rem',
-                        letterSpacing: '0.08em',
-                        userSelect: 'none',
-                        listStyle: 'none',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 6,
+                  <div style={{ marginTop: 10 }}>
+                    {finding.description && (
+                      <p style={{
+                        margin: '0 0 8px',
+                        color: 'rgba(244,246,248,0.75)',
+                        fontSize: '0.8rem',
+                        lineHeight: 1.6,
                       }}>
-                        <span>▶</span> Step-by-step instructions ({finding.steps.length} steps)
-                      </summary>
-                      <ol style={{
-                        margin: '8px 0 0',
-                        paddingLeft: 20,
-                        color: 'rgba(244,246,248,0.7)',
-                        fontSize: '0.75rem',
-                        lineHeight: 1.7,
+                        {finding.description}
+                      </p>
+                    )}
+
+                    {finding.fix_summary && (
+                      <div style={{
+                        background: 'rgba(0,0,0,0.2)',
+                        border: '1px solid rgba(34,214,220,0.15)',
+                        borderRadius: 6,
+                        padding: '8px 10px',
+                        marginBottom: 8,
                       }}>
-                        {finding.steps.map((step, si) => (
-                          <li key={si} style={{ marginBottom: 4 }}>{step}</li>
-                        ))}
-                      </ol>
-                      {finding.login_disclaimer && (
+                        <span style={{ color: '#22D6DC', fontFamily: 'monospace', fontSize: '0.6rem', letterSpacing: '0.1em' }}>FIX: </span>
+                        <span style={{ color: 'rgba(244,246,248,0.85)', fontSize: '0.78rem' }}>{finding.fix_summary}</span>
+                      </div>
+                    )}
+
+                    {finding.steps && finding.steps.length > 0 && (
+                      STEPS_GATED ? (
+                        /* Paywall returns after the 1,000-scan promo: blurred preview + unlock CTA */
                         <div style={{
-                          marginTop: 8,
-                          padding: '6px 10px',
-                          background: 'rgba(234,179,8,0.06)',
-                          border: '1px solid rgba(234,179,8,0.15)',
-                          borderRadius: 6,
-                          color: 'rgba(244,246,248,0.5)',
-                          fontSize: '0.65rem',
-                          lineHeight: 1.5,
+                          marginTop: 6,
+                          padding: '12px 12px 14px',
+                          background: 'rgba(0,0,0,0.25)',
+                          border: '1px dashed rgba(216,172,50,0.4)',
+                          borderRadius: 8,
                         }}>
-                          {finding.login_disclaimer}
+                          <div style={{ filter: 'blur(4px)', userSelect: 'none', pointerEvents: 'none' }}>
+                            <div style={{ height: 10, background: 'rgba(255,255,255,0.12)', borderRadius: 4, marginBottom: 8, width: '100%' }} />
+                            <div style={{ height: 10, background: 'rgba(255,255,255,0.12)', borderRadius: 4, marginBottom: 8, width: '85%' }} />
+                            <div style={{ height: 10, background: 'rgba(255,255,255,0.12)', borderRadius: 4, width: '65%' }} />
+                          </div>
+                          <div style={{ marginTop: 10, color: '#D8AC32', fontFamily: 'monospace', fontSize: '0.65rem', letterSpacing: '0.06em' }}>
+                            🔒 Unlock the {finding.steps.length}-step fix
+                          </div>
                         </div>
-                      )}
-                    </details>
-                  )}
-                </div>
-              ))}
+                      ) : (
+                        <details style={{ marginTop: 6 }}>
+                          <summary style={{
+                            cursor: 'pointer',
+                            color: 'rgba(34,214,220,0.7)',
+                            fontFamily: 'monospace',
+                            fontSize: '0.65rem',
+                            letterSpacing: '0.08em',
+                            userSelect: 'none',
+                            listStyle: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 6,
+                          }}>
+                            <span>▶</span> Step-by-step instructions ({finding.steps.length} steps)
+                          </summary>
+                          <ol style={{
+                            margin: '8px 0 0',
+                            paddingLeft: 20,
+                            color: 'rgba(244,246,248,0.7)',
+                            fontSize: '0.75rem',
+                            lineHeight: 1.7,
+                          }}>
+                            {finding.steps.map((step, si) => (
+                              <li key={si} style={{ marginBottom: 4 }}>{step}</li>
+                            ))}
+                          </ol>
+                          {finding.login_disclaimer && (
+                            <div style={{
+                              marginTop: 8,
+                              padding: '6px 10px',
+                              background: 'rgba(234,179,8,0.06)',
+                              border: '1px solid rgba(234,179,8,0.15)',
+                              borderRadius: 6,
+                              color: 'rgba(244,246,248,0.5)',
+                              fontSize: '0.65rem',
+                              lineHeight: 1.5,
+                            }}>
+                              {finding.login_disclaimer}
+                            </div>
+                          )}
+                        </details>
+                      )
+                    )}
+                  </div>
+                </details>
+                );
+              })}
             </div>
           )}
 
