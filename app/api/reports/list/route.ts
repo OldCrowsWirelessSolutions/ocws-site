@@ -7,6 +7,7 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { getReportsForSubscription, getReportsForEmail, getReportsForCode } from "@/lib/reports";
 import { validateSubscriptionId } from "@/lib/subscriptions";
+import { getAccountByCode } from "@/lib/accounts";
 
 const FOUNDING_CODES = new Set(["CORVUS-NEST", "CORVUS-NATE", "CORVUS-MIKE", "CORVUS-ERIC"]);
 
@@ -29,7 +30,13 @@ export async function POST(req: Request) {
     // Full subscription ID (OCWS-TIER-XXXXXXXX)
     const result = await validateSubscriptionId(code);
     if (!result.valid) {
-      return NextResponse.json({ reports: [], error: "Invalid code" }, { status: 401 });
+      // Free / non-subscription accounts (e.g. CORVUS-FREE-*) own reports too —
+      // they save under this code but aren't subscriptions, so validateSubscriptionId
+      // rejects them. Accept any known account so free users get cross-device history.
+      const acct = await getAccountByCode(code).catch(() => null);
+      if (!acct) {
+        return NextResponse.json({ reports: [], error: "Invalid code" }, { status: 401 });
+      }
     }
 
     const reports = await getReportsForSubscription(code);
