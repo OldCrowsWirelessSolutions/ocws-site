@@ -41,7 +41,10 @@ export default function LocalBusinessSchema() {
       name: "Old Crows Wireless Solutions",
     },
     sameAs: [
-      // Add your real links later (Google Business Profile, LinkedIn, etc.)
+      "https://www.linkedin.com/in/joshua-turner-5a3b8638b/",
+      "https://x.com/OCWS_Wifi",
+      "https://www.facebook.com/profile.php?id=61582231723401",
+      "https://www.instagram.com/oldcrowswirelesssolutions/",
     ],
     knowsAbout: [
       "RF optimization",
