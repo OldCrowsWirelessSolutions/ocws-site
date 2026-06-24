@@ -30,7 +30,7 @@ function AdminCrowsEyeTab() {
 type SubscriptionTier  = "fledgling" | "nest" | "flock" | "murder";
 type SubscriptionStatus = "active" | "cancelled" | "past_due" | "expired";
 
-type PromoType = "verdict" | "reckoning_small" | "reckoning_standard" | "reckoning_commercial" | "reckoning_pro" | "sub_fledgling" | "sub_nest" | "sub_flock" | "sub_murder" | "sub_any";
+type PromoType = "verdict" | "reckoning_small" | "reckoning_standard" | "reckoning_commercial" | "reckoning_pro" | "sub_fledgling" | "sub_nest" | "sub_flock" | "sub_murder" | "sub_any" | "demo";
 type PromoStatus = "active" | "used" | "expired" | "deactivated";
 
 interface PromoCodeRecord {
@@ -56,6 +56,7 @@ const PROMO_TYPE_LABELS: Record<PromoType, string> = {
   sub_flock:             "Flock Sub",
   sub_murder:            "Murder Sub",
   sub_any:               "Any Sub",
+  demo:                  "Demo Code",
 };
 
 function getPromoStatus(p: PromoCodeRecord): PromoStatus {
@@ -287,13 +288,17 @@ export default function AdminPage() {
   const [credFeedback, setCredFeedback]   = useState("");
 
   // Promo code generator
-  type PromoProduct2 = "verdict" | "reckoning_small" | "reckoning_standard" | "reckoning_commercial" | "reckoning_pro" | "all_reckonings" | "both" | "sub_fledgling" | "sub_nest" | "sub_flock" | "sub_murder" | "sub_any";
+  type PromoProduct2 = "verdict" | "reckoning_small" | "reckoning_standard" | "reckoning_commercial" | "reckoning_pro" | "all_reckonings" | "both" | "sub_fledgling" | "sub_nest" | "sub_flock" | "sub_murder" | "sub_any" | "demo";
   type ExpiryType2   = "single_use" | "24h" | "48h" | "72h" | "7d" | "14d" | "30d";
   const [promoProducts, setPromoProducts] = useState<PromoProduct2>("verdict");
   const [promoExpiryType, setPromoExpiryType] = useState<ExpiryType2>("single_use");
   const [promoQrCode, setPromoQrCode] = useState<string | null>(null);
   const [promoNote, setPromoNote]         = useState("");
   const [promoExpires, setPromoExpires]   = useState("");
+  // Demo-code options (only used when promoProducts === "demo"): the tier the
+  // code grants on redemption, and an optional custom suffix (CORVUS-{SUFFIX}).
+  const [promoDemoTier, setPromoDemoTier]     = useState<"nest" | "flock" | "murder">("murder");
+  const [promoDemoSuffix, setPromoDemoSuffix] = useState("");
   const [generatingPromo, setGeneratingPromo]     = useState(false);
   const [generatedPromoCode, setGeneratedPromoCode] = useState("");
   const [promoGenError, setPromoGenError] = useState("");
@@ -851,7 +856,8 @@ export default function AdminPage() {
     setGeneratedPromoCode("");
     setPromoCopied(false);
     const derivedType: PromoType =
-      promoProducts === "verdict" ? "verdict"
+      promoProducts === "demo" ? "demo"
+      : promoProducts === "verdict" ? "verdict"
       : promoProducts === "reckoning_small" ? "reckoning_small"
       : promoProducts === "reckoning_standard" ? "reckoning_standard"
       : promoProducts === "reckoning_commercial" ? "reckoning_commercial"
@@ -872,6 +878,11 @@ export default function AdminPage() {
           expiryType: promoExpiryType,
           note: promoNote.trim(),
           expiresAt: promoExpires ? new Date(promoExpires).toISOString() : undefined,
+          // Demo codes carry a tier (nest/flock/murder) and an optional custom
+          // suffix; ignored by the server for non-demo products.
+          ...(promoProducts === "demo"
+            ? { tier: promoDemoTier, customSuffix: promoDemoSuffix.trim() || undefined }
+            : {}),
         }),
       });
       const data = await res.json();
@@ -879,6 +890,7 @@ export default function AdminPage() {
       setGeneratedPromoCode(data.code);
       setPromoNote("");
       setPromoExpires("");
+      setPromoDemoSuffix("");
       loadPromoCodes();
     } catch (e: unknown) {
       setPromoGenError(e instanceof Error ? e.message : "Generation failed.");
@@ -1754,6 +1766,7 @@ export default function AdminPage() {
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                   {([
+                    { val: "demo",                 label: "💀 Demo Code (tiered · multi-use giveaway)" },
                     { val: "verdict",              label: "Single Verdict" },
                     { val: "reckoning_small",      label: "Small Reckoning" },
                     { val: "reckoning_standard",   label: "Standard Reckoning" },
@@ -1777,6 +1790,31 @@ export default function AdminPage() {
                   ))}
                 </div>
               </div>
+
+              {promoProducts === "demo" && (
+                <>
+                  <div style={{ marginBottom: "14px" }}>
+                    <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "8px" }}>Demo tier (granted on redemption)</label>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "6px" }}>
+                      {([
+                        { val: "nest"   as const, label: "🪺 Nest" },
+                        { val: "flock"  as const, label: "🐦‍⬛ Flock" },
+                        { val: "murder" as const, label: "💀 Murder" },
+                      ]).map(({ val, label }) => (
+                        <button key={val} type="button" onClick={() => setPromoDemoTier(val)}
+                          style={{ padding: "8px 4px", fontSize: "12px", fontWeight: 600, borderRadius: "6px", cursor: "pointer", background: promoDemoTier === val ? "rgba(34,214,220,0.15)" : "rgba(255,255,255,0.04)", border: `1px solid ${promoDemoTier === val ? "rgba(34,214,220,0.4)" : "rgba(255,255,255,0.08)"}`, color: promoDemoTier === val ? "#22D6DC" : "#888" }}>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ marginBottom: "14px" }}>
+                    <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Custom name (optional → CORVUS-NAME)</label>
+                    <input type="text" value={promoDemoSuffix} onChange={e => setPromoDemoSuffix(e.target.value)}
+                      placeholder="e.g. SMITH — blank gives a random code" autoComplete="off" autoCorrect="off" spellCheck={false} style={inp} />
+                  </div>
+                </>
+              )}
 
               <div style={{ marginBottom: "10px" }}>
                 <label style={{ display: "block", color: "#555555", fontSize: "11px", marginBottom: "5px" }}>Note (who is this for?)</label>

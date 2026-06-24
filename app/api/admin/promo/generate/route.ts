@@ -2,7 +2,7 @@
 export const runtime = "nodejs";
 
 import { generatePromoCode, PromoType, PromoProduct, ExpiryType } from "@/lib/promo-codes";
-import { isValidAdminKey } from "@/lib/adminAuth";
+import { isValidAdminKey, isValidDemoMintToken } from "@/lib/adminAuth";
 
 const VALID_TYPES: PromoType[] = [
   "verdict",
@@ -22,12 +22,17 @@ const VALID_EXPIRY_TYPES: ExpiryType[] = [
   "single_use", "24h", "48h", "72h", "7d", "14d", "30d",
 ];
 
-function isAuthed(req: Request): boolean {
-  return isValidAdminKey(req.headers.get("x-admin-key"));
-}
-
 export async function POST(req: Request) {
-  if (!isAuthed(req)) {
+  // Two credentials are accepted:
+  //   - master admin secret  → may mint ANY code type (full power)
+  //   - demo-mint token       → may mint ONLY type:'demo' giveaway codes
+  // The demo token lets low-trust clients (the mobile app) mint demo codes
+  // without holding the master secret, so rotating the master secret never
+  // breaks app-side demo minting. See lib/adminAuth.ts.
+  const presented = req.headers.get("x-admin-key");
+  const isAdmin = isValidAdminKey(presented);
+  const isDemoMinter = !isAdmin && isValidDemoMintToken(presented);
+  if (!isAdmin && !isDemoMinter) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
@@ -48,7 +53,23 @@ export async function POST(req: Request) {
       return Response.json({ error: "Invalid type" }, { status: 400 });
     }
 
-    const products = (body.products as PromoProduct) ?? (type as PromoProduct);
+    // Scoped credential guard: the demo-mint token may ONLY produce demo codes.
+    // Minting any paid-tier / subscription / reckoning code requires the master
+    // admin secret.
+    if (isDemoMinter && type !== "demo") {
+      return Response.json(
+        { error: "This token may only generate demo codes." },
+        { status: 403 }
+      );
+    }
+
+    // The actual entitlement is driven by `products`, so the demo-mint token
+    // must be pinned to the demo product too — otherwise a caller could pass
+    // type:'demo' but products:'sub_murder' and escalate to a subscription
+    // grant. Force products:'demo' for demo-token callers regardless of input.
+    const products: PromoProduct = isDemoMinter
+      ? "demo"
+      : ((body.products as PromoProduct) ?? (type as PromoProduct));
     const expiryType = VALID_EXPIRY_TYPES.includes(body.expiryType as ExpiryType)
       ? (body.expiryType as ExpiryType)
       : "single_use";
