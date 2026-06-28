@@ -22,6 +22,15 @@
 import redis from "@/lib/redis";
 import { randomBytes } from "crypto";
 
+// Rookery edu-product entitlement carried on the account. The Stripe webhook
+// (edu_purchase) sets it on purchase; the Rookery entitlement resolver reads it
+// to gate Aerie/Academy/Campus. Absent ⇒ none (existing accounts stay unchanged).
+export interface EduProducts {
+  aerie?:   "none" | "family" | "scholar";
+  academy?: "none" | "subscribed";
+  campus?:  "none" | "k12" | "higher_ed" | "both";
+}
+
 export interface AccountRecord {
   code:        string;          // canonical code that bootstrapped the account (e.g. CORVUS-NATE, OCWS-FLOCK-PROMO-XYZ, CORVUS-FREE-XXXXXXXX)
   email:       string;          // lowercased
@@ -29,6 +38,7 @@ export interface AccountRecord {
   tier:        AccountTier;
   unlimited:   boolean;
   credits:     number | null;
+  eduProducts?: EduProducts;    // Rookery edu entitlement (Aerie/Academy/Campus); absent ⇒ none
   // Team-lead linkage — optional, present for VIP/flock/murder accounts.
   leadCode?:   string;          // CORVUS-LEAD-XXXXXX
   userId?:     string;          // lead_<rand> (matches team-leads.ts userId)
@@ -110,6 +120,20 @@ export async function saveAccount(account: AccountRecord): Promise<void> {
     redis.set(emailKey(normalized.email), code),
     redis.sadd("account:index", code),
   ]);
+}
+
+/**
+ * Merge edu-product entitlement onto an account (Aerie/Academy/Campus). Called by
+ * the Stripe webhook on an edu purchase and by the admin grant channel (comps /
+ * early customers / testing). Returns the updated account, or null if the code
+ * has no account yet.
+ */
+export async function setEduProducts(code: string, patch: EduProducts): Promise<AccountRecord | null> {
+  const acct = await getAccountByCode(code);
+  if (!acct) return null;
+  const next: AccountRecord = { ...acct, eduProducts: { ...(acct.eduProducts ?? {}), ...patch } };
+  await saveAccount(next);
+  return next;
 }
 
 export async function listAccounts(): Promise<AccountRecord[]> {
