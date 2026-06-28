@@ -13,6 +13,7 @@ export const runtime = "nodejs";
 
 import { dispatch, type DispatchContext } from "@/lib/rookery/dispatch";
 import { getAccountByCode } from "@/lib/accounts";
+import { isValidAdminKey } from "@/lib/adminAuth";
 
 const FOUNDING_CODES = new Set(["CORVUS-NEST", "CORVUS-NATE", "CORVUS-MIKE", "CORVUS-ERIC"]);
 const FOUNDER_CODE = "OCWS-CORVUS-FOUNDER-JOSHUA";
@@ -23,18 +24,22 @@ async function resolveContext(rawCode: string | null): Promise<DispatchContext> 
   if (!raw) return { account: null };
   const code = raw.toUpperCase();
 
-  const adminSecret = process.env.OCWS_ADMIN_SECRET ?? "";
+  // Admin login matches the rest of the OCWS apps: username "Admin" + the admin
+  // password, where the password === OCWS_ADMIN_SECRET (validated constant-time
+  // by lib/adminAuth). The client persists + sends that secret as x-corvus-code.
+  const viaSecret = isValidAdminKey(raw);
   const account = await getAccountByCode(code).catch(() => null);
   const isAdmin =
     code === FOUNDER_CODE ||
     FOUNDING_CODES.has(code) ||
-    (adminSecret !== "" && raw === adminSecret) ||
+    viaSecret ||
     account?.tier === "admin";
 
   if (!account && !isAdmin) return { account: null }; // unknown code → anonymous
   return {
     account: {
-      code,
+      // Never echo the raw secret back as the code — label admin-via-secret "ADMIN".
+      code: viaSecret ? "ADMIN" : code,
       email: account?.email ?? null,
       isAdmin,
       tier: account?.tier ?? (isAdmin ? "admin" : "nest"),
